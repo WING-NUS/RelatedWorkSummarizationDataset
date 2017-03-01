@@ -1,0 +1,175 @@
+dirt - discovery of inference rules from text .
+abstract .
+in this paper , we propose an unsupervised method for discovering inference rules from text , such as x is author of y ^ x wrote y , x solved y ^ x found a solution to y , and x caused y ^ y is triggered by x. inference rules are extremely important in many fields such as natural language processing , information retrieval , and artificial intelligence in general .
+our algorithm is based on an extended version of harris distributional hypothesis , which states that words that occurred in the same contexts tend to be similar .
+instead of using this hypothesis on words , we apply it to paths in the dependency trees of a parsed corpus .
+introduction .
+text is the most significant repository of human knowledge .
+many algorithms have been proposed to mine textual data .
+most of them focus on document clustering [ 13 ] , identifying prototypical documents [ 20 ] , or finding term associations [ 14 ] and hyponym relationships [ 9 ] .
+we propose an unsupervised method for discovering inference rules , such as x is author of y ^ x wrote y , x solved y ^ x found a solution to y , and x caused y ^ y is triggered by x. inference rules are extremely important in many fields such as natural language processing , information retrieval , and artificial intelligence in general .
+for example , consider the query to an information retrieval system : who is the author of the ' star spangled banner ' ?
+unless the system recognizes the relationship between x wrote y and x is the author of y , it would not necessarily rank the sentence .
+in previous work , such relationships have been referred to as paraphrases or variants [ 24 ] .
+in this paper , we use the term permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page .
+to copy otherwise , or republish , to post on servers or to redistribute to lists , requires prior specific permission and / or a fee .
+traditionally , knowledge bases containing such inference rules are created manually .
+this knowledge engineering task is extremely laborious .
+more importantly , building such a knowledge base is inherently difficult since humans are not good at generating a complete list of rules .
+most previous efforts on knowledge engineering have focused on creating tools for helping knowledge engineers transfer their knowledge to machines [ 6 ] .
+our goal is to automatically discover such rules .
+in this paper , we present an unsupervised algorithm , dirt , for discovery of inference rules from text .
+our algorithm is a generalization of previous algorithms for finding similar words [ 10 ] [ 15 ] [ 19 ] .
+algorithms for finding similar words assume the distributional hypothesis , which states that words that occurred in the same contexts tend to have similar meanings [ 7 ] .
+instead of applying the distributional hypothesis to words , we apply it to paths in dependency trees .
+essentially , if two paths tend to link the same sets of words , we hypothesize that their meanings are similar .
+since a path represents a binary relationship , we generate an inference rule for each pair of similar paths .
+the remainder of this paper is organized as follows .
+in the next section , we review previous work .
+in section 3 , we define paths in dependency trees and describe their extraction from a parsed corpus .
+section 4 presents the dirt system and a comparison of our systems output with manually generated paraphrase expressions is shown in section 5 .
+finally , we conclude with a discussion of future work .
+previous work .
+most previous work on variant recognition and paraphrase has been done in the fields of natural language generation , text summarization , and information retrieval .
+the generation community has focused mainly on rule-based text transformations in order to meet external constraints such as length and readability [ 11 ] [ 18 ] [ 22 ] .
+dras [ 4 ] described syntactic paraphrases using a meta-grammar with a synchronous tree adjoining grammar ( tag ) formalism .
+in multi-document summarization , paraphrasing is important to avoid redundant statements in a summary .
+given a collection of similar sentences ( a theme ) with different wordings , it is difficult to identify similar phrases that report the same fact .
+barzilay et al. [ 3 ] analyzed 200 two-sentence themes from a corpus and extracted seven lexico-syntactic paraphrasing rules .
+these rules covered 82 % of syntactic and lexical paraphrases , which cover 70 % of all variants .
+the rules are subsequently used to identify common statements in a theme by comparing the predicate- argument structure of the sentences within the theme .
+in information retrieval , it is common to identify phrasal terms from queries and generate their variants for query expansion .
+it has been shown that such query expansion does promote effective retrieval [ 1 ] [ 2 ] .
+morphological variant query expansion was treated by sparck jones and tait [ 24 ] and jacquemin [ 12 ] .
+in [ 21 ] , richardson extracted semantic relationships ( e.g. , hypernym , location , material and purpose ) from dictionary definitions using a parser and constructed a semantic network .
+he then described an algorithm that uses paths in the semantic network to compute the similarity between words .
+in a sense , our algorithm is a dual of richardsons approach .
+while richardson used paths as features to compute the similarity between words , we use words as features to compute the similarity of paths .
+many text mining algorithms aim at finding association rules between terms [ 14 ] .
+in contrast , the output of our algorithm is a set of associations between relations .
+term associations usually require human interpretation .
+some of them are considered to be uninterpretable even by humans [ 5 ] .
+extraction of paths .
+the inference rules discovered by dirt are between paths in dependency trees .
+in this section , we introduce dependency trees and define paths in trees .
+finally , we describe an algorithm for extracting paths from the trees .
+dependency trees .
+a dependency relationship [ 8 ] is an asymmetric binary relationship between a word called head , and another word called modifier .
+the structure of a sentence can be represented by a set of dependency relationships that form a tree .
+a word in the sentence may have several modifiers , but each word may modify at most one word .
+the root of the dependency tree does not modify any word .
+it is also called the head of the sentence .
+for example , figure 1 shows the dependency tree for the sentence john found a solution to the problem , generated by a broad- coverage english parser called minipar1 [ 16 ] .
+the links in the diagram represent dependency relationships .
+the direction of a link is from the head to the modifier in the relationship .
+labels associated with the links represent types of dependency relations .
+table 1 lists a subset of the dependency relations in minipar outputs .
+minipar parses newspaper text at about 500 words per second on a pentium-iii 700mhz with 500mb memory .
+evaluation with the manually parsed susanne corpus [ 23 ] shows that about 89 % of the dependency relationships in minipar outputs are correct .
+paths in dependency trees .
+in the dependency trees generated by minipar , each link between two words in a dependency tree represents a direct semantic relationship .
+a path allows us to represent indirect semantic relationships between two content words .
+we name a path by concatenating dependency relationships and words along the path , excluding the words at the two ends .
+the root of both paths is find .
+a path begins and ends with two dependency relations .
+we call them the two slots of the path : slotx on the left- hand side and sloty on the right-hand side .
+the words connected by the path are the fillers of the slots .
+discovering inference rules from text .
+a path is a binary relation between two entities .
+in this section , we present an algorithm , called dirt , to automatically discover the inference relations between such binary relations .
+underlying assumption .
+most algorithms for computing word similarity from text corpus are based on a principle known as the distributional hypothesis [ 7 ] .
+the idea is that words that tend to occur in the same contexts tend to have similar meanings .
+previous efforts differ in their representation of the context and in their formula for computing the similarity between two sets of contexts .
+some algorithms use the words that occurred in a fixed window of a given word as its context while others use the dependency relationships of a given word as its context [ 15 ] .
+consider the words duty and responsibility .
+there are many contexts in which both of these words can fit .
+based on these common contexts , one can statistically determine that duty and responsibility have similar meanings .
+in the algorithms for finding word similarity , dependency links are treated as contexts of words .
+in contrast , our algorithm for finding inference rules treats the words that fill the slots of a path as a context for the path .
+we make an assumption that this is an extension to the distributional hypothesis .
+triples .
+to compute the path similarity using the extended distributional hypothesis , we need to collect the frequency counts of all paths in a corpus and the slot fillers for the paths .
+for each instance of a path p that connects two words w1 and w2 , we increase the frequency counts of the two triples ( p , slotx , w1 ) and ( p , sloty , w2 ) .
+we call ( slotx , w1 ) and ( sloty , w2 ) features of path p .
+intuitively , the more features two paths share , the more similar they are .
+we use a triple database ( a hash table ) to accumulate the frequency counts of all features of all paths extracted from a parsed corpus. between a slot and a slot filler .
+mutual information measures the strength of the association between a slot and a filler .
+we explain mutual information in detail in section 4.3 .
+the triple database records the fillers of slotx and sloty separately .
+looking at the database , one would be unable to tell which slotx filler occurred with which sloty filler in the corpus .
+similarity between two paths .
+once the triple database is created , the similarity between two paths can be computed in the same way that the similarity between two words is computed in [ 15 ] .
+essentially , two paths have high similarity if there are a large number of common features .
+however , not every feature is equally important .
+for example , the word he is much more frequent than the word sheriff .
+two paths sharing the feature ( slotx , he ) is less indicative of their similarity than if they shared the feature ( slotx , sheriff ) .
+the similarity measure proposed in [ 15 ] takes this into account by computing the mutual information between a feature and a path .
+we use the notation | p , slotx , w | to denote the frequency count of the triple .
+following [ 15 ] , the mutual information between a path slot and its filler can be computed by the formula : finding the most similar paths .
+the discovery of inference rules is made by finding the most similar paths of a given path .
+the challenge here is that there are a large number of paths in the triple database .
+the database used in our experiments contains over 200,000 distinct paths .
+computing the similarity between every pair of paths is obviously impractical .
+given a path p , our algorithm for finding the most similar paths of p takes three steps : retrieve all the paths that share at least one feature with p and call them candidate paths .
+this can be done efficiently by storing for each word the set of slots it fills in .
+for each candidate path c , count the number of features shared by c and p .
+filter out c if the number of its common features with p is less than a fixed percent ( we used 1 % ) of the total number of features for p and c .
+this step effectively uses a simpler similarity formula to filter out some of the paths since computing mutual information is more costly than counting the number of features .
+this idea has previously been used in canopy [ 17 ] .
+compute the similarity between p and the candidates that passed the filter using equation ( 2 ) and output the paths in descending order of their similarity to p .
+table 3 lists the top-50 most similar paths to x solves y generated by dirt .
+most of the paths can be considered as paraphrases of the original expression .
+experimental results .
+we performed an evaluation of our algorithm by comparing the inference rules it generates with a set of human-generated paraphrases of the first six questions in the trec-8 question and answering track , listed in table 4 .
+trec ( text retrievial conference ) is a u.s. government sponsored competition on information retrieval held annually since 1992 .
+in the question- answering track , the task for participating systems is to find answers to natural-language questions like those in table 4 .
+results .
+we used minipar to parse about 1gb of newspaper text ( ap newswire , san jose mercury , and wall street journal ) .
+using the methods discussed in section 3 , we extracted 7 million paths from the parse trees ( 231,000 unique ) and stored them in a triple database .
+the second column of table 5 shows the paths that we identified from the trec-8 questions .
+for some questions , more than one path was identified .
+for others , no path was found .
+we compare the output of our algorithm with a set of manually generated paraphrases of the trec-8 questions made available at isi2 .
+we also extracted paths from the manually generated paraphrases .
+for some paraphrases , an identical path is extracted .
+for example , what things are manufactured by peugeot ? and what products are manufactured by peugeot ? both map to the path x is manufactured by y. the number of paths for the manually generated paraphrases of trec-8 questions is shown in the third column of table 5 .
+for each of the paths p in the second column of table 5 , we ran the dirt algorithm to compute its top-40 most similar paths using the triple database .
+we then manually inspected the outputs and classified each extracted path as correct or incorrect .
+a path p ' is judged correct if a sentence containing p ' might contain an answer to the question from which p was extracted .
+consider question q3 in table 4 where we have p = x manufactures y and we find p ' = xs yfactory as one of ps top-40 most similar paths .
+since peugeots car factory might be found in some corpus , p ' is judged correct .
+note that not all sentences containing p ' necessarily contain an answer to q3 ( e.g.
+peugeots sochaux factory gives the location of a peugeot factory in france ) .
+the fourth column in table 5 shows the number of top-40 most similar paths classified as correct and the fifth column gives the intersection between columns three and four .
+finally , the last column in table 5 gives the percentage of correctly classified paths .
+observations .
+there is very little overlap between the automatically generated paths and the paraphrases , even though the percentage of correct paths in dirt outputs can be quite high .
+this suggests that finding potentially useful inference rules is very difficult for humans as well as machines .
+table 6 shows some of the correct paths among the top-40 extracted by our system for two of the trec-8 questions .
+many of the variations generated by dirt that are correct paraphrases are missing from the manually generated variations .
+it is difficult for humans to recall a list of paraphrases .
+however , given the output of our system , humans can easily identify the correct inference rules .
+hence , at the least , our system would greatly ease the manual construction of inference rules for an information retrieval system .
+the performance of dirt varies a great deal for different paths .
+usually , the performance for paths with verb roots is much better than for paths with noun roots .
+a verb phrase typically has more than one modifier , whereas nouns usually take a smaller number of modifiers .
+when a word takes less than two modifiers , it will not be the root of any path .
+as a result , paths with noun roots occur less often than paths with verb roots , which explains the lower performance with respect to paths with noun roots .
+in table 5 , dirt found no correct inference rules for q2 .
+this is due to the fact that q2 does not have any entries in the triple database .
+conclusion and future work .
+better tools are necessary to tap into the vast amount of textual data that is growing at an astronomical pace .
+knowledge about inference relationships in natural language expressions would be extremely useful for such tools .
+to the best of our knowledge , this is the first attempt to discover such knowledge automatically from a large corpus of text .
+we introduced the extended distributional hypothesis , which states that paths in dependency trees have similar meanings if they tend to connect similar sets of words .
+treating paths as binary relations , our algorithm is able to generate inference rules by searching for similar paths .
+our experimental results show that the extended distributional hypothesis can indeed be used to discover very useful inference rules , many of which , though easily recognizable , are difficult for humans to recall .
+many questions remain to be addressed .
+one is to recognize the polarity in inference relationships .
+high similarity values are often assigned to relations with opposite polarity .
+for example , x worsens y has one of the highest similarity to x solves y according to equation ( 2 ) .
+in some situations , this may be helpful while for others it may cause confusion .
+another is to extend paths with constraints on the inference rules variables .
+for example , instead of generating a rule x manufactures y ; ~ - _ xs yfactory , we may want to generate a rule with an additional clause : x manufactures y ; ~ - _ xs y factory , where y is an artifact .
+the where clause can be potentially discovered by generalizing the intersection of the sloty fillers of the two relations .

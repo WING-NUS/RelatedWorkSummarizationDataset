@@ -1,0 +1,187 @@
+modeling annotated data .
+abstract .
+we consider the problem of modeling annotated datadata with multiple types where the instance of one type ( such as a caption ) serves as a description of the other type ( such as an image ) .
+we describe three hierarchical probabilistic mixture models which aim to describe such data , culminating in correspondence latent dirichlet allocation , a latent variable model that is effective at modeling the joint distribution of both types and the conditional distribution of the annotation given the primary type .
+we conduct experiments on the corel database of images and captions , assessing performance in terms of held-out likelihood , automatic annotation , and text-based image retrieval .
+introduction .
+traditional methods of information retrieval are organized around the representation and processing of a document in a ( high-dimensional ) word-space .
+modern multimedia documents , however , are not merely collections of words , but can be collections of related text , images , audio , and cross- references .
+when working with a corpus of such documents , there is much to be gained from representations which can explicitly model associations among the different types of data .
+in this paper , we consider probabilistic models for documents that consist of pairs of data streams .
+our focus is on problems in which one data type can be viewed as an annotation of the other data type .
+examples of such data include images and their captions , papers and their bibliographies , and genes and their functions .
+in addition to the traditional goals of retrieval , clustering , and classification , annotated data lends itself to tasks such as automatic data annotation and retrieval of unannotated data from annotation-type queries .
+a number of recent papers have considered generative probabilistic models for such multi-type or relational data [ 2 , 6 , 4 , 13 ] .
+these papers have generally focused on models that jointly cluster the different data types , basing the clustering on latent variable representations that capture low-dimensional probabilistic relationships among interacting sets of variables .
+in many annotation problems , however , the overall goal appears to be that of finding a conditional relationship between types , and in such cases improved performance may be found in methods with a more discriminative flavor .
+in particular , the task of annotating an unannotated image can be viewed formally as a classification problemfor each word in the vocabulary we must make a yes / no decision .
+standard discriminative classification methods , however , generally make little attempt to uncover the probabilistic structure of either the input domain or the output domain .
+this seems ill-advised in the image / word settingsurely there are relationships among the words labeling an image , and these relationships reflect corresponding relationships among the regions in that image .
+moreover , it seems likely that capturing these relationships would be helpful in annotating new images .
+with these issues in mind , we approach the annotation problem within a framework that exploits the best of both the generative and the discriminative traditions .
+in this paper , we build a set of increasingly sophisticated models for a database of annotated images , culminating in correspondence latent dirichlet allocation ( corr-lda ) , a model that finds conditional relationships between latent variable representations of sets of image regions and sets of words .
+we show that , in this class of models , only corrlda succeeds in providing both an excellent fit of the joint data and an effective conditional model of the caption given an image .
+we demonstrate its use in automatic image annotation , automatic region annotation , and text-based image retrieval .
+image / caption data .
+our work has focused on images and their captions from the corel database .
+following previous work [ 2 ] , each image is segmented into regions by the n-cuts algorithm [ 12 ] .
+for each region , we compute a set of real-valued features representing visual properties such as size , position , color , texture , and shape .
+each image and its corresponding caption is represented as a pair ( r , w ) .
+the first element r = { rs , . . . , rnj is a collection of n feature vectors associated with the regions of the image .
+the second element w = { ws , ... , wmj is the collection of m words of the caption .
+we consider hierarchical probabilistic models of image / caption data which involve mixtures over underlying discrete and continuous variables .
+conditional on the values of these latent variables , the region feature vectors are assumed to be distributed as a multivariate gaussian distribution with diagonal covariance , and the caption words are assumed to be distributed as a multinomial distribution over the vocabulary .
+we are interested in models that can perform three tasks : modeling the joint distribution of an image and its caption , modeling the conditional distribution of words given an image , and modeling the conditional distribution of words given a particular region of an image .
+the first task can be useful for clustering and organizing a large database of images .
+the second task is useful for automatic image annotation and text-based image retrieval .
+the third task is useful for automatically labeling and identifying a particular region of an image .
+generative models .
+in this section , we describe two hierarchical mixture models of image / caption data , noting their strengths and limitations with respect to the three tasks described above .
+we introduce a third model , correspondence latent dirichlet allocation , in which the underlying probabilistic assumptions are appropriate for all three tasks .
+a gaussian-multinomial mixture model .
+we begin by considering a simple finite mixture model the model underlying most previous work on the probabilistic modeling of multi-type data [ 2 , 13 ] .
+in this model the gaussian-multinomial mixture ( gm-mixture ) shown in figure 1a single discrete latent variable z is used to represent a joint clustering of an image and its caption .
+as shown in the figure , an image / caption is assumed to be generated by first choosing a value of z , and then repeatedly sampling n region descriptions rn and m caption words wm conditional on the chosen value of z .
+the variable z is sampled once per image / caption , and is held fixed during the process of generating its components .
+the joint distribution of the hidden factor z and the image / caption ( r , w ) is : given a fixed number of factors k and a corpus of images / captions , the parameters of a gm-mixture model can be estimated by the em algorithms .
+this yields k gaussian distributions over features and k multinomial distributions over words which together describe a clustering of the images / captions .
+since each image and its caption are sin section 4.2.1 , we consider bayesian versions of all of our models in which some the parameters are endowed with prior distributions .
+figure 1 : the gm-mixture model of images and captions .
+following the standard graphical model formalism , nodes represent random variables and edges indicate possible dependence .
+shaded nodes are observed random variables ; unshaded nodes are latent random variables .
+the joint distribution can be obtained from the graph by taking the product of the conditional distribution of nodes given their parents ( see eq . 1 ) .
+finally , the box around a random variable is a plate , a notational device to denote replication .
+the box around r denotes n replicates of r ( this gives the first product in eq . 1 ) . assumed to have been generated conditional on the same factor , the resulting multinomial and gaussian parameters will correspond .
+an image with high probability under a certain factor will likely contain a caption with high probability in the same factor .
+let us consider the three tasks under this model .
+first , the joint probability of an image / caption can be computed by simply marginalizing out the hidden factor z from eq . ( 1 ) .
+second , we can obtain the conditional distribution of words given an image by invoking bayes rule to find p ( z i r ) and marginalizing out the hidden factor : finally , we would like to compute a region-specific distribution over words .
+this task , however , is beyond the scope of the gm-mixture model .
+conditional on the latent factor variable z , regions and words are generated independently , and the correspondence between specific regions and specific words is necessarily ignored .
+gaussian-multinomial lda .
+the latent dirichlet allocation ( lda ) model is a latent variable model that allows factors to be allocated repeatedly within a given document or image [ 3 ] .
+thus , different words in a document or different regions in an image can come from different underlying factors , and the document or image as a whole can be viewed as containing multiple topics .
+this idea can be applied directly to the joint modeling of images and captions .
+note the importance of the plates .
+within an image , all the region descriptions and words are generated with b held fixed ; the latent factors for each word and region description can ( potentially ) vary .
+each new image / caption is generated by again selecting from the dirichlet variable b and repeating the entire process .
+thus , we can view b as a high- level representation of the ensemble of image / caption pairs in terms of a probability distribution over factors that each image / caption can be assembled from .
+the resulting joint distribution on image regions , caption words , and latent variables is given as follows : as in the simpler lda model , it is intractable to compute the conditional distributions of latent variables given observed data under this joint distribution , but efficient variational inference methods are available to compute approximations to these conditionals ( see [ 2 ] for details ) .
+furthermore , we can use variational inference methods to find the conditional probability p ( w i r ) needed for image annotation / retrieval and the conditional probability p ( w i r , r . ) needed for region labeling .
+lda provides significant improvements in predictive performance over simpler mixture models in the domain of text data [ 3 ] , and we expect for gm-lda to provide similar advantages over gm-mixture .
+indeed , we will see in section 5 that gm-lda does model the image / caption data better than gm-mixture .
+we will also see , however , that good models of the joint probability of images and captions do not necessarily yield good models of the conditional probabilities that are needed for automatic annotation , text- based image retrieval , and region labeling .
+we will argue that this is due to the lack of a dependency between the latent factors z. and vm which respectively generated the images and their captions .
+in the next section , we turn to a model that aims to correct this problem .
+figure 3 : the graphical model representation of the corr-lda model .
+note that the variables ym are conditioned on n , the number of image regions .
+correspondence lda .
+we introduce correspondence lda ( corr-lda ) as a model that combines the flexibility of gm-lda with the associability of gm-mixture .
+with this model , we achieve simultaneous dimensionality reduction in the representation of region descriptions and words , while also modeling the conditional correspondence between their respective reduced representations .
+corr-lda is depicted in figure 3 .
+the model can be viewed in terms of a generative process that first generates the region descriptions and subsequently generates the caption words .
+in particular , we first generate n region descriptions r. from an lda model .
+then , for each of the m caption words , one of the regions is selected from the image and a corresponding caption word wm is drawn , conditioned on the factor that generated the selected region .
+the independence assumptions of the corr-lda model are a compromise between the extreme correspondence enforced by the gm-mixture model , where the entire image and caption are conditional on the same factor , and the lack of correspondence in the gm-lda model , where the image regions and caption words can conceivably be conditional on two disparate sets of factors .
+under the corr-lda model , the regions of the image can be conditional on any ensemble of factors but the words of the caption must be conditional on factors which are present in the image .
+in effect , our model captures the notion that the image is generated first and the caption annotates the image .
+finally , note that the correspondence implemented by corr-lda is not a one-to-one correspondence , but is more flexible : all caption words could come from a subset of the image regions , and multiple caption words can come from the same region .
+inference and estimation .
+in this section , we describe approximate inference and parameter estimation for the corr-lda model .
+as a side effect of the inference method , we can compute approximations to our three distributions of interest : p ( w i r ) , p ( w i r , rn ) , and p ( w , r ) .
+variational inference .
+exact probabilistic inference for corr-lda is intractable ; as before , we avail ourselves of variational inference methods [ 7 ] to approximate the posterior distribution over the latent variables given a particular image / caption .
+in particular , we define the following factorized distribution on the latent variables with free ( variational ) parameters 7 , o , and a. each variational parameter is appropriate to its respective random variable .
+thus 7 is a k-dimensional dirichlet parameter , on are n k-dimensional multinomial parameters , and am are m n-dimensional multinomial parameters .
+parameter estimation .
+given a corpus of image / caption data , d = { ( rd , wd ) } dd = 1 , we find maximum likelihood estimates of the model parameters with a variational em procedure that maximizes the lower bound on the log likelihood of the data induced by the variational approximation described above .
+in particular , the e-step computes the variational posterior for each image and caption given the current setting of the parameters .
+the m-step subsequently finds maximum likelihood estimates of the model parameters from expected sufficient statistics taken under the variational distribution .
+the variational em algorithm alternates between these two steps until the bound on the expected log likelihood converges .
+smoothing with empirical bayes .
+in section 5 , we show that overfitting can be a serious problem , particularly when working with the conditional distributions for image annotation .
+we deal with this issue by taking a more thoroughgoing bayesian approach , imposing a prior distribution on the word multinomial parameters , q.
+we represent , q as a matrix whose columns are the k multinomial parameters for the latent factors .
+we treat each column as a sample from an exchangeable dirichlet distribution , qi dir ( 77 , 77 , ... , 77 ) where 77 is a scalar parameter .
+in place of a point estimate , we now have a smooth posterior p ( qid ) .
+a variational approach can again be used to find an approximation to this posterior distribution [ 1 ] .
+introducing variational dirichlet parameters pi for each of the k multinomials , we find that the only change to our earlier algorithm is to replace the maximization with respect to , q with the following variational update : bayesian methods often assume a noninformative prior which , in the case of the exchangeable dirichlet , means setting 77 = 1 .
+with k draws from the prior distribution , however , we are in a good position to take the empirical bayes perspective [ 9 ] and compute a maximum likelihood estimate of 77 .
+this amounts to a variant of the ml procedure for a dirichlet with expected sufficient statistics under p .
+analogous smoothing algorithms are readily derived for the gm-mixture and gm-lda models. where eq [ log bi i7 ] = ~ ( 7i ) ^ ~ ( 7j ) , and t is the digamma function .
+results .
+in this section , we present an evaluation of all three models on 7000 images and captions from the corel database .
+we held out 25 % of the data for testing purposes and used the remaining 75 % to estimate parameters .
+each image is segmented into 6-10 regions and is associated with 2-4 caption words .
+the vocabulary contains 168 unique terms .
+test set likelihood .
+to evaluate how well a model fits the data , we computed the per-image average negative log likelihood of the test set on all three models for various values of k. a model which better fits the data will assign a higher likelihood to the test set ( i.e. , lower numbers are better in negative likelihood ) .
+figure 5 illustrates the results .
+as expected , gm-lda provides a much better fit than gm-mixture .
+furthermore , corr-lda provides as good a fit as gm-lda .
+this is somewhat surprising since gm-lda is a less constrained model .
+however , both models have the same number of parameters ; their similar performance indicates that , on average , the number of hidden factors used to model a particular image is adequate to model its caption .
+automatic annotation .
+given a segmented image without its caption , we can use the mixture models described in section 3 to compute a distribution over words conditioned on the image , p ( w i r ) .
+this distribution reflects a prediction of the missing caption words for that image . 2empirically , when k = 200 , we find that in only two images of the test set does the gm-lda model use more hidden factors for the caption than it does for the image .
+caption perplexity .
+to measure the annotation quality of the models , we computed the perplexity of the given captions under p ( w i r ) for each image in the test set .
+perplexity , which is used in the language modeling community , is equivalent algebraically to the inverse of the geometric mean per-word likelihood ( again , lower numbers are better ) .
+figure 5 ( left ) shows the perplexity of the held-out captions under the maximum likelihood estimates of each model for different values of k. we see that overfitting is a serious problem in the gm-mixture model , and its perplexity immediately grows off the graph ( e.g. , when k = 200 , the perplexity is 2922 ) .
+note that in related work [ 2 ] , many of the models considered are variants of gm-mixture and rely heavily on an ad-hoc smoothing procedure to correct for overfitting .
+figure 5 ( right ) illustrates the caption perplexity under the smoothed estimates of each model using the empirical bayes procedure from section 4.2.1 .
+the overfitting of gmmixture has been corrected .
+once smoothed , it performs better than gm-lda despite the gm-lda models superior performance in joint likelihood .
+we found that gm-lda does not provide good conditional distributions for two reasons .
+first , it is over- smoothed .
+computing p ( w i r ) requires integrating a diffuse posterior ( due to the small number of regions ) over all the factor dimensions .
+thus , the factors to which each region is associated are essentially washed out and , as k gets large , the models performance approaches the performance of the simple maximum likelihood estimate of the caption words .
+second , gm-lda easily allows caption words to be generated by factors that did not contribute to generating the image regions ( e.g. , when k = 200 , 54 % of the caption words in the test set are assigned to factors that do not appear in their corresponding images ) .
+with this freedom , the estimated conditional gaussian parameters do not necessarily reflect regions that are correctly annotated by the corresponding conditional multinomial parameters .
+while it better models the joint distribution of words and regions , it fails to model the relationship between them .
+most notably , corr-lda finds much better predictive distributions of words than either gm-lda or gm-mixture .
+it provides as flexible a joint distribution as gm-lda but guarantees that the latent factors in the conditional gaussian ( for image regions ) correspond with the latent factors in the conditional multinomial ( for caption words ) .
+furthermore , by allowing caption words to be allocated to different factors , the corr-lda model achieves superior performance to the gm-mixture which is constrained to associating the entire image / caption to a single factor .
+thus , with corr-lda , we can achieve a competitive fit of the joint distribution and find superior conditional distributions of words given images .
+annotation examples .
+figure 6 shows ten sample annotationsthe top five words from p ( w i r ) computed by each of the three models for k = 200 .
+these examples illustrate the limitations and power of the probabilistic models described in section 3 when used for a practical discriminative task .
+figure 5 : ( left ) caption perplexity on the test set for the ml estimates of the models ( lower numbers are better ) .
+note the serious overfitting problem in gm-mixture ( values for k greater than five are off the graph ) and the slight overfitting problem in corr-lda .
+( right ) caption perplexity for the empirical bayes smoothed estimates of the models .
+the overfitting problems in gm-mixture and corr-lda have been corrected .
+the gm-lda model , as shown quantitatively in the previous section , gives the least impressive performance of the three .
+first , we see washing out effect described above by the fact that many of the most common words in the corpus captions for all of the pictures .
+second , the predicted caption rarely predicts the object or objects that are in the picture .
+for example , it misses jet in the picture captioned clouds , jet , plane , a word that both other models predict with high accuracy .
+the gm-mixture model performs better than gm-lda , but we can see how this model relies on the average image features and fails to predict words for regions that may not generally occur in other similar images .
+finally , as reflected by the term perplexity results above , the corr-lda model gives the best performance and correctly labels most of the example pictures .
+unlike the gmmixture model , it can assign each region to a different cluster and the final distribution over words reflects the ensemble of clusters which were assigned to the image regions .
+thus , the corr-lda model finds the trees in the picture labeled scotland , water and can correctly identify the fish , even without its usual blue background .
+as described in section 3 , the corr-lda and gm-lda models can furthermore compute a region-based distribution over words , p ( w i r , rn ) .
+figure 7 illustrates a sample region labeling on an image in the test set.3 though both models hypothesize the word plane and jet , corr-lda places them in the reasonable regions 2 , 5 , and 6 while gm-lda places them in regions 2 and 4 .
+furthermore , corr-lda recognizes the top region as sky , clouds while gm-lda provides the enigmatic tundra , penguin .
+text-based image retrieval .
+there has been a significant amount of computer science research on content-based image retrieval in which a particular query image ( possibly a sketch or primitive graphic ) is used to find matching relevant images [ 5 ] .
+in another line of research , multimedia information retrieval , representations of different data types ( such as text and images ) are used to retrieve documents that contain both [ 8 ] . 3we cannot quantitatively evaluate this task ( i.e. , compute the region perplexity ) because our data does not provide ground-truth for the region labels .
+less attention , however , has been focused on text-based image retrieval , an arguably more difficult task where a user submits a text query to find matching images for which there is no related text .
+previous approaches have essentially treated this task as a classification problem , handling specific queries from a vocabulary of about five words [ 10 ] .
+in contrast , by using the conditional distribution of words given an image , our approach can handle arbitrary queries from a large vocabulary .
+we use a unique form of the language modeling approach to information retrieval [ 11 ] where the document language models are derived from images rather than words .
+for each unannotated image , we obtain an image-specific distribution over words by computing the conditional distribution p ( w i r ) which is available for the models described in section 3 .
+this distribution provides a description of each image in word-space which we use to find images that are similar to the words of the query .
+more formally , denote an n-word query by q = { q1 , ... , qn } .
+for each image ri , its score relative to the query is : figure 8 illustrates three queries performed on the three models with 200 factors and the held-out test set of images .
+we consider an image to be relevant if its true caption contains the query words ( recall that we make no reference to the true caption in the retrieval process ) .
+as illustrated by the precision / recall curves , the corr-lda model achieves superior retrieval performance .
+it is particularly strong with difficult queries such as people and fish .
+in this example , there are only six relevant images in the test set and two of them appear in the top five .
+this is due to the ability of corr-lda to assign different regions to different clusters .
+the model can independently learn the salient features of fish and people and effectively combine them to perform retrieval .
+summary .
+we have developed corr-lda , a powerful model for annotated data that combines the advantages of probabilistic clustering for dimensionality reduction with an explicit model of the conditional distribution from which data annotations are generated .
+in the setting of image / caption data , we have shown that this model can achieve a competitive joint likelihood and superior conditional distribution of words given an image .
+corr-lda provides a clean probabilistic model for performing various tasks associated with multi-type data such as images and their captions .
+we have demonstrated its use in automatic image annotation , automatic image region annotation , and text-based image retrieval .
+it is important to note that this model is not specially tailored for image / caption data .
+given good features , the corr-lda model can be applied to any kind of annotated data such as video / closed-captions , music / text , and gene / functions .

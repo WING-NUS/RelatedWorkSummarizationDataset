@@ -1,0 +1,285 @@
+mining domain-specific thesauri from wikipedia : a case study .
+abstract .
+domain-specific thesauri are high-cost , high- maintenance , high-value knowledge structures .
+we show how the classic thesaurus structure of terms and links can be mined automatically from wikipedia , a vast , open encyclopedia .
+in a comparison with a professional thesaurus for agriculture ( agrovoc ) we find that wikipedia contains a substantial proportion of its domain-specific concepts and semantic relations ; furthermore it has impressive coverage of a collection of contemporary documents in the domain .
+thesauri derived using these techniques are attractive because they capitalize on existing public efforts and tend to reflect contemporary language usage better than their costly , painstakingly-constructed manual counterparts .
+introduction .
+lack of electronically encoded semantic knowledge is a major obstacle in natural language applications of computers .
+general lexical databases such as wordnet do not provide extensive coverage of restricted domains ; professional domain-specific thesauri are rarely available for any given field .
+it is hard to keep manually-maintained thesauri up to date in rapidly developing areas such as entertainment or technology .
+automatically constructed thesauri offer a potential solution .
+they are usually built by analyzing large document collections , employing statistical methods to identify concepts and semantic relations .
+however , the complexity of natural language and the primitive state of language technology means that such thesauri are greatly inferior to manual ones in terms of accuracy and conciseness [ 4 ] .
+an alternative approach is to exploit collaborative folksonomies , a recent burgeoning web phenomenon .
+they provide a medium in which speakers of any language define , describe and discuss topics of contemporary relevance .
+the resulting information is freely available , electronically encoded and conveniently presented .
+wikipedia is a classic example whose immense potential is just beginning to be explored scientifically .
+previous work has used part of its structure as a general thesaurus [ 14 ] .
+the present paper extends this by using the entirety of wikipedia , and shows how this can be intersected with document collections to provide comprehensive , detailed corpora-specific thesauri .
+we present a case study that uses agrovoc , a manually-created professional thesaurus in the domain of agriculture , as the gold standard .
+we compare wikipedia articles and links to the terms and semantic relations encoded in agrovoc .
+we also analyze its coverage of terms that occur in a sample document collection in the domain , and compare this with agrovocs coverage .
+the next section discusses the challenges that manual thesaurus construction and maintenance present , followed by an introduction to wikipedia and an analysis of how it can be used to derive the semantic relations that are encoded in thesauri .
+sections 4 and 5 describe our experiments and the results we obtained : section 4 compares the two thesaurus structures and section 5 evaluates their coverage of a domain-specific document corpus .
+section 6 reviews contemporary research on wikipedia , most of which appeared in the last two years and has not yet been brought together .
+finally we debate the advantages and dangers of mining folksonomies , and discuss the tremendous possibilities they open up .
+thesauri .
+the word thesaurus derives from a greek word meaning treasurya place where precious things are collected .
+its everyday meaning , however , is more prosaica dusty tome that helps us grasp just the right word to express what we want to say .
+more formally , a thesaurus is a map of certain semantic relations between words and phrases .
+terms in thesauri represent concepts ; relations between them encode the organization of knowledge .
+this property has been explored in information retrieval , where electronic thesauri serve as useful tools .
+they have been successfully exploited for content-based categorization of large document collections , yielding an improved ability to locate relevant parts and a more perspicuous representation of search results [ 3 ] .
+when retrieving information from a particular document corpus , an ideal thesaurus would be crafted to reflect its content .
+manually constructing domain-specific thesauri is an arduous and demanding art that requires substantial investment of time by experts in the domain .
+in practice , people compromise by adopting an existing thesaurus that pertains to the same general area .
+consequently thesauri used for practical information retrieval rarely match the domain of the document collection .
+to make matters worse , collections evolve whereas thesauri remain static they are as costly to maintain as they are to create .
+and because of the intellectual investment they represent , they are rarely made publicly available .
+deriving thesauri automatically from document text is an interesting research challenge [ 7 ] .
+the resulting structures are far cheaper to produce and maintain than their hand-crafted counterparts and more closely matched to the document content .
+however they do not compare in accuracy and conciseness .
+although useful for many information processing and retrieval tasks , they cannot yet compete with manually constructed thesauri .
+how can you obtain a thesaurus to support a library of documents relevant to a particular domain ?
+manual construction is prohibitively expensive ; automatic generation is woefully inaccurate .
+general thesauri do not incorporate the specialist terminology that pervades our professions , nor can they keep pace with the deluge of new topics and concepts that arrive each day .
+yet a contemporary resource that incorporates expertise in all fields of human endeavour already exists : the widely known wikipedia .
+wikipedia .
+wikipedia was launched in 2001 with the goal of building free encyclopedias in all languages .
+today it outstrips all other encyclopedias in size and coverage , and is one of the most visited sites on the web .
+out of more than three million articles in 125 different languages , one- third are in english , yielding an encyclopedia almost ten times as big as the encyclopedia britannica , its closest rival .
+wikipedia is also controversial ; we return to this in section 6 .
+wikipedias success is due to its editing policy .
+by using a collaborative wiki environment1 it turns the entire world into a panel of experts , authors and reviewers [ 9 ] .
+anyone who wants to make knowledge available to the public can contribute an article .
+anyone who encounters an article is able to correct errors , augment its scope , or compensate for bias .
+there are many similarities between the structure of traditional thesauri and the ways in which wikipedia organizes its content .
+wikipedia as a thesaurus .
+our strategy is to use wikipedia as a source of manually defined terms and relations ; the building blocks of thesauri .
+although never intended to be used in this way , it seems well suited to the task .
+each article describes a single concept ; its title is a succinct , well- formed phrase that resembles a term in a conventional thesaurusand we treat it as such .
+hyperlinks between articles capture many of the same semantic relations as defined in the international standard for thesauri ( iso 2788 ) : the equivalence relation connects one or more terms to a single preferred term ( or descriptor ) , if they are synonymous .
+it is denoted by use , with the inverse form with use for .
+the hierarchical relation occurs between more general and more specific terms , denoted by bt ( broader term ) and nt ( narrower term ) .
+the associative relation stands of any other kind of semantic relation and is denoted by rt ( related term ) .
+from wikipedias structure , links corresponding to each relation can be identified as described below .
+synonymy and polysemy .
+thesauri serve as controlled vocabularies that bridge the variety of idiolects and terminology present in a document collection .
+each topic is named by a preferred term to which alternative expressions are linked via the use relation .
+likewise wikipedia ensures that there is a single article for each concept by using redirects to link equivalent terms to a preferred one , namely the articles title .
+it copes with capitalization and spelling variations , abbreviations , synonyms , colloquialisms , and scientific terms .
+the top left of figure 1 shows four redirects for library : the plural libraries , the common misspelling libary , the technical term bibliotheca , and a common variant reading room .
+scope notes specifying the meaning of each thesaurus term help users disambiguate terms that relate to multiple concepts .
+wikipedia provides disambiguation pages that present various possible meanings from which users select the intended article .
+the term library yields these options : hierarchical relations .
+the hierarchical organization of terms in a thesaurus is reflected in wikipedias categorization structure .
+authors are encouraged to assign categories to their articles , and the categories themselves can be assigned to other more general categories .
+the right-hand side of figure 1 shows a structure in wikipedia that exemplifies these categorization principles .
+the article library has a corresponding category libraries , which contains several more specific subcategories and articles , such as academic libraries and digital libraries .
+other categories , such as libraries by country , have no corresponding articles and serve only to organize the content .
+both articles and categories can belong to more than one category .
+libraries belongs to four : buildings and structures , civil services , culture and library and information science .
+wikipedias category structure does not form a simple tree-structured taxonomy but is a graph in which multiple organization schemes coexist .
+associative relations .
+hyperlinks in wikipedia express relatedness between articles .
+for example , the lower left of figure 1 shows hyperlinks between the article library and those for book , archive , and bookend ; some of these articles link back .
+articles are peppered with such connections , which can be explored to mine the associative relations that are present in thesauri .
+there are two problems : links often occur between articles that are only tenuously related , and there is no explicit typing of links .
+the first issue can be largely avoided by considering only mutual cross-links between articlesthis discards the putative associative relation between library and bookend in figure 1 .
+as for the second , we must seek clues as to whether the relation is hierarchical or associative .
+if it already occurs within the category structure , it must be hierarchical .
+statistical and lexical analysis can also be used ( e.g. the library article has many more links and is therefore broader than archive ) .
+obtaining wikipedia data .
+as an open source project , the entire content of wikipedia is easily obtainable .
+it is available in the form of database dumps that are released sporadically , from several days to several weeks apart .
+the version used in this study was released on june 3 , 2006 .
+the full content and revision history at this point occupy 40 gb of compressed data .
+we consider only the link structure and basic statistics for articles , which consume 500 mb ( compressed ) .
+table 1 breaks down the data .
+we identified over two million distinct terms ( articles and redirections ) that constitute the vocabulary of thesauri .
+these were organized into 120,000 categories with an average of two subcategories and 26 articles each .
+the articles themselves are highly inter-linked ; each links to an average of 26 others .
+comparison of wikipedia and agrovoc .
+we aim to investigate the suitability of wikipedia as a source of terms and relations from which thesauri can be constructed .
+this section compares it with a manually created domain-specific thesaurus .
+we chose agrovoc created and maintained by the un food and agriculture organization ( fao ) to organize and provide efficient access to its document repository.3 table 2 shows pertinent statistics .
+agrovoc is a substantial thesaurus , with approximately 28,000 terms describing topics relevant to the fao and 54,000 relations between terms .
+the following subsections gives details of our analysis and presents results that summarize how well wikipedia covers agrovocs terms and relations .
+comparison strategy .
+f or effective comparison of terms , superficial differences case , punctuation , plurality , stop words and word ordermust be removed in order that equivalent terms match each other .
+for example , process recommendations , recommended processes and processing recommendations are superficially different phrases that all relate to the same key concept .
+to counter this , terms are case-folded , stripped of punctuation , and stemmed using the porter stemmer [ 12 ] .
+stopwords are removed and word order within each phrase is normalized alphabetically .
+coverage of terminology .
+direct comparison of terminology , shown in figure 3 , reveals that wikipedia covers approximately 50 % of ag rovoc .
+the vast majority of terms found in the former but not the latter lie outside the domain of interest , namely agriculture .
+more interesting are agrovoc terms that are not covered by wikipedia .
+cursory examination indicates that these are generally scientific terms or highly specific multi-word phrases such as margossa , bursaphelenchus and flow cytometry cells .
+one third of the terms found in both structures are ambiguous according to wikipedia ; they match multiple articles .
+for example , the agrovoc term viruses relates to separate articles for biological viruses and computer viruses .
+coverage and accuracy of relations .
+next we examine wikipedias coverage of agrovocs relations , and evaluate our scheme for mapping wikipedias structural elements to particular semantic relations .
+first , for every pair of concepts related by agrovoc that exist in both sources , we check whe ther a relati n is present in wikipedia .
+this was the case of agrovoc relations .
+some of the rest are encod ed implicitly in wikipedia .
+for example , agrovocs associative relation gene transfer 4 gene fusion is present because both terms are siblings under the wikipedia category genetics .
+we did not consider these implicit relations in this initial comparison .
+c onversely , 94 % of relations in wikipe present in agrovoc .
+however , many of t im plicit ly present through siblings in the bt / nt hierarchy or through chains of bt , nt or rt relations .
+others do not belong in this thesaurus because they do not make sense within its context .
+for example , wikipedia relates the ambiguous term power with sociology .
+agrovoc is concerned with electrical power rather than personal empowerment , and therefore does not make the same connection .
+sense disambiguation is needed to avoid these irrelevant relations .
+there are many other relations , such as human 4 ape and immune system 4 lymphatic system that are perfectly valid and relevant , yet do not appear in agrovoc , even implicitly .
+figure 5 is based on agrovocs use / use-for relations and shows that wikipedia covers synonymy particularly well : only 5 % of relations are absent .
+wikipedias redirect structure is responsible for most of this , covering approximately 75 % of agrovocs synonymy relations . 20 % of related term pairs that agrovoc deems equivalent are encoded in wikipedia through other links .
+examples indicate that wikipedia separates such pairs into distinct articles rather than treating them as synonyms , e.g. aluminum foil 4 shrink film and spanish west africa 4 rio de oro .
+agrovoc judges these concepts to be near enough in that they do not require separate entries , whereas wikipedia is more rigorous .
+figure 6 analyzes agrovocs hierarchical relations .
+wikipedia covers 69 % of them , but only 25 % appeared in the category structure : the remaining 44 % were found in redirects and hyperlinks between articles .
+the results could be improved dramatically by considering implicit links .
+hierarchical relations are transitive , meaning that the relation oceania 4 american samoa is implied by the chain oceania 4 oceanian countries 4 american samoa .
+coverage doubles when these implicit relations are considered .4 it is also possible to mine relations found elsewhere , but this would require additional analysis to identify the direction of the relation .
+for example , a hyperlink between two articles does not say which is broader and which is narrower .
+this information may be encoded textually ( e.g.
+south africa is a lexical expansion of africa ) or statistically ( e.g. forestry has many more links than logging ) .
+a full 84 % of the relations in wikipedias category are not present as hierarchical relat ions in y of them may be implicitly en coded , while others may be irrelevant to agrovocs domain .
+the remaining relations form a useful increase in connectivity over the traditional thesaurus .
+however , only 22 % were found in this way ; the remaining 34 % were found within one-way links or the category structure .
+also , only 5 % of mutual article links correspond to rt relations .
+many describe relations that agrovoc leaves implicit , e.g. all siblings are implicitly rts .
+other mismatches may be caused by inadequate sense disambiguation .
+as with hierarchical relations , extracting thesaurus-style rts is a complex procedure that requires sense disambiguation and examination of other link locations in wikipedia .
+analysis of corpus coverage .
+next we investigate how well wikipedia provides thesaurus support for a domain-specific document collection that is , how well it covers the collections terminology .
+statistical comparison with a domain-specific thesaurus produced by human experts specifically for the domain reveals the striking benefits of wikipedias immense coverage and contemporary language .
+we compared wikipedia with agrovoc on 780 agricultural documents taken from the faos document repository .
+all documents were full text ( not abstracts ) and had been professionally indexed with at least three agrovoc terms .
+from each o ne we automatically pennlp tool for nt statistics .
+there are over 700 times more noun phrases than index terms , wh ich is not surprising ; index terms represent only the main topics of a document , while the noun phrases it contains cover every concept mentioned in it .
+we learned in section 4.2 that wikipedia covers only 50 % of the terms in agrovoc , despite being many times larger .
+this coverage seems rather poor , unless it is the case that many of the remaining agrovoc terms are rarely used in practice .
+to assess this , we looked only at the 1560 distinct agrovoc terms that were actually used by professional indexers to index documents in this corpus which comprises precisely the kind of documents that agrovoc is intended to be used with .
+these index terms all subset of agrovoc ( 9.3 % ) , bu t were chosen to be particularly relevant for the ent corpus .
+index terms only form a small sample of the relevant agrovoc entries .
+to gain a m ore detailed view , we examine the hierarchical distribution of agrovoc terms that are used anywhere within the document set .
+figure 9 repeats figure 4 , only the intersection with document 's noun phrases is shown on each level of agrovoc 's taxonomy .
+this reveals a striking trend ; both wikipedia and the document collection cover less of the thesaurus as terms become more specific .
+thus the additional detail agrovoc offers over wikipedia is clearly irrelevant for this document set .
+figure 10 shows a three-way comparison between agrovoc , wikipedia , and the set of noun phrases extracted from the corpus .
+most noun phrases are not found in either source , which probably merely indicates that most noun phrases are not suitable thesaurus terms , syntactically or semantically .
+the terms found in eith e r structure , however , can be assumed to represent val i d co ncepts mentioned in test documents .
+wikipedia covers approximately three times as many document terms as agrovoc .
+many of these , such as high school , aztec religion , and asean free trade area , probably lie outside agrovocs intended domain .
+they are , however , distinct concepts that are mentioned in the corpus and should be included in a corpus-specific thesaurus .
+we conclude that , at least in terms of term coverage , wikipedia is substantially better suited to describing this document collection than agrovoc .
+related work on wikipedia .
+wikipedia has generated some controversy but comparatively little research .
+only recently has it received significant attention from the scientific community .
+we divide the citable research into two categories : studies of wikipedia 's characteristics as a semantic resource , and investigations into applications beyonds its orginal intent .
+the investigation reported in this paper of its suitability as a replacement for domain-specific thesauri spans both categories .
+characteristics and content .
+wikipedia is a unique example of collaboration .
+the way in which it blurs the line between reader and author is investigated by miller [ 11 ] .
+vigas et al. analyze patterns of collaboration by visualizing the edit history of articles [ 15 ] .
+ciffolilli describes the community of ibutors [ 2 ] .
+voss reveals its scale : by almost every measure wikipedia is growing exponen tially with no sign of slowdown [ 16 ] .
+another paper by voss describes its organization , citing some of the similarities with traditional thesauri that we have capitalized on in this paper [ 17 ] .
+wikipedia is undeniably intriguing , but its status as an authoritative encyclopedia has been questioned .
+its open editing policy raises many concerns .
+these are summarized by denning et al. [ 5 ] , who conclude that its use is risky .
+their core argument is the lack of formal expert review procedures which give rise to two key issues ; accuracy within articles and bias of coverage across them .
+the implications of these for our own research are discussed in section 7.2 .
+accuracy within articles was investigated by giles , who compared randomly selected scientific wikipedia articles with their equivalent entries in encyclopedia britannica [ 6 ] .
+both sources were equally prone to significant errors , such as misinterpretation of important concepts .
+more subtle errors , however , such as omissions or misleading statements , were more common in wikipedia .
+in the 41 science articles reviewed there were 162 mistakes in wikipedia versus 123 for britannica .
+britannica inc. attacked giles study [ 6 ] as fatally flawed and demanded a retraction ; nature defended its elf and declined to retract .
+interestingly , while britannicas part in the debate has been polemical and plainly biased , wikipedia provides objective coverage on the controversy in its article on encyclopedia britannica .
+bias of coverage has been investigated from several viewpoints .
+holloway et al. [ 8 ] compare coverage of categories and interests of contributors to the britannica and encarta encyclopedias , but present few findings .
+lih [ 10 ] argues that wikipedias content , and therefore bias , is driven to a large extent by the press .
+the present paper has discerned a bias in wikipedia towards concepts that are general or introductory , and therefore more relevant to everyman .
+natural language processing applications .
+wikipedia has recently been discovered as a vast source of semantic knowledge and a promising tool for natural language processing .
+natural language processing systems typically rely on painstakingly created lexical databases like wordnet .
+according to ruiz-casado et al. [ 13 ] , wikipedia articles can be easily and accurately matched to entries in these resources ; they advocate the use of wikipedia to extend them .
+strube and ponzetto [ 14 ] use wikipedia to compute measures of semantic rel atedness , which they find to be just as accurate as those from wordnet .
+both sets of measures preformed equally well when applied to the standard linguistic task of co- reference resolution .
+like our own research , this suggests that wikipedia can be considered to be fully-fledged semantic resource in its own right .
+bunescu and pasca [ 1 ] apply it to the problem of named entity disambiguation , and obtain promising results .
+current techniques for extracting and using semantic knowledge from wikipedia tend to consider the category structure as the only source for relations .
+our rese arch reveals that many useful relations are found elsewhere .
+the redirect structure seems to describe synonymy particularly well , and links between articles encode important semantic information .
+to our knowledge , the quality and utility of these relationships has not been investigated elsewhere .
+discussion .
+this paper has evaluated wikipedias quality as a semantic resource by examining the extent to which it replicates the high-quality domain-specific thesaurus agrovoc , and comparing the extent to which both cover the vocabulary of a relevant document set .
+comparisons of both terminology and relations yielded promising results .
+while wikipedia covers only 50 % of agrovocs terminology , it tends to cover term s that are more likely to be used .
+wikipedia covered the vocabulary of the specialized document corpus even better than agrovoc , which was specifically designed to support it .
+given the sheer breadth and size of wikipedia ( and its rate of expansion ) , it seems likely that similar coverage will be obtained for all but the most technical document sets .
+wikipedia covers most agrovoc relations , and is a good source of semantic relations between terms .
+its redirect structure represents a complete and accurate mapping of agrovocs synonyms .
+hierarchical and associative relatio ns are covered to a lesser extent and in a less organized fashion ; the two types are intermingled w th the category structure and hyperlinks between articles .
+more work is required to separate these .
+applications .
+as a verified source of topics and semantic relations , wikipedi a has three main areas of application : improving ac cess to documents , extending existing thesauri , and producing new thesauri .
+figure 11 .
+extending document terminology improving access to documents .
+users often require a bridge between their own vocabulary and that of the documents they seek .
+wikipedia , which is produced by both experts and novices , can provide this .
+figure 11 illu strates h ow the terminology of a particular corpus could be extended by including terms that are related to phrases in its documents .
+in our corpus users could access documents on salvelinus fontinalis and african trypanosomiasis through wikipedia terms such as brook trout and sleeping sickness , which do not appear in the documents verbatim .
+extending existing thesauri .
+maintainers of existing thesauri could benefit from wikipedias broad and contemporary coverage .
+they could systematically extend the vocabulary by examining extra-thesaurus terms that relate to domain terms , and phrases from relevant do cum ents as illustrated in figure 12 .
+they could increase the set of non-descriptors by mining wikipedias redirects .
+for example , we could add to agrovoc backbone as a new redirect for the term spine , mainstream media for mass media , and msia for malaysia .
+using cross-links and the category structure suggest new concepts such as biochemicals , subsistence economy , natural abundance and money for the agrovoc maintainers to consider .
+furthermore , terms for which wikipedia has corresponding articles in other languages could be used to enhance agrovocs mu features .
+mining corpus-specific thesauri .
+wikipedia is a va lu able thesaurus in its own right and not merely a means of improving existing ones .
+in the case of agrovoc and our test collection , it surpassed a traditional thesaurus .
+if this holds for other collections and domains , then one must question the need for domain specific thesauri at all .
+they are merely an approximation of the topics that corpora are expected to discuss .
+more exact matches can be obtained by intersecting document terminology with wikipedia to produce truly corpus-specific thesauri wikisauri , if you will .
+concerns .
+the controversial nature of wikipedia raises definite concerns about using it as a thesaurus substitute .
+although in principle its open editing policy renders it vulnerable to inaccuracy , we believe that in practice this will have little effect on extracted thesauri .
+they are unlikely to suffer from vandalism , self promotion , or large scale misinterpretation , because obvious errors are quickly detected and corrected within wikipedia .
+more subtle errors such as poorly worded statements and factual inaccuracies are restricted to the articles prose , which does not affect derived thesauri .
+one unavoidable drawback is that derived thesauri would be only available for domains in which contributors are interested .
+this is mitigated by wikipedias tendency to describe domains that traditional thesauri are hard press continued expone bias evident with produce broad but shallow coverage .
+derived thesauri may therefore be of limited use for highly technical document collections .
+a fundamental concern is that wikisauri are based on a structure that was never intended to be used in this way .
+there could be profound differences between the way that articles are organized and the way that semantic terms are related .
+however , our work indicates that this is not the case ; the theoretical similarities described in section 3.1 sand the quantitative ones uncovered by comparing with agrovoc indicate that the two goa ls are compatible .
+advantages .
+using wikipedia as a platform for constructing thesauri has substantial advantages over traditional domain-specific thesaurus construction .
+the most obvious is cost .
+another is currency .
+domain-specific thesauri describe domains that are relatively static , such as science and medicine .
+in contrast , wikisauri will evolve at the same rapid pace as wikipedia itself .
+they will excel in describing swiftly cha nging domains that capture the interest of contributors , such as politics , business , current a ff airs , entertainment , and new technologies .
+the panels of professional indexers that construct traditional thesauri find it impossible to keep abreast of turbulent subject matter .
+another advantage is multilingualism .
+wikipedia exists in 125 different languages .
+although these different versions are only lightly tethered to each other , a movement to systematically mirror wikipedia across different languages is emerging .
+each version grows independently to co ver topics of interest of its co nt ributors , but the large versions have significant overlap .
+multilingual wikisauri could be produced for the most popular languages and internationally relevant domains .
+convergence is likely to increase over time , because translation of articles is encouraged .
+wikipedia is a source of useful statistics about terms and relations in a thesaurus .
+term occurrence and co- occurrence frequencies can be extracted from wikipedia articles just as they can from conventional corpora .
+however , wikipedia also reflects the relevance and popularity of concepts based on frequency of visits , number of article edits , and contributions to the discussion forums that accompany each article .
+the existence and popularity of translated articles indicates int ernational relevance , and contradictory or destructive edits indicate controversial topics .
+such statistics are attractive for the many information retrieval and natural language processing tasks to which wikisauri could be applied .
+conclusions and future work .
+this paper has shown how to construct domain- and corpus-specific thesauri from the collaborative encyclopedia wikipedia .
+comparing terms an d semantic rel ations to those in a manually created domain-specific thesaurus demonstrates excellent coverage of domain terminology , and of synonymy relations between terms .
+wikipedia is a good source of hierarchical and associative relations , with scope for improvement in coverage and accuracy .
+surprisingly , we have found that wikipedia outperforms a professional thesaurus in supporting a domain-specific document collection .
+wikipedia , with its interwoven tapestry of articles in many languages , is a huge mine of valuable information about words and concepts .
+its exploitation is just beginning .
+still unexplored are applications such as support for document retrieval , maintenance of existing thesauri and derived thesauri that are well suited to co rpo ra for practically any domain .
+while there are serious concerns surrounding wikipedia , these are for most part irrelevant for our purposes and are far outweighed by many advantages that traditional resources cannot possibly offer .

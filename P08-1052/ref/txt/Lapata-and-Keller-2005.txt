@@ -1,0 +1,442 @@
+web-based models for natural language processing .
+abstract .
+previous work demonstrated that web counts can be used to approximate bigram counts , thus suggesting that web-based frequencies should be useful for a wide variety of nlp tasks .
+however , only a limited number of tasks have so far been tested using web-scale data sets .
+the present paper overcomes this limitation by systematically investigating the performance of web-based models for several nlp tasks , covering both syntax and semantics , both generation and analysis , and a wider range of n-grams and parts of speech than have been previously explored .
+for the majority of our tasks , we find that simple , unsupervised models perform better when n-gram counts are obtained from the web rather than from a large corpus .
+in some cases , performance can be improved further by using backoff or interpolation techniques that combine web counts and corpus counts .
+however , unsupervised web-based models generally fail to outperform supervised state-of-the-art models trained on smaller corpora .
+we argue that web-based models should therefore be used as a baseline for , rather than an alternative to , standard supervised models .
+introduction .
+the web is being increasingly used as a data source in a wide range of natural language processing ( nlp ) tasks .
+several researchers have explored the potential of web data for machine translation , either by creating bilingual corpora [ resnik and smith 2003 ] or by using the web to filter out or postedit translation candidates [ grefenstette 1998 ; cao and li 2002 ; way and gough 2003 ] .
+other work discovers semantic relations by querying the web for lexico-syntactic patterns indicative of hyponymy [ modjeska et al. 2003 ; shinzato and torisawa 2004 ] , entailment [ szpektor et al. 2004 ] , similarity , antonymy , or enablement [ chklovski and pantel 2004 ] .
+a number of studies have investigated the usefulness of the web for word sense disambiguation [ mihalcea and moldovan 1999 ; rigau et al. 2002 ; santamara et al. 2003 ] , question answering [ dumais et al. 2002 ; hildebrandt et al. 2004 ; soricut and brill 2004 ] , and language modeling [ zhu and rosenfeld 2001 ; keller and lapata 2003 ; bulyko et al. 2003 ] .
+keller and lapata [ 2003 ] have undertaken several studies to examine the validity of web counts for a range of predicate-argument bigrams ( verb-object , adjective- noun , and noun-noun bigrams ) .
+they presented a simple method for retrieving bigram counts from the web by querying a search engine and demonstrated that web counts ( a ) correlate with frequencies obtained from a carefully edited , balanced corpus such as the 100m words british national corpus ( bnc ) , ( b ) correlate with frequencies recreated using smoothing methods in the case of unseen bigrams , ( c ) reliably predict human plausibility judgments , and ( d ) yield state-of-the-art performance on pseudo-disambiguation tasks .
+keller and lapatas [ 2003 ] results suggest that web-based frequencies can be a viable alternative to bigram frequencies obtained from smaller corpora or recreated using smoothing .
+however , they do not demonstrate that realistic nlp tasks can benefit from web counts .
+in order to show this , web counts would have to be applied to a diverse range of nlp tasks , both syntactic and semantic , involving analysis ( e.g. , disambiguation ) and generation ( e.g. , selection among competing outputs ) .
+also , it remains to be shown that the web-based approach scales up to larger n-grams ( e.g. , trigrams ) , and to combinations of different parts of speech ( keller and lapata [ 2003 ] only tested bigrams involving nouns , verbs , and adjectives ) .
+another important question is whether web-based methods , which are by definition unsupervised , can be competitive alternatives to supervised approaches used for most tasks in the literature .
+finally , keller and lapatas [ 2003 ] work raises the question whether web counts ( noisy , but less sparse ) can be fruitfully combined with corpus counts ( less noisy , but sparse ) into a single model .
+the present paper aims to address these questions .
+we start by exploring the performance of web counts on two generation tasks for which the use of large data sets has previously shown promising results : ( a ) target language candidate selection for machine translation [ grefenstette 1998 ] and ( b ) context-sensitive spelling correction [ banko and brill 2001a ; 2001b ] .
+then we investigate the generality of the web-based approach by applying it to a range of analysis and generations tasks , involving both syntactic and semantic knowledge : ( c ) ordering of prenominal adjectives , ( d ) compound noun bracketing , ( e ) compound noun interpretation , ( f ) noun countability detection , ( g ) article restoration , and ( h ) pp attachment disambiguation .
+table i gives an overview of these tasks and their properties .
+as the table illustrates , our choice of tasks covers n-grams of different sizes and includes a wide variety of parts of speech .
+for all tasks listed in table i , we propose simple , unsupervised n-gram-based models whose parameters can be estimated using web counts .
+we compare these models against identical corpus-based models ( whose parameters are estimated from a conventional corpus ) .
+the corpus-based models give us a lower limit on the performance for a given task .
+we also compare the web-based models against state- of-the-art models reported in the literature ; typically , these are supervised models ( which use annotated training data ) , or unsupervised models which rely on external resources such as taxonomies to recreate missing counts .
+the models in the literature provide an upper limit on the performance we can expect from web-based models .
+for each of the tasks we investigate , we also explore models that combine web counts and corpus counts .
+we propose two combination schemes : backoff and interpolation .
+both of these approaches are then compared against purely web-based and purely corpus-based models .
+these combined models are weakly supervised : they include parameters that need to be estimated on a separate development set , but they do not require annotated data .
+method .
+web counts .
+following keller and lapata [ 2003 ] , we obtain web counts for n-grams using a simple heuristic based on queries to a web search engine .
+in this approach , the web count for a given n-gram is estimated as the number of hits ( pages ) returned by the search engine for the queries generated for this n-gram .
+two different ways of generating queries for a given n-gram are employed in the present paper : literal queries use the quoted n-gram directly as a search term for the search engine ( e.g. , the bigram history changes expands to the query " history changes " ) .
+inflected queries are obtained by expanding an n-gram into all its morphological forms .
+these forms are then submitted as literal queries , and the resulting hits are summed up ( e.g. , history changes expands to " history change " , " history changes " , " history changed " , " histories change " , " histories changed " ) .
+john carrolls suite of morphological tools ( morpha , morphg , and ana ) is used to generate inflected forms of both verbs and nouns.1 in certain cases ( detailed below ) , determiners are inserted before nouns in order to make it possible to recognize simple nps .
+this insertion is limited to a / an , the , and the empty determiner ( for bare plurals ) .
+all queries are performed as exact matches ( using quotation marks ) and all search terms are submitted to the search engine in lower case .
+if a query consists of a single , highly frequent word ( such as the ) , some search engines return an error message .
+in these cases , we set the web count to a large constant ( 108 ) .
+this problem is limited to unigrams , which are used in some of the models detailed below .
+sometimes the search engine fails to return a hit for a given n-gram ( for any of its morphological variants ) .
+we smooth such zero counts by setting them to 5 .
+for the experiments reported in this paper , we use two search engines : altavista and google .
+google only allows automated querying through the google web api .
+this involves obtaining a license key , which then restricts the number of queries to a daily quota of 1000.2 however , it is possible to apply for an increase of this quota for research purposes .
+at the time when we conducted most of the research reported here ( september 2003 ) , the altavista search engine placed no restrictions on automated querying , and thus offered a fast and flexible way of generating web counts .
+this is why altavista was used to obtain the web counts for all the tasks dealt with in this paper ( with the exception of article generation , see below ) .
+the provider of altavista changed the database that underlies the search engine in march 2004 ( it now uses the same database as yahoo ) .
+altavista no longer allows unrestricted automated querying ; rather the yahoo api has to be used , which involves obtaining a license key that restricts the number of queries to 5000 per day.4 the web counts for the article generation task in section 6 were obtained later than the other data ( in august 2004 ) .
+we therefore decided to use google to obtain these counts , as googles database is larger that of altavista / yahoo , and both search engines now restrict automatic querying .
+in general , we would not expect the results to differ dramatically ; keller and lapata [ 2003 ] compare google and altavista counts on their bigram data and find that the differences are negligible .
+limitations of web counts .
+as discussed by keller and lapata [ 2003 ] , simple web-based heuristics such as the ones used here introduce noise in the resulting frequency data .
+firstly , the heuristics rely on the assumption that page counts approximate n-gram frequencies .
+while zhu and rosenfeld [ 2001 ] present results that suggest that this assumption is justified , it certainly adds noise to the data .
+another problem is that both google and altavista disregard punctuation and capitalization when matching a search term ( even if the term is quoted ) .
+this can lead to false positives , e.g. , if the match crosses a sentence boundary .
+also , the matches are likely to include links , web addresses , file names , and other non-textual data .
+in the method used here , no web pages are downloaded , which means that no tagging , chunking , or parsing of the data can be carried out .
+this drastically limits the type of counts that can obtained : we are only dealing with counts of n-grams of adjacent words as captured by literal queries .
+most of the tasks that we deal with would benefit from part-of-speech tagging , which could be used to restrict the queries to the linguistic categories that are relevant for the task at hand ( see table i for an overview of the parts of speech involved in the tasks ) .
+another problem concerns the stability and accuracy of the page counts generated by search engines .
+there seems to be evidence that the counts returned by google vary substantially over time , due to changes made to the index and the database of the search engine , and depending on which google server is accessed .
+also , it has been observed that the boolean operators supported by google return unexpected results .
+for example the boolean query chirac or sarkozy returns a lower page count than the simple query chirac , contrary to the logic of the or operator .
+however , there is also evidence for the reliability of web counts : keller and lapata [ 2003 ] show that the counts generated by two search engines ( google and altavista ) are highly correlated with frequencies obtained from two standard corpora for english ( the bnc and the north american newstext corpus ) .
+note also that the present paper does not rely on boolean queries and therefore the results should be less susceptible to artifacts caused by googles treatment of index terms .
+corpus counts .
+for all tasks , the web-based models are compared against identical models whose parameters are estimated from the bnc [ burnard 1995 ] .
+the bnc is a static 100m word corpus of british english , which is about 1000 times smaller than the web [ keller and lapata 2003 ] .
+comparing the performance of the same model on the web and on the bnc allows us to assess how much improvement can be expected simply by using a larger data set .
+we retrieve bnc counts using the gsearch corpus query tool [ corley et al. 2001 ] ; the morphological query expansion is the same as for web queries .
+gsearch is used to search solely for adjacent words ; no pcis information is incorporated in the queries , and no parsing is performed .
+this ensures that web counts and corpus counts are as similar as possible .
+model selection .
+for all of our tasks , we have to select either the best one of several possible models or the best parameter setting for a single model ( in case of model combination , see section 2.5 below ) .
+we therefore require a separate development set .
+this is generated by using the gold standard data set from the literature for a given task and randomly dividing it into a development set and a test set ( of equal size ) .
+we report the test set performance for all models for a given task , and indicate which model shows optimal performance on the development set ( marked by a # in all subsequent tables ) .
+we also compare the test set performance of this optimal model to the performance of the models reported in the literature .
+here , it is important to note that the performance reported in the literature was typically obtained on the whole gold standard data set , and hence may differ from the performance on our test set , which is only a random sample thereof .
+however , we work on the assumption that such differences are negligible .
+combining web and corpus counts .
+we also examine whether the performance on our tasks can be improved by combining web counts and corpus counts .
+web counts can be expected to contain noise introduced by a number of sources , as discussed in section 2.2 .
+on the other hand , corpus counts are much less noisy , but sparser than web counts .
+hence it seems promising to devise a model that combines the two types of counts : corpus counts are used when they are available ; but web counts are substituted for corpus counts when the latter are too sparse .
+the most straightforward way of implementing this idea is in the form of a backoff scheme : if the n-gram count for an item in the corpus falls below a threshold 0 , the web is used to estimate the n-grams frequency , otherwise the corpus counts are used.8 note that this backoff scheme subsumes both a purely web-based model ( 0 = 0 ) and a purely corpus-based model ( 0 = k , where k is the largest observed corpus count ) .
+an alternative way of combining web and corpus counts is interpolation .
+by interpolating web and corpus counts we do not discard one type of counts completely , but instead use a fraction of it in the model .
+this can be realized straightforwardly using a standard interpolation scheme , as shown in ( 1 ) .
+it can be expected that web counts are many orders of magnitude larger than corpus counts ; the interpolation approach can take this into account by making a very small .
+again , this scheme subsumes both a purely web-based model ( a = 1 ) and a purely corpus-based model ( a = 0 ) .
+the value of the backoff threshold 0 and the interpolation factor a must be tuned on a heldout development set .
+this means that models employing interpolation or backoff are weakly supervised ( as opposed to models that purely rely on web or corpus counts , and require no parameter tuning at all ) .
+to adjust the parameter values , we simply perform exhaustive search .
+this means that all possible values of a are tried , with 0 < a < 1 and a stepsize of 10-6 .
+along the same lines , all possible values of 0 are tried , with 0 < 0 < 150 and a stepsize of 1 .
+in section 3 , we will illustrate this search process by plotting the performance of both the backoff and the interpolation model against the parameter settings that are explored .
+significance testing .
+in what follows , we present four distinct models for all the tasks we discuss : a web- based model , a corpus-based model , a backoff model , and an interpolated model .
+we compare these models to each other to determine the usefulness of web counts for a given task .
+however , it is also important to compare the models to valid baselines , and to the best models reported in the literature .
+all these comparisons are only meaningful if statistical tests are performed to determine if differences in performance are significant .
+throughout this paper , we report the results of x2 tests that are carried out to determine if a given difference in model performance is statistically significant .
+model performance is reported in terms of accuracy , i.e. , as number of items correct over the total number of items .
+such accuracy figures are effectively frequency data , which means that x2 is an appropriate test , since it makes no distributional assumptions .
+it can be carried out by compiling a 2 2 contingency table : the two models to be compared form the rows of this table , and the number of correct and incorrect items are listed in the columns .
+this is illustrated by the fictitious data in table ii .
+then the x2 coefficient is computed , which compares the distributions of the two rows of the table , and yields a significant result if they are reliably different .
+in the example in table ii , both models are evaluated on the same data set ( with a size of 1000 items ) .
+however , this is not always the case : throughout this paper we compare models reported in the literature against web-based and corpus-based models ; the former are typically tested on larger data sets that the latter .
+this is due to the fact that we split the data sets used in the literature into development and test sets , as indicated in section 2.4 .
+note that the x2 test is robust against such differences in sample size .
+in order to facilitate the comparison between models , we use a set of symbols throughout this paper , see table iii .
+these symbols indicate if the corresponding x2 is significant or not .
+candidate selection for machine translation .
+target word selection is a generation task that occurs in machine translation ( mt ) .
+a word in a source language can often be translated into different words in the target language and the choice of the appropriate translation depends on a variety of semantic , syntactic and pragmatic factors .
+the task is illustrated in ( 2 ) where there are five translation alternatives for the german noun geschichte listed in curly brackets , the first being the correct one .
+statistical approaches to target word selection rely on bilingual lexica to provide all possible translations of words in the source language .
+once the set of translation candidates is generated , statistical information gathered from target language corpora is used to select the most appropriate alternative [ dagan and itai 1994 ] .
+the task is somewhat simplified by grefenstette [ 1998 ] and prescher et al. [ 2000 ] who do not produce a translation of the entire sentence .
+instead , they focus on specific syntactic relations .
+grefenstette translates compounds from german and spanish into english , and uses bnc frequencies as a filter for candidate translations .
+he observes that this approach suffers from an acute data sparseness problem and goes on to obtain counts for candidate compounds through web searches , thus achieving a translation accuracy of 86 / 87 % .
+prescher et al. [ 2000 ] concentrate on verbs and their objects .
+assuming that the target language translation of the verb is known , they select from the candidate translations the noun that is semantically most compatible with the verb .
+the semantic fit between a verb and its argument is modeled using a class-based lexicon that is derived from unlabeled data using the expectation maximization algorithm ( verb-argument model ) .
+prescher et al. also propose a refined version of this approach that only models the fit between a verb and its object ( verb-object model ) , disregarding other arguments of the verb .
+the two models are trained on the bnc and evaluated against two corpora differing in the degree of translation ambiguity displayed by the object noun .
+the high ambiguity corpus contains 1,340 bilingual sentence pairs with an average of 8.63 translations for the object noun .
+the low ambiguity corpus has 814 bilingual sentence pairs with an average of 2.83 translations .
+table v lists prescher et al.s results on these two corpora for both models together with a frequency baseline9 ( select the most frequent target noun ) .
+grefenstettes [ 1998 ] evaluation was restricted to compounds that are listed in a dictionary .
+these compounds are presumably well-established and fairly frequent , which makes it easy to obtain reliable web frequencies .
+we wanted to test if the web- based approach extends from lexicalized compounds to productive syntactic units for which dictionary entries do not exist .
+we therefore performed our evaluation using prescher et al.s [ 2000 ] test set of verb-object pairs .
+web counts were retrieved for all possible verb-object translations ; the most likely one was selected using either co-occurrence frequency ( f ( v , n ) ) or conditional probability ( f ( v , n ) / f ( n ) ) .
+the web counts were gathered using inflected queries involving the verb , a determiner , and the object ( see section 2.1 ) .
+table iv compares the web-based models against the bnc models on the test set . ( recall from section 2.4 that we split the data sets in the literature into a development set and a test set .
+we report the performance on the test set in table iv , and indicate which models performed best on the development set using a # .
+these models then form the basis for the significance tests reported in table v. )
+as explained in section 2.5 , we also test two weakly supervised models that combine web counts and corpus counts using backoff and interpolation .
+table iv includes the performance of these two approaches , listed under the headings interpol and backoff .
+note that these models require the adjustment of parameters on the development set .
+figures 1 and 2 show how model performance varies along different parameter values .
+figure 1 plots model accuracy for the f ( v , n ) model against values of a for the interpolation model .
+note that these curves were obtained on the development set , while the performance reported in table iv is that on the test set .
+for the high ambiguity data set , the best performance was achieved with an interpolation threshold of a = 2.1 10-5 ; for the low ambiguity data set , the best performance was achieved with a = 4.10-5 .
+this means that in both cases the best model only included a very small fraction of web counts in the interpolated counts .
+figure 2 plots the performance of the backoff model against different values of 0 ( again , these curves were obtained on the development set ) .
+we observe that for the high ambiguity data set a threshold of 0 = 1 yields the best performance , i.e. , a model where we use web counts only when the corpus counts are zero .
+for the low ambiguity data set , the best performance is obtained for 0 = 13 , i.e. , for a model that uses web counts if the corpus counts are less than 13 .
+returning to table iv , we observe that in most cases simple co-occurrence frequency outperforms conditional probability .
+furthermore , notice that for both the high and low ambiguity data sets , the performance of the best bnc model is comparable to the best web-based model ; in fact the difference between the two models is not statistically significant ( see table v ) .
+combining the bnc and web models yields improved performances over the individual models .
+for low ambiguity words the interpolated model yields an improvement of approximately 1 % over the bnc model , whereas the improvement for the backoff model is approximately 2 % .
+the backoff model yields no improvement over the best bnc model for high ambiguity words ; a small improvement of .3 % is obtained with the interpolated model .
+table v compares our unsupervised and weakly supervised models with the two sophisticated class-based models discussed above .
+the results show that there is no significant difference in performance between the best model reported in the literature and the best altavista or the best bnc model .
+the backoff and interpolated models are not significantly different from the best model in the literature either .
+for high ambiguity words , backoff and interpolation perform significantly better than the best altavista model .
+the models based on bnc and altavista counts , as well as the models based on their combination , significantly outperform the baseline .
+this holds for both the high and low ambiguity data sets .
+context-sensitive spelling correction .
+context-sensitive spelling correction is the task of correcting spelling errors that result in valid words .
+such a spelling error is illustrated in ( 3 ) where principal was typed when principle was intended .
+introduction of the dialogue principal proved strikingly effective .
+context-sensitive spelling correction can be viewed as a generation task , since it consists of choosing between alternative surface realizations of a word .
+this choice is typically modeled by confusion sets such as { principal , principle } or { then , than } under the assumption that each word in the set could be mistakenly typed when another word in the set was intended .
+the task is to infer which word in a confusion set is the correct one in a given context .
+this choice can be either syntactic ( as for { then , than } ) or semantic ( as for { principal , principle } ) .
+a number of machine learning methods have been proposed for context-sensitive spelling correction .
+these include a variety of bayesian classifiers [ golding 1995 ; golding and schabes 1996 ] , decision lists [ golding 1995 ] transformation-based learning [ mangu and brill 1997 ] , latent semantic analysis ( lsa ) [ jones and martin 1997 ] , multiplicative weight update algorithms [ golding and roth 1999 ] , and augmented mixture models [ cucerzan and yarowsky 2002 ] .
+despite their differences , most approaches use two types of features : context words and collocations .
+context word features record the presence of a word within a fixed window around the target word ( bag of words ) ; collocational features capture the syntactic environment of the target word and are usually represented by a small number of words and / or part-of-speech tags to the left or right of the target word .
+the results obtained by a variety of classification methods are given in table vii .
+all methods use either the full set or a subset of 18 confusion sets originally gathered by golding [ 1995 ] .
+most methods are trained and tested on the brown corpus , using 80 % for training and 20 % for testing . 10 we devised a simple , unsupervised method for performing spelling correction using web counts .
+the method takes into account collocational features , i.e. , words that are adjacent to the target word .
+for each word in the confusion set , we used the web to estimate how frequently it co-occurs with a word or a pair of words immediately to its left or right .
+disambiguation is then performed by selecting the word in the confusion set with the highest co-occurrence frequency or probability .
+the web counts were retrieved using literal queries ( see section 2.1 ) .
+ties were resolved by defaulting to the word with the highest unigram frequency in the confusion set .
+the web models were compared to their corresponding bnc models .
+bnc and web models were further combined using interpolation and backoff , as explained in section 2.5 ( and also section 3 ) .
+table vi shows the types of collocations we considered and their corresponding accuracy .
+the baseline ( f ( t ) ) in table vi was obtained by always choosing the most frequent unigram in the confusion set .
+we used the same test set ( 2056 tokens from the brown corpus ) and confusion sets as golding and schabes [ 1996 ] , mangu and 10an exception is golding [ 1995 ] , who uses the entire brown corpus for training ( 1m words ) and three quarters of the wall street journal corpus [ marcus et al. 1993 ] for testing .
+the best result ( 89.35 % ) for the web-based approach is obtained with a context of one word to the left and one word to the right of the target word ( f ( w 1 , t , w2 ) , see table vi ) .
+the bnc-based models perform consistently worse than the web- based models with the exception of f ( t , w1 ) / t ; the best altavista model performs significantly better than the best bnc model .
+table vii shows that both the best altavista model and the best bnc model outperform their respective baselines .
+a comparison with the literature reveals that the best altavista model significantly outperforms golding [ 1995 ] , jones and martin [ 1997 ] and yields results comparable to golding and schabess [ 1996 ] .
+the backoff and interpolation models fail to significantly outperform the best altavista model .
+the highest accuracy on the task is achieved by the class of multiplicative weight- update algorithms such as winnow [ golding and roth 1999 ] .
+both the best bnc model and the best altavista model perform significantly worse than this model .
+note that golding and roth [ 1999 ] use algorithms that can handle large numbers of features and are robust to noise .
+our method uses a very small feature set , it relies only on co-occurrence frequencies and does not have access to pos information ( the latter has been shown to have an improvement on confusion sets whose words belong to different parts of speech ) .
+an advantage of our method is that it can be used for a large number of confusion sets without relying on the availability of training data .
+ordering of prenominal adjectives .
+the ordering of prenominal modifiers is important for natural language generation systems where the text must be both fluent and grammatical .
+for example , the sequence big fat greek wedding is perfectly acceptable , whereas fat greek big wedding sounds odd .
+the ordering of prenominal adjectives has sparked a great deal of theoretical debate ( see shaw and hatzivassiloglou 1999 for an overview ) and efforts have concentrated on defining rules based on semantic criteria that account for different orders .
+data intensive approaches to the ordering problem rely on corpora for gathering evidence for the likelihood of different orders .
+they rest on the hypothesis that the relative order of premodifiers is fixed , and independent of context and the noun being modified .
+the simplest strategy is what shaw and hatzivassiloglou [ 1999 ] call direct evidence .
+given an adjective pair { a , b } , they count how many times ( a , b ) and ( b , a ) appear in the corpus and choose the pair with the highest frequency .
+unfortunately the direct evidence method performs poorly when a given order is unseen in the training data .
+malouf [ 2000 ] reduces adjective ordering to the well-known problem of estimating n-gram probabilities and proposes a back-off bigram model of adjective pairs for choosing among alternative orders ( p ( ( a , b ) | { a , b } ) vs. p ( ( b , a ) | { a , b } ) ) .
+he also uses positional probabilities as a means of estimating how likely it is for a given adjective a to appear first in a sequence by looking at each pair in the training data that contains the adjective a and recording its position .
+finally , he frames the adjective ordering problem as a classification task and uses memory-based learning for inferring an appropriate order .
+morphological and semantic similarities among different adjective orders are expressed using a feature-vector representation .
+each adjective pair ab is encoded as a vector of 16 features ( the last eight characters of a and the last eight characters of b ) and a class ( ( a , b ) or ( b , a ) ) .
+malouf [ 2000 ] extracted 263,838 individual pairs of adjectives from the bnc which he randomly partitioned into test ( 10 % ) and training data ( 90 % ) and evaluated all the above methods for ordering prenominal adjectives .
+his results showed that a memory-based classifier that uses morphological information as well as positional probabilities as features outperforms all other methods .
+for the ordering task we restricted ourselves to the direct evidence strategy which simply chooses the adjective order with the highest frequency or probability ( see table viii ) .
+web counts were obtained by submitting literal queries to altavista ( see section 2.1 ) .
+we used the same 263,838 adjective pairs that [ malouf 2000 ] extracted from the bnc .
+these were randomly partitioned into a training ( 90 % ) and test corpus ( 10 % ) .
+the test corpus contained 26,271 adjective pairs .
+given that submitting 4 26 , 271 queries to altavista would be fairly time-consuming , a random sample of 1000 sequences was obtained from the test corpus and the web frequencies of these pairs were retrieved .
+table viii shows the performance of direct evidence vs. conditional probability models .
+the best bnc , altavista , backoff , and interpolated models are compared against malouf [ 2000 ] in table ix .
+we find that direct evidence models generally perform better than conditional models .
+the best altavista model significantly outperforms the baseline11 ( reported by malouf ) and the best bnc model ; its performance is significantly worse than the best model reported in the literature .
+the backoff and interpolated models obtain performances that are not significantly different from the best model proposed by malouf [ 2000 ] , a supervised method using positional probability estimates from the bnc and morphological variants .
+article generation .
+non-native speakers of english often have difficulties with article selection ( e.g. , the , a ) especially if their native language is a language that lacks articles such as japanese or russian .
+common mistakes include dropping articles altogether or using a or an with plural or uncountable nouns ( e.g. , a students , a research ) .
+similar mistakes in article choice occur in automatically generated texts that form the output of machine translation or summarization systems , especially if the latter include a sentence regeneration component .
+aiming to improve the quality of the text produced by a japanese-english machine translation system , knight and chander [ 1994 ] construct an automatic posteditor for inserting articles into english text .
+they cast article selection as a binary classification problem and use decision trees to learn whether to generate the or a / an .
+the decision trees are trained on a database of 400,000 np instances derived from the wall street journal , using a variety of lexical ( e.g. , words before or after the article ) , syntactic ( e.g. , parts-of-speech ) , and semantic ( e.g. , tense ) features .
+during testing , the postediting process is simulated by removing the articles from texts with grammatical article usage ; the decision trees re-insert articles and the resulting text is compared to the original .
+by constructing decision trees for the most frequent nouns in their data set and guessing the for the rest , knight and chander [ 1994 ] achieve an overall accuracy of 78 % ( see table xi ) .
+knight and chander [ 1994 ] also performed experiments with humans in order to estimate an upper bound on the article generation task .
+the humans mimicked the decision trees : they were given english text without articles and were asked to re-insert them .
+when given access to the context surrounding the np in question , the humans achieved accuracies between 94 % and 96 % ( see table xi ) .
+with some context ( i.e. , two words to the left of the missing article and two words to the right of the head noun ) , human performance was between 83 % to 88 % .
+with limited context ( i.e. , the head noun following the article and its premodifiers ) , humans achieved an accuracy between 79 % and 80 % .
+knight and chanders [ 1994 ] approach was further extended by minnen et al. [ 2000 ] and lee [ 2004 ] who learn to predict whether to generate the , a / an , or no article .
+using memory-based learning and a feature set larger than that of knight and chander [ 1994 ] , including grammatical functions ( e.g. , subject , object ) and semantic roles ( e.g. , location , manner ) , minnen et al. [ 2000 ] achieve an accuracy of 83.6 % .
+lee [ 2004 ] reports an accuracy of 87.7 % using a maximum entropy learner and features similar to those employed by minnen et al. [ 2000 ] ( see table xi ) .
+we attempted the article generation task using unsupervised models which were evaluated on lees [ 2004 ] test data .
+the latter was generated from section 23 of the penn treebank .
+for our simplest model , we estimate how frequently each noun phrase in the test data co-occurs with the , a / an , or nothing , and default to the choice with the highest frequency ( f ( art , np ) ) .
+we also devised models that take into account one or two words to the left of the unknown article and the core noun phrase ( f ( c1 , art , np ) and f ( c2 , c1 , art , np ) ) .
+the web counts were retrieved using literal queries ( see section 2.1 ) .
+table xi shows the models we considered and their corresponding accuracy .
+the baseline in table xi was obtained by choosing the most frequent class ( i.e. , no article ) in the test data . 12 the best google model achieves 91.20 % on the test data and takes two context words into account ( f ( c2 , c1 , art , np ) ) .
+on the bnc , the model that takes one context word into account performs best ( f ( c1 , art , np ) ) .
+the google model significantly outperforms the bnc model as well as the best model in the literature ( lees [ 2004 ] maximum entropy model ) .
+the interpolated and backoff models yield results similar to the best google model but fail to significantly outperform it .
+knight and chander [ 1994 ] obtained upper bounds on the article generation task by asking humans to decide whether the unknown article is the or a / an .
+to compare with these upper bounds , we tested the performance of our model on this simpler task by excluding from our test data all instances where the head noun was not preceded by an article .
+the best google model reached an accuracy of 95.51 % ( over the most frequent class baseline which achieved 68.57 % ) .
+this compares favorably with the 9596 % upper bound cited by knight and chander [ 1994 ] .
+bracketing of compound nouns .
+the first analysis task we consider is the syntactic disambiguation of compound nouns , which has received a fair amount of attention in the nlp literature [ pustejovsky et al. 1993 ; resnik 1993 ; lauer 1995 ] .
+the task can be summarized as follows : given a three word compound n1 n2 n3 , determine the correct binary bracketing of the word sequence ( see ( 4 ) for an example ) .
+previous approaches typically compare different bracketings and choose the most likely one .
+the adjacency model compares [ n1 n2 ] against [ n2 n3 ] and adopts a right branching analysis if [ n2 n3 ] is more likely than [ n1 n2 ] .
+the dependency model compares [ n1 n2 ] against [ n1 n3 ] and adopts a right branching analysis if [ n1 n3 ] is more likely than [ n1 n2 ] .
+the simplest model of compound noun disambiguation compares the frequencies of the two competing analyses and opts for the most frequent one [ pustejovsky et al. 1993 ] .
+lauer [ 1995 ] proposes an unsupervised method for estimating the frequencies of the competing bracketings based on a taxonomy or a thesaurus .
+lauer [ 1995 ] evaluated both the adjacency and dependency models on 244 compounds extracted from groliers encyclopedia , a corpus of 8 million words .
+frequencies for the two models were obtained from the same corpus and from rogets thesaurus ( version 1911 ) by counting pairs of nouns that are either strictly adjacent or co-occur within a window of a fixed size ( e.g. , two , three , fifty , or hundred words ) .
+the majority of the bracketings in the test set were left-branching , yielding a baseline of 66.80 % ( see table xiii ) .
+lauers best results ( 77.50 % ) were obtained with the dependency model and a training scheme which takes strictly adjacent nouns into account .
+performance increased further by 3.2 % when pos tags were taken into account .
+the results for this tuned model are also given in table xiii .
+finally , lauer conducted an experiment with human judges to assess the upper bound for the bracketing task .
+an average accuracy of 81.50 % was obtained .
+we replicated lauers [ 1995 ] results for compound noun bracketing using the same test set .
+we compared the performance of the adjacency and dependency models ( see ( 5 ) and ( 6 ) ) , but instead of relying on a corpus and a thesaurus , we estimated the relevant probabilities using web counts .
+the latter were obtained using inflected queries ( see section 2.1 ) .
+ties were resolved by defaulting to the most frequent analysis ( i.e. , left-branching ) .
+to gauge the performance of the web- based models we compared them against their bnc-based alternatives ; we also explored whether the combination of web and bnc counts yields better results than the individual models ( see table xii ) .
+we compare our results against the literature in table xiii .
+the performance of the best altavista model was not significantly higher than that of the best bnc model ( see table xiii ) even though it significantly outperformed the baseline .
+both the best bnc and altavista models were not significantly different from the best model in the literature ( lauers tuned model ) .
+hence our simple unsupervised models achieve the same performance as lauer without recourse to a predefined taxonomy or a thesaurus .
+as far as the weakly supervised models are concerned , the backoffs performance is disappointing , failing to outperform the baseline .
+the interpolation model performs slightly better than lauers tuned model ( i.e. , 0.44 % ) ; however the difference is not statistically significant .
+neither the backoff nor the interpolated model significantly outperform the best altavista model .
+interpretation of compound nouns .
+the second analysis task we consider is the semantic interpretation of compound nouns .
+most previous approaches to this problem have focused on the interpretation of two word compounds whose nouns are related via a basic set of semantic relations ( e.g. , cause relates onion tears , for relates pet spray ) .
+the majority of proposals are symbolic and therefore limited to a specific domain due to the large effort involved in hand-coding semantic information ( see lauer 1995 for an extensive overview ) .
+lauer [ 1995 ] is the first to propose and evaluate an unsupervised probabilistic model of compound noun interpretation for domain independent text .
+by recasting the interpretation problem in terms of paraphrasing , lauer assumes that the semantic relations of compound heads and modifiers can be expressed via prepositions that ( in contrast to abstract semantic relations ) can be found in a corpus .
+for example , in order to interpret war story , one needs to find in a corpus related paraphrases : story about the war , story of the war , story in the war , etc .
+lauer uses eight prepositions for the paraphrasing task ( of , for , in , at , on , from , with , about ) .
+a simple model of compound noun paraphrasing is shown in ( 7 ) : lauer [ 1995 ] points out that the above model contains one parameter for every triple ( p , n1 , n2 ) , and as a result hundreds of millions of training instances would be necessary .
+as an alternative to ( 7 ) , he proposes the model in ( 8 ) which combines the probability of the modifier given a certain preposition with the probability of the head given the same preposition , and assumes that these two probabilities are independent .
+here , t1 and t2 represent concepts in rogets thesaurus .
+lauer [ 1995 ] also experimented with a lexicalized version of ( 8 ) where probabilities are calculated on the basis of word ( rather than concept ) frequencies which lauer obtained from groliers encyclopedia heuristically via pattern matching .
+lauer [ 1995 ] tested the model in ( 8 ) on 282 compounds that he selected randomly from groliers encyclopedia and annotated with their paraphrasing prepositions .
+the preposition of accounted for 33 % of the paraphrases in this data set ( see baseline in table xv ) .
+the concept-based model ( see ( 8 ) ) achieved an accuracy of 28 % on this test set , whereas its lexicalized version reached an accuracy of 40 % ( see table xv ) .
+we attempted the interpretation task with the lexicalized version of the bigram model ( see ( 8 ) ) , but also tried the more data intensive trigram model ( see ( 7 ) ) , again in its lexicalized form .
+furthermore , we experimented with several conditional and unconditional variants of ( 8 ) and ( 7 ) and weakly supervised models ( i.e. , backoff and interpolation ) .
+co-occurrence frequencies were estimated from the web using inflected queries ( see section 2.1 ) .
+determiners were inserted before nouns resulting in queries of the type story / stories about and about the / a / 0 war / wars for the compound war story .
+as shown in table xiv , the best performance was obtained using the web-based trigram model ( f ( n1 , p , n2 ) ) ; this result was matched by the backoff and interpolation models .
+comparison with the literature in table xv reveals that the best altavista model significantly outperformed both the baseline and the best model in the literature ( lauers word-based model ) .
+the bnc model , on the other hand , achieved a performance that is not significantly different from the baseline , and significantly worse than lauers best model .
+noun countability detection .
+the next analysis task that we consider is the problem of determining the count- ability of nouns .
+countability is the semantic property that specifies whether a noun can occur in singular and plural forms , and affects the range of permissible modifiers .
+in english , nouns are typically either countable ( e.g. , one dog , two dogs ) or uncountable .
+baldwin and bond [ 2003 ] propose a method for automatically learning the count- ability of english nouns from the bnc .
+they obtain information about noun countability by merging lexical entries from comlex [ grishman et al. 1994 ] and the altj / e japanese-to-english semantic transfer dictionary [ ikehara et al. 1991 ] .
+words are classified into four classes : countable , uncountable , bipartite ( e.g. , trousers ) , and plural only ( e.g. , goods ) .
+a memory-based classifier is used to learn the four-way distinction on the basis of several linguistically motivated features such as : number of the head noun , number of the modifier , subject-verb agreement , plural determiners .
+we devised unsupervised models for the countability learning task and evaluated their performance on baldwin and bonds [ 2003 ] test data .
+we concentrated solely on countable and uncountable nouns , as they account for the vast majority of the data .
+two models were tested : ( a ) compare the frequency of the singular and plural forms of the noun ; ( b ) compare the frequency of determiner-noun pairs that are characteristic of countable or uncountable nouns ; the determiners used were many for countable and much for uncountable ones .
+unigram and bigram frequencies were estimated from the web using literal queries .
+the performance of the bnc and altavista models on the test set is given in table xvi ; interpolated and backoff models are also shown .
+table xvii compares our results with state of the art .
+the best altavista model is the det-noun model ( f ( det , n ) ) , which achieves 88.62 % on countable and 91.53 % on uncountable nouns .
+on the bnc , the simple unigram model performs best .
+its performance was not statistically different from that of the best altavista model .
+note that the det-noun bnc models perform poorly , presumably due to data sparseness .
+neither the interpolated nor the backoff model manage to significantly outperform the bnc or the best altavista set when using altavista counts .
+the same behavior was observed with the backoff and interpolation models .
+this is why both models are signaled by # in table xiv , although on the test set f ( n1 , p , n2 ) outperformed f ( n1 , p ) f ( n2 , p ) .
+pp attachment disambiguation .
+a pervasive problem in natural language analysis is resolving syntactic attachment ambiguities .
+pp attachment ambiguities in particular have received considerable attention in the nlp literature .
+the ambiguity is exemplified in ( 9 ) , where the pp with pockets can be either attached to the noun shirt ( and mean that the shirt has pockets ) or to the verb bought ( and mean that the pockets were used to purchase the shirt ) .
+previous work has framed the problem as a classification task where the goal is to predict either verb or noun attachment , given the head verb v , the head noun n1 of the object of the verb , the preposition p , and optionally , the head noun n2 of the object of the preposition .
+hindle and rooth [ 1993 ] propose a partially supervised approach , in which a parser is used to extract ( v , n1 , p ) tuples from a corpus .
+these data are then used to estimate lexical association scores , based on which attachment decisions are made .
+subsequent work has used ( v , n1 , p , n2 ) tuples extracted from the penn treebank to train supervised models including a maximum entropy model [ ratnaparkhi et al. 1993 ] , a back-off model [ collins and brooks 1995 ] , transformation-based [ brill and resnik 1994 ] , and memory-based learning [ zavrel et al. 1997 ] .
+unsupervised approaches to pp-attachment have been proposed by ratnaparkhi [ 1998 ] and pantel and ling [ 2000 ] .
+table xix compares the performance of the different approaches on ratnaparkhi et al.s [ 1993 ] standard data set . 14 the latter was obtained from the penn treebank by identifying examples of vps containing a [ v np pp ] sequence .
+for each such sequence , the head verb , the first head noun , preposition , and second head noun were extracted along with the attachment decision ( noun or verb ) .
+the training / test set therefore contained solely head words ( e.g. , the vp [ [ joined [ the board ] ] [ as a nonexecutive director ] ] would give the tuple ( joined , board , as , director ) ) and the majority of previous models rely primarily on head words for disambiguating pp attachment .
+table xix also includes two baselines ( always choose noun attachment ; choose the most likely attachment for a given preposition ) and two upper bounds reported by ratnaparkhi et al. [ 1993 ] ( human judgments are based on the head words or the whole sentence ) .
+recently , volk [ 2001 ] proposed an unsupervised model based on web-counts to resolve pp-attachment ambiguities .
+his approach was tested on german data , and achieved an accuracy of 73.08 % .
+we applied this approach to a random sample of 1000 tokens from the standard test set for english [ ratnaparkhi et al. 1993 ] .
+three models were tested .
+model 1 uses hindle and rooths [ 1993 ] lexical association ratio , computed as the probability of the preposition given the first noun divided by the probability of preposition given the verb .
+noun attachment is chosen if this ratio is greater than or equal to one , verb attach- ment if it is less than one .
+model 2 was proposed by volk [ 2001 ] ; here the lexical association is computed as the joint probability of the first noun , the preposition , and the second noun divided by the joint probability of the verb , the preposition , and the second noun .
+model 3 ( again due to volk 2001 ) is the same as model 2 , but the probabilities of the first noun and the verb are included as a way of normalizing the lexical association ratio .
+we estimated the probabilities of models 13 using web counts , employing literal queries or inflected queries .
+as before , the web-based models were also compared to the bnc , and we additionally experimented with backoff and interpolated models .
+table xviii gives an overview of the performance of the various models .
+note that inflected queries generally outperformed literal queries both for the web and the bnc .
+this is perhaps not surprising given that literal queries are more vulnerable to sparse data .
+the web-based models are compared against the literature in table xix .
+the highest web-based performance is 69.40 % , achieved by model 3 with inflected queries .
+the same model on the bnc obtains an accuracy of 74.40 % .
+the web-based model is significantly better than the baseline of 56.80 % ( defaulting to noun attachment ) .
+it reaches the performance of the second baseline ( always choosing the most likely attachment for a given preposition ) .
+note , however , that this is a supervised baseline , as it requires information about the attachment preferences of prepositions .
+the backoff and interpolation models achieve performances comparable to the best altavista model .
+however , none of these three models significantly outperforms the best bnc model .
+in general none of the models attempted here compare favorably with previous approaches in the literature , most of which , including unsupervised ones , rely on the availability of grammatical information ( i.e. , pos tags ) and syntactic knowledge ( either in the form of parse trees or syntactic chunks ) to provide cues for the choice of the pp attachment site .
+stetina and nagao [ 1997 ] even make use of a semantic dictionary .
+neither syntactic nor semantic information is available to our models , and it is a matter of future work to determine whether the naive models presented here can be combined with some of the more sophisticated approaches in the face of data sparseness .
+discussion .
+in this paper we examined whether simple unsupervised web-based models can be devised for a variety of nlp tasks .
+the tasks were selected so that they cover both syntax and semantics , both generation and analysis , and a wider range of n-grams and parts of speech than have been previously explored .
+in order to quantify the effect of the use of web counts on each task , we compared web-based models against identical models whose parameters were estimated on the bnc .
+while the bnc is a relatively large corpus ( 100m words ) , it offers considerably less data than the web .
+we also explored the performance of two models that combine web counts and corpus counts .
+the backoff model uses corpus counts , unless they fall below a threshold , in which case the model backs off to web counts .
+the interpolation model uses the sum of web counts and corpus counts , with their relative contribution weighted by an interpolation factor .
+a summary of our findings is given in table xx .
+the table lists the tasks we attempted , whether they are semantic or syntactic , and whether they concern the analysis or generation of natural language .
+the table also compares the best web-based model for each task against the baseline , the bnc , and the best model in the literature , and states whether significantly lower or higher performance was obtained by the web-based model .
+note that in two cases , this comparison is based on a combined model ( using interpolation or backoff ) , as it outperformed the model based on web counts alone .
+these cases are marked with an asterisk .
+for all tasks we attempted the web-based models significantly outperform the baseline .
+however , generation and analysis tasks seem to behave differently when it comes to comparing web-based models with bnc-based models and state-of-the-art models in the literature .
+we will discuss both types of tasks in turn .
+for all generation tasks ( with one exception ) , we found that web-based models significantly outperform the corpus-based models .
+an exception is candidate selection for mt , where there was no difference between web-based and corpus-based models .
+as for the comparison with the literature , here we obtained a mixed picture : for spelling correction , web-based models perform worse than the state of the art , for article generation , they outperform it .
+for adjective ordering , web-based models match the state of the art , while for candidate selection , they either match the state of the art ( for high ambiguity items ) or outperform it ( for low ambiguity items ) .
+it is not surprising that the web performs better at generation tasks than the bnc .
+it has been argued that corpus-based methods can offer ways to address knowledge gaps and collocational idiosyncrasies in generation while avoiding knowledge intensive hand coding [ knight and hatzivassiloglou 1995 ; langkilde and knight 1998 ] .
+since there are many ways of realizing a given semantic content , the likelihood of a relevant construction is directly related to the size of the corpus from which it is estimated .
+our results show that web-scale data can be of benefit to generation applications that exploit corpus-based knowledge .
+our results are also consistent with keller and lapata [ 2003 ] , who investigate another generation-related task , viz . , the plausibility of predicate argument constructions .
+their findings show that web frequencies provide more accurate estimates of plausibility than bnc frequencies .
+the reason for this seems to be that the web is much larger than the bnc ( about 1000 times ) .
+the large size seems to compensate for the inadequacies of web data , i.e. , for the fact that simple heuristics were used to obtain web counts , and for the noise caused by tokenization errors , the absence of punctuation , etc .
+turning now to the analysis tasks in table xx , we fail to observe an advantage of the web models over the bnc models ( apart from one case ) .
+also , all web- based models perform worse or equal to the state of the art models reported in the literature ( again with one exception ) .
+an explanation for this is that analysis tasks involve decisions that are not directly observable in the data .
+for example , the attachment choice for a pp or the bracketing for a compound noun cannot be reduced to counting alternatives in a corpus , unless the corpus is explicitly annotated with syntactic structure .
+the fact that the web is much larger than the bnc makes little difference , since neither data source contains the formation that is important for the tasks at hand .
+most approaches in the literature therefore take advantage of information that goes beyond the words in the corpus : they are trained on treebanks or on corpora annotated with part-of-speech tags .
+it is worth noting that the web models outperform the bnc and the state of the art in the compound noun interpretation task .
+recall that this task was cast by lauer [ 1995 ] as a generation problem .
+the meaning of a compound was approximated by a paraphrase consisting of a preposition co-occurring with the compound modifier and head ( e.g. , war story can mean story about the war , story of the war , story in the war ) .
+we can easily look for such paraphrases in a corpus without any preprocessing ( i.e. , parsing or pos-tagging ) .
+however , since there are many alternative paraphrases to choose from , it is not surprising that web-based models significantly outperform models whose parameters are estimated from the bnc or smaller corpora .
+for all generation and analysis tasks we attempted , our web-based models were compared against state-of-the-art models which are reported in the literature and are similar in one important aspect .
+most of them are supervised models that have access not only to simple bigram or trigram frequencies , but also to corpus external linguistic information such as part-of-speech tags , semantic restrictions , or context .
+when unsupervised web-based models are compared against supervised methods that employ a wide variety of features , we observe that having access to linguistic information makes up for the lack of vast amounts of data .
+the only two unsupervised models in the literature are lauers [ 1995 ] models of compound noun bracketing and interpretation .
+in the case of compound interpretation , lauers [ 1995 ] model is truly unsupervised , and the web-based approach outperforms it .
+in the case of compound noun bracketing , lauer [ 1995 ] makes use of rogets thesaurus in order to alleviate data sparseness , hence his model is not truly unsupervised ( and the web-based model yields the same performance ) .
+furthermore , this paper also reported experiments on combining web counts and corpus counts .
+we showed that a small performance gain can sometimes be obtained by using interpolation or backoff .
+for two tasks we found that a combined model outperforms a straight web model , in the sense that the combined model was significantly better than the corpus-based model or the model in the literature , while the straight web model failed to achieve a significant difference ( see the asterisks in table xx ) .
+to summarize , our results indicate that large data sets such as those obtained from the web are not the panacea that they are claimed to be ( at least implicitly ) by authors such as grefenstette [ 1998 ] and keller and lapata [ 2003 ] .
+rather , in our opinion , web-based models should be used as a new baseline for nlp tasks .
+the web baseline indicates how much can be achieved with a simple , unsupervised model based on n-grams with access to a huge data set .
+this baseline is more realistic than baselines obtained from standard corpora ; it is generally harder to beat , as our comparisons with the bnc baseline throughout this paper have shown .
+note that for certain tasks , the performance of a web baseline model might actually be sufficient , so that the effort of constructing a sophisticated supervised model and annotating the necessary training data can be avoided : recall that for three tasks , our web-based models outperformed the best model in the literature ( for mt candidate selection , article generation , and compound interpretation , see table xx ) .
+future work .
+an important future direction lies in the application and evaluation of web models across domains .
+rather than looking into different tasks , we will concentrate on a single task and examine whether web counts ( and their combination with corpus counts ) yield improvements for different domains ( e.g. , sports , medicine ) and registers ( e.g. , speech vs. text ) .
+most modeling work to date has focused on written texts and the effect of web counts for speech data has not been rigorously quantified ( an exception is language modeling work , e.g. , zhu and rosenfeld 2001 ) .
+furthermore , the performance of web-based models has been mainly compared against models trained on established corpora such as the bnc , the brown corpus , or the penn treebank .
+it remains to be seen whether web-based models are robust across domains with maximally different vocabularies and stylistic conventions .
+a related issue is the degree to which different domains are represented in web data and whether there is a threshold ( in terms of the amount of pages indexed by a search engine ) above which web counts become useful .
+another possibility that needs further investigation is the combination of web- based models with supervised methods .
+this can be done with ensemble learning methods or simply by using web-based frequencies ( or probabilities ) as features ( in addition to linguistically motivated features ) to train supervised classifiers .
+the latter approach is taken , for example by modjeska et al. [ 2003 ] who show that an f-measure increase of 11.4 % can be achieved when web-based counts are added to a set of morphosyntactic features for resolving other-anaphora in a supervised setting. against their state-of-the-art alternatives by assessing model performance on the same data sets .
+a challenge for the future lies in replicating state-of-the-art models using web-scale data annotated with linguistically rich information such as parts of speech and syntactic structure .
+it is probably infeasible to store a snapshot of the whole web and process it linguistically estimates regarding the size of the web not only vary ( see kilgariff and grefenstette 2003 ) but are constantly increasing .
+however , sampling techniques could provide an alternative .
+for instance , the pages returned by a query could be downloaded and processed linguistically ; if a query returns too many hits , then sampling techniques could be used select the most informative or least similar pages for processing .

@@ -1,0 +1,484 @@
+active learning with feedback on both features and instances .
+abstract .
+we extend the traditional active learning framework to include feedback on features in addition to labeling instances , and we execute a careful study of the effects of feature selection and human feedback on features in the setting of text categorization .
+our experiments on a variety of categorization tasks indicate that there is significant potential in improving classifier performance by feature re-weighting , beyond that achieved via membership queries alone ( traditional active learning ) if we have access to an oracle that can point to the important ( most predictive ) features .
+our experiments on human subjects indicate that human feedback on feature relevance can identify a sufficient proportion of the most relevant features ( over 50 % in our experiments ) .
+we find that on average , labeling a feature takes much less time than labeling a document .
+we devise an algorithm that interleaves labeling features and documents which significantly accelerates standard active learning in our simulation experiments .
+feature feedback can complement traditional active learning in applications such as news filtering , e-mail classification , and personalization , where the human teacher can have significant knowledge on the relevance of features .
+introduction .
+automated text categorization has typically been tackled as a supervised machine learning problem ( sebastiani , 2002 ; lewis , 1998 ) .
+the training data should be fairly representative of the test data in order to learn a fairly accurate classifier .
+in document classification where categories can be as broad as sports , this means that a large amount of training data would be needed .
+the training data is often labeled by editors who are paid to do the job .
+now consider a scenario where a user wants to organize documents on their desktop into categories of their choice .
+the user might be willing to engage in some amount of interaction to train the system , but may be less willing to label as much data as a paid editor .
+to build a generic text categorization system that could learn almost arbitrary categories based on an end user s changing needs and preferences , for example in applications such as news filtering and e-mail classification , the system should extract a large number of features .
+in e-mail classification for example , any subset of the features extracted from the subject , the sender , and the text in the body of the message could be highly relevant .
+while algorithms such as winnow ( littlestone , 1988 ) and support vector machines ( svms ) ( joachims , 1998 ) are robust in the presence of large numbers of features , these algorithms still require a substantial amount of labeled data to achieve adequate performance .
+techniques such as active learning ( cohn et al. , 1994 ) , semi-supervised learning ( zhu , 2005 ) , and transduction ( joachims , 1999 ) have been pursued with considerable success in reducing labeling requirements .
+in the standard active learning paradigm , learning proceeds sequentially , with the learning algorithm actively asking for the labels ( categories ) of some instances from a teacher ( also referred to as membership queries ) .
+the objective is to ask the teacher to label the most informative instances in order to reduce labeling costs and accelerate the learning .
+still , in text categorization applications in particular , active learning might be perceived to be too slow , especially since the teacher may have much prior knowledge on relevance of features for the task .
+such knowledge may be more effectively communicated to the learner than mere labeling of whole documents .
+there has been very little work in supervised learning in which the teacher is queried on something other than whole instances .
+one possibility is to ask the user questions about features .
+that users have useful prior knowledge which can be used to access information is evident in information retrieval tasks .
+in the information retrieval setting , the user issues a query , that is , states a few words ( features ) indicating her information need .
+thereafter , feedback which may be either at a term or at a document level may be incorporated .
+in fact , even in traditional supervised learning , the editors may use keyword based search to locate the initial training instances 1 .
+however , traditional supervised learning tends to ignore this knowledge of features that the user has , once a set of training instances have been obtained .
+in experiments in this paper we study the benefits and costs of feature feedback via humans on active learning .
+we try to find a marriage between approaches to incorporating user feedback from machine learning and information retrieval and show that active learning should be a twofold process at the term-level and at the document-level .
+we find that people have a good intuition for important features in text classification tasks , since features are typically words , and the categories to learn may often be approximated by some disjunction or conjunction of a subset of the features .
+we show that human knowledge on features can indeed increase active learning efficiency and accelerate training significantly in the initial stages of learning .
+this has applications in e-mail classification and news filtering where the user has knowledge of the relevance of features and a willingness to label some ( as few as possible ) documents in order to build a system that suits her needs .
+this paper extends our previous work in employing such a two-tiered approach to active learning ( raghavan et al. , 2005 ) .
+we state the active learning problems that we address and present our approach to use feedback on both features and instances to solve the problems in section 2 .
+we give the details of the implementations in section 3 .
+in section 4 we describe the data and metrics we will use to evaluate the performance of active learning .
+we obtain a sense of the extent of the improvement possible via feature feedback by defining and using a feature oracle .
+the oracle and the experiments are described in section 2 , and the results are reported in section 5 .
+in section 6 we show that humans can indeed identify useful features .
+furthermore , we find that labeling a feature takes one fifth of the time of labeling a document .
+in section 6.2 we show that the human-chosen features significantly accelerate learning in experiments that simulate human feedback in an active learning loop .
+we discuss related work in section 7 and conclude in section 8 .
+active learning .
+for background on the use of machine learning in automated text categorization as well as active learning , we refer the reader to the works of sebastiani ( 2002 ) and lewis and catlett ( 1994 ) .
+active learning techniques are sequential learning methods that are designed to reduce manual training costs in achieving adequate learning performance .
+active learning methods reduce costs by requesting training feedback selectively and intelligently from a teacher .
+the teacher is a human in the text categorization domain .
+the teacher may also be called the user , especially when the teacher training the model is the same as the person using it , for example a user who is training a personalized news filtering system .
+traditionally in active learning the teacher is asked membership queries which are questions on the class labels or categories of selected instances ( documents in our case ) .
+the teacher is sometimes referred to as an oracle in the literature ( baum and lang , 1992 ) .
+we will also use the term oracle to refer to a source that gives feedback on instances and / or features , but in this paper we make a distinction between teacher and oracle .
+we will reserve the term teacher or user to refer to a real human , whose feedback may not be perfect , and we use the term oracle to refer to a source whose feedback is ( close to ) perfect for speeding active learning .
+see section 2.1 for a longer discussion of the distinction between the two .
+a typical algorithm for active learning and a block diagram are shown in figure 1 .
+an instance x ( which is a document in our case ) belongs to a class y. x is represented as a vector x1 ... xn of features , where n is the total number of features .
+the features we use for documents are words , bi-grams ( adjacent pairs of words ) and tri-grams ( adjacent triples of words ) , since these have consistently been found to work well for topic classification .
+the value of xj is the number of occurrences of term i in document x. we work on binary one-versus-rest classification .
+therefore the value of y for each learning problem of interest is either -1 or 1 , signaling whether the instance belongs to the category of interest , or not .
+an instance in the document collection is unlabeled if the algorithm does not know its label ( y value ) .
+the active learner may have access to all or a subset of the unlabeled instances .
+this subset is called the pool ( denoted by u ) .
+the algorithm begins by training the classifier or model m on some initial set of labeled instances of size init size .
+the subscript t on m , u , x and y correspond to the value when t instances have been labeled .
+the initial set is picked by a random sampling procedure ( step 1 ) from u. the parameter random is passed to it .
+sometimes one may use keyword based search or some other procedure in place of random sampling .
+next , active learning begins .
+in each iteration of active learning the learner selects an instance from u using some criterion ( e.g. , a measure of informativeness ) and asks the teacher to label it ( step 2.a ) .
+in a popular active learning method , called uncertainty sampling , the classifier selects the most uncertain instance ( lewis and catlett , 1994 ) , for a given model ( m ) and a pool of unlabeled instances ( u ) .
+the newly labeled instance is added to the set of labeled instances and the classifier is retrained ( step 2.c ) .
+the teacher is queried a total of t times .
+the train classifier subroutine uses the labeled data as training , as well as the model ( m ) learned in a previous iteration , allowing for the case of incremental training ( domeniconi and gunopulos , 2001 ) or the case when the model may be initialized by prior knowledge ( wu and srihari , 2004 ) .
+we will also consider the variant in which instances are picked uniformly at random in all iterations , which we call random sampling ( it is equivalent to regular supervised learning on a random sample of data ) .
+in the pseudo-code in figure 1 , random sampling corresponds to the case when init size > t. our proposal : feature feedback and instance feedback in tandem .
+in this paper we propose to extend the traditional active learning framework to engage the teacher in providing feedback on features in addition to instances .
+a realization of this idea is system 2 shown in figure 2 , where the active learner not only queries the teacher on an informative document , but also presents a list of f features for the teacher to judge ( step 2.d ) at each iteration .
+the simplest implementation of such a system can consist of one where f = [ xi ( the length of the document x ) , and where the user is simply asked to highlight relevant words or phrases ( features ) or passages while reading the document in order to label the document ( step 2b ) , akin to the system in the paper by croft and das ( 1990 ) .
+in our experiments , individual features are presented to the user for selection .
+section 6.3 provides the details of our method .
+in our proposed system the teacher is asked two types of questions : ( 1 ) membership queries and ( 2 ) questions about the relevance of features .
+a relevant feature is highly likely to help discriminate the positive class from the negative class .
+in this paper we aim to determine whether a human teacher can answer the latter type of question sufficiently effectively so that active learning is accelerated significantly .
+a human and a classifier probably use very different processes to categorize instances .
+a human may use her understanding of the sentences within the document , which probably involves some reasoning and use of knowledge , in order to make the categorization decision , while a ( statistical ) classifier , certainly of the kind that we use in this paper , simply uses patterns of occurrences of the features ( phrases ) .
+therefore , it is not clear whether a human teacher can considerably accelerate the training of a statistical classifier , beyond simple active learning , by providing feedback on features .
+before we address that issue , we determine whether feature feedback can accelerate active learning in an idealized setting .
+we seek to get a sense of the room for improvement .
+we will then examine how actual human teachers can approximate this ideal .
+towards this goal we define a ( feature ) oracle .
+we use the oracle to obtain an upper bound on the performance of our proposed two-tiered approach .
+the oracle knows the correct answer needed by the learning algorithm .
+for example the word ct is a highly relevant feature for classifying reuters news articles on the earnings category and our oracle would be able to determine that this feature is relevant when asked .
+however , a teacher ( human ) who did not understand that ct stood for cents may not be able to identify ct as relevant ( we will see this exact example in section 6.1 ) .
+therefore , the oracle and teacher may differ in their answers to questions about features , that is , questions of type ( 2 ) above .
+we assume that the oracle and the teacher always agree on the labels of documents that is , questions of type ( 1 ) above .
+after showing the usefulness of oracle feature selection , we will then show that humans can emulate the oracle for feature feedback to an extent that results in significant improvements over traditional active learning .
+extent of speed up possible : oracle experiments .
+we perform two types of experiments with the oracle .
+in the first kind , the oracle , knowing the allotted time t , picks the best subset of features to improve , as much as possible , the performance of active learning .
+the procedure is shown in figure 3 .
+in figure 3 , the incorporate feature feedback subroutine is called to initialize the model .
+when system 3 is used with a user instead of the oracle it is equivalent to a scenario where prior knowledge is used to initialize the classifier ( schapire et al. , 2002 ; wu and srihari , 2004 ; godbole et al. , 2004 ; jones , 2005 ) .
+in section 3.4 we describe how this oracle is approximated in our experiments .
+the second type of experiment is a slight variation designed to isolate the effect of oracle feature selection on example selection versus model selection during active learning .
+in these experiments , active learning proceeds normally with all the features available , but after all the instances are picked ( after t iterations ) , the best set of k features that improve the resulting trained classifier the most are picked and the resulting performance is reported .
+this is shown schematically and with pseudo- code in figure 4 .
+we note that even when starting with the same initial set of labeled instances , the classifiers learned during active learning , hyperplanes in our case , in these two systems may be different as they are learned in different spaces ( using different feature subset sizes ) .
+besides , the set of labeled instances is small , so the learning algorithm may not be able to find the best unique hyperplane .
+in turn , the instances picked subsequently during active learning may differ substantially as both the spaces the instances reside in and the learned classifiers may be different .
+the classifier learned in the feature reduced space may have better accuracy or lead to better choice of instances to label during active learning , though this is not guaranteed or the benefits may be negligible .
+in short , the trajectory of the active learning process , that is , the instances labeled and classifiers learned , can be different in the two regimes , which may lead to substantially different active learning performance .
+in section 5 we provide the details of these experiments .
+systems 3 and 4 can also be used with a teacher ( a human ) instead of an oracle .
+for an actual use in practice , we prefer an approach that combines feature selection and instance selection ( e.g. , as proposed in section 2.1 ) because it also allows the system to benefit from the increase in the knowledge of the teacher or the process may help remind the teacher about the usefulness of features as she reads the documents .
+for example , the teacher who did not know that ct stood for cents may realize that the word is indeed relevant upon reading documents containing the term .
+we will discuss these related approaches in section 7 .
+implementation .
+in this section we give implementation details for our experiments .
+while our approach is applicable to a variety of machine learning algorithms and feature selection approaches , we give the details of our implementation .
+we use support vector machines ( svms ) as the machine learned classifier , uncertainty sampling as our approach to active learning and information gain as the feature selection technique .
+we also give details on how we construct the approximate feature oracle .
+classifier : support vector machines .
+we use support vector machines ( svms ) in our experiments ( the model m is a support vector machine ( svm ) ) ( joachims , 1998 ) .
+an svm learning algorithm tries to find a hyperplane of maximum margin that separates the data into one of two classes ( y ^ { ^ 1 , + 1 } ) .
+svms are considered to be state-of-the-art classifiers in the domains that we described in section 4.1 and have been found to be fairly robust even in the presence of many redundant and irrelevant features ( brank et al. , 2002 ; rose et al. , 2002 . ) .
+our svm implementation uses the libsvm toolkit ( chang and lin ) .
+active learning : uncertainty sampling .
+uncertainty sampling ( lewis and catlett , 1994 ) is a type of active learning in which the instance that the teacher is queried on is the unlabeled instance that the classifier is most uncertain about .
+in the case of a naive bayes classifier , this is the instance which is almost equally likely to be in either of the two classes in a binary classification setting .
+when the classifier is an svm , unlabeled instances closest to the margin are chosen as queries ( schohn and cohn , 2000 ; tong and koller , 2002 ) .
+this results in the version space being split approximately in half each time an instance is queried .
+we use a pool size of 500 in our experiments , such that for each instance selection , we look at a new random sample of 500 instances from the unlabeled data .
+all our methods start out with two randomly picked instances , one in the positive class and one in the negative class .
+each subsequent instance is picked through uncertainty sampling .
+feature selection : information gain .
+we could have chosen any one of several methods for the ordering of features ( sebastiani , 2002 ; brank et al. , 2002 ) .
+information gain is a common measure for ranking features and has been found to be quite effective ( sebastiani , 2002 ; brank et al. , 2002 ) , and is easy and quick to compute .
+construction of the approximate feature oracle .
+the ( feature ) oracle in our experiments has access to the labels of all documents in the data-set ( hence the name oracle ) and uses this information to return a ranked list of features sorted in decreasing order of importance .
+we use information gain for feature ranking since it is easy to compute , especially with a large number of training instances .
+other feature selection methods ( e.g. , forward selection ) may somewhat increase our upper bound estimates of usefulness of oracle feature feedback .
+such improvements will further motivate the idea of using feature feedback , but we don t expect the improvements to be very high .
+in our oracle experiments , we cut off the ranked list ( therefore obtaining a feature subset ) at the point that yields the highest average active learning performance .
+the next section describes our experiments and performance measures .
+experimental set up .
+we will now describe our data sets and our data collection methodology for experiments which use teacher feedback on features .
+we then describe our evaluation framework .
+data sets .
+our test bed for this paper comes from three domains .
+the first data set consists of the 10 most frequent classes from the reuters-21578 corpus ( rose et al. , 2002 . ) .
+the 12,902 documents are reuters news articles categorized based on topics such as earnings and acquisitions .
+the reuters corpus is a standard benchmark for text categorization .
+the second corpus is the 20-newsgroups data set collected by lang ( 1995 ) .
+it has 20,000 documents which are postings on 20 usenet newsgroups .
+this is a slightly harder problem because it has a large vocabulary compared to the reuters corpus ( news articles tend to be more formal and terse ) and it has many documents in each category which are tangentially related to the topic .
+the topics reside in a hierarchy with broader topics like sports and computers at the top level which are further divided into narrower subdivisions .
+for example , sports encompasses more focused groups like baseball and hockey .
+there are 20 categories at the lowest level of the hierarchy .
+the third corpus is the tdt3 corpus ( allan , 2002 ) .
+we used 10 topics from the tdt3 corpus which has 67,111 documents in three languages from both broadcast and news-wire sources .
+the linguistic data consortium ( ldc ) provides the output of an automatic speech recognizer ( asr ) for the broadcast news sources .
+similarly they provide the machine translations of all documents that are not originally in english .
+we use the asr and machine translated documents in our experiments .
+the noise in the asr and machine translation output makes the tdt corpus particularly difficult to work with .
+the topics in the tdt corpus are based on news events .
+thus , hurricane mitch and hurricane george would be two different topics and developing a classifier to separate the two classes is seemingly a more difficult problem .
+the two classes would have a lot of common words especially with regard to lives lost , rescue operations etc .
+for example , the words storm and damage each respectively occur in 50 % and 27 % of the documents on hurricane mitch and in 75 % and 54 % of the documents on hurricane george .
+these common words are probably useful to detect a generic topic like hurricane but are not that useful in discriminating hurricane mitch from hurricane george .
+however , we think it would be fairly trivial for a human to point out mitch and george as two keywords of importance which could then accelerate learning .
+the word mitch occurs in 42 % documents on hurricane mitch and in 0 documents on hurricane george .
+similarly , the word george appears in 0.05 % documents on the topic of hurricane mitch and in 88 % of the documents on hurricane george .
+for all three corpora we consider each topic as a one-versus-rest classification problem , giving us a total of 40 such problems listed in appendix a. we also pick two pairs of easily confusable classes from the 20-newsgroups domain to obtain two binary classification problems viz . , baseball vs hockey and automobiles vs motorcycles .
+in all we have 42 classification problems .
+as features we use words , bi-grams and trigrams obtained after stopping and stemming with the porter stemmer ( porter , 1980 ) in the rainbow toolkit ( mccallum , 1996 ) .
+data for whether humans can emulate the oracle .
+we picked five classification problems which we thought were perceptible to a non-expert and also represented the broad spectrum of problems from our set of 42 classification problems .
+we took the two binary classification problems and from the remaining 40 one-versus-rest problems we chose three ( earnings , hurricane mitch and talk.politics.mideast ) .
+for a given classification problem we took the top 20 features as ranked by information gain on the entire labeled set .
+we randomly mixed these with features which are much lower in the ranked list .
+we showed each user one feature at a time and gave them two options relevant and not-relevant / don t know .
+a feature is relevant if it helps discriminate the positive or the negative class .
+we measured the time it took the user to label each feature .
+we did not show the user all the features as a list , though this may be easier , as lists provide some context and serve as a summary .
+hence we expect that our method provides an upper bound on the time it takes a user to judge a feature .
+the instructions given to the annotator are given in appendix b. similarly , we obtain judgments on fifteen documents in each of five categories ( see appendix c ) .
+in this case we gave the user three choices class 1 , class 2 , don t know .
+we randomly sampled documents such that at least five documents belonged to each class .
+we have complete judgments on all the documents for all three data sets .
+the main purpose of obtaining document judgments was to determine how much time it would take a person to judge documents .
+we compare the time it takes a user to judge a feature with the time it takes a user to judge a document .
+we measure the precision and recall of the user s ability to label features .
+we ask the user to first label the features and then documents , so that the feature labeling process receives no benefit due to the fact that the user has viewed relevant documents .
+in the learning process we have proposed , though , the user would be labeling documents and features simultaneously , so the user would indeed be influenced by the documents she reads .
+hence , we expect that the feature labels we obtained by our experimental method are worse in terms of precision and recall than the real setting .
+we could in practice ask users to highlight terms as they read documents .
+experiments in this direction have been conducted in information retrieval ( croft and das , 1990 ) .
+our users ( participants ) were six graduate students and two employees of an information technology company , none of whom were authors of this paper .
+of the graduate students , five were in computer science and one from public health .
+all our users were familiar with the use of computers .
+five users understood the problem of document classification but none had worked with these corpora .
+one of our users was not a native speaker of english .
+the topics were distributed randomly , and without considering user expertise , so that each user got an average of two to three topics .
+there were overlapping topics between users such that each topic was labeled by two to three users on average .
+a feedback form asking the users some questions about the difficulty of the task was handed out at the end ( see appendix d ) .
+evaluation .
+the deficiency measure was proposed by baram et al. ( 2003 ) as a measure of the speed of an active learning algorithm , useful for comparing different active learning algorithms .
+baram et al. defined deficiency in terms of accuracy .
+accuracy is a reasonable measure of performance when the positive class is a sizable portion of the total .
+since this is not the case for all the classification problems we have chosen , we modify the definition of deficiency , and define it in terms of the f1 score ( harmonic mean of precision and recall ) .
+for deficiency a lower value is better .
+as we also report on the f1 scores , for which higher values are better , for consistency and easier interpretation of our charts and tables we define efficiency = 1 ^ deficiency .
+efficiency has a range from 0 to 1 , and a larger value indicates a faster rate of learning .
+thus , in all our reports higher values are better .
+the value f1m ( rand ) represents the performance of a classifier with a large amount of training data , and can be considered the optimal performance under supervised learning .
+with large amounts of training data , we expect the performance of a classifier trained using active learning to be about the same as a classifier trained using random sampling .
+however , we would like active learning to approach this level as quickly as possible .
+the metric therefore takes into consideration how far the performance is from the optimal performance by computing the difference .
+the metric compares this difference when t documents have been actively picked to the difference when t documents have been randomly picked for increasing number of training documents t .
+since we are concerned with the beginning of the learning curve , we stop after t = 42 number of documents have been sampled .
+to understand the intuition behind efficiency , we can draw the active learning curve by plotting f1t ( act ) for increasing values of t , as shown in figure 5 ( a ) .
+similarly we can draw the random learning curve by measuring f1t ( rand ) for increasing values of t .
+f1m is a straight line representing the best achievable performance .
+then efficiency is one minus the ratio of the solid colored area to the spotted area .
+the higher the efficiency , the better the active learning algorithm .
+we aim to maximize both efficiency and f1 .
+results : experiments with an oracle .
+in this section we seek the answer to the following questions : can feature feedback significantly boost active learning performance ?
+should we use feature feedback during the entire active learning process ( both instance selection , and model selection ) or only for model selection ?
+to measure how much gain we can get from feature feedback we can measure the impact of the oracle ( which has knowledge of the best set of features ) on active learning .
+this gives us an upper bound on how useful feature feedback is for active learning .
+then in the next section we go on to measure the extent to which humans can emulate the oracle .
+we will use systems 3 and 4 ( described in section 2.2 ) to help understand the answers to the above questions .
+improvements to active learning with feature selection .
+following the algorithm for system 3 ( see section 2.2 , figure 3 ) , let f = n ( the total number of features ) and let us assume that the oracle selects the k most important features ( by information gain ) in step 1.b , which is used to initialize the model in step 2 .
+random sampling ( step 3.a ) , in this particular implementation , does not use any of the feature information or the initial model .
+then in step 3.c , we prune the data set by retaining only the chosen k features for each instance .
+we now perform active learning on the instances in this reduced feature space ( step 4 ) .
+we evaluate these experiments at many points in the two-dimensional space of number of features k versus number of labeled documents t by measuring the f1 score : f 1 t ( act , k ) .
+we can similarly measure performance in the reduced feature space when instances are picked randomly .
+thus we can compute efficiency in the reduced feature space as et ( k ) .
+when f = k = n the algorithm reduces to traditional active learning ( figure 1 ) .
+figure 5 ( b ) shows a plot of f1t ( act , k ) for different values of the number of features k and number of labeled training instances t , for the earnings category in reuters .
+the dotted curve traces the maximum ft for each value of t .
+the x , y and z axes denote k , t and f1t ( act , k ) respectively .
+the number of labeled training instances t ranges from 2 to 42 in increments of 5 .
+the number of features used for classification k has values from 33,378 ( all features ) , 33378 / 2 , 33378 / 4 to 32 .
+the dark band represents the case when all features are used .
+this method of learning in one dimension is representative of traditional active learning .
+clearly when the number of documents is few , performance is better when there is a smaller number of features .
+as the number of documents increases the number of features needed to maintain high accuracy increases .
+from the figure it is obvious that we can get a big boost in accuracy by starting with fewer features and then increasing the complexity of the model as the number of labeled documents increase .
+table 1 captures the behavior of all the problems in the reuters corpus when there is an oracle to do the feature selection .
+the second column ( k = n ) in table 1 shows the efficiency obtained using uncertainty sampling and all ( n ) features .
+the third column ( k = n ) indicates the average efficiency obtained using uncertainty sampling and a reduced subset of features .
+the feature set size n at which this efficiency is attained is shown in column four .
+for each classification problem , we identify the feature set size which optimizes the efficiency , that is , optimizes the rate at which classification performance under active learning approaches learning with all of the data .
+column 5 ( k = n ) in table 1 shows the value of f 17 ( act , n ) : the f 1 score with seven instances selected using active learning , when all features are used .
+column 6 shows the average f17 ( act , m ) using a reduced feature subset .
+as for efficiency the best feature subset size ( m ) for each classification problem is obtained as the feature subset size at which f 17 ( act , k ) is maximum .
+for example in figure 5 ( b ) at seven instances the best f1 is obtained with 512 features .
+figure 7 shows the values of f17 computed using all ( n ) features and using a reduced subset of ( m ) features for individual problems .
+columns 7 , 8 , and 9 in table 1 show similar results for f122 ( act , k ) with the best feature subset size at t = 22 being denoted by p .
+the values for individual problems is illustrated in figure 8 .
+the last column shows f 11000 ( rand ) .
+all 42 of our classification problems exhibit behavior as in figure 5 ( b ) .
+for all classification problems , n , m and p are less than the maximum number of features .
+also , for 31 of 42 cases m < p ( that is , the number of features optimal for seven labeled instances , m is less than the number of features optimal for 22 labeled instances , p ) meaning that as the number of labeled instances ( t ) increases , the complexity of the classifier also needs to increase .
+for 20-newsgroups , for all classes we observe that efficiency , f17 and f122 are best at very small feature subset sizes .
+for reuters and tdt there are classes for which a large number of features become important very early ( for example : trade , bin laden indictment , nba labor disputes ) .
+feature selection for instance selection or model selection .
+as mentioned in section 2.2 the difference between systems 3 and 4 is in that feature selection precedes active learning in the former , and the best feature subset is picked in a retrospective manner , while it follows active learning in the latter .
+the two systems when used with oracle feature selection will help us understand the extent to which oracle feedback aids different aspects of the active learning process .
+figure 9 compares the results of using system 4 and system 3 on the reuters corpus .
+there is hardly any difference between systems 3 and 4 , especially on f17 .
+all other data sets exhibit the same behavior .
+the f122 and e42 values are slightly better for the method that does feature selection before active learning ( system 3 ) but it is not significantly different ( determined using a t-test at the 0.05 level of confidence ) from the method where feature pruning is done after instance selection ( system 4 ) .
+thus , our experimental results suggest there is some benefit for instance selection but most of the benefit from oracle feature selection comes from improving the model learned ( model selection ) . 5.3 discussion : why does feature selection help ?
+intuitively , with limited labeled data , there is little evidence to prefer one feature over another , so the learner has to spread the feature weights more or less evenly on many features .
+in other words , the learner has to remain conservative .
+feature / dimension reduction by the oracle allows the learner to focus on dimensions that matter , rather than being overwhelmed with numerous dimensions right at the outset of learning .
+oracle feature reduction allows the learner to assign higher weights to fewer features .
+this tends to improve accuracy , since the oracle selected features are the actual most predictive features .
+oracle feature reduction may also improve instance selection as the learner obtains instances to query that are important for finding better weights on the features that matter .
+as the number of labeled instances increases , feature selection becomes less important , as the learning algorithm becomes better capable of finding the discriminating hyperplane ( feature weights ) on its own .
+we experimented with filter based methods for feature selection , which did not work very well ( we got tiny or no improvements ) .
+this is expected given such limited training set sizes , and is consistent with most previous findings ( sebastiani , 2002 ) .
+next we determine if humans can identify these important features .
+results : experiments with a human ( teacher ) .
+consider our introductory example of the editor who was looking for training instances for the topic hurricane mitch .
+from a human perspective the words hurricane , mitch etc may be important features in documents discussing this topic .
+given a large number of documents labeled as on-topic and off-topic , and given a classifier trained on these documents , the classifier may also find these features to be most relevant .
+with little labeled data ( say two labeled instances ) the classifier may not be able to determine the discriminating features .
+while in general in machine learning the source of labels is not important to us , in active learning scenarios in which we expect the labels to come from humans we have valid questions to pose : can humans label features as well as documents ?
+in other words are features that are important to the classifier perceptible to a human ?
+if the feature labels people provide are imperfect , is the feedback still beneficial to active learning ?
+we address the first question in the following section .
+our concern in this paper is asking people to give feedback on features , or word n-grams , as well as entire documents .
+we may expect this to be more efficient , since documents are often long and may contain redundant or irrelevant content , and results from our oracle experiments indicate great potential in doing feature selection .
+we then move on to discuss a real system which employs a two-tiered approach of document feedback and feature feedback like the system in figure 2 which we evaluate using a simulation : we obtain feedback on features and documents apriori , and use the judgments so obtained to measure the effectiveness of our approach .
+we employed this approach rather than one where an actual user labels features and documents in tandem because our approach allows us to run many repeated trials of our experiments , enabling us to do significance testing .
+given that we have demonstrated the effectiveness of our algorithm , we reserve a more realistic evaluation with a true human in the loop for future work .
+can humans emulate the oracle ?
+we evaluated user feature labeling by calculating their average precision and recall at identifying the top 20 features as ranked by an oracle using information gain on the entire labeled set .
+table 2 shows these results .
+for comparison we have also provided the precision and recall ( against the same oracle ranking of top 20 features ) obtained using 50 labeled instances ( picked using uncertainty sampling ) denoted by @ 50 .
+precision and recall of our participants is high , supporting our hypothesis that features that a classifier finds to be relevant after seeing a large number of labeled instances are obvious to a human after seeing little or no labeled data ( the latter case being true of our experiments ) .
+additionally the precision and recall @ 50 is significantly lower than that of humans , indicating that a classifier like an svm needs to see much more data before it can find discriminatory features .
+table 2 also shows the times taken for labeling features and documents .
+on average humans take five times longer to label one document than to label one feature .
+note that features may be even easier to label if they are shown in context as lists , with relevant passages etc .
+we measured whether document length influences document labeling time .
+we found the two to be correlated by r = 0.289 which indicates a small increase in time for a large increase in length .
+the standard deviations for precision and recall are 0.14 and 0.15 respectively .
+different users vary significantly in precision , recall and the total number of features labeled relevant .
+from the post-labeling survey we are inclined to believe that this is due to individual caution exercised during the labeling process .
+we also measure the extent to which our users tend to agree with each other about the importance of features .
+for this we use the kappa statistic ( cohen , 1960 ) which is a measure that quantifies the agreement between annotators that independently classify a set of entities ( in our case the features ) into classes ( relevant versus non-relevant / don t know ) .
+where po is the observed proportion of agreement and pc is the agreement due to chance ( cohen , 1960 ; landis and koch , 1977 ) .
+landis and koch ( 1977 ) provide a table giving guidelines about how to interpret kappa values .
+we find a value of 0.68 to be the average kappa across the five categories in our user study .
+according to landis and koch ( 1977 ) this indicates substantial agreement .
+we obtained judgments on a handful of documents for each user .
+we used those judgments to measure time .
+some of our users had difficulty judging documents .
+for example , for the earnings category , one of our users had very low agreement with the true reuters categories .
+this person did not have a finance background and could not distinguish well between earnings and acquisitions , often confusing the two .
+but this user did quite a good job of identifying useful features .
+she missed only six of 20 of the relevant features and had only five false alarms .
+the features that she marked relevant , when used in the human-in-the-loop algorithm resulted in an efficiency of 0.29 .
+this is still an improvement over traditional uncertainty sampling which has a efficiency of 0.10 .
+these results can be explained by looking at the question posed to the annotator .
+when it came to features , the question was on the discriminative power of the feature .
+hence a user did not have to determine whether the words shares was pertinent to earnings or not but rather she only needed to indicate whether the word was likely to be discriminatory .
+additionally , one of our users suggested that terms shown in context would have carried more meaning .
+the user said that she did not realize the term ct stood for cents until she read the documents .
+but since she was made to judge terms before documents this user s judgment had marked the term ct as non-relevant / don t know .
+some of the highlights of the post-labeling survey are as follows .
+on average users found the ease of labeling features to be 3.8 ( where 0 is most difficult and 5 is very easy ) and documents 4.2 .
+in general users with poor prior knowledge found the feature labeling process very hard .
+the average expertise ( 5 = expert ) was 2.4 , indicating that most users felt they had little domain knowledge for the tasks they were assigned .
+we now proceed to see how to use features labeled as relevant by our naive users in active learning .
+using human feature feedback simultaneously with document feedback in active learning .
+we saw in section 5 that feature selection coupled with uncertainty sampling gives us big gains in performance when there are few labeled instances .
+in section 6.1 we saw that humans can discern discriminative features with reasonable accuracy .
+we now describe our approach of applying term and document level feedback simultaneously in active learning .
+in section 2.2 we discussed the possible cognitive advantages of an interleaved approach of feature selection and instance selection .
+additionally , we found that feature selection does not hurt uncertainty sampling and may aid it .
+in the following section we describe an implementation for system 2 .
+implementation .
+following figure 2 , the features to be displayed to the user ( in step 2.d.i ) are the top f features obtained by ordering the features by information gain .
+more specifically , we trained the svm classifier on these t labeled instances .
+then to compute information gain , we used the five top ranked ( farthest from the margin on the positive side ) documents from the unlabeled set in addition to the t labeled documents .
+using the unlabeled data for term level feedback is very common in information retrieval and is called pseudo-relevance feedback ( salton , 1968 ) .
+the user labels k > 0 of the f features as relevant or discriminative ( step 2.d.ii ) .
+if a user has labeled a feature in a previous iteration , we don t show the user that feature again ( the top f are picked from the unlabeled features ) .
+we set f to 10 in our experiments .
+we incorporate feature feedback ( step 2.e ) as follows .
+let s ~ = s1 ... sn be a vector containing weights of relevant features .
+if a feature number i that is presented to the user is labeled as relevant then we set si = a , otherwise si = b , where a and b are parameters of the system .
+for each x in the labeled and unlabeled sets we multiply xi by si to get x ^ i .
+in other words , we scale all the features that the user indicated as relevant by a and the rest of the features by b .
+we set a = 10 and b = 1 . 3 by scaling the important features by a we are forcing the classifier to assign higher weights to these features .
+we demonstrate the intuition with the following example .
+consider a linear svm , n = 2 and two data points x1 = ( 1 , 2 ) and x2 = ( 2 , 1 ) with labels + 1 and 1 respectively .
+an s vm trained on this input learns a classifier with w = ( 0.599 , + 0.599 ) .
+thus , both features are deemed equally discriminative by the learned classifier .
+if feature 1 is indicated to be more discriminative by our user , then by our method x ^ 1 = ( 10,2 ) and x ^ 2 = ( 20,1 ) and w ^ = ( 0.043 , 0.0043 ) , thus f1 is assigned a much higher weight in the learned classifier .
+now , this is a soft version of the feature selection mechanism of section 5 .
+but in that case the oracle knew the ideal set of features .
+those experiments may be viewed as a special case where b = 0 .
+we expect that human feedback is imperfect and we do not want to zero-out potentially relevant features .
+simulating user feedback .
+we use the relevance judgments on features obtained as described in section 6.1 to simulate the user in each iteration .
+at each iteration of the algorithm , if a feature that is presented had been marked by the user as relevant , in the relevance judgment experiments of the previous section , we mark the value of that feature as 1 in the vector ~ s .
+the vector s ~ is noisier ( less complete ) than the case where we would have obtained relevance judgments on features during the actual execution of the algorithm .
+this is because in addition to mistakes made by the user , we lose out on those features that the user might have considered relevant , had she been presented that feature when we were collecting relevance judgments for a relatively small subset of features .
+in a real life scenario this might correspond to the lazy user who labels few features as relevant and leaves some features unlabeled in addition to making mistakes .
+to make our experiments repeatable ( to compute average performance and for convenience ) we simulate user interaction as follows .
+for each classification problem we maintain a list of features that a user might have considered relevant had she been presented that feature .
+for these lists we used the judgments obtained in section 4.2 .
+thus for each of the five classification problems we had two or three such lists , one per user who judged that topic .
+for the 10 tdt topics we have topic descriptions as provided by the ldc .
+these topic descriptions contain names of people , places and organizations that are key players in this topic in addition to other keywords .
+we used the words in these topic descriptions to be equal to the list of relevant features .
+now , given these lists we can perform the simulated hil ( human in the loop ) experiments for 15 classification problems .
+figure 10 shows the performance of the hil experiments .
+like before we report efficiency ( e42 ) , the f1 score with 7 labeled documents ( f17 ) , and the f1 score with 22 labeled documents ( f122 ) for each of uncertainty sampling ( unc ) , oracle feature selection with uncertainty sampling ( ora ) and the human in the loop ( hil ) algorithm .
+as a baseline we also report results for the case when the top 20 features as obtained by the information gain oracle are input to the simulated hil experiments ( this represents what a user with 100 % precision and recall would obtain by our method ) .
+the oracle is ( as expected ) much better than plain uncertainty sampling , on all three measures , validating the effectiveness of our proposed system section 2.1 .
+the performance of the hil experiments is almost as good as the oracle , indicating that user input ( although imperfect ) we picked our algorithm s parameters based on a quick test on three topics ( baseball , earnings , and acquisitions ) using the oracle features of section 5 .
+when to stop asking for labels on both features and documents and switch entirely to documents remains an area for future work .
+we provide some initial results in this regard .
+consider that we ask for both document and feature feedback up to j iterations and after that we only ask for document feedback .
+figure 11 shows the active learning curves for different values of j for the hurricane mitch problem in the tdt corpus .
+the case when j = 0 represents traditional uncertainty sampling .
+when j = 5 there is improvement over the case when j = 0 , and when j = 10 there is even more improvement .
+beyond j = 10 there is little gain in obtaining feature feedback .
+it seems that relevant features are usually spotted in very early iterations .
+related work .
+our work is related to a number of areas including query learning , active learning , use of ( prior ) knowledge and feature selection in machine learning , term-relevance feedback in information retrieval , and human-computer interaction .
+term level feedback has been studied in information retrieval ( anick , 2003 ; croft and das , 1990 ; belkin et al. , 2001 ) .
+many participants in the trec hard track ( voorhees and buckland , 2005 ) generate clarification forms for users to refine or disambiguate their query .
+many of the effective forms are composed of lists of terms and the user is asked to mark terms as relevant or not , and some have found that term level feedback is more effective than document level feedback ( diaz and allan , 2005 ) .
+the trec interactive task has focused on issues regarding the kinds of questions that can be asked of the user .
+they find that users are happy to use interfaces which ask the user to reformulate their queries through a list of suggested terms .
+they also find that users are willing to mark both positive and negative terms ( belkin et al. , 2001 ) .
+our proposed method is an instance of query-based learning and an extension of standard ( pool-based ) active learning which focuses on selective sampling of instances from a pool of unlabeled data alone ( cohn et al. , 1994 ) .
+although query-based learning can be very powerful in theory ( angluin , 1992 ) , arbitrary queries may be difficult to answer in practice ( baum and lang , 1992 ) .
+hence the popularity of pool-based methods , and the motivation for studying the effectiveness and ease of predictive feature identification by humans in our application area .
+to best of our knowledge , all prior work on query learning and active learning focused on variants of membership queries , that is , requesting the label of a possibly synthesized instance .
+our work is unique in the field of active learning as we extend the query model to include feature as well as document level feedback .
+feature feedback may be viewed as the teacher providing evidence or an explanation for the learner on the reasoning behind the labeling .
+the field of explanation-based learning , however , concerns itself on a deductive rather than an inductive learning task , using one instance and a given domain theory to generalize ( mitchell et al. , 1986 ; dejong and mooney , 1986 ) .
+feature selection can lead to improvements in the performance ( accuracy ) or in the space or time efficiency of the classifier .
+when there are sufficient labeled instances , most state of the art learning algorithms are able to distinguish the relevant features from the irrelevant ones ( brank et al. , 2002 ) .
+hence there is little improvement in performance with an additional feature selection component .
+when there are few labeled instances , working with a small set of relevant features tends to be more useful .
+this phenomenon has been referred to in statistics as the hughes phenomenon ( hughes , 1968 ) .
+weight regularization may be viewed as a soft version of feature selection : for best performance , in general the smaller the training set , the smaller the total weight that is allowed to be spread over the features .
+unfortunately , to do automatic feature selection well , we need sufficient training data , leading to a chicken-and-egg problem .
+fortunately , in document classification users have the intuition to point out a small subset of useful features which would be beneficial when there are few labeled instances .
+budgeted learning also works on identifying the predictive features during an active learning setting , but in this case the feature values are unknown and there is a cost to finding each feature s value for each instance of interest ( such as the outcome of blood test on an individual ) ( lizotte et al. , 2003 ) .
+that human prior knowledge can accelerate learning has been investigated by pazzani and kibler ( 1992 ) , but our work differs in techniques ( they use prior knowledge to generate horn-clause rules ) and application domains .
+beineke et al. ( 2004 ) use human prior knowledge of co-occurrence of words , at feature generation time , to improve classification of product reviews .
+none of this work , however , considers the use of prior knowledge in the active ( sequential ) learning setting .
+our study of the human factors ( such as quality of feedback and costs ) is also a major differentiating theme between our work from previous work in incorporating prior knowledge for training .
+past work has not addressed this issue , or might have assumed experts in machine learning taking a role in training the system ( schapire et al. , 2002 ; wu and srihari , 2004 ; godbole et al. , 2004 ; jones , 2005 ) .
+we only assume knowledge about the topic of interest .
+our algorithmic techniques and the studied modes of interaction also differ somewhat and are worth further comparison .
+jones ( 2005 ) also used single feature-set labeling in the context of active learning : the user was queried on a feature rather than the whole instance .
+the labeled feature was taken as a proxy for the label of any instance containing that feature , so a single feature labeling potentially labeled many documents ( similar to the soft labeling technique discussed next ) .
+this was found to be more economical than whole-instance labeling for some tasks .
+the instances in this work consisted of only two features ( a noun-phrase and a context ) , so labeling one feature is equivalent to labeling half an instance .
+our work differs in that our instances ( documents ) contain many features ( words ) and we combine both feature labeling and document labeling .
+our work also differs in that we use the labeled features for feature selection and feature re-weighting , rather than as proxies for document labels .
+both wu and srihari ( 2004 ) and schapire et al. ( 2002 ) assume that prior knowledge is given at the outset which leads to a soft labeling of the unlabeled data .
+this extra labeling is incorporated into training via modified boosting or svm training .
+by soft labeling , we mean the extra labels , generated via prior knowledge , are not certain and a method that uses such information may for example assign low confidences to such labellings or lower the misclassification costs compared to misclassification costs for instances labeled directly by a human .
+however , in our scheme the user is labeling documents and features in an interactive and interleaved fashion .
+we expect that our proposed interactive mode has an advantage over requesting prior knowledge from the outset , as it may be easier for the user to identify or recall relevant features while labeling documents in the collection and being presented with candidate features .
+our method of scaling the dimensions and training ( without using the unlabeled data ) has an advantage over soft labeling in situations where one may not have access to much unlabeled data , for example in online tasks such as filtering news streams and categorizing personal emails .
+furthermore , we simplify the user s task in that our technique does not require the user to specify whether the feature is positively or negatively correlated with the category , just whether the user thinks the feature is relevant or predictive .
+on the other hand , in the presence of ample unlabeled data , soft labeling methods might more effectively incorporate the information available in the unlabeled data .
+both approaches require extra parameters specifying how much to scale the dimensions or the confidence or misclassification costs to assign to the generated labellings , though some fixed parameter settings may work for most cases , or automated methods could be designed .
+the work of godbole et al. ( 2004 ) emphasizes system issues and focuses on multi-class training rather than a careful analysis of effects of feature selection and human efficacy .
+their proposed method is attractive in that it treats features as single term documents that can be labeled by humans , but they also study labeling features before documents ( and only in an oracle setting , without using actual human annotators ) .
+they do not observe much improvements using their particular method over standard active learning in the single domain ( reuters ) they test on .
+finally , we mention another method of incorporating prior knowledge that has much similarity to our method of differential scaling of dimensions : differential weightings of features in feature weight initializations when using online methods such as winnow .
+a better understanding of effective ways of incorporating ( prior ) knowledge in various learning scenarios is a promising research direction .
+conclusions and future work .
+we have demonstrated experimentally that for learning with few labeled examples good ( oracle- based ) feature selection is extremely useful .
+as the number of examples increases , the vocabulary of the system , in other words , the effective feature set size for best performance , also needs to increase .
+a teacher , who may not necessarily be knowledgeable in machine learning , but has prior knowledge on the relevance of the features , can help accelerate training the system by pointing out the potentially important features for the system to focus on .
+we conducted a user study to see how well naive users performed as compared to a feature oracle in the domain of text categorization .
+our technique weighted the features marked relevant by the users more than the other features .
+we used our users outputs in realistically simulated human in the loop experiments and observed a significant increase in learning performance with our techniques over plain active learning .
+in summary , our contributions are : we demonstrated that access to a feature importance oracle can improve performance ( the f1 score ) significantly over uncertainty sampling , even with as few as 7 examples labeled .
+we found that even naive users can provide effective feedback on the most relevant features ( about 60 % accuracy of the oracle in our experiments ) .
+we measured the manual costs of relevance feedback on features versus labeling documents : we found that feature feedback takes about one fifth of the time taken by document labeling on average .
+we devised a method of simultaneously soliciting class labels and feature feedback that improves classifier performance significantly over soliciting class labels alone .
+consider a user who is interested in training a personalized news filter that delivers news stories on topics of their interest as and when they appear in the news .
+the user is probably willing to engage in some form of interaction in order to train the system to better suit their need .
+similarly a user wanting to organize their e-mail into folders may be willing to train the e-mail filter as long as training is not too time consuming .
+both the news filter and the e-mail filter are document classification systems .
+the idea of using as few documents as possible for training classifiers has been studied in semi-supervised learning and active learning .
+in this paper we extended the traditional active learning setting which concerns the issue of minimal feedback and proposed an approach where the user provides feedback on features as well as documents .
+we showed that such an approach has good potential in significantly decreasing the overall amount of interaction required for training the system .
+this paper points to three promising inter-related questions for further exploration .
+the first question concerns what to ask from the user .
+in general , the active learner has to make decisions at various time points during active learning regarding the choice of feedback .
+for example , whether to ask for feedback on a document or on a feature , or even whether to stop asking questions all together ( ask nothing ) , appropriate for a scenario where no additional feedback is likely to improve performance significantly .
+this involves some implicit or explicit assessment of the expected benefits and costs of different kinds of feedback .
+furthermore , there are alternate kinds of feedback that are potentially useful feedback on clusters of features for example .
+the second question involves human computer interaction issues and seeks to explore how to translate what the learner needs to know , into a question , or a user interface , that the human teacher can easily understand .
+in our case , the learner asked the teacher labels on word features and documents , both of which required little effort on the part of the teacher to understand what was being asked of him .
+our subjects did indeed find labeling words without context a little hard , and suggested that context might have helped .
+an attractive alternative or complementary method of soliciting feature feedback is asking users to highlight some relevant or predictive terms as they read a document .
+experiments in this direction have been conducted in information retrieval ( croft and das , 1990 ) .
+the third question is about the choice of learning algorithms for effectively incorporating these alternate forms of feedback .
+we explored one method in this paper and discussed alternatives in section 7 .
+related to the above is better understanding and quantifying the potential of active learning enhanced with feature feedback as a function of various aspects of the learning problem , such as measures of the difficulty of the category that one seeks to learn .

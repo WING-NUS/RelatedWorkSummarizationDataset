@@ -1,0 +1,168 @@
+the pascal recognising textual entailment challenge .
+abstract .
+this paper describes the pascal network of excellence recognising textual entailment ( rte ) challenge benchmark ' .
+the rte task is defined as recognizing , given two text fragments , whether the meaning of one text can be inferred ( entailed ) from the other .
+this application- independent task is suggested as capturing major inferences about the variability of semantic expression which are commonly needed across multiple applications .
+the challenge has raised noticeable attention in the research community , attracting 17 submissions from diverse groups , suggesting the generic relevance of the task .
+introduction .
+rational .
+a fundamental phenomenon of natural language is the variability of semantic expression , where the same meaning can be expressed by , or inferred from , different texts .
+this phenomenon may be considered the dual problem of language ambiguity , together forming the many-to-many mapping between language expressions and meanings .
+many natural language processing applications , such as question answering ( qa ) , information extraction ( ie ) , ( multi-document ) summarization , and machine translation ( mt ) evaluation , need a model for this variability phenomenon in order to recognize that a particular target meaning can be inferred from different text variants .
+even though different applications need similar models for semantic variability , the problem is often addressed in an application-oriented manner and methods are evaluated by their impact on final application performance .
+consequently it becomes difficult to compare , under a generic evaluation framework , practical inference methods that were developed within different applications .
+furthermore , researchers within one application area might not be aware of relevant methods that were developed in the context of another application .
+overall , there seems to be a lack of a clear framework of generic task definitions and evaluations for such " applied " semantic inference , which also hampers the formation of a coherent community that addresses these problems .
+this situation might be confronted , for example , with the state of affairs in syntactic processing , where clear application- independent tasks , communities ( and even standard conference session names ) have matured .
+the recognising textual entailment ( rte ) challenge is an attempt to promote an abstract generic task that captures major semantic inference needs across applications .
+the task requires to recognize , given two text fragments , whether the meaning of one text can be inferred ( entailed ) from another text .
+more concretely , textual entailment is defined as a directional relationship between pairs of text expressions , denoted by t - the entailing " text " , and h - the entailed " hypothesis " . we say that t entails h if the meaning of h can be inferred from the meaning of t , as would typically be interpreted by people .
+this somewhat informal definition is based on ( and assumes ) common human understanding of language as well as common background knowledge .
+it is similar in spirit to evaluation of applied tasks such as question answering and information extraction , in which humans need to judge whether the target answer or relation can indeed be inferred from a given candidate text .
+as in other evaluation tasks our definition of textual entailment is operational , and corresponds to the judgment criteria given to the annotators who decide whether this relationship holds between a given pair of texts or not .
+recently there have been just a few suggestions in the literature to regard entailment recognition for texts as an applied , empirically evaluated , task ( monz and de rijke , 2001 ; condoravdi et al. , 2003 ; dagan and glickman , 2004 ) .
+textual entailment is also related , of course , to formal literature about logical entailment and semantic inference .
+yet , any attempt to make significant reference to this rich body of literature , and to deeply understand the relationship between the operational textual entailment definition and relevant formal notions , would be beyond the scope of the current challenge and this paper .
+it may be noted that from an applied empirical perspective , much of the effort is directed at recognizing meaning-entailing variability at the lexical and syntactic levels , rather than addressing relatively delicate logical issues .
+it seems that major inferences , as needed by multiple applications , can indeed be cast in terms of textual entailment .
+for example , a qa system has to identify texts that entail a hypothesized answer .
+given the question " what does peugeot manufacture ? " , the text " chr � tien visited peugeot � s newly renovated car factory " entails the hypothesized answer form " peugeot manufactures cars " .
+similarly , for certain information retrieval queries the combination of semantic concepts and relations denoted by the query should be entailed from relevant retrieved documents .
+in ie entail ment holds between different text variants that express the same target relation .
+in multi-document summarization a redundant sentence , to be omitted from the summary , should be entailed from other sentences in the summary .
+and in mt evaluation a correct translation should be semantically equivalent to the gold standard translation , and thus both translations should entail each other .
+consequently , we hypothesize that textual entailment recognition is a suitable generic task for evaluating and comparing applied semantic inference models .
+eventually , such efforts can promote the development of entailment recognition " engines " which may provide useful generic modules across applications .
+the challenge scope .
+as a first step towards the above goal we created a dataset of text-hypothesis ( t-h ) pairs of small text snippets , corresponding to the general news domain ( see table 1 ) .
+examples were manually labeled for entailment � whether t entails h or not � by human annotators , and were divided into a development and test datasets .
+participating systems were asked to decide for each t-h pair whether t indeed entails h or not , and results were compared to the manual gold standard .
+the dataset was collected with respect to different text processing applications , as detailed in the next section .
+each portion of the dataset was intended to include typical t-h examples that correspond to success and failure cases of the actual applications .
+the collected examples represent a range of different levels of entailment reasoning , based on lexical , syntactic , logical and world knowledge , at different levels of difficulty .
+the distribution of examples in this challenge has been somewhat biased to choosing non-trivial pairs , and also imposed a balance of true and false examples .
+for this reason , systems performances in applicative settings might be different than the figures for the challenge data , due to different distribution of examples in particular applications .
+yet , the data does challenge systems to handle properly a broad range of entailment phenomena .
+overall , we were aiming at an explorative rather than a competitive setting , hoping that meaningful baselines and analyses for the capabilities of current systems will be obtained .
+finally , the task definition and evaluation methodologies are clearly not mature yet .
+we expect them to change over time and hope that participants ' contributions , observations and comments will help shaping this evolving research direction .
+dataset preparation and application settings .
+the dataset of text-hypothesis pairs was collected by human annotators .
+it consists of seven subsets , which correspond to typical success and failure settings in different application , as listed below .
+within each application setting the annotators selected both positive entailment examples ( true ) , where t is judged to entail h , as well as negative examples ( false ) , where entailment does not hold ( a 50 % -50 % split ) .
+typically , t consists of one sentence ( sometimes two ) while h was often made a shorter sentence ( see table 1 ) .
+the full datasets are available for download at the challenge website .
+in some cases the examples were collected using external sources , such as available datasets or systems ( see acknowledgements ) , while in other cases examples were collected from the web , focusing on the general news domain .
+in all cases the decision as to which example pairs to include was made by the annotators .
+the annotators were guided to obtain a reasonable balance of different types of entailment phenomena and of levels of difficulty .
+since many t-h pairs tend to be quite difficult to recognize , the annotators were biased to limit the proportion of difficult cases , but on the other hand to try avoiding high correlation between entailment and simple word overlap .
+thus , the examples do represent a useful broad range of naturally occurring entailment factors .
+yet , we cannot say that they correspond to a particular representative distribution of these factors , or of true vs. false cases , whatever such distributions might be in different settings .
+thus , results on this dataset may provide useful indications of system capabilities to address various aspects of entailment , but do not predict directly the performance figures within a particular application .
+it is interesting to note in retrospect that the annotators ' selection policy yielded more negative examples than positive ones in the cases where t and h have a very high degree of lexical overlap .
+this anomaly was noticed also by bos and markert , bayer et al. and glickman et al. , and affected the design or performance of their systems .
+application settings .
+information retrieval ( ir ) : annotators generated hypotheses ( h ) that may correspond to meaningful ir queries that express some concrete semantic relations .
+these queries are typically longer and more specific than a standard keyword query , and may be considered as representing a semantic-oriented variant within ir .
+the queries were selected by examining prominent sentences in news stories , and then submitted to a web search engine .
+candidate texts ( t ) were selected from the search engine 's retrieved documents , picking candidate texts that either do or do not entail the hypothesis .
+comparable documents ( cd ) : annotators identified t-h pairs by examining a cluster of comparable news articles that cover a common story .
+they examined " aligned " sentence pairs that overlap lexically , in which semantic entailment may or may not hold .
+some pairs were identified on the web using google news3 and others taken from an available resource of aligned english sentences ( see acknowledgments ) .
+the motivation for this setting is the common use of lexical overlap as a hint for semantic overlap in comparable documents , e.g. for multi-document summarization .
+reading comprehension ( rc ) : this task corresponds to a typical reading comprehension exercise in human language teaching , where students are asked to judge whether a particular assertion can be inferred from a given text story .
+the challenge annotators were asked to create such hypotheses relative to texts taken from news stories , considering a reading comprehension test for high school students .
+question answering ( qa ) : annotators used the textmap web based question answering system available online ( see acknowledgments ) .
+the annotators were used a resource of questions from clef-qa ( mostly ) and trec , but could also construct their own questions .
+for a given question , the annotators chose first a relevant text snippet ( t ) that was suggested by the system as including the correct answer .
+they then turned the question into an affirmative sentence with the hypothesized answer " plugged in " to form the hypothesis ( h ) .
+for example , given the question , " who is ariel sharon ? " and taking a candidate answer text " israel 's prime minister , ariel sharon , visited prague " ( t ) , the hypothesis h is formed by turning the question into the statement " ariel sharon is israel 's prime minister " , producing a true entailment pair .
+information extraction ( ie ) : this task is inspired by the information extraction application , adapting the setting for pairs of texts rather than a text and a structured template .
+for this task the annotators used an available dataset annotated for the ie relations " kill " and " birth place " produced by uiuc ( see acknowledgments ) , as well as general news stories in which they identified manually " typical " ie relations .
+given an ie relation of interest ( e.g. a purchasing event ) , annotators identified as the text ( t ) candidate news story sentences in which the relation is suspected to hold .
+as a hypothesis they created a straightforward natural language formulation of the ie relation , which expresses the target relation with the particular slot variable instantiations found in the text .
+for example , given the information extraction task of identifying killings of civilians , and a text " guerrillas killed a peasant in the city of flores . " , a hypothesis " guerrillas killed a civilian " is created , producing a true entailment pair .
+machine translation ( mt ) : two translations of the same text , an automatic translation and a gold standard human translation ( see acknowledgements ) , were compared and modified in order to obtain t-h pairs .
+the automatic translation was alternately taken as either t or h , where a correct translation corresponds to true entailment .
+the automatic translations were sometimes grammatically adjusted , being otherwise grammatically unacceptable .
+paraphrase acquisition ( pp ) paraphrase acquisition systems attempt to acquire pairs ( or sets ) of lexical-syntactic expressions that convey largely equivalent or entailing meanings .
+annotators selected a text t from some news story which includes a certain relation , for which a paraphrase acquisition system produced a set of paraphrases ( see acknowledgements ) .
+then they created one or several corresponding hypotheses by applying the candidate paraphrases to the original text .
+correct paraphrases suggested by the system , which were applied in an appropriate context , yielded true t-h pairs ; otherwise a false example was generated .
+additional guidelines .
+some additional annotation criteria and guidelines are listed below : given that the text and hypothesis might originate from documents at different points in time , tense aspects are ignored .
+in principle , the hypothesis must be fully entailed by the text .
+judgment would be false if the hypothesis includes parts that cannot be inferred from the text .
+however , cases in which inference is very probable ( but not completely certain ) are still judged at true .
+in example # 4 in table 1 one could claim that the shooting took place in 1993 and that ( theoretically ) the cardinal could have been just severely wounded in the shooting and has consequently died a few months later in 1994 .
+however , this example is tagged as true since the context seems to imply that he actually died in 1993 .
+to reduce the risk of unclear cases , annotators were guided to avoid vague examples for which inference has some positive probability that is not clearly very high .
+the annotation process .
+each example t-h pair was first judged as true / false by the annotator that created the example .
+the examples were then cross-evaluated by a second judge , who received only the text and hypothesis pair , without any additional information from the original context .
+the annotators agreed in their judgment for roughly 80 % of the examples , which corresponded to a 0.6 kappa level ( moderate agreement ) .
+the 20 % of the pairs for which there was disagreement among the judges were discarded from the dataset .
+furthermore , one of the organizers performed a light review of the remaining examples and eliminated about additional 13 % of the original examples , which might have seemed controversial .
+altogether , about 33 % of the originally created examples were filtered out in this process .
+the remaining examples were considered as the gold standard for evaluation , split to 567 examples in the development set and 800 in the test set , and evenly split to true / false examples .
+our conservative selection policy aimed to create a dataset with non-controversial judgments , which will be addressed consensually by different groups .
+it is interesting to note that few participants have independently judged portions of the dataset and reached high agreement levels with the gold standard judgments , of 95 % on all the test set ( bos and markert ) , 96 % on a subset of roughly a third of the test set ( vanderwende et al. ) and 91 % on a sample of roughly 1 / 8 of the development set ( bayer et al. ) .
+submissions and results 3.1 submission guidelines .
+submitted systems were asked to tag each t-h pair as either true , predicting that entailment does hold for the pair , or as false otherwise .
+in addition , systems could optionally add a confidence score ( between 0 and 1 ) where 0 means that the system has no confidence of the correctness of its judgment , and 1 corresponds to maximal confidence .
+participating teams were allowed to submit results of up to 2 systems or runs .
+the development data set was intended for any system tuning needed .
+it was acceptable to run automatic knowledge acquisition methods ( such as synonym collection ) specifically for the lexical and syntactic constructs present in the test set , as long as the methodology and procedures are general and not tuned specifically for the test data .
+in order to encourage systems and methods which do not cover all entailment phenomena we allowed submission of partial coverage results , for only part of the test examples .
+naturally , the decision as to on which examples the system abstains were to be done automatically by the system ( with no manual involvement ) .
+evaluation criteria .
+the judgments ( classifications ) produced by the systems were compared to the gold standard .
+the percentage of matching judgments provides the accuracy of the run , i.e. the fraction of correct responses .
+as a second measure , a confidence-weighted score ( cws , also known as average precision ) was computed .
+judgments of the test examples were sorted by their confidence ( in decreasing order ) , calculating the following measure : the confidence-weighted score ranges between 0 ( no correct judgments at all ) and 1 ( perfect classification ) , and rewards the systems ' ability to assign a higher confidence score to the correct judgments than to the wrong ones .
+note that in the calculation of the confidence weighted score correctness is with respect to classification � i.e. a negative example , in which entailment does not hold , can be correctly classified as false .
+this is slightly different from the common use of average precision measures in ir and qa , in which systems rank the results by confidence of positive classification and correspondingly only true positives are considered correct .
+submitted systems and results .
+sixteen groups submitted the results of their systems for the challenge data , while one additional group submitted the results of a manual analysis of the dataset ( vanderwende et al. , see below ) .
+as expected , the submitted systems incorporated a broad range of inferences that address various levels of textual entailment phenomena .
+table 2 presents some common ( crude ) types of inference components , which according to our understanding , were included in the various systems .
+the most basic type of inference measures the degree of word overlap between t and h , possibly including stemming , lemmatization , part of speech tagging , and applying a statistical word weighting such as idf .
+interestingly , a non-participating system that operated solely at this level , using a simple decision tree trained on the development set , obtained an accuracy level of 0.568 , which might reflect a knowledge-poor baseline ( rada mihalcea , personal communication ) .
+higher levels of lexical inference considered relationships between words that may reflect entailment , based either on statistical methods or wordnet .
+next , some systems measured the degree of match between the syntactic structures of t and h , based on some distance criteria .
+finally , few systems incorporated some form of " world knowledge " , and a few more applied a logical prover for making the entailment inference , typically over semantically enriched representations .
+different decision mechanisms were applied over the above types of knowledge , including probabilistic models , probabilistic machine translation models , supervised learning methods , logical inference and various specific scoring mechanisms .
+table 2 shows the results for the submitted runs .
+overall system accuracies were between 50 and 60 percent and system cws scores were between 0.50 and 0.70 .
+since the dataset was balanced in terms of true and false examples , a system that uniformly predicts true ( or false ) would achieve an accuracy of 50 % which constitutes a natural baseline .
+another baseline is obtained by considering the distribution of results in random runs that predict true or false at random .
+a run with cws > 0.540 or accuracy > 0.535 is better than chance at the 0.05 level and a run with cws > 0.558 or accuracy > 0.546 is better than chance at the 0.01 level .
+unlike other system submissions , vanderwende et al. report an interesting manual analysis of the test examples .
+each example was analyzed as whether it could be classified correctly ( as either true or false ) by taking into account only syntactic considerations , optionally augmented by a lexical thesaurus .
+an " ideal " decision mechanism that is based solely on these levels of inference was assumed .
+their analysis shows that 37 % of the examples could ( in principle ) be handled by considering syntax alone , and 49 % if a thesaurus is also consulted .
+the comparable documents ( cd ) task stands out when observing the performance of the various systems broken down by tasks .
+generally the results on the this task are significantly higher than the other tasks with results as high as 87 % accuracy and cws of 0.95 .
+this behavior might indicate that in comparable documents there is a high prior probability that seemingly matching sentences indeed convey the same meanings .
+we also note that that for some systems it is the success on this task which pulled the figures up from the insignificance baselines .
+our evaluation measures do not favor specifically recognition of positive entailment .
+a system which does well in recognizing when entailment does not hold would do just as well in terms of accuracy and cws as a system tailored to recognize true examples .
+in retrospect , standard measures of precision , recall and f in terms of the positive ( entailing ) examples would be appropriate as additional measures for this evaluation .
+in fact , some systems recognized only very few positive entailments ( a recall between 10-30 percent ) .
+furthermore , all systems did not perform significantly better than the f = 0.67 baseline of a system which uniformly predicts true .
+conclusions .
+the pascal recognising textual entailment ( rte ) challenge is an initial attempt to form a generic empirical task that captures major semantic inferences across applications .
+the high level of interest in the challenge , demonstrated by the submissions from 17 diverse groups and noticeable interest in the research community , suggest that textual entailment indeed captures highly relevant tasks for multiple applications .
+the results obtained by the participating systems may be viewed as typical for a new and relatively difficult task ( cf. for example the history of muc benchmarks ) .
+overall performance figures for the better systems were significantly higher than some baselines .
+yet , the absolute numbers are relatively low , with small , though significant , differences between systems .
+interestingly , system complexity and sophistication of inference did not correlate fully with performance , where some of the best results were obtained by rather na � ve lexically-based systems .
+the fact that quite sophisticated inference levels were applied by some groups , with 5 systems using logical provers , provide an additional indication that applied nlp research is progressing towards deeper semantic analyses .
+further refinements are needed though to obtain sufficient robustness for the challenge types of data .
+further detailed analysis of systems performance , relative to different types of examples and entailment phenomena , are likely to yield future improvements .
+being the first benchmark of its types there are several lessons for future similar efforts .
+most notably , further efforts can be made to create " natural " distributions of text-hypothesis examples .
+for example , t-h pairs may be collected directly from the data processed by actual systems , considering their inputs and candidate outputs .
+an additional possibility is to collect a set of candidate texts that might entail a given single hypothesis , thus reflecting typical ranking scenarios .
+data collection settings may also be focused on typical " core " semantic applications , such as qa , ie , ir and summarization .
+overall , we hope that future similar benchmarks will be carried out and will help shaping clearer frameworks , and corresponding research communities , for applied research on semantic inference .

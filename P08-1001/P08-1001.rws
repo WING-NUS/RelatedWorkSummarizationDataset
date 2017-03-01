@@ -1,0 +1,53 @@
+Wikipedia has been the subject of a considerable
+amount of research in recent years including
+(Gabrilovitch and Markovitch 2007), (Strube and Ponzetto 2006), (Milne et al. 2006), (Zesch et al. 2007), and (Weale 2007). The most relevant to
+our work are (Kazama and Torisawa 2007), (Toral and Muñoz 2006), and (Cucerzan 2007). More
+details follow, but it is worth noting that all known
+prior results are fundamentally monolingual, often
+developing algorithms that can be adapted to other
+languages pending availability of the appropriate
+semantic resource. In this paper, we emphasize the
+use of links between articles of different languages,
+specifically between English (the largest and best
+linked Wikipedia) and other languages.
+(Toral and Muñoz 2006) used Wikipedia to create
+lists of named entities. They used the first
+sentence of Wikipedia articles as likely definitions
+of the article titles, and used them to attempt to
+classify the titles as people, locations, organizations,
+or none. Unlike the method presented in this
+paper, their algorithm relied on WordNet (or an
+equivalent resource in another language). The authors
+noted that their results would need to pass a
+manual supervision step before being useful for the
+NER task, and thus did not evaluate their results in
+the context of a full NER system.
+Similarly, (Kazama and Torisawa 2007) used
+Wikipedia, particularly the first sentence of each
+article, to create lists of entities. Rather than
+building entity dictionaries associating words and phrases to the classical NER tags (PERSON, LOCATION,
+etc.) they used a noun phrase following
+forms of the verb “to be” to derive a label. For example,
+they used the sentence “Franz Fischler ... is
+an Austrian politician” to associate the label “politician”
+to the surface form “Franz Fischler.” They
+proceeded to show that the dictionaries generated
+by their method are useful when integrated into an
+NER system. We note that their technique relies
+upon a part of speech tagger, and thus was not appropriate
+for inclusion as part of our non-English
+system.
+(Cucerzan 2007), by contrast to the above,
+used Wikipedia primarily for Named Entity Disambiguation,
+following the path of (Bunescu and Pasca 2006). As in this paper, and unlike the
+above mentioned works, Cucerzan made use of the
+explicit Category information found within Wikipedia.
+In particular, Category and related listderived
+data were key pieces of information used
+to differentiate between various meanings of an
+ambiguous surface form. Unlike in this paper,
+Cucerzan did not make use of the Category information
+to identify a given entity as a member of
+any particular class. We also note that the NER
+component was not the focus of the research, and
+was specific to the English language.

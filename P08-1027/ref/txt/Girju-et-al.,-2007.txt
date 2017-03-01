@@ -1,0 +1,100 @@
+semeval-2007 task 04 : classification of semantic relations between nominals .
+abstract .
+the nlp community has shown a renewed interest in deeper semantic analyses , among them automatic recognition of relations between pairs of words in a text .
+we present an evaluation task designed to provide a framework for comparing different approaches to classifying semantic relations between nominals in a sentence .
+this is part of semeval , the 4th edition of the semantic evaluation event previously known as senseval .
+we define the task , describe the training / test data and their creation , list the participating systems and discuss their results .
+there were 14 teams who submitted 15 systems .
+task description and related work .
+the theme of task 4 is the classification of semantic relations between simple nominals ( nouns or base noun phrases ) other than named entities honey bee , for example , shows an instance of the product-producer relation .
+the classification occurs in the context of a sentence in a written english text .
+algorithms for classifying semantic relations can be applied in information retrieval , information extraction , text summarization , question answering and so on .
+the recognition of textual entailment ( tatu and moldovan , 2005 ) is an example of successful use of this type of deeper analysis in high-end nlp applications .
+the literature shows a wide variety of methods of nominal relation classification .
+they depend as much on the training data as on the domain of application and the available resources .
+rosario and hearst ( 2001 ) classify noun compounds from the domain of medicine , using 13 classes that describe the semantic relation between the head noun and the modifier in a given noun compound .
+rosario et al. ( 2002 ) classify noun compounds using the mesh hierarchy and a multi-level hierarchy of semantic relations , with 15 classes at the top level .
+nastase and szpakowicz ( 2003 ) present a two-level hierarchy for classifying noun-modifier relations in base noun phrases from general text , with 5 classes at the top and 30 classes at the bottom ; other researchers ( turney and littman , 2005 ; turney , 2005 ; nastase et al. , 2006 ) have used their class scheme and data set .
+moldovan et al. ( 2004 ) propose a 35- class scheme to classify relations in various phrases ; the same scheme has been applied to noun compounds and other noun phrases ( girju et al. , 2005 ) .
+chklovski and pantel ( 2004 ) introduce a 5-class set , designed specifically for characterizing verb-verb semantic relations .
+stephens et al. ( 2001 ) propose 17 classes targeted to relations between genes .
+lapata ( 2002 ) presents a binary classification of relations in nominalizations .
+there is little consensus on the relation sets and algorithms for analyzing semantic relations , and it seems unlikely that any single scheme could work for all applications .
+for example , the gene-gene relation scheme of stephens et al. ( 2001 ) , with relations like x phosphorylates y , is unlikely to be transferred easily to general text .
+we have created a benchmark data set to allow the evaluation of different semantic relation classification algorithms .
+we do not presume to propose a single classification scheme , however alluring it would be to try to design a unified standard it would be likely to have shortcomings just as any of the others we have just reviewed .
+instead , we have decided to focus on separate semantic relations that many researchers list in their relation sets .
+we have built annotated data sets for seven such relations .
+every data set supports a separate binary classification task .
+building the annotated data sets .
+ours is a new evaluation task , so we began with data set creation and annotation guidelines .
+the data set that nastase and szpakowicz ( 2003 ) created had relation labels and part-of-speech and wordnet sense annotations , to facilitate classification . ( moldovan et al. , 2004 ; girju et al. , 2005 ) gave the annotators an example of each phrase in a sentence along with wordnet senses and position of arguments .
+our annotations include all these , to support a variety of methods ( since we work with relations between nominals , the part of speech is always noun ) .
+we have used wordnet 3.0 on the web and sense index tags .
+we chose the following semantic relations : cause-effect , content-container , instrument- agency , origin-entity , part-whole , product- producer and theme-tool .
+we wrote seven detailed definitions , including restrictions and conventions , plus prototypical positive and near-miss negative examples .
+for each relation separately , we based data collection on wild-card search patterns that google allows .
+we built the patterns manually , following hearst ( 1992 ) and nakov and hearst ( 2006 ) .
+instances of the relation content-container , for example , come up in response to queries such as * contains * , * holds * , the * in the * .
+following the model of the senseval-3 english lexical sample task , we set out to collect 140 training and at least 70 test examples per relation , so we had a number of different patterns to ensure variety .
+we also aimed to collect a balanced number of positive and negative examples .
+the use of heuristic patterns to search for both positive and negative examples should naturally result in negative examples that are near misses .
+we believe that near misses are more useful for supervised learning than negative examples that are generated randomly .
+among the contents of the < e1 > vessel < / e1 > were a set of carpenters < e2 > tools < / e2 > , several large storage jars , ceramic utensils , ropes and remnants of food , as well as a heavy load of ballast stones .
+figure 1 illustrates the annotations .
+we tag the nominals , so parsing or chunking is not necessary .
+for task 4 , we define a nominal as a noun or base noun phrase , excluding names entities .
+a base noun phrase , e.g. , lawn or lawn mower , is a noun with pre- modifiers .
+we also exclude complex noun phrases ( e.g. , with attached prepositional phrases the engine of the lawn mower ) .
+the procedure was the same for each relation .
+one person gathered the sample sentences ( aiming approximately for a similar number of positive and negative examples ) and tagged the entities ; two other people annotated the sentences with wordnet senses and classified the relations .
+the detailed relation definitions and the preliminary discussions of positive and negative examples served to maximize the agreement between the annotators .
+they first classified the data independently , then discussed every disagreement and looked for consensus .
+only the agreed-upon examples went into the data sets .
+next , we split each data set into 140 training and no fewer than 70 test examples . ( we published the training set for the content-container relation as development data two months before the test set . )
+table 1 shows the number of positive and negative examples for each relation .
+the average inter-annotator agreement on relations ( true / false ) after the independent annotation step was 70.3 % , and the average agreement on wordnet sense labels was 71.9 % .
+in the process of arriving at a consensus between annotators , the definition of each relation was revised to cover explicitly cases where there had been disagreement .
+we expect that these revised definitions would lead to much higher levels of agreement than the original definitions did .
+the participants .
+the task of classifying semantic relations between nominals has attracted the participation of 14 teams who submitted 15 systems .
+table 4 lists the systems , the authors and their affiliations , and brief descriptions .
+the systems performance information in terms of precision , recall , f-measure and accuracy , macroaveraged over all relations , appears in table 3 .
+we computed these measures as described in lewis ( 1991 ) .
+we distinguish four categories of systems based on the type of information used wordnet senses and / or google queries : wordnet = yes or wordnet = no tells us only whether a system uses the wordnet sense labels in the data sets .
+a system may use wordnet internally for varied purposes , but ignore our sense labels ; such a system would be in category a or c. based on the input variation , each submitted system may have up to 4 variations a , b,c , d.
+table 2 presents three baselines for a relation .
+majority always guesses either true or false , whichever is the majority in the test set ( maximizes accuracy ) .
+alltrue always guesses true ( maximizes recall ) .
+probmatch randomly guesses true ( false ) with the probability matching the distribution of true ( false ) in the test dataset ( balances precision and recall ) .
+we present the results in table 3 grouped by category , to facilitate system comparison .
+the highest average accuracy on task 4 was 76.3 % .
+therefore , the average initial agreement between annotators ( 70.3 % ) , before revising the definitions , is not an upper bound on the accuracy that can be achieved .
+that the initial agreement between annotators is not a good indicator of the accuracy that can be achieved is also supported by the low correlation similarity measures in wordnet ; we performed various analyses of the results , which we summarize here in four questions .
+we write xi to refer to four possible system categories ( ai , bi , ci , and di ) with four possible amounts of training data ( x1 for training examples 1 to 35 , x2 for 1 to 70 , x3 for 1 to 105 , and x4 for 1 to 140 ) .
+does more training data help ?
+overall , the results suggest that more training data improves the performance .
+there were 17 cases in which we had results for all four possible amounts of training data .
+all average f-measure differences , f ( x4 ) f ( xi ) where x = a to d , i = 1 to 3 , for these 17 sets of results are statistically significant : the statistics show that wordnet is important , although the contribution varies across systems .
+three teams submitted altogether 12 results both for a1 a4 and b1b4 .
+the average f-measure difference , f ( bi ) f ( ai ) , i = 1 to 4 , is significant : does knowing the query help ?
+again , the ucd-fc system differed from the other systems in that the a and c scores were identical , but even averaging over the remaining two systems and 8 cases does not show a statistically significant advantage : are some relations harder to classify ?
+table 5 shows the best results for each relation in terms of precision , recall , and f-measure , per team and system category .
+column base-f presents the baseline f-measure ( alltrue ) , while base-acc the baseline accuracy score ( majority ) .
+for all seven relations , the best team significantly outperforms the baseline .
+the category of the best-scoring system in almost every case is b4 ( only the ilk b4 system scored second on the origin-entity relation ) .
+table 5 suggests that some relations are more difficult to classify than others .
+the best f-measure ranges from 83.7 for productproducer to 68.6 for originentity .
+the difference between the best f- measure and the baseline f-measure ranges from 23.3 for part-whole to 3.7 for product-producer .
+the difference between the best accuracy and the baseline accuracy ranges from 31.0 for content- container to 10.7 for product-producer .
+the f column shows the best result for each relation , but similar differences among the relations may be observed when all results are pooled .
+the avg. rank column computes the average rank of each relation in the ordered list of relations generated by each system .
+for example , productproducer is often listed as the first or the second easiest relation ( with an average rank of 1.7 ) , while origin entity and themetool are identified as the most difficult relations to classify ( with average ranks of 6.0 ) .
+evaluating text categorization .
+conclusion .
+this paper describes a new semantic evaluation task , classification of semantic relations between nominals .
+we have accomplished our goal of providing a framework and a benchmark data set to allow for comparisons of methods for this task .
+the data included different types of information lexical semantic information , context , query used meant to facilitate the analysis of useful sources of information for determining the semantic relation between nominals .
+the results that the participating systems have reported show successful approaches to this difficult task , and the advantages of using lexical semantic information .
+the success of the task measured in the interest of the community and the results of the participating systems shows that the framework and the data are useful resources .
+by making this collection freely accessible , we encourage further research into this domain and integration of semantic relation algorithms in high-end applications .

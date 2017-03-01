@@ -1,0 +1,13 @@
+(claim)#there have been several studies in nlp that address domain adaptation , and most of them need labeled data from both the source domain and the target domain .
+(claim)#here we highlight a few representative ones .
+0#(roark and bacchiani 2003)#for generative syntactic parsing , $1 have used the source domain data to construct a dirichlet prior for map estimation of the pcfg for the target domain .
+0#(chelba and acero 2004)#$1 use the parameters of the maximum entropy model learned from the source domain as the means of a gaussian prior when training a new model on the target data .
+0#(florian et al. 2004)#$1 first train a ne tagger on the source domain , and then use the tagger 's predictions as features for training and testing on the target domain .
+0#(daume iii and marcu 2006)#the only work we are aware of that directly models the different distributions in the source and the target domains is by $1 . they assume a truly source domain distribution , a truly target domain distribution , and a general domain distribution . the source ( target ) domain data is generated from a mixture of the truly source ( target ) domain distribution and the general domain distribution .
+(claim)#in contrast , we do not assume such a mixture model .
+(claim)#none of the above methods would work if there were no labeled target instances .
+(claim)#indeed , all the above methods do not make use of the unlabeled instances in the target domain .
+(claim)#in contrast , our instance weighting framework allows unlabeled target instances to contribute to the model estimation .
+0#(blitzer et al. 2006)#$1 propose a domain adaptation method that uses the unlabeled target instances to infer a good feature representation , which can be regarded as weighting the features .
+(claim)#in contrast , we weight the instances .
+(claim)#the idea of using pt ( x ) ps ( x ) to weight instances has been studied in statistics $1 , but has not been applied to nlp tasks .

@@ -1,0 +1,240 @@
+web based linkage .
+abstract .
+when a variety of names are used for the same real-world entity , the problem of detecting all such variants has been known as the ( record ) linkage or entity resolution problem .
+in this paper , toward this problem , we propose a novel approach that uses the web as the collective knowledge source in addition to contents of entities .
+our hypothesis is that if an entity e1 is a duplicate of another entity e2 , and if e1 frequently appears together with information i on the web , then e2 may appear frequently with i on the web .
+by using search engines , we analyze the frequency , urls , or contents of the returned web pages to capture the information i of an entity .
+extensive experiments verify that our hypothesis holds in many real settings , and the idea of using the web as the additional source for the linkage problem is promising .
+our proposal shows 51 % ( on average ) and 193 % ( at best ) improvement in precision / recall compared to a baseline approach .
+introduction .
+large-scale data repositories often suffer from duplicate entities that have different identifiers , but refer to the same real-world object .
+part of the problems often stem from the fact that the chosen identifier is not unique ( i.e. , bad choice of primary key in database jargon ) .
+a good example of this scenario is the use of names as identifiers .
+names of people , movies , or organizations are frequently used as unique identifiers for its simplicity and intuitive association .
+however , due to various reasons , a variety of names may be used to refer to the same entity .
+example 1 .
+in the acm digital library , the full name of an author is used as an identifier ( figure 1 ( a ) ) so that in order to access citations of the author j. d. ullman , one has to look for his name .
+however , since the acm digital library was constructed by software that extracts metadata ( e.g. , author , title ) from articles , it tends to have errors .
+therefore citations of the author j. d. ullman are scattered under ten duplicate names in the acm digital library , causing a confusion .
+similarly , figure 1 ( b ) shows the example where two repositories use different titles ( i.e. , names ) of the same movie clementine .
+such examples of duplicate entities on the web are common , too .
+for instance , suppose a person john doe moves from an organization x to y and have different home pages at each organization , one using john doe and the other using j. doe .
+then , being able to identify if two home pages are for the same person or not is an interesting problem .
+let us denote that , among the duplicate entities , the single authoritative one as canonical entity while the rest as duplicate entities or duplicates in short .
+such a problem is , in general , known as the ( record ) linkage or entity resolution ( er ) problem .
+the linkage problem frequently occurs in many applications and is exacerbated especially when data are integrated from heterogeneous sources .
+note that in this paper our focus is on how to detect duplicate entities with similar names .
+another important problem that can arise is the confusion due to homonyms if two people have the same name spelling john doe , how to distinguish them ?
+this problem is often referred to as the name disambiguation problem and has been extensively studied ( e.g. , [ 16 , 3 ] ) .
+since two problems are different in nature , we do not consider the name disambiguation problem any further in this paper .
+with an array of extensive research on the linkage problem ( to be surveyed in section 5 ) , in general , there are various efficient and effective methods to identify duplicate entities .
+by and large , previous approaches to the linkage problem ( e.g. , [ 6 , 17 , 9 ] ) work as follows : ( 1 ) the information ( e.g. , name , metadata , or contents ) of an entity , e , is captured in a data structure , d ( e ) , such as a multi-attribute tuple or an entropy vector ; ( 2 ) a distance function that takes two inputs , f , is prepared ; ( 3 ) the distance of two entities , e1 and e2 , is measured as that of the corresponding data structures , d ( e1 ) and d ( e2 ) , using the function f : dist ( e1 , e2 ) = f ( d ( e1 ) , d ( e2 ) ) ; and ( 4 ) finally , if the result , r = dist ( e1 , e2 ) , is less than certain threshold , 0 , then the two entities are deemed to be duplicates : r < 0 -- + e1 e2 .
+although this works well in many scenarios , this approach often suffers when the entity e in question does not have enough information or has only poor information for linkage .
+how can one determine then if two entities are the same or not if the data to compare are not sufficient to decide ?
+one solution is to ask people what they think .
+if many people collectively agree that two entities are the same , then two entities are probably the same .
+we argue that the web is a good representation of what people think .
+that is , we propose to seek for additional information of an entity from the web .
+our hypothesis is the following : hypothesis 1 .
+if an entity e1 is a duplicate of another entity e2 , and if e1 frequently appears together with information i on the web , then e2 may appear frequently with i on the web , too .
+therefore , by measuring how the information i appears together with e2 on the web , we can determine if e2 is a duplicate of e1 or not .
+in particular , we propose various methods to capture the information i of an entity from the web .
+since our methods rely on search engines such as google or msn to draw additional information of an entity , compared to a baseline method , it is our hope that ours be simpler and more practical .
+the contribution of our work is : ( 1 ) we propose the idea of using the web as a source for additional knowledge of an entity for the linkage problem , ( 2 ) to capture the additional information of an entity returned from a search engine , we propose various methods such as using the frequency of representative terms , url information or the content of returned web pages , and ( 3 ) we empirically validate our hypothesis with extensive experiments .
+overview of the problem .
+to make the presentation simple , let us assume that our problem setting has a single canonical entity e. and the goal is to find all duplicate entities of e ..
+formally , the linkage problem in our setting is defined as follows : given a set of entities , e , where each entity ei has a name and information i ( ei ) ( e.g. , contents , affiliation , social network knowledge ) , for each canonical entity , e . ( e e ) , identify all duplicate entities , ev ( e e ) by consulting the collective knowledge of the web , such that sim ( i ( e . ) , i ( ev ) ) > 0 , where 0 is a pre-set threshold .
+note that what we study in this paper is not the algorithmic improvement of the general linkage problem .
+rather , we study how to devise better similarity function , sim ( ) , utilizing additional information i from the web .
+throughout the paper , we use the notation in table 1 .
+web based linkage .
+the basic framework of our approach is as follows .
+consider a canonical entity e. and a candidate entity e1 that is potentially a duplicate of e ..
+name descriptions of entities are available as name ( e . ) and name ( e1 ) .
+we identify the information i as the best representative data piece of e ..
+this data piece could be anything from as simple as a single token of e. to tuple ( s ) or as long as the entire contents of e ..
+suppose we get such a data piece from e . , called data ( e . ) .
+we acquire a collective knowledge of people to see how often data ( e . ) is used together with name ( e1 ) .
+if e1 is a duplicate of e . , it should have a frequent appearance with data ( e . ) on the web .
+to check this , we submit two queries to a search engine and collect the results .
+representative data of an entity .
+suppose one wants to determine if an author john mccarthy is a duplicate entity of an author mccarthy , n. j ..
+depending on the context , this task may not be easy to resolve .
+however , if one knows that the representative data of john mccarthy is , say , lisp or time sharing , then one may measure how often mccarthy , n. j. is used together with lisp or time sharing on the web , and conclude that mccarthy , n. j. is not a duplicate of john mccarthy .
+therefore , the first step of our framework is to identify the representative data of an entity e , denoted as data ( e ) .
+ideally , data ( e ) helps discriminate duplicates of e .
+if data ( e ) itself occurs too often on the web , then it does not help link duplicates .
+on the other hand , if data ( e ) itself occurs too rarely on the web , then its discriminating power might be too weak to be used , and can be easily influenced by noise .
+we use a single token for data ( e ) in our experiments .
+by adopting conventional approaches in information retrieval , we propose to use three measures to select the best representative token of an entity as follows : tf : one may assume that the more frequently a token appears in an entity , the more representative the token gets .
+therefore , we may use the traditional term frequency ( tf ) as a metrics , and use the token that occurs most frequently as the representation. tf * idf : when the token selected by tf too common like computer or web , its discriminating power diminishes .
+even if we get relevant web pages for an entity e , such a common token may also frequently appear with many other candidate entities , and thus may not help find the actual duplicates .
+hence the popular term frequency * inverse document frequency ( tf * idf ) [ 29 ] scheme is more appealing since it can find more discriminative tokens in an entity 's data contents2 .
+our experiments in section 4 show that using a single token , if selected carefully , could be very effective to uniquely discriminate the appearance of an entity name on the web .
+there are abundant possibilities for utilizing more than one token towards a better solution for the problem .
+we also show the effect of using multiple tokens in our current framework in section 4 .
+from the corpora ( i.e. , contents or metadata of entities ) , we first remove all stop-words ( e.g. , a or the ) .
+even further , probabilistic topic models such as lda [ 7 ] can be used on the content to discover a pre-specified number of latent topics , each of which has a particular probability of emitting a specific token .
+then one or more of such topics could be utilized as a representative data for the entity in question .
+we leave this exploration as future work .
+knowledge acquisition from the web .
+once one representative token tc is selected for a canonical entity ec , suppose we want to determine if another candidate entity ei is a duplicate entity of ec or not .
+then , we form two queries qs and q2 to submit to a search engine : if one views the results of qs and q2 as virtual documents , then their similarity can be computed using document to document similarity measures .
+then , depending on the virtual document is created among a set of returned web pages , a variety of alternatives can be used .
+table 2 lists a set of heuristics that we used to create a virtual document .
+suppose we created two virtual documents , di and dj , using one of approaches in table 1 .
+then , we propose to use three methods to measure the similarity of di and dj jaccard , cosine , and language models , as follows .
+first , jaccard similarity of di and dj is the ratio between intersected vs. unioned token sets of two documents : second , cosine similarity of di and dj uses the cosine of the angle between two m-dimensional vectors where m is the number of distinct tokens in corpora ) as the similarity : simcosine ( di , dj ) .
+in the language model approach , each document is represented by a unigram word distribution bd .
+then , the kullback-leibler divergence can be used to measure how the language models of two documents differ : in return , we receive two separate search engine result pages ( for qs and q2 ) of relevant web pages that contain both entity names and the representative token in question .
+interpreting the collective knowledge .
+we propose three methods to analyze the returned results to unearth the collective knowledge of the web .
+( 1 ) page count .
+search engines return the number of web pages that satisfy the constraints of the query .
+suppose an entity e2 is a duplicate of an entity es , but e3 is not .
+further , assume that a token ti is selected as the representative of es .
+then it is plausible that the appearance of es n ti and e2 n ti on the web will be relatively similar than that of es nti and e3 nti .
+d ( sim , m ) m of the top-k web pages where the contents have the highest similarity with the current contents of the entity in question ( i.e. , publication information available in the data set ) t ( 1 , n ) top n ( e { 50,100,200 , 1000 } ) tokens with the highest tf * idf weight from the top ranked web page top n ( e { 100 , 200 , 400,1000,10000 } ) tokens with the highest tf * idf weight from all top-k web pages top n ( e { 10 , 20 , 40 , 100 } ) tokens with the highest tf * idf weight from each of top-k web pages common tokens in at least p ( e { 2 , 3 , 4 } ) documents from top-k web pages. results compared to a simple content overlap based metric like jaccard .
+for our language model based measures , we may adopt the same approach by measuring the novelty of canonical entitys virtual document , di ( e . ) , against each candidate entitys virtual document , dj ( e ) .
+then , the lower the novelty score of ( di ( e . ) , dj ( e ) ) is , the higher the similarity between two entities e. and e .
+moreover , we adopt to use the two smoothing techniques to adjust the mle to assign non-zero probabilities to unseen tokens to make kl-based measure more appropriate as used by [ 35 ] : bayesian smoothing using dirichlet priors .
+this technique uses the conjugate prior for a multinomial distribution ( i.e. , the dirichlet distribution ) with parameters : ( ap ( token1 ) , ... , ap ( tokenn ) ) .
+in consistent with [ 35 ] , in our experiments , if tokeni e d , then we set ap ( tokeni ) = 0.5 , and 0 otherwise . 9 smoothing using shrinkage .
+this technique models each document from the language model of the document bd mle and a model for general english be mle built from the tokens in all documents of the data set , by : bd = adbd mle + aebe mle , where ad + ae = 1 .
+we experimentally determine optimal value for ad and ae .
+experimental validation .
+in experiments , we seek to answer the following questions : 9 q1 : is hypothesis 1 valid ?
+that is , how do web based linkage schemes perform ? 9 q2 : which of the proposed web based linkage schemes performs the best ?
+which variations ? 9 q3 : which method to interpret the collective knowledge is better ? 9 q4 : how do results change for different search engines ?
+all experimentation was done using mysql server 5.0 on a desktop with amd opteron 2ghz and 4gb ram .
+as search engines for the web knowledge , we used both google and microsoft live search .
+set-up .
+we used three data sets , as summarized in table 3 acm digital library for computer science authors with each authors respective citation list , arxiv digital library for general science authors with her citation list , and internet movie database ( imdb ) for actors with movie-related data in which she stars .
+in this context , the linkage problem is to identify duplicate author entities in acm and arxiv and actor entities in imdb .
+for each canonical entity e . , to find its duplicates , comparing e. to each entity e in e ( e . = ~ e ) is prohibitively expensive ( recall the naive algorithm in section 2 ) .
+therefore , often , a pre-processing step , called blocking , pre-filters entities in e into a small set of candidate entities , called a block .
+in the experiments , we used a heuristic blocking rule that showed good performance for name-related entity resolution problem in [ 27 ] i.e. , all ( author or actor ) entities that share the same last name as the canonical entity are clustered into the same block .
+then , duplicate entities are injected into the block .
+this block may contain as small as a few dozen entities to as large as hundreds of entities , depending on the last name in question .
+hence , the goal is that for each block , a scheme is to detect all duplicates correctly .
+from the acm digital library , we have randomly gathered 43 real cases of duplicate names ( thus 43 blocks ) .
+these real cases include duplicates as simple as dongwon lee vs. d. lee ( i.e. , abbreviation ) and alon levy vs. alon halevy ( i.e. , last name change ) to as challenging as shlomo argamon vs. sean engelson ( i.e. , little similarity ) or even ten duplicates of jeffrey d. ullman .
+all 43 cases were verified by directly asking authors themselves or checking their home pages .
+second , we gathered 64 real cases from the arxiv digital library .
+to make the case more challenging , for each block , we selected an author entity with the smallest number of citations as the canonical entity .
+one important difference from acm case is that each entity block in arxiv case tends to have larger number of citations .
+here we attempt to simulate a scenario in which entities have large associated contents but they are not discriminative enough to help linkage .
+for this , we collected 50 real actor names and the titles of movies they appeared in from internet movie database ( imdb ) .
+since imdb is a commercial database , it has little errors or noise , compared to acm and arxiv data sets .
+therefore , we created 50 test cases such that each actor ( i.e. , canonical entity ) has exactly one a.k.a. name ( i.e. , duplicate entity ) .
+since a.k.a. name usually does not have any contents in imdb , we randomly split the original contents of the actor , and assign each to an actor and her a.k.a. entity .
+due to the nature of the data set , the intersection of the two halves sharing the same content might be small i.e. , movie titles of an actor do not generally have a common theme .
+in this context , the linkage problem is to identify duplicate author entities in acm and arxiv and actor entities in imdb .
+note that similar data sets have been used in the related work ( e.g. , [ 31 , 27 ] ) .
+evaluation metrics .
+we use traditional precision / recall with the window size equal to the number of duplicates .
+for instance , for a canonical entity ec , suppose that there are k duplicates in the block .
+when a scheme returns top- k candidate duplicates , consider that only r of them are correct duplicates and the remaining k r candidates are false positives .
+then , the precision and recall become the identical and are calculated as : precision = recall = rk .
+as a baseline approach for the linkage problem , we use the jaccard similarity that measure the overlapping ratio of the contents of two entities ( [ 27 ] reported that although simple , jaccard similarity showed good performance among various standard distance functions ) : for the first two cases , our study focuses on three attributes of citations only co-author , title , and venue since ( 1 ) too many tokens from too many attributes slow down the process , ( 2 ) recent study [ 16 ] shows these three play a major role , and ( 3 ) other attributes have often missing values .
+since arxiv is a pre-print repository , it often does not have venue information .
+in the imdb case , we only use the movie title attribute .
+figure 4 : results on the acm title attribute using microsoft live search as search engine .
+accuracy .
+results of page count and url methods .
+using the acm data set , we first experiment with variations of the first two basic web based linkage methods : page count and url methods .
+figure 2 ( a ) shows the results of these methods using google against jaccard metric on all three attributes of the acm data set individually .
+all five variations of the basic methods performs better than the baseline jaccard metric .
+among three token selection schemes used by page count based methods , w tf * idf yields better performance compared to the other two schemes , finding more discriminative tokens for entities .
+the two url based methods show stable and near top performance on all cases probably due to the large volume of information used and the quality of the top returned documents by search engine .
+figures 2 ( b , c ) show the effect of using multiple tokens on the methods page count-2 and url-10 , respectively .
+here , for each token selected in the top-k tokens of an entity , an experiment is run , and the similarity is calculated by averaging the individual similarities of all k experiments .
+the results are mostly parallel , and do not show significant improvement . 2 .
+web page based methods .
+all experiments for the web page based methods were done using top-10 results from google as the search engine .
+for the token selection method , we use tf * idf only , since it usually shows better discriminating power than tf , and w tf * idf adds up extra time cost although it may have a better performance .
+web page based methods are based on the creation of a virtual document from the web page results for each entity and then comparing these virtual documents to make a decision for the linkage .
+to create a virtual document , we defined a number of heuristics and their variations as listed in table 2 .
+due to space constraints , we will only show a few variations for each experiment .
+to determine which one to use , figure 3 ( a ) shows the results of 10 variations of our web page based heuristics on the title attribute of the acm data set .
+in figures 3 ( a-f ) , note that the baseline jaccard ( i.e. , the straight line ) is the overlapping ratio of the contents of two entities while the plain jaccard is the overlapping ratio of the virtual documents of two entities .
+in our extensive experimentation , for the majority of cases , we saw that top 3 returned pages are usually the most relevant ones and effective if used in virtual document creation .
+in other cases , using as many as returned web pages helped to achieve better precision / recall .
+therefore , among the various heuristics , we selected d ( 3 ) , snippet ( 3 ) , d ( sim , 3 ) due to their good performance .
+we also included one more variation of the first heuristic , d ( k ) , to illustrate the performance when all returned documents are used .
+figures 3 ( a-c ) show the acm results on the title , coauthor , and venue attributes , respectively .
+the baseline method performs well on the coauthor attribute but degrades on the other two .
+the reason for the degradation is that there are usually many tokens in the title attribute of an entity content , and for the venue field there are many common tokens like conference , ieee , which increase the false positive rate .
+on the other hand , all of our variations perform better and show around 60-70 % recall on all attributes .
+our methods show the best on the coauthor attribute too , due to the a more discriminative token selection coming from the last names of the authors collaborators .
+figures 3 ( d , e ) show the results of the arxiv data set on the coauthor and title attributes , respectively .
+the baseline jaccard performs around 50 % recall on both attributes .
+note that most entities to be linked in this set have larger content and a lesser number of candidates in each block ( ta ble 3 ) , compared to the acm case .
+therefore , it should be easy for any metric to perform well .
+however , we here attempt to simulate a case where the canonical entities do not have much content and select the canonical entities from each block accordingly , explaining the mediocre recall value of the baseline approach .
+although not as good as in the acm case , our web based linkage schemes can still have a better recall than the baseline approach , yielding 72 % recall at best for coauthor attribute .
+the smaller improvement on the title attribute stems from undesirable token selection from a small and not-so-good representative title tokens for the entities .
+figure 3 ( f ) show the imdb result on the movie title attribute .
+expectedly , the baseline method shows very low performance having a poor recall value of 32 % .
+although each actor has enough content ( about 24 titles ) , such content does not well identify an actor .
+however , this problem does not apply for the web based linkage methods which yield 94 % recall at best implying that the approach is very promising for such cases . 3 .
+using a different search engine .
+our proposed web based linkage of using the collective knowledge from the web is a general approach .
+as long as it can acquire such knowledge through a search engine , it can have a promising result on the linkage problem .
+thus , we tested how results would change if we use different search engines { microsoft live search instead of google .
+for this set of experiments , we again use the acm data set and tested the performance on the title attribute using msn .
+figure 4 shows the new results .
+the results of the heuristics are consistent with those of google .
+while being relatively smaller , all four sets of experiments still outperform the baseline jaccard .
+the results indicate that as long as we have access to some portion of the web , we can utilize it to some extend as a collective knowledge source for the linkage problem .
+scalability .
+since our methods rely on the knowledge acquired from the web , each linkage decision process may incur a large number of web accesses .
+therefore scalability is a crucial problem .
+apart from the computation time , the time spent on accessing the web information introduces a considerable lag .
+as an example , the statistics of response time and the number of required web accesses of an experiment using the acm data set and the t f scheme to select a representative token are shown in table 4 .
+furthermore , the response time may be affected by many factors network traffic , load of search engines , and web sites , etc .
+one solution is to reduce the time to access search engines i.e. , instead of using external search engines ( i.e. , google or msn ) , we can use local ones .
+as long as the local search engines have sufficient coverage of the web , their behavior may parallel external search engines .
+to validate this idea , we use the webbase data set [ 18 ] which contains about 100 million pages from 50,000 web sites .
+we built a local search engine using apache nutch from 3.5 million web pages after filtering out irrelevant 96.5 million pages .
+then , all requests to external search engines are re-directed to this local search engine .
+table 4 highlights the difference .
+although the running time of the same experiments decreased dramatically , the recall of the web based linkage idea is still better than the baseline results , approximately 6 % higher .
+considering the small size of the local snapshot , however , the local search engine result proves that a sufficient performance can be achieved in a reasonable time once a reasonable size of data sources are used as the collective knowledge source like the web .
+related work .
+the general linkage problem has been known as various names in many disciplines record linkage ( e.g. , [ 14 , 6 ] ) , citation matching ( e.g. , [ 26 ] ) , identity uncertainty ( e.g. , [ 28 ] ) , merge-purge ( e.g. , [ 17 ] ) , object matching ( e.g. , [ 9 ] ) , entity resolution ( e.g. , [ 30 , 2 ] ) , authority control ( e.g. , [ 34 , 19 ] ) , and approximate string join ( e.g. , [ 15 ] ) etc .
+bilenko et al. [ 6 ] have studied name matching for information integration using string-based and token-based methods .
+cohen et al. [ 12 ] have also compared the efficacy of string-distance metrics , like jarowinkler , for the name matching task . [ 22 ] experimented with various distance-based algorithms for citation matching , with a conclusion that word based matching performs well . [ 27 ] conducted an in-depth study on the split entities case from the blocking point of view .
+unlike the traditional methods exploiting textual similarity , constraint-based entity matching ( cme ) [ 31 ] examines semantic constraints in an unsupervised way .
+they use two popular data mining techniques , expectation-maximization ( em ) and relaxation labeling for exploiting the constraints . [ 4 ] presents a generic framework , swoosh algorithms , for the entity resolution problem .
+the recent work by [ 13 ] proposes an iterative linkage solution for complex personal information management .
+their work reports good performance for its unique framework where different linkage results mutually reinforce each other ( e.g. , the resolved co-author names are used in resolving venue names ) .
+the recent trend in the linkage problem shows similar direction to ours ( e.g. , [ 6 , 5 , 20 ] ) .
+although each work calls its proposal under different names , by and large , most are trying to exploit additional information beyond string comparison .
+for instance , [ 20 ] presents a relationship-based data cleaning ( reldc ) which exploits context information for entity resolution , sharing similar idea to ours .
+reldc constructs a graph of entities connected through relationships and compares the connection strengths across the entities on the graph to determine correspondences .
+a more extensive and systematic study is needed to investigate the usefulness and limitations of the context in a multitude of the linkage problem .
+the main difference from ours to these approaches lies in the simplicity of our idea of using the web to extract additional information .
+finally , to overcome the data incompleteness problem , several recent studies use the web through search engines , similar to our proposal .
+among those , [ 33 ] uses the statistical data by querying the web for recognizing synonyms , and in [ 24 ] , syntactic patterns are searched in the web by using the google api in order to acquire background knowledge for anaphora resolution .
+in addition , in [ 1 ] , related texts are crawled from the web to enrich a given ontology .
+in [ 11 ] , another approach is employed to find the best concept for an unknown instance in a given ontology . [ 25 ] uses page counts to determine the strength of relations in a social network .
+a formal study by [ 10 ] defines a semantic distance metric between two terms using page counts from the web .
+similarly , [ 8 ] exploits the usage of page counts and lexical patterns from search engine snippets to measure semantic similarity between words .
+in [ 32 ] , authors tackle another type of entity resolution problem known as mixed citation problem [ 23 ] using url information .
+finally , [ 21 ] independently explores the similar idea of using the web to augment incomplete information for entity resolution .
+since their focus is more on theoretical framework called resource-bounded information gathering , our study on various methods to find the best representative tokens or scalability via local caching is complementary to their findings .
+conclusion .
+in this paper , we propose a novel approach toward the ( record ) linkage problem to identify duplicate named entities with insufficient description or contents .
+unlike other approaches that use textual similarity of contents or name , our proposal unearths the hidden knowledge from the web .
+experimental results verify that our proposal improves the recall as high as 193 % at best , and outperforms the baseline approach for a majority of test cases .
+our proposal relies on the information on the web .
+as the web evolves , we expect the information to get better .
+however it does not mean that it can always find reliable information .
+moreover , the main limitation is that entities to be linked should have a good presence on the web .
+otherwise , even if the web based linkage is used , the lack of information deters improvement .
+many directions are ahead for the future work .
+the proposed methods can be tested on more and larger data sets .
+more sophisticated approaches such as information gain , chi-square etc . , can be used to find better representative tokens or key phrases from contents of canonical entity or both entities to be linked .
+using multiple representative data pieces , individual decisions or rankings can be combined to make a more accurate linkage decision by different schemes , i.e. , voting , correlation etc .
+it is also important to be able to quantify the signal to noise ratio in selecting multiple information and combining them in queries to acquire the most representative data .

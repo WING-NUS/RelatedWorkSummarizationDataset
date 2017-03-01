@@ -1,0 +1,145 @@
+paraphrasing with bilingual parallel corpora .
+abstract .
+previous work has used monolingual parallel corpora to extract and generate paraphrases .
+we show that this task can be done using bilingual parallel corpora , a much more commonly available resource .
+using alignment techniques from phrase- based statistical machine translation , we show how paraphrases in one language can be identified using a phrase in another language as a pivot .
+we define a paraphrase probability that allows paraphrases extracted from a bilingual parallel corpus to be ranked using translation probabilities , and show how it can be refined to take contextual information into account .
+we evaluate our paraphrase extraction and ranking methods using a set of manual word alignments , and contrast the quality with paraphrases extracted from automatic alignments .
+introduction .
+paraphrases are alternative ways of conveying the same information .
+paraphrases are useful in a number of nlp applications .
+in natural language generation the production of paraphrases allows for the creation of more varied and fluent text ( iordanskaja et al. , 1991 ) .
+in multidocument summarization the identification of paraphrases allows information repeated across documents to be condensed ( mckeown et al. , 2002 ) .
+in the automatic evaluation of machine translation , paraphrases may help to alleviate problems presented by the fact that there are often alternative and equally valid ways of translating a text ( pang et al. , 2003 ) .
+in question answering , discovering paraphrased answers may provide additional evidence that an answer is correct ( ibrahim et al. , 2003 ) .
+in this paper we introduce a novel method for extracting paraphrases that uses bilingual parallel corpora .
+past work ( barzilay and mckeown , 2001 ; barzilay and lee , 2003 ; pang et al. , 2003 ; ibrahim et al. , 2003 ) has examined the use of monolingual parallel corpora for paraphrase extraction .
+examples of monolingual parallel corpora that have been used are multiple translations of classical french novels into english , and data created for machine translation evaluation methods such as bleu ( papineni et al. , 2002 ) which use multiple reference translations .
+while the results reported for these methods are impressive , their usefulness is limited by the scarcity of monolingual parallel corpora .
+small data sets mean a limited number of paraphrases can be extracted .
+furthermore , the narrow range of text genres available for monolingual parallel corpora limits the range of contexts in which the paraphrases can be used .
+instead of relying on scarce monolingual parallel data , our method utilizes the abundance of bilingual parallel data that is available .
+this allows us to create a much larger inventory of phrases that is applicable to a wider range of texts .
+our method for identifying paraphrases is an extension of recent work in phrase-based statistical machine translation ( koehn et al. , 2003 ) .
+the essence of our method is to align phrases in a bilingual parallel corpus , and equate different english phrases that are aligned with the same phrase in the other language .
+this assumption of similar meaning when multiple phrases map onto a single foreign language phrase is the converse of the assumption made in the word sense disambiguation work of diab and resnik ( 2002 ) which posits different word senses when a single english word maps onto different words in the foreign language ( we return to this point in section 4.4 ) .
+the remainder of this paper is as follows : section 2 contrasts our method for extracting paraphrases with the monolingual case , and describes how we rank the extracted paraphrases with a probability assignment .
+section 3 describes our experimental setup and includes information about how phrases were selected , how we manually aligned parts of the bilingual corpus , and how we evaluated the paraphrases .
+section 4 gives the results of our evaluation and gives a number of example paraphrases extracted with our technique .
+section 5 reviews related work , and section 6 discusses future directions .
+extracting paraphrases .
+much previous work on extracting paraphrases ( barzilay and mckeown , 2001 ; barzilay and lee , 2003 ; pang et al. , 2003 ) has focused on finding identifying contexts within aligned monolingual sentences from which divergent text can be extracted , and treated as paraphrases .
+barzilay and mckeown ( 2001 ) gives the example shown in figure 1 of how identical surrounding substrings can be used to extract the paraphrases of burst into tears as cried and comfort as console .
+while monolingual parallel corpora often have identical contexts that can be used for identifying paraphrases , bilingual parallel corpora do not .
+instead , we use phrases in the other language as pivots : we look at what foreign language phrases the english translates to , find all occurrences of those foreign phrases , and then look back at what other english phrases they translate to .
+we treat the other english phrases as potential paraphrases .
+figure 2 illustrates how a german phrase can be used as a point of identification for english paraphrases in this way .
+section 2.1 explains which statistical machine translation techniques are used to align phrases within sentence pairs in a bilingual corpus .
+a significant difference between the present work and that employing monolingual parallel corpora , is that our method frequently extracts more than one possible paraphrase for each phrase .
+we assign a probability to each of the possible paraphrases .
+this is a mechanism for ranking paraphrases , which can be utilized when we come to select the correct paraphrase for a given context .
+section 2.2 explains how we calculate the probability of a paraphrase .
+aligning phrase pairs .
+we use phrase alignments in a parallel corpus as pivots between english paraphrases .
+we find these alignments using recent phrase-based approaches to statistical machine translation .
+the original formulation of statistical machine translation ( brown et al. , 1993 ) was defined as a word-based operation .
+the probability that a foreign sentence is the translation of an english sentence is calculated by summing over the probabilities of all possible word-level alignments , a , between the sentences : thus brown et al. decompose the problem of determining whether a sentence is a good translation of another into the problem of determining whether there is a sensible mapping between the words in the sentences .
+more recent approaches to statistical translation calculate the translation probability using larger blocks of aligned text .
+koehn ( 2004 ) , tillmann ( 2003 ) , and vogel et al. ( 2003 ) describe various heuristics for extracting phrase alignments from the viterbi word-level alignments that are estimated using brown et al. ( 1993 ) models .
+we use the heuristic for phrase alignment described in och and ney ( 2003 ) which aligns phrases by incrementally building longer phrases from words and phrases which have adjacent alignment points .
+assigning probabilities .
+we define a paraphrase probability p ( e2 l e1 ) in terms of the translation model probabilities p ( f l e1 ) , that the original english phrase e1 translates as a particular phrase f in the other language , and p ( e2 l f ) , that the candidate paraphrase e2 translates as the foreign language phrase .
+since e1 can translate as multiple foreign language phrases , we sum over f : the translation model probabilities can be computed using any standard formulation from phrase- based machine translation .
+for example , p ( elf ) can be calculated straightforwardly using maximum likelihood estimation by counting how often the phrases e and f were aligned in the parallel corpus : note that the paraphrase probability defined in equation 2 returns the single best paraphrase , ~ e2 , irrespective of the context in which e1 appears .
+since the best paraphrase may vary depending on information about the sentence that e1 appears in , we extend the paraphrase probability to include that sentence s : word-level alignments in this paper , direct estimation of phrasal translations ( marcu and wong , 2002 ) would also suffice for extracting paraphrases from bilingual corpora .
+s allows us to re-rank the candidate paraphrases based on additional contextual information .
+the experiments in this paper employ one variety of contextual information .
+we include a simple language model probability , which would additionally rank e2 based on the probability of the sentence formed by substiuting e2 for e1 in s. a possible extension which we do not evaluate might be permitting only paraphrases that are the same syntactic type as the original phrase , which we could do by extending the translation model probabilities to count only phrase occurrences of that type .
+experimental design .
+we extracted 46 english phrases to paraphrase ( shown in table 1 ) , randomly selected from those multi-word phrases in wordnet which also occured multiple times in the first 50,000 sentences of our bilingual corpus .
+the bilingual corpus that we used was the german-english section of the europarl corpus , version 2 ( koehn , 2002 ) .
+we produced automatic alignments for it with the giza + + toolkit ( och and ney , 2003 ) .
+because we wanted to test our method independently of the quality of word alignment algorithms , we also developed a gold standard of word alignments for the set of phrases that we wanted to paraphrase .
+manual alignment .
+the gold standard alignments were created by highlighting all occurrences of the english phrase to paraphrase and manually aligning it with its german equivalent by correcting the automatic alignment , as shown in figure 3a .
+all occurrences of its german equivalents were then highlighted , and aligned with their english translations ( figure 3b ) .
+the other words in the sentences were left with their automatic alignments .
+paraphrase evaluation .
+we evaluated the accuracy of each of the paraphrases that was extracted from the manually aligned data , as well as the top ranked paraphrases from the experimental conditions detailed below in section 3.3 .
+because the acccuracy of paraphrases can vary depending on context , we substituted each set of candidate paraphrases into between 2 � 10 sentences which contained the original phrase .
+figure 4 shows the paraphrases for under control substituted into one of the sentences in which it occurred .
+we created a total of 289 such evaluation sets , with a total of 1366 unique sentences created through substitution .
+we had two native english speakers produce judgments as to whether the new sentences preserved the meaning of the original phrase and as to whether they remained grammatical .
+paraphrases that were judged to preserve both meaning and grammaticality were considered to be correct , and examples which failed on either judgment were considered to be incorrect .
+in figure 4 in check , checked , and curbed were judged to be correct and curb , limit and slow down were judged to be incorrect .
+the inter-annotator agreement for these judgements was measured at r . = 0.605 , which is conventionally interpreted as � good � agreement .
+experiments .
+we evaluated the accuracy of top ranked paraphrases when the paraphrase probability was calculated using the manual alignments , the automatic alignments , automatic alignments produced over multiple corpora in different languages , all of the above with language model re-ranking , all of the above with the candidate paraphrases limited to the same sense as the original phrase .
+results .
+we report the percentage of correct translations ( accuracy ) for each of these experimental conditions .
+a summary of these can be seen in table 3 .
+this section will describe each of the set-ups and the score reported in more detail .
+manual alignments .
+table 2 gives a set of example paraphrases extracted from the gold standard alignments .
+the italicized paraphrases are those that were assigned the highest probability by equation 2 , which chooses a single best paraphrase without regard for context .
+the 289 sentences created by substituting the italicized paraphrases in for the original phrase were judged to be correct an average of 74.9 % of the time .
+ignoring the constraint that the new sentences remain grammatically correct , these paraphrases were judged to have the correct meaning 84.7 % of the time .
+this suggests that the context plays a more important role with respect to the grammaticality of substituted paraphrases than with respect to their meaning .
+in order to allow the surrounding words in the sentence to have an influence on which paraphrase was selected , we re-ranked the paraphrase probabilities based on a trigram language model trained on the entire english portion of the europarl corpus .
+paraphrases were selected from among all those in table 2 , and not constrained to the italicized phrases .
+in the case of the paraphrases extracted from the manual word alignments , the language model re-ranking had virtually no influence , and resulted in a slight dip in accuracy to 71.7 % .
+automatic alignments .
+in this experimental condition paraphrases were extracted from a set of automatic alignments produced by running giza + + over a set of 1,036,000 german- english sentence pairs ( roughly 28,000,000 words in each language ) .
+when the single best paraphrase ( irrespective of context ) was used in place of the original phrase in the evaluation sentence the accuracy reached 48.9 % which is quite low compared to the 74.9 % of the manually aligned set .
+as with the manual alignments it seems that we are selecting phrases which have the correct meaning but are not grammatical in context .
+indeed our judges thought the meaning of the paraphrases to be correct in 64.5 % of cases .
+using a language model to select the best paraphrase given the context reduces the number of ungrammatical examples and gives an improvement in quality from 48.9 % to 55.3 % correct .
+these results suggest two things : that improving the quality of automatic alignments would lead to more accurate paraphrases , and that there is room for improvement in limiting the paraphrases by their context .
+we address these points below .
+using multiple corpora .
+work in statistical machine translation suggests that , like many other machine learning problems , performance increases as the amount of training data increases .
+och and ney ( 2003 ) show that the accuracy of alignments produced by giza + + improve as the size of the training corpus increases .
+since we used the whole of the german-english section of the europarl corpus , we could not try improving the alignments by simply adding more german-english training data .
+however , there is nothing that limits our paraphrase extraction method to drawing on candidate paraphrases from a single target language .
+we therefore re-formulated the paraphrase probability to include multiple corpora , as follows : for this condition we used giza + + to align the french-english , spanish-english , and italian- english portions of the europarl corpus in addition to the german-english portion , for a total of around 4,000,000 sentence pairs in the training data .
+the accuracy of paraphrases extracted over multiple corpora increased to 55 % , and further to 57.4 % when the language model re-ranking was included .
+controlling for word sense .
+as mentioned in section 1 , the way that we extract paraphrases is the converse of the methodology employed in word sense disambiguation work that uses parallel corpora ( diab and resnik , 2002 ) .
+the assumption made in the word sense disambiguation work is that if a source language word aligns with different target language words then those words may represent different word senses .
+this can be observed in the paraphrases for at work in table 2 .
+the paraphrases at the workplace , employment , and in the work sphere are a different sense of the phrase than operate , held , and holding , and they are aligned with different german phrases .
+when we calculate the paraphrase probability we sum over different target language phrases .
+therefore the english phrases that are aligned with the different german phrases ( which themselves maybe indicative of different word senses ) are mingled .
+performance may be degraded since paraphrases that reflect different senses of the original phrase , and which therefore have a different meaning , are included in the same candidate set .
+we therefore performed an experiment to see whether improvement could be had by limiting the candidate paraphrases to be the same sense as the original phrase in each test sentence .
+to do this , we used the fact that our test sentences were drawn from a parallel corpus .
+we limited phrases to the same word sense by constraining the candidate paraphrases to those that aligned with the same target language phrase .
+our basic paraphrase calculation was therefore : using the foreign language phrase to identify the word sense is obviously not applicable in monolingual settings , but acts as a convenient stand-in for a proper word sense disambiguation algorithm here .
+when word sense is controlled in this way , the accuracy of the paraphrases extracted from the automatic alignments raises dramatically from 48.9 % to 57 % without language model re-ranking , and further to 61.9 % when language model re-ranking was included .
+related work .
+barzilay and mckeown ( 2001 ) extract both single- and multiple-word paraphrases from a monolingual parallel corpus .
+they co-train a classifier to identify whether two phrases were paraphrases of each other based on their surrounding context .
+two disadvantages of this method are that it requires identical bounding substrings , and has bias towards single words .
+for an evaluation set of 500 paraphrases , they report an average precision of 86 % at identifying paraphrases out of context , and of 91 % when the paraphrases are substituted into the original context of the aligned sentence .
+the results of our systems are not directly comparable , since barzilay and mckeown ( 2001 ) evaluated their paraphrases with a different set of criteria ( they asked judges whether to judge paraphrases based on � approximate conceptual equivalence � ) .
+furthermore , their evaluation was carried out only by substituting the paraphrase in for the phrase with the identical context , and not in for arbitrary occurrences of the original phrase , as we have done .
+lin and pantel ( 2001 ) use a standard ( nonparallel ) monolingual corpus to generate para phrases , based on dependancy graphs and distributional similarity .
+one strong disadvantage of this method is that their paraphrases can also have opposite meanings .
+ibrahim et al. ( 2003 ) combine the two approaches : aligned monolingual corpora and parsing .
+they evaluated their system with human judges who were asked whether the paraphrases were � roughly interchangeable given the genre � , scored an average of 41 % on a set of 130 paraphrases , with the judges all agreeing 75 % of the time , and a correlation of 0.66 .
+the shortcomings of this method are that it is dependent upon parse quality , and is limited by the rareness of the data .
+pang et al. ( 2003 ) use parse trees over sentences in monolingual parallel corpus to identify paraphrases by grouping similar syntactic constituents .
+they use heuristics such as keyword checking to limit the over-application of this method .
+our alignment method might be an improvement of their heuristics for choosing which constituents ought to be grouped .
+discussion and future work .
+in this paper we have introduced a novel method for extracting paraphrases , which we believe greatly increases the usefulness of paraphrasing in nlp applications .
+the advantages of our method are that it : produces a ranked list of high quality paraphrases with associated probabilities , from which the best paraphrase can be chosen according to the target context .
+we have shown how a language model can be used to select the best paraphrase for a particular context from this list .
+straightforwardly handles multi-word units .
+whereas for previous approaches the evaluation has been performed over mostly single word paraphrases , our results are reported exclusively over units of between 2 and 4 words .
+because we use a much more abundant source of data , our method can be used for a much wider range of text genres than previous approaches , namely any for which parallel data is available .
+one crucial thing to note is that we have demonstrated our paraphrases to be of higher quality when the alignments used to produce them are improved .
+this means that our method will reap the benefits of research that improvements to automatic alignment techniques ( callison-burch et al. , 2004 ) , and will further improve as more parallel data becomes available .
+in the future we plan to : investigate whether our re-ranking can be further improved by using a syntax-based language model .
+formulate a paraphrase probability for sentential paraphrases , and use this to try to identify paraphrases across documents in order to condense information for multi-document summarization .
+see whether paraphrases can be used to increase coverage for statistical machine translation when translating into � low-density � languages which have small parallel corpora .

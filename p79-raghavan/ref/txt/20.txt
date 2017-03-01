@@ -1,0 +1,246 @@
+re-examining the potential effectiveness of interactive query expansion .
+abstract .
+much attention has been paid to the relative effectiveness of interactive query expansion versus automatic query expansion .
+although interactive query expansion has the potential to be an effective means of improving a search , in this paper we show that , on average , human searchers are less likely than systems to make good expansion decisions .
+to enable good expansion decisions , searchers must have adequate instructions on how to use interactive query expansion functionalities .
+we show that simple instructions on using interactive query expansion do not necessarily help searchers make good expansion decisions and discuss difficulties found in making query expansion decisions .
+introduction .
+query expansion techniques , e.g. [ 1 , 5 ] , aim to improve a user s search by adding new query terms to an existing query .
+a standard method of performing query expansion is to use relevance information from the user those documents a user has assessed as containing relevant information .
+the content of these relevant documents can be used to form a set of possible expansion terms , ranked by some measure that describes how useful the terms might be in attracting more relevant documents , [ 13 ] .
+all or some of these expansion terms can be added to the query either by the user interactive query expansion ( iqe ) or by the retrieval system automatic query expansion ( aqe ) .
+permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page .
+to copy otherwise , or republish , to post on servers or to redistribute to lists , requires prior specific permission and / or a fee .
+sigir 03 , july 28 august 1 , 2003 , toronto , canada .
+copyright 2003 acm 1-58113-646-3 / 03 / 0007 ... $ 5.00 .
+one argument in favour of aqe is that the system has access to more statistical information on the relative utility of expansion terms and can make better a better selection of which terms to add to the user s query .
+the main argument in favour of iqe is that interactive query expansion gives more control to the user .
+as it is the user who decides the criteria for relevance in a search , then the user should be able to make better decisions on which terms are likely to be useful , [ 10 ] .
+a number of comparative user studies of automatic versus interactive query expansion have come up with inconclusive findings regarding the relative merits of aqe versus iqe .
+for example , koenemann and belkin [ 10 ] demonstrated that iqe can outperform aqe for specific tasks , whereas beaulieu [ 1 ] showed aqe as giving higher retrieval effectiveness in an operational environment .
+one reason for this discrepancy in findings is that the design of the interface , search tasks and experimental methodology can affect the uptake and effectiveness of query expansion techniques .
+magennis and van rijsbergen [ 12 ] attempted to gauge the effectiveness of iqe in live and simulated user experiments .
+in their experiments they estimated the performance that might be gained if a user was making very good iqe decisions ( the potential effectiveness of iqe ) compared to that of real users making the query modification decisions ( the actual effectiveness of iqe ) .
+their conclusion was that users tend to make sub-optimal decisions on query term utility .
+in this paper we revisit this claim to investigate more fully the potential effectiveness of iqe .
+in particular we investigate how good a user s query term selection would have to be to increase retrieval effectiveness over automatic strategies for query expansion .
+we also compare human assessment of expansion term utility with those assessments made by the system .
+the remainder of the paper is structured as follows .
+in section 2 we discuss the motivation behind our investigation and that of magennis and van rijsbergen .
+in section 3 we describe our experimental methodology and data .
+in section 4 we investigate the potential effectiveness of iqe and in section 5 we compare potential strategies for helping users make iqe decisions .
+in section 6 we summarise our findings .
+motivation .
+in [ 11 , 12 ] magennis and van rijsbergen , based on earlier work by harman [ 7 ] , carried out an experiment to estimate how good iqe could be if performed by expert searchers .
+using the wsj ( 1987-1992 ) test collection , a list of the top 20 expansion terms was created for each query , using terms taken from the top 20 retrieved documents .
+this list of possible expansion terms was ranked by applying the f4 , [ 14 ] , term reweighting formula to the set of unretrieved relevant documents .
+this set of documents consists of the relevant documents not yet seen by the user .
+this set could not be calculated in a real search environment as retrieval systems will only have knowledge of the set of documents that have been seen by the user .
+however , as query expansion aims to retrieve this set of documents , they form the best evidence on the utility of expansion terms .
+using these sets of expansion terms , magennis and van rijsbergen simulated a user selecting expansion terms over four iterations of query expansion .
+at each iteration , from the list of 20 expansion terms , the top 0 , 3 , 6 , 10 and 20 terms were isolated .
+these groups of terms simulated possible sets of expansion terms chosen by a user .
+by varying which group of terms was added at each iteration , all possible expansion decisions were simulated .
+for example , expansion by the top 3 terms at feedback iteration 1 , the top 10 terms at feedback iteration 2 , etc .
+the best simulation for each query was taken to be a measure of the best iqe decisions that could be made by a user ; the potential effectiveness of iqe .
+limitations .
+one of the benefits of an approach such as that taken by magennis and van rijsbergen is that it is possible to isolate the effect of query expansion itself .
+that is , by eliminating the effects of individual searchers and search interfaces the results can be used as baseline figures with which to compare user search effectiveness .
+however , in [ 11 , 12 ] , magennis noted several limitations of this particular measurement of the potential effectiveness of iqe. only certain combinations of terms are considered , i.e. the top 3 , 6 , 10 or 20 terms .
+other combinations of terms are possible , e.g. the top 4 terms , and these may give better retrieval performance. real searchers are unlikely to use add a consecutive set of expansion terms , i.e. the top 3 , 6 , 10 or 20 terms suggested by the system .
+it is more likely that searchers will choose terms from throughout the list of expansion terms .
+in this way , users can , for example , avoid poor expansion terms suggested by the system. the ranking of expansion terms is based on information from the unseen relevant documents ; ones that the user has not yet viewed .
+in a real search environment the expansion terms will be ranked based on their presence or absence in the documents seen and assessed relevant by the user. iv. only one document collection was used .
+differences in the creation of test collections , the search topics used and the documents present in the test collection may affect the results of their conclusions and restrict the generality of their conclusions .
+aims of study .
+in our experiments we aim to overcome these limitations to create a more realistic evaluation of the potential effectiveness of interactive query expansion .
+in particular we aim to investigate how good iqe could be , how easy it is to make good iqe decisions and investigate guidelines for helping users make good iqe decisions .
+we also investigate what kind of iqe decisions are actually made by searchers when selecting new search terms .
+in the following section we describe how we obtain the query expansion results analysed in the first part of this paper .
+these experiments are also based on simulations of interactive query expansion decisions .
+experimental setup .
+in this section we outline the experimental methodology we used to simulate query expansion decisions .
+the experiments themselves were carried out on the associated press ( ap 1998 ) , san jose mercury news ( sjm 1991 ) , and wall street journal ( wsj 1990-1992 ) collections , details of which are given in table 1 .
+these collections come from the trec initiative [ 16 ] .
+for each query we use the top 25 retrieved documents to provide a list of possible expansion terms , as described below .
+although each collection comes with a list of 50 topic ( query ) descriptions , we concentrate on those queries where query expansion could change the effectiveness of an existing query .
+this meant excluding some queries from each test collection ; those queries for which there are no relevant documents , queries where no relevant documents were retrieved in the top 25 documents ( as no expansion terms could be formed without at least one relevant document ) , and queries where all the relevant documents are found within the top 25 retrieved documents ( as query expansion will not cause a change in retrieval effectiveness for these queries ) .
+in our experiments we used the wpq method of ranking terms for query expansion , [ 13 ] , as this has been shown to give good results for both aqe and iqe [ 4 ] .
+we only use the top 15 expansion terms for query expansion as this is a computationally intensive method of creating possible queries .
+in a real interactive situation users may be shown more terms than this .
+however , it does allow us to concentrate on those terms that are considered by the system to be the best for query expansion .
+for each query in each collection , therefore , we have a set of 32 678 possible iqe decisions that could be made by a searcher .
+for each possible iqe decision we can assess the effect of making this decision on the quality of the expanded query .
+we use this information in several ways ; firstly , in section 4 , we compare the possible iqe decisions against three methods of applying aqe .
+we then , in section 5 , examine potential strategies for helping searchers make good iqe decisions .
+in section 5 we also compare the possible iqe decisions against human expansion decisions .
+comparing query expansion techniques .
+in this section we examine the potential effectiveness of iqe against three possible strategies for applying aqe .
+in this section we compare how likely a user is to make better query expansion decisions using iqe than allowing the system to perform aqe .
+our three aqe techniques are : collection independent expansion .
+a common approach to aqe is to add a fixed number of terms , n , to each query .
+our first aqe technique simulates this by adding the top six expansion terms to all queries , irrespective of the collection used .
+the value of six was chosen without prior knowledge of the effectiveness of adding this number of terms to any of the queries in the test collections used .
+collection dependent expansion .
+the previous approach to aqe adds the same number of expansion terms to all queries in all collections .
+when using a specific test collection we can calculate a better value of n ; one that is specific to the test collection used .
+to calculate n , for each collection , we compared the average precision over all the queries used in each collection after the addition of the top n expansion terms , where n varied from 1 to 15 .
+the value of n that gave the optimal value of average precision for the whole query set was taken to be the value of n for each query in the collection .
+these values could not be calculated in an operational environment , where knowledge of all queries submitted is unknown .
+however , it gives a stricter aqe baseline measure as the value of n is optimal for the collection used .
+the values for n are shown in table 2 , and is higher than the six terms added in the previous strategy .
+query dependent expansion .
+the collection dependent expansion strategy adds a fixed number of terms to each query within a test collection .
+this is optimal for the entire query set but may be sub-optimal for individual queries , i.e. some queries may give better retrieval effectiveness for greater or smaller values of n .
+the query dependent expansion strategy calculates which value of n is optimal for individual queries .
+this may be implemented in an operational retrieval system by , for example , setting a threshold on the expansion term weights .
+these three aqe methods act as baseline performance measures for comparing aqe with iqe .
+query expansion vs. no query expansion .
+we first compare the effect of query expansion against no query expansion ; how good are different approaches to query expansion ?
+in table 3 we compare the aqe baselines against no query expansion : the performance of the original query with no additional query terms .
+specifically , we compare how many queries in each collection give higher average precision than no query expansion ; the percentage of queries that are improved by each aqe strategy .
+also included in this table , in bold figures , are the average precision figures given by applying the techniques .
+as can be seen , all aqe strategies were more likely , on average , to improve a query than harm it .
+that is , all techniques improved at least 50 % of the queries where query expansion could make a difference to retrieval effectiveness .
+the automatic strategy that is most specific to the query , the query dependent strategy , not only improves the highest percentage of queries is most stable but also gives the highest average precision over the queries - is most effective .
+conversely the automatic strategy that is least effective and improves least queries is the one that is less tailored to either the query or collection the collection independent strategy .
+we can compare these decisions against possible iqe decisions .
+firstly , in row 5 of table 3 , we show the percentage of queries improved , and average precision obtained , when using the best iqe decision for each query .
+this set of figures gives the best possible results on each collection when using query expansion .
+this is the highest potential performance of iqe using the top 15 expansion terms .
+comparing the performance of the best iqe decision against the aqe decisions , it can be seen that iqe has the potential to be the most stable technique overall in that it improves most queries .
+it also has the potential to be the most effective query expansion technique as it gives highest overall average precision .
+however this is only a potential benefit , as we shall show in the remainder of this paper it may not be easy for a user to select such an optimal set of terms .
+for example , in the row 6 of table 3 we show the performance of a middle-performing iqe decision .
+this is obtained , for each query , by ranking the average precision of all 32768 possible iqe decisions and selecting the iqe decision at position 16384 ( half way down the ranking ) .
+this decision is one that would be obtained if a user makes query expansion decisions that were neither good nor poor compared to other possible decisions .
+this result shows that even fair iqe decisions can perform relatively poorly ; improving less than half of queries and giving poorer retrieval effectiveness than any of the aqe strategies .
+finally , in row 7 of table 3 , we show the effect if a user was consistently making the worst iqe decisions possible , i.e. always choosing the combination of expansion terms that gave the lowest average precision of all possible decisions .
+even though a user is unlikely to always make such poor decisions , these decisions are being made on terms selected from the top 15 expansion terms .
+so , although iqe can be effective it is a technique that needs to be applied carefully .
+in the next section we examine how likely a user is to make a good decision using iqe .
+in this section we look at how difficult it is to select a set of expansion terms that will perform better than aqe or no query expansion .
+we do this by comparing how many of the possible iqe decisions will give better average precision than the aqe baselines .
+in table 4 we show the results of this analysis .
+for each collection we show how many possible iqe decisions gave greater average precision than each of the three baselines ( top row in columns 2-4 ) and how many of the decisions gave a significantly higher average precision than the baselines ( bold figures in columns 2 4 ) 2 .
+what we are trying to uncover here is how likely a user is to make good iqe decisions over a range of queries .
+the argument for iqe , based on this analysis , is mixed .
+on the positive side over 50 % of the possible iqe decisions give better performance than no query expansion , and over 20 % of the possible decisions give significantly better performance ( row 2 ) .
+however , this also means that nearly half of the possible decisions will decrease retrieval performance3 and most decisions will not make any significant difference to the existing query performance .
+compared against the best aqe strategy ( query dependent ) , only a small percentage ( 9-10 % ) of possible decisions are likely to be better than allowing the system to make the query expansion decisions .
+based on this analysis it appears that it may be hard for users to make very good iqe decisions ; ones that are better than a good aqe technique .
+the collection independent strategy is the most realistic default aqe approach as it assumes no knowledge of collections or queries .
+however , although 35 % -45 % of possible iqe decisions are better than the collection independent strategy , this still means that searchers are more likely to make a poorer query expansion decision than the system .
+this is only true , however , if users lack any method of selecting good combinations of expansion terms .
+in the next section we analyse potential guidelines that could be given to users to help them make good iqe decisions .
+possible guidelines for iqe .
+in this section we try to assess possible instructions that could be given to users to help them make use of iqe as a general search technique .
+select more terms .
+one reason for asking users to engage in iqe is to give more evidence to the retrieval system regarding the information for which they are looking .
+users , especially in web searches , often use very short queries [ 9 ] .
+presenting lists of possible expansion terms is one way to get users to give more information , in the form of query words , to the system .
+a useful guideline to give to users , then , may be to expand the query with as many useful terms are possible .
+in table 5 we compare the size of iqe decisions that lead to an increase in retrieval effectiveness ( good iqe decisions , table 5 , row 4 ) against those that led to a decrease in retrieval effectiveness ( poor iqe decisions , table 5 , row 5 ) .
+as can be seen , the size of the query expansion does not distinguish good decisions from poor decisions .
+the size of the best iqe decisions ( the average size of the combinations that gave the best average precision ) is similar both to the average size of the good and poor combinations ( table 5 , row 3 ) .
+the sizes of the average of the best aqe decisions are also within a similar range ( table 5 , row 2 ) .
+so giving the system more evidence does not necessarily gain any improvement in effectiveness .
+trust the system .
+a second approach might be to advise users to concentrate on the terms suggested most strongly by the system .
+these are terms that are calculated by the system to be the most likely to improve a query , and in our experiment are the terms with the highest wpq score .
+in table 6 , we present the average wpq value of the terms chosen in good and poor iqe decisions , and also in the best iqe and aqe strategies .
+the average wpq value for terms in good ( row 4 ) and poor iqe decisions ( row 5 ) is relatively similar .
+this means that sets of terms with high wpq values are not more likely to give good performance than sets of terms with lower wpq values .
+the average value for the best aqe decisions ( row 2 ) is generally higher than that of the iqe decisions .
+this , however , results in part from the fact that the query dependent aqe strategy adds a consecutive set of terms taken from the top of the expansion term ranking .
+as these terms are at the top of the term ranking , they will naturally have a higher wpq value .
+the average term score for the best iqe ( row 3 ) decision is also higher than either the good or poor iqe decisions , so there is some merit in choosing terms that the system recommends most highly those with high wpq values .
+however , the lack of difference between the good and poor iqe decisions means we cannot alone recommend the user concentrates more closely on the terms suggested by the system .
+that is , highly scored terms are useful but the user must apply some additional strategy to select which of these terms to use for query expansion .
+use semantics .
+one of the more intuitive arguments in favour of iqe is that , unlike the statistically-based query expansion techniques , humans can exploit semantic relationships for retrieval .
+that is , people can recognise expansion terms that are semantically related to the information for which they are seeking and expand the query using these terms .
+however , investigations such as the one presented in [ 2 ] indicate that searchers can find it difficult to use semantic information even when the system supports the recognition and use of semantic relationships .
+consequently , in this section we outline a small pilot experiment designed to compare system recommendations of term utility against human assessment of the same terms .
+system analysis of expansion term utility .
+the system , or automatic , analysis of an expansion term is based on the overall impact of adding that term to all possible iqe decisions that do not already contain the term .
+that is , we estimate the likely impact of adding a new expansion term t to an existing set of expansion terms .
+for each query , each expansion term , t , belongs to 50 % ( 16384 ) of the possible iqe decisions ( and does not belong to 50 % possible decisions , including no query expansion ) .
+in effect these two sets of possible decisions are identical except as relates to t : adding t to each iqe decision in the latter set would give an iqe decision in the former set .
+by comparing the average precision of all iqe decisions that contain t , with the corresponding decisions that do not contain t , we can classify each of the top 15 expansion terms according to whether they are good , neutral or poor expansion terms .
+good terms are those that are likely to improve the performance of a possible iqe decision ( a set of expansion terms ) ; neutral ones are those that generally make no difference and poor expansion terms are those that are likely to decrease the performance of a set of expansion terms .
+we demonstrate this in table 7 , based on the trec topic 259 new kennedy assassination theories run on the ap collection .
+each row shows what percentage of the 16384 possible decisions , not already containing the term in column 1 , that are improved , worsened , or have no difference after the addition of the term .
+for example , the addition of the term jfk will always improve retrieval effectiveness .
+that is , adding the term jfk to any set of expansion terms will increase retrieval effectiveness .
+conversely , adding the term frenchi will always reduce the retrieval effectiveness , and the addition of the term warren4 will make no difference .
+for simplicity , we classify terms simply by their predominant tendency .
+for the example in table 7 the good terms are jfk , motorcad , marcello , and depositori .
+the poor terms are oswald , dealei , kwitni , theori , documentari , frenchi and bulletin , and the neutral terms are warren , theorist and belin .
+the term tippit is good and poor for an equal percentage of combinations and cannot be classified .
+human analysis of expansion term utility .
+the automatic classification of expansion term utility presented in the previous section was compared against a set of human classification of the same expansion terms .
+we selected 8 queries from each collection and asked 3 human subjects to read the whole trec topic and each of the relevant documents found within the top 25 retrieved documents .
+these were the relevant documents used to create the list of the top 15 expansion terms in the previous experiment .
+the subjects were given the full trec topic description to provide some context for the search , and were shown the initial query that retrieved the documents .
+the subjects were then presented with the top 15 expansion terms .
+for each expansion term the subjects were asked whether they felt the term would be useful or not useful at retrieving additional relevant documents when added to the existing query5 .
+we asked each subject to assess each of the 24 queries rather than distributing the queries across multiple subjects .
+this was to preserve any strategies the individual users may be employing when selecting expansion terms [ 8 ] .
+however , we did not ask the subjects to read the non-relevant retrieved documents as we felt this was too great a burden on the subjects .
+the subjects selection of expansion terms was compared against the automatic analysis from section 5.3.1 to compare the system classification against human classification of expansion term utility .
+the comparison was done in three ways ; first we compare how good the subjects are at detecting good expansion terms , section 5.3.2.1 , how good the subjects are at eliminating poor expansion terms , section 5.3.2.2 , and examine the decisions made by the subjects , section 5.3.2.3 .
+detecting good expansion terms .
+for each subject we examine first whether the subjects can detect good expansion terms ; whether the subjects can recognise the expansion terms that are likely to be useful in combination with other expansion terms .
+in table 8 we show the percentage of the good expansion terms , as classified in section 5.3.1 , which were chosen by each subject as being possibly useful for query expansion .
+the subjects varied in their ability to identify good expansion terms , being able to identify 32 % - 73 % of the good expansion terms .
+eliminating poor expansion terms .
+if the subjects are not always good at detecting good expansion terms perhaps they are better are eliminating poor expansion terms ?
+in table 9 we show the percentage of expansion terms that were assessed as being poor by the system but good by the subjects .
+as in the previous section , the subjects ability to correctly classify expansion terms varied with at least 25 % of the poor expansion terms being rated as good by the subjects .
+the implication here is that subjects may have difficulty spotting poor expansion terms .
+one reason for the poor classification of terms may be that the subjects are only choosing certain types of terms .
+in table 10 we compare the cases where the system classification ( column 2 ) agreed or disagreed with the subjects classification ( column 3 ) of terms .
+for each case we give the average collection occurrence of the terms and ( the figure in parentheses ) their average occurrence within the relevant documents .
+for example , for the terms on which subject 1 and the system agreed that the terms were useful , these terms appeared in an average of 692 documents in the ap collection and an average of 6.5 relevant documents .
+appearing in lots of relevant documents appears initially to correlate with an assessment of good expansion term utility .
+however the difference in relevant document occurrence between good / poor and bad / poor misclassification is often slight .
+the most apparent pattern from table 10 is that subjects tend to classify terms with a high collection frequency as being good expansion terms .
+conversely terms with a low collection frequency are likely to be assessed as being poor expansion terms .
+this is not a universal pattern ( subject 2 on the wsj collection for example does the opposite ) but it is the main pattern and suggests that searchers may not being assessing which terms are useful but which terms are recognisable .
+subjects reasons for expansion term selection .
+we discussed with each subject their reasons for their classification of expansion terms .
+based on the subjects reasons for classification and the later automatic classification , we can suggest three reasons for misclassification of expansion term utility. i .
+statistical relationships are important as well as semantic ones .
+subjects tended to ignore terms if the terms appear to have been suggested for purely statistical reasons , e.g. numbers .
+in general this may be a sensible approach if the query does not mention specific numbers or dates .
+however , the documents in the static collections we used are only a sample of the possible documents on the topics investigated .
+in this case , strong statistical relationships may be useful for future retrieval. ii .
+users cannot always identify semantic relationships .
+making good use of semantic information means being able to identify semantic relationships between the information need and the possible expansion terms .
+for specialised or unusual terms , the subjects could be unsure of the value of these terms unless the relationship between these terms and the information need was made clear in the documents .
+however , being able to recognise why expansion terms have been suggested , and the searcher s ability to classify terms as useful or not , does not necessarily guarantee that the terms themselves will be seen as useful .
+rather , we propose that searchers need more sophisticated support in assessing the potential quality of expansion terms. iii .
+users cannot always identify useful semantic relationships for retrieval .
+the difficulty most subjects experienced with selecting expansion terms is that , although they felt they could identify obvious semantic relationships , they could not identify which semantic relationships were going to attract more relevant documents .
+in short , the subjects felt they could not identify the effect of individual expansion terms on future retrieval .
+instead the subjects concentrated mainly on terms they viewed as safe ; those that were semantically related to the topic description rather than the retrieved relevant documents .
+that is , the subjects tended to concentrate on terms for new queries rather than modified or refined queries .
+this type of decision-making can also be seen in other investigations , e.g. [ 15 ] which demonstrated that , although terms suggested from relevant documents can be useful terms , they are often not used as a main source of additional search terms .
+in a real interactive environment users can , of course , try out expansion terms , or add their own new terms , and see the effect on the type of documents retrieved .
+however , the lack of connection between expansion terms and documents used to provide those terms indicates that searchers may need more support in how to use query expansion as a general interactive technique .
+conclusions .
+in this paper we examined the potential effectiveness of interactive query expansion .
+this is mainly a simulation experiment and is intended to supplement rather than replace experimental investigations of real user iqe decision-making .
+there are several limitations to this work : for example , we only concentrated on altering the content of the query ; future investigations will compare the results obtained here when we use relevance weighting in addition to query expansion .
+we also do not differentiate between queries although the success of query expansion can vary greatly across queries .
+we will consider this in future work , our intention here is to investigate the general applicability of query expansion .
+the experimental results initially provided a comparison between aqe and iqe techniques .
+from table 3 , section 4.1 , iqe has the potential to be an effective technique compared with aqe .
+one of the main claims for iqe is that searchers can be more adept , than the system , at identifying good expansion terms .
+this may be particularly true for certain types of search , e.g. in [ 6 ] fowkes and beaulieu showed that searchers preferred iqe when dealing with complex query statements .
+subjects may also be better at targeting specific aspects of the search , i.e. focussing on parts of their information need .
+however , the analyses presented here show that the potential benefits of iqe may not be easy to achieve .
+in particular searchers have difficulty identifying useful terms for effective query expansion .
+the implication is that simple term presentation interfaces are not sufficient in providing sufficient support and context to allow good query expansion decisions .
+interfaces must support the identification of relationships between relevant material and suggested expansion terms and should support the development of good expansion strategies by the searcher .

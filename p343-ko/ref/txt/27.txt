@@ -1,0 +1,209 @@
+qualifier in trec-12 qa main task .
+abstract .
+this paper describes a question answering system and its various modules to solve definition , factoid and list questions defined in the trec12 main task .
+in particular , we tackle the factoid qa task by event-based question answering .
+each qa event comprises of elements describing different facets like time , location , object , action etc .
+by analyzing the external knowledge from pre-retrieved trec documents , web documents , wordnet and ontology to discover the qa event structure , we explore the inherent associations among qa elements and then obtain the answers .
+there are three subsystems working parallel to handle definition , factoid , and list questions separately .
+we highlight the shared modules , fine-grained named entity recognition , anaphora resolution and canonicalization co-reference resolution , among the three subsystems as well .
+introduction .
+open domain question answering ( qa ) is a complex research area formed as a distinctive combination of information retrieval ( ir ) , information extraction ( ie ) , and natural language processing ( nlp ) .
+the basic problem that qa poses is : given a question and a large text corpus , return an answer rather than relevant documents .
+qa has received tremendous interest recently with the emergence of many commercial products , and research papers in various communities ( sigir 2003 , acl 2003 , acmmm 2003 ) .
+in trec-11 ( voorhees 2002 ) , we explored the use of external resources like the web and wordnet to extract terms that are highly correlated with the query , and use them to perform linear query expansion ( yang & chua , 2002 ) .
+while the technique has been found to be effective , we found that there is a need to perform structured analysis on the knowledge obtained from the web / wordnet to further improve the performance .
+this year , we model the factoid questions by event-based question answering ( yang et al. 2003 ) .
+questions often refer to several aspects / elements of the events , such as location , time , subject , object , quantity , description and action , etc .
+for most qa events , there are inherent associations among their elements .
+we thus perform event mining to discover and then incorporate the knowledge of event structure systematically for more effective qa .
+our system , named qualifier ( question answering by lexical fabric and external resources ) , includes modules to perform detailed question analysis , qa event construction , answer justification , fine-grained named entity recognition , anaphora resolution , canonicalization co-reference , and successive constraint relaxation .
+during question parsing , detailed question classes , answer types , original query terms and nlp roles of the query terms are analyzed .
+we derive detailed question class ontology that corresponds to fine-grained named entities .
+this enables us to extract exact answer from the candidate sentences more accurately .
+all the questions are treated equally during the stage of detailed question analysis , and then passed to three different subsystems to handle definition , factoid and list questions separately .
+the original query terms can be used directly to locate potential answer candidates in the corpus .
+however , one major problem is that those terms do not provide sufficient evidence to retrieve the answer candidates .
+this is known as the semantic gap between the query space and document space .
+in order to bridge this gap , we use the knowledge of both the web and lexical resources to expand the original query .
+the new query therefore contains terms that are related to the local context in the web and the lexical context in wordnet .
+finally , we structure the query and use it to search for answer candidates through the mg system ( witten et al. 1999 ) .
+answer candidate sentences are selected from the top returned documents and are ranked based on association rules obtained from qa event analysis .
+named entity recognition , answer justification , canonicalization resolution and answer selection are done to extract the final answer while successive constraint relaxation is used as an auto-feedback loop to boost the answer coverage .
+we will describe the three subsystems one by one in the following sections .
+figure 1 illustrates the flow of the main system .
+for factoid and list questions , they are solved similarly and definition questions are handled differently in answer extraction .
+factoid questions .
+our system performs event-based question answering for factoid questions in a few steps : external knowledge acquisition , qa event construction , query formulation , element association mining and answer processing .
+first , it extracts several sets of words ( known elements ) from the original question and employs a rule-based question classifier to identify the answer target ( unknown element type ) .
+during the knowledge acquisition stage , it integrates the knowledge of the pre-retrieved trec documents , web , wordnet , and our manually constructed ontology to extract additional evidences for the query .
+second , it performs event construction to discover different facets or elements of events and employs the knowledge of events to perform query formulation .
+third , given the newly formulated query , it employs the mg tool to search for top ranked documents in the corpus .
+fourth , for the top ranked documents , it identifies the relevant passages by exploiting the associations among event elements .
+after performing element association mining , it computes the answer event score ( aes ) and uses it to rank the passages from the relevant documents in the corpus .
+answer justification module reinforces the confidence of the returned correct answers and filters out some unreasonable ones .
+qa event mining .
+in our previous work , we modeled the world and lexical knowledge from the web and wordnet to support effective qa .
+basically , we performed the structured analysis of the external knowledge to extract the qa event structure .
+first , we used the original query terms in the questions to retrieve the top nw documents by using the web search engine and then extracted the terms that are highly correlated to the original query terms .
+second , we used wordnet to adjust the term weights as well as to introduce new lexical related terms .
+third , we computed the lexical , co-occurrence , and distance correlations between terms and used these as the basis to induce event elements by unsupervised semantic grouping .
+for example , given the question , what spanish explorer discovered the mississippi river ? , we could get the event structure as shown in figure 2 .
+finally , we used this event structure to formulate boolean query to retrieve relevant documents from the qa corpus , and employed a featured-based approach to perform answer selection and extraction .
+after extracting the event structure , we employ event mining to study the relationships among the event elements .
+in this approach , we extract important association rules among the elements by using data mining techniques .
+there are 4 major steps in the event-based qa approach and we are going to elaborate the details in the following subsections .
+extract the qa event from the web and wordnet for a question .
+mine the event in a ) to generate the useful association rules among the event elements .
+rank the passages in the relevant documents from the qa corpus by matching them with the association rules .
+extract the answer phrase from the top passages .
+qa event generation .
+we explore the use of semantic grouping to structurally utilize the external knowledge extracted from the web , wordnet , ontology and pre-retrieved documents from trec .
+the terms extracted from the relevant web snippets , wordnet , pre- retrieved trec documents are put into a vector called kq , which is the basis for semantic grouping since it is most likely to contain the facts / terms about the qa entity or qa event .
+given any two distinct terms ti , tj , in the kq , we compute ( a ) lexical correlation rl ( ti , ti ) ; ( b ) co-occurrence correlation rco ( ti , t j ) ; ( c ) distance correlation rd ( ti , tj ) .
+with the term association measures rl , rco , and rd , we employ an unsupervised clustering algorithm ( yang et al. 2003 ) .to derive the semantic groups of the terms in kq , which are expected to match with the event structure .
+figure 2 shows the qa event structure developed after performing knowledge modeling .
+association rule mining and answer extraction .
+after constructing the events from the textual data , event-mining techniques are applied to discover association rules within the qa events .
+we perform the rule mining in two steps : association rule generation and selection .
+association rules are in the form of x > y as we mentioned earlier .
+basically , we need to find all the combinations of the event elements to form the sets x and y. to do this , we need to assign y to contain only one of the qa event elements .
+for the rest of the elements , we use them to form different x in various sizes and combinations .
+we then store all of the x > y rules in an association rule bank bi for qa event ei .
+the association rule generation algorithm is given as follows .
+the number of these rules is potentially large and hence it is necessary to prune away some rules that do not have interesting information .
+note that not all the rules are reliable .
+this is because : some association rules are not complete .
+for example , above algorithm will discover both rule x ^ y and rule z ^ y , where x ^ z. then x ^ y is not as complete as z ^ y. thus we have to decide which one should be preserved to extract more accurate answers .
+the rules appear fewer times may not be so significant for a certain qa event .
+the more often a rule appears in the document collection , the more important it might be .
+in order to identify the interesting association rules among the event elements , we need to measure the usefulness of the rules .
+the rules containing more information and involving more event elements are considered to be more important .
+we consider the typical support measure in data mining ( kdd ) literature ( drre et al. 1999 ) and the reliability of the event elements in x. another measure is confidence , which helps to filter out both false information introduced by unreliable data source and the conflicting rules .
+confidence ( x ^ y ) as defined in data mining .
+we select the best association rules for each event element based on these two measures , which indicates the usefulness of the event element relationships .
+these association rules are combined with event element matching to rank the passages .
+we compute the answer event score ( aes ) for each passage from the relevant documents in the qa corpus .
+the good passages we have now describe the same event as the question .
+hence , once we have these passages , we can either use the event element in y as the answer or extract the answer from the passages .
+in order to extract the exact answers from the passages , we first apply named entity tagging on the top ranked passages and the event association rules .
+all the named entities whose type match with answer target are selected as answer candidates and ranked based on aes score of the passage where they extracted from , number and significance of the association rules that they match .
+aes ( pj ) is the aes score of the passage where answer candidate j extracted from . 2.4 fine-grained named entity recognition with the set of the top passages obtained after document retrieval and sentence ranking , qualifier performs fine-grained named entity tagging before extracting the string that matches the question class ( or answer target or unknown element ) as the answer .
+the system adopts a rule-based algorithm to detect the named entities by utilizing the lexical and semantic features such as capitalization , punctuation , context , part-of-speech tagging and phrase chunking .
+the input text is going through the preprocessing stage .
+we split sentences and remove all characters , which potentially cannot be seen or may risk the following process ( mainly , those are non-ascii characters ) .
+in addition , we extract some simple types on this stage , like num _ percent or cod _ url .
+in order to avoid the problems with calculations , the program may transfer the text presentation of numbers to numerical .
+for example , it will convert one hundred eleven to 111 .
+the output is represented in the xml format , which contains some marked named entities .
+we then use the shallow parser by the company infogistics .
+the program performs part-of-speech tagging and extracts noun groups and verb groups .
+the named entity extraction module is the core for the whole system .
+the heuristic rules allow creating user-defined types .
+also , they support the regular expression style for features of words .
+this rule sets the type for each noun phrase , which contains some known person title ( academic , academician etc . ) .
+the assigned type is person _ title _ np for this particular phrase . $ set ( hum _ person / 2 ) means , that the second position ( positions are started from 0 ) should be settled to hum _ person .
+interpretation of those rules starts from the lists initialization .
+each document is parsed sentence by sentence .
+during the parsing stage , each word is represented in the form of token with several features .
+the output of the interpreter may involve several competing types for some named entity .
+we also use the following heuristics to choose the rule in such situation : longer length .
+we preferred to extracted longer named entities .
+ontology .
+if the rule is found in some resource ( e.g. , confirmed list of persons ) , then we assigned this type of rule ; 3 ) handcrafted priorities , which disambiguates the named entities correctly in most of the cases .
+our ne recognizer supports 51 types of nes , which support 2 levels of granularity .
+top levels of classification are human ( hum ) , location ( loc ) , number ( num ) , object ( obj ) , time ( tme ) and code ( cod ) .
+the module extracts named entities based on the set of heuristic rules and lists for the semantic categories .
+we added some new types of fine-grained ne into our old system .
+qualifier detects fine-grained named entities using a two-tiered hierarchy as shown in table 1 .
+anaphora resolution .
+in order to maximize recall of the system , which is crucial for list questions , we perform anaphora resolution for the retrieved document by mg system before we proceed to passage selection .
+firstly , we make use of charniaks parser ( charniak , 2000 ) to generate the parse tree for each sentence .
+the parse tree walker extracts two lists .
+one list contains all the nps in the text and the other contains all the anaphors .
+their agreement features , head-argument / head-adjunct information and all the salience factors except sentence recency are annotated .
+all the pleonastic pronouns are filtered out .
+their antecedent is assigned as null .
+for each lexical anaphor , it forms a pair with each item in a subset of the nps ( currently the implementation only considers nps contained within three sentences proceeding the anaphor and those in the sentence where the anaphor resides ) .
+these antecedent candidate-anaphor pairs are examined by the anaphora binding algorithm .
+for third person pronouns , similarly , the syntactic filter is applied on the candidate pairs consisting one pronoun and one np from the set satisfying the same positional criteria .
+in both cases a morphological filter is applied , checking the agreement features compatibility .
+for the candidates identified earlier , their salience weights are computed and they are ranked by an arbitrator accordingly .
+the candidate with the highest weight is proposed as the actual antecedent .
+in case of tie , the one closer to the anaphor is favored .
+figure 3 shows the structure of the anaphora resolution process .
+answer justification .
+answer justification attempts to establish lexica-semantic paths between the questions and candidate long answers , and derive logical proofs along those paths to justify whether the answer is correct .
+the prover uses two types of axioms .
+the first type is used to guide the proof and includes axioms derived from facts in the textual answers .
+the other type of axioms generated based on our manually constructed ontology .
+in this way , we could identify the wrong answer 50000 , which is what the surface text shown .
+only when we know certain constraint to indicate the actual range of marylands population , we know that the surface answer is wrong .
+list questions .
+list question answering is quite similar to what we did for factoid questions .
+however , we allow the answer extraction module to return multiple answers and remove duplicated answer candidates with the help of abbreviation co-reference .
+the exact answers are exacted based on patterns and its ranking .
+each of these answers is passed to answer justification module for confirmation .
+list questions are processed similarly to factoid questions .
+however , we allow the answer extraction module to return multiple answers and remove duplicated answer candidates with the help of abbreviation co-reference .
+in general , our method is more data-driven because we want it to be domain independent .
+however , we still utilized some heuristics to enhance the process .
+from a list question , we obtain the same or less amount information comparing to factoid questions since the constraint from the list question itself will be more relax .
+under this situation , possible answers for a list question could be in any number .
+its hard for us to decide when the right time to stop is .
+the only way to abase this uncertainty is to perform exhaustive search or near exhaustive search .
+these patterns could mean surface text patterns , commonly used cue words .
+definition questions .
+due to the characteristics of definitional questions , i.e. informative and stress on completeness , we treat answering definitional questions as an integrated process of information retrieval and summarization .
+we utilize techniques from information retrieval as anti-noise mechanism and make use of summarization techniques to avoid redundancy in the results .
+the pipeline system can be divided into 2 modules : sentence ranking , and sentence selection plus summary generation .
+figure 4 shows an overview of the definition question subsystem .
+due to the heterogeneity of the news articles , many of the input documents are actually not related to the search target .
+we applied a document filter to the get only those documents containing all terms of the search target are labeled as relevant .
+we then applied anaphora resolution to sentences from all relevant documents to replace appropriate pronouns with the search target .
+finally , those sentences containing any part of the search target and their contextual sentences ( one sentence proceeding and following them respectively ) are sifted as positive set .
+all other sentences in the input documents are considered as negative set .
+as for sentence ranking , we utilized evidence from two sources , namely the input documents and the web .
+basically , we use sentence frequency ( the number of sentences containing the word ) as the main metric to measure the importance of each word .
+the sentences in negative set are used to provide negative examples .
+in other words , a word is considered important if it appears often in the sentences of positive set while occurs rarely in the negative set .
+in order to account for the diversity of the news articles , we use the web as a supplementary source .
+the web evidence is derived from the snippets obtained using the queries constructed from the sentences of the positive set containing any part of the search target .
+specifically , the expansion terms are selected by .
+after sentence ranking , we have a list of ordered sentences with the most relevant sentences to the search target being placed in the top of the list .
+we made use of summarization techniques to accomplish sentence selection because sentences from news articles are likely to contain duplicated content .
+we employed a variation of the maximal marginal relevance ( mmr ) to select sentences from the list while avoiding redundancy between the summary sentences .
+in general , our method is more data-driven because we aim it to be domain independent .
+however , we still utilized some heuristics to enhance the process .
+for example , if a sentence containing < target > , a or < target > , which is the , it is likely to be a good definitional sentence for the target .
+thus in the sentence ranking and content selection processes , we employed a set of heuristic rules .
+in content selection process , we applied heuristics to selecting meaningful fragments of the summary sentences to construct the final answers for the search target .
+results .
+we submitted 3 runs for trec 2003 qa main task .
+they are mmlnus03r1 ( definition run 1 + factoid run 1 + list run 1 ) , mmlnus03r2 ( definition run 2 + factoid run 1 + list run 1 ) and mmlnus03r3 ( definition run 3 + factoid run 2 + list run 1 ) .
+the first run mmlnus03r1 emphasized more on recall ( answer coverage ) while the third run mmlnus03r3 more on precision ( answer accuracy ) .
+the second run was a hybrid to test the balance between recall and precision .
+the 2 factoid runs focus on precision and recall each .
+our first run maximizes recall ( answer coverage ) by using anaphora resolution , abbreviation co-reference , and successive constraint relaxation to find as many answers as possible without answer justification .
+in the second run , however , we focused on precision ( answer correctness ) , answer justification plays a rather important role and successive constraint relaxation keeps the recall at a satisfactory level .
+table 2 gives the scores for our factoid runs .
+the 3 definition runs that we submitted to trec balance precision and recall .
+we empirically set the length of the summary for people and objects .
+our first run maximizes recall by using full sentences .
+we have the same length limit for summary in run 2 , while text fragments are extracted by heuristics instead of using the full sentences .
+in the third run ( to maximize precision ) , fewer sentences were extracted for summary and text fragments extraction was also applied .
+the performance of our definition runs is given in table 3 .
+only one run of list questions is submitted .
+its average precision over 37 questions is given in table 4 .
+table 5 summarizes the overall performance for the three submitted runs .
+it shows that nulmmlr2 gives the best performance , which uses strict constraints and focuses on answer accuracy .
+conclusion .
+we develop three subsystems for this years trec .
+definition questions answering combines techniques from information retrieval as anti-noise mechanism and make use of summarization techniques to avoid redundancy in the results .
+factoid question and list questions take the advantage of event-based qa , which employs the intuition that there exists implicit knowledge that connects an answer to a question , to extract the correct answer .
+association rules are mined to get the relationship among the qa event elements .
+the whole system consists many modules , including detailed question analysis , qa event construction , event mining , document retrieval , passage retrieval , answer extraction , answer justification , fine- grained named entity recognition , anaphora resolution , canonicalization co-reference , and successive constraint relaxation .
+we also manually constructed ontology to lever the performance of our ne and answer justification modules .
+we are currently refining our approach in several directions .
+first , we are trying to formulate a formal proof of our qa event hypothesis .
+second , we are working towards an online question answering system .
+our longer-term research plan includes interactive qa , and the handling of more difficult analysis and opinion question types .

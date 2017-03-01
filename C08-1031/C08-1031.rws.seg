@@ -1,0 +1,19 @@
+(claim)#sentiment analysis has been studied by many researchers recently .
+(claim)#two main directions are sentiment classification at the document and sentence levels , and feature-based opinion mining .
+0.1#(pang et al 2002);(turney 2002)#sentiment classification at the document-level investigates ways to classify each evaluative document ( e.g. , product review ) as positive or negative $1 $2 .
+0.1#(riloff and wiebe 2003);(kim and hovy 2004);(wilson et al 2004);(gamon et al 2005);(stoyanov and cardie 2006)#sentiment classification at the sentence-level has also been studied $1 $2 $3 $4 $5.
+(claim)#these works are different from ours as we study comparatives .
+0.2#(hu and liu 2004);(liu et al 2005);(popescu and etzioni 2005);(mei et al 2007)#the works in $1 $2 $3 $4 perform opinion mining at the feature level . the task involves ( 1 ) extracting entity features ( e.g. , " picture quality " and " battery life " in a camera review ) and ( 2 ) finding orientations ( positive , negative or neutral ) of opinions expressed on the features by reviewers .
+(claim)#again , our work is different because we deal with comparisons .
+0.2#(hatzivassiloglou and mckeown 1997);(kanayama and nasukawa 2006)#discovering orientations of context dependent opinion comparative words is related to identifying domain opinion words $1 $2 . both works use conjunction rules to find such words from large domain corpora . one conjunction rule states that when two opinion words are linked by " and " their opinions are the same .
+(claim)#our method is different in three aspects .
+(claim)#first , we argue that finding domain opinion words is problematic because in the same domain the same word may indicate different opinions depending on what features it is applied to .
+(claim)#for example , in the camera domain , " long " is positive in " the battery life is very long " but negative in it takes a long time to focus .
+(claim)#thus , we should consider both the feature and the opinion word rather than only the opinion word .
+(claim)#second , we focus on studying opinionated comparative words .
+(claim)#third , our technique is quite different as we utilize readily available external opinion sources .
+0.2#(jindal and liu 2006)#as discussed in the introduction , a closely related work to ours is $1 .
+(claim)#however , it does not find which entities are preferred by authors .
+0.2#(bos and nissim 2006)#$1 proposes a method to extract some useful items from superlative sentences .
+0.2#(fiszman et al 2007)#$1 studied the problem of identifying which entity has more of certain features in comparative sentences . 
+(claim)#it does not find which entity is preferred .

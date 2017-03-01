@@ -1,0 +1,137 @@
+evaluating centering-based metrics of coherence for text structuring using a reliably annotated corpus .
+abstract .
+we use a reliably annotated corpus to compare metrics of coherence based on centering theory with respect to their potential usefulness for text structuring in natural language generation .
+previous corpus-based evaluations of the coherence of text according to centering did not compare the coherence of the chosen text structure with that of the possible alternatives .
+a corpus- based methodology is presented which distinguishes between centering-based metrics taking these alternatives into account , and represents therefore a more appropriate way to evaluate centering from a text structuring perspective .
+motivation .
+our research area is descriptive text generation ( odonnell et al. , 2001 ; isard et al. , 2003 ) , i.e. the generation of descriptions of objects , typically museum artefacts , depicted in a picture .
+text ( 1 ) , from the gnome corpus ( poesio et al. , 2004 ) , is an example of short human-authored text from this genre : according to centering theory ( grosz et al. , 1995 ; walker et al. , 1998a ) , an important factor for the felicity of ( 1 ) is its entity coherence : the way centers ( discourse entities ) , such as the referent of the nps 144 in clause ( a ) and its in clause ( b ) , are introduced and discussed in subsequent clauses .
+it is often claimed in current work on in natural language generation that the constraints on felicitous text proposed by the theory are useful to guide text structuring , in combination with other factors ( see ( karamanis , 2003 ) for an overview ) .
+however , how successful centerings constraints are on their own in generating a felicitous text structure is an open question , already raised by the seminal papers of the theory ( brennan et al. , 1987 ; grosz et al. , 1995 ) .
+in this work , we explored this question by developing an approach to text structuring purely based on centering , in which the role of other factors is deliberately ignored .
+in accordance with recent work in the emerging field of text-to-text generation ( barzilay et al. , 2002 ; lapata , 2003 ) , we assume that the input to text structuring is a set of clauses .
+the output of text structuring is merely an ordering of these clauses , rather than the tree-like structure of database facts often used in traditional deep generation ( reiter and dale , 2000 ) .
+our approach is further characterized by two key insights .
+the first distinguishing feature is that we assume a search-based approach to text structuring ( mellish et al. , 1998 ; kibble and power , 2000 ; karamanis and manurung , 2002 ) in which many candidate orderings of clauses are evaluated according to scores assigned by a given metric , and the best-scoring ordering among the candidate solutions is chosen .
+the second novel aspect is that our approach is based on the position that the most straightforward way of using centering for text structuring is by defining a centering-based metric of coherence karamanis ( 2003 ) .
+together , these two assumptions lead to a view of text planning in which the constraints of centering act not as filters , but as ranking factors , and the text planner may be forced to choose a sub-optimal solution .
+however , karamanis ( 2003 ) pointed out that many metrics of coherence can be derived from the claims of centering , all of which could be used for the type of text structuring assumed in this paper .
+hence , a general methodology for identifying which of these metrics represent the most promising candidates for text structuring is required , so that at least some of them can be compared empirically .
+this is the second research question that this paper addresses , building upon previous work on corpus-based evaluations of centering , and particularly the methods used by poesio et al. ( 2004 ) .
+we use the gnome corpus ( poesio et al. , 2004 ) as the domain of our experiments because it is reliably annotated with features relevant to centering and contains the genre that we are mainly interested in .
+to sum up , in this paper we try to identify the most promising centering-based metric for text structuring , and to evaluate how useful this metric is for that purpose , using corpus- based methods instead of generally more expensive psycholinguistic techniques .
+the paper is structured as follows .
+after discussing how the gnome corpus has been used in previous work to evaluate the coherence of a text according to centering we discuss why such evaluations are not sufficient for text structuring .
+we continue by showing how centering can be used to define different metrics of coherence which might be useful to drive a text planner .
+we then outline a corpus-based methodology to choose among these metrics , estimating how well they are expected to do when used by a text planner .
+we conclude by discussing our experiments in which this methodology is applied using a subset of the gnome corpus .
+evaluating the coherence of a corpus text according to centering .
+in this section we briefly introduce centering , as well as the methodology developed in poesio et al. ( 2004 ) to evaluate the coherence of a text according to centering .
+computing cf lists , cps and cbs .
+according to grosz et al. ( 1995 ) , each utterance in a discourse is assigned a list of forward looking centers ( cf list ) each of which is realised by at least one np in the utterance .
+the members of the cf list are ranked in order of prominence , the first element being the preferred center cp .
+in this paper , we used what we considered to be the most common definitions of the central notions of centering ( its parameters ) .
+poesio et al. ( 2004 ) point out that there are many definitions of parameters such as utterance , ranking or realisation , and that the setting of these parameters greatly affects the predic tions of the theory ; however , they found violations of the centering constraints with any way of setting the parameters ( for instance , at least 25 % of utterances have no cb under any such setting ) , so that the questions addressed by our work arise for all other settings as well .
+following most mainstream work on centering for english , we assume that an utterance corresponds to what is annotated as a finite unit in the gnome corpus.
+this definition of utterance is not optimal from the point of view of minimizing centering violations ( poesio et al. , 2004 ) , but in this way most utterances are the realization of a single proposition ; i.e. , the impact of aggregation is greatly reduced .
+similarly , we use grammatical function ( gf ) combined with linear order within the unit ( what poesio et al. ( 2004 ) call gftherelin ) for cf ranking .
+in this configuration , the cp is the referent of the first np within the unit that is annotated as a subject for its gf .
+the ranking of the cfs other than the cp is defined according to the following preference on their gf ( brennan et al. , 1987 ) : obj > iobj > other .
+cfs with the same gf are ranked according to the linear order of the corresponding nps in the utterance .
+the second column of table 1 shows how the utterances in example ( 1 ) are automatically translated by the scripts developed by poesio et al. ( 2004 ) into a sequence of cf lists , each decomposed into the cp and the cfs other than the cp , according to the chosen setting of the centering parameters .
+note that the cp of ( a ) is the center de374 and that the same center is used as the referent of the other nps which are annotated as coreferring with ne410 .
+given two subsequent utterances un _ 1 and un , with cf lists cfn _ 1 and cfn respectively , the backward looking center of un , cbn , is defined as the highest ranked element of cfn _ 1 which also appears in cfn ( centerings constraint 3 ) .
+for instance , the cb of ( b ) is de374 .
+the third column of table 1 shows the cb for each utterance in ( 1 ) .4 computing transitions .
+as the fourth column of table 1 shows , each utterance , with the exception of ( a ) , is also marked with a transition from the previous one .
+when cfn and cfn _ 1 do not have any centers in common , we compute the nocb transition ( kibble and power , 2000 ) ( poesio et als null transition ) for un ( e.g. , utterance ( d ) in table 1 ) .
+following again the terminology in kibble and power ( 2000 ) , we call the requirement that cbn be the same as cbn _ 1 the principle of coherence and the requirement that cbn be the same as cpn the principle of salience .
+each of these principles can be satisfied or violated while their various combinations give rise to the standard transitions of centering shown in table 2 ; poesio et als scripts compute these violations.
+we also make note of the preference between these transitions , known as centerings rule 2 ( brennan et al. , 1987 ) : continue is preferred to retain , which is preferred to smooth- shift , which is preferred to rough-shift .
+finally , the scripts determine whether cbn is the same as cpn _ 1 , known as the principle of cheapness ( strube and hahn , 1999 ) .
+the last column of table 1 shows the violations of cheapness ( denoted with an asterisk ) in ( 1 ) . 2.3 evaluating the coherence of a text and text structuring the statistics about transitions computed as just discussed can be used to determine the degree to which a text conforms with , or violates , centerings principles .
+poesio et al. ( 2004 ) found that nocbs account for more than 50 % of the transitions in the gnome corpus in configurations such as the one used in this paper .
+more generally , a significant percentage of nocbs ( at least 20 % ) and other dispreferred transitions was found with all parameter configurations tested by poesio et al. ( 2004 ) and indeed by all previous corpus-based evaluations of centering such as passoneau ( 1998 ) , di eugenio ( 1998 ) , strube and hahn ( 1999 ) among others .
+these results led poesio et al. ( 2004 ) to the conclusion that the entity coherence as formalized in centering should be supplemented with an account of other coherence inducing factors to explain what makes texts coherent .
+these studies , however , do not investigate the question that is most important from the text structuring perspective adopted in this paper : whether there would be alternative ways of structuring the text that would result in fewer violations of centerings constraints ( kibble , 2001 ) .
+consider the nocb utterance ( d ) in ( 1 ) .
+simply observing that this transition is dispreferred ignores the fact that every other ordering of utterances ( b ) to ( d ) would result in more nocbs than those found in ( 1 ) .
+even a text- structuring algorithm functioning solely on the basis of the centering constraints might therefore still choose the particular order in ( 1 ) .
+in other words , a metric of text coherence purely based on centering principlestrying to minimize the number of nocbsmay be sufficient to explain why this order of clauses was chosen , at least in this particular genre , without need to involve more complex explanations .
+in the rest of the paper , we consider several such metrics , and use the texts in the gnome corpus to choose among them .
+we return to the issue of coherence ( i.e. , whether additional coherence- inducing factors need to be stipulated in addition to those assumed in centering ) in the discussion .
+centering-based metrics of coherence .
+as said previously , we assume a text structuring system taking as input a set of utterances represented in terms of their cf lists .
+the system orders these utterances by applying a bias in favour of the best scoring ordering among the candidate solutions for the preferred output . $ in this section , we discuss how the centering 8additional assumptions for choosing between the orderings that are assigned the best score are presented in the next section. concepts just described can be used to define metrics of coherence which might be useful for text structuring .
+the simplest way to define a metric of coherence using notions from centering is to classify each ordering of propositions according to the number of nocbs it contains , and pick the ordering with the fewest nocbs .
+we call this metric m.nocb , following ( karamanis and manurung , 2002 ) .
+because of its simplicity , m.nocb serves as the baseline metric in our experiments .
+we consider three more metrics .
+m.cheap is biased in favour of the ordering with the fewest violations of cheapness .
+m.kp sums up the nocbs and the violations of cheapness , coherence and salience , preferring the ordering with the lowest total cost ( kibble and power , 2000 ) .
+finally , m.bfp employs the preferences between standard transitions as expressed by rule 2 .
+more specifically , m.bfp selects the ordering with the highest number of continues .
+if there exist several orderings which have the most continues , the one which has the most retains is favoured .
+the number of smooth-shifts is used only to distinguish between the orderings that score best for continues as well as for retains , etc .
+in the next section , we present a general methodology to compare these metrics , using the actual ordering of clauses in real texts of a corpus to identify the metric whose behavior mimics more closely the way these actual orderings were chosen .
+this methodology was implemented in a program called the system for evaluating entity coherence ( seec ) .
+exploring the space of possible orderings .
+in section 2 , we discussed how an ordering of utterances in a text like ( 1 ) can be translated into a sequence of cf lists , which is the representation that the centering-based metrics operate on .
+we use the term basis for comparison ( bfc ) to indicate this sequence of cf lists .
+in this section , we discuss how the bfc is used in our search-oriented evaluation methodology to calculate a performance measure for each metric and compare them with each other .
+in the next section , we will see how our corpus was used to identify the most promising centering-based metric for a text classifier .
+computing the classification rate .
+the performance measure we employ is called the classification rate of a metric m on a certain bfc b. the classification rate estimates the ability of m to produce b as the output of text structuring according to a specific generation scenario .
+the first step of seec is to search through the space of possible orderings defined by the permutations of the cf lists that b consists of , and to divide the explored search space into sets of orderings that score better , equal , or worse than b according to m. then , the classification rate is defined according to the following generation scenario .
+we assume that an ordering has higher chances of being selected as the output of text structuring the better it scores for m. this is turn means that the fewer the members of the set of better scoring orderings , the better the chances of b to be the chosen output .
+moreover , we assume that additional factors play a role in the selection of one of the orderings that score the same for m. on average , b is expected to sit in the middle of the set of equally scoring orderings with respect to these additional factors .
+hence , half of the orderings with the same score will have better chances than b to be selected by m. the classification rate v of a metric m on b expresses the expected percentage of orderings with a higher probability of being generated than b according to the scores assigned by m and the additional biases assumed by the generation scenario as follows : generalising across many bfcs .
+in order for the experimental results to be reliable and generalisable , m , , and my should be compared on more than one bfc from a corpus c. in our standard analysis , the bfcs b1 , ... , bm from c are treated as the random factor in a repeated measures design since each bfc contributes a score for each metric .
+then , the classification rates for m , , and my on the bfcs are compared with each other and significance is tested using the sign test .
+after calculating the number of bfcs that return a lower classification rate for m , , than for my and vice versa , the sign test reports whether the difference in the number of bfcs is significant , that is , whether there are significantly more bfcs with a lower classification rate for m , , than the bfcs with a lower classification rate for my ( or vice versa ) .9 finally , we summarise the performance of m on m bfcs from c in terms of the average classification rate y : using the gnome corpus for a search-based comparison of metrics .
+we will now discuss how the methodology discussed above was used to compare the centering-based metrics discussed in section 3 , using the original ordering of texts in the gnome corpus to compute the average classification rate of each metric .
+the gnome corpus contains texts from different genres , not all of which are of interest to us .
+in order to restrict the scope of the experiment to the text-type most relevant to our study , we selected 20 museum labels , i.e. , short texts that describe a concrete artefact , which served as the input to seec together with the metrics in section 3.10 permutation and search strategy .
+in specifying the performance of the metrics we made use of a simple permutation heuristic exploiting a piece of domain-specific communication knowledge ( kittredge et al. , 1991 ) .
+like dimitromanolaki and androutsopoulos ( 2003 ) , we noticed that utterances like ( a ) in example ( 1 ) , should always appear at the beginning of a felicitous museum label .
+hence , we restricted the orderings considered by the seec to those in which the first cf list of b , cf1 , appears in first position.11 for very short texts like ( 1 ) , which give rise to a small bfc , the search space of possible orderings can be enumerated exhaustively .
+however , when b consists of many more cf lists , it is impractical to explore the search space in this way .
+elsewhere we show that even in these cases it is possible to estimate v ( m , b ) reliably for the whole population of orderings using a large random sample .
+in the experiments reported here , we had to resort to random sampling only once , for a bfc with 16 cf lists .
+comparing m.nocb with other metrics .
+the experimental results of the comparisons of the metrics from section 3 , computed using the methodology in section 4 , are reported in table 3 .
+in this table , the baseline metric m.nocb is compared with each of m.cheap , m.kp and m.bfp.
+the first column of the table identifies the comparison in question , e.g.
+m.nocb versus m.cheap.
+the exact number of bfcs for which the classification rate of m.nocb is lower than its competitor for each comparison is reported in the next column of the table .
+for example , m.nocb has a lower classification rate than m.cheap for 18 ( out of 20 ) bfcs from the gnome corpus .
+m.cheap only achieves a lower classification rate for 2 bfcs , and there are no ties , i.e. cases where the classification rate of the two metrics is the same .
+the p value returned by the sign test for the difference in the number of bfcs , rounded to the third decimal place , is reported in the fifth column of the table .
+the last column of the table 3 shows m.nocb as the winner of the comparison with m.cheap since it has a lower classification rate than its competitor for significantly more bfcs in the corpus . 12 overall , the table shows that m.nocb does significantly better than the other three metrics which employ additional centering concepts .
+this result means that there exist proportionally fewer orderings with a higher probability of being selected than the bfc when m.nocb is used to guide the hypothetical text structuring algorithm instead of the other metrics .
+hence , m.nocb is the most suitable among the investigated metrics for structuring the cf lists in gnome .
+this in turn indicates that simply avoiding nocb transitions is more relevant to text structuring than the combinations of the other centering notions that the more complicated metrics make use of . ( however , these notions might still be appropriate for other tasks , such as anaphora resolution . )
+discussion : the performance of m.nocb.
+we already saw that poesio et al. ( 2004 ) found that the majority of the recorded transitions in the configuration of centering used in this study are nocbs .
+however , we also explained in section 2.3 that what really matters when trying to determine whether a text might have been generated only paying attention to centering constraints is the extent to which it would be possible to improve upon the ordering chosen in that text , given the information that the text structuring algorithm had to convey .
+the average classification rate of m.nocb is an estimate of exactly this variable , indicating whether m.nocb is likely to arrive at the bfc during text structuring .
+the average classification rate y for m.nocb on the subcorpus of gnome studied here , for the parameter configuration of centering we have assumed , is 19.95 % .
+this means that on average the bfc is close to the top 20 % of alternative orderings when these orderings are ranked according to their probability of being selected as the output of the algorithm .
+on the one hand , this result shows that although the ordering of cf lists in the bfc might not completely minimise the number of observed nocb transitions , the bfc tends to be in greater agreement with the preference to avoid nocbs than most of the alternative orderings .
+in this sense , it appears that the bfc optimises with respect to the number of potential nocbs to a certain extent .
+on the other hand , this result indicates that there are quite a few orderings which would appear more likely to be selected than the bfc .
+we believe this finding can be interpreted in two ways .
+one possibility is that m.nocb needs to be supplemented by other features in order to explain why the original text was structured this way .
+this is the conclusion arrived at by poesio et al. ( 2004 ) and those text structuring practitioners who use notions derived from centering in combination with other coherence constraints in the definitions of their metrics .
+there is also a second possibility , however : we might want to reconsider the assumption that human text planners are trying to ensure that each utterance in a text is locally coherent .
+they might do all of their planning just on the basis of centering constraints , at least in this genre perhaps because of resource limitations and simply accept a certain degree of incoherence .
+further research on this issue will require psycholinguistic methods ; our analysis nevertheless sheds more light on two previously un addressed questions in the corpus-based evaluation of centering a ) which of the centering notions are most relevant to the text structuring task , and b ) to which extent centering on its own can be useful for this purpose .
+further results .
+in related work , we applied the methodology discussed here to a larger set of existing data ( 122 bfcs ) derived from the mpiro system and ordered by a domain expert ( dimitromanolaki and androutsopoulos , 2003 ) .
+as table 4 shows , the results from mpiro verify the ones reported here , especially with respect to m.kp and m.cheap which are overwhelmingly beaten by the baseline in the new domain as well .
+also note that since m.bfp fails to overtake m.nocb in mpiro , the baseline can be considered the most promising solution among the ones investigated in both domains by applying occams logical principle .
+we also tried to account for some additional constraints on coherence , namely local rhetorical relations , based on some of the assumptions in knott et al. ( 2001 ) , and what karamanis ( 2003 ) calls the pagefocus which corresponds to the main entity described in a text , in our example de374 .
+these results , reported in ( karamanis , 2003 ) , indicate that these constraints conflict with centering as formulated in this paper , by increasing - instead of reducing - the classification rate of the metrics .
+hence , it remains unclear to us how to improve upon m.nocb.
+in our future work , we would like to experiment with more metrics .
+moreover , although we consider the parameter configuration of centering used here a plausible choice , we intend to apply our methodology to study different instantiations of the centering parameters , e.g. by investigating whether indirect realisation reduces the classification rate for m.nocb compared to direct realisation , etc .

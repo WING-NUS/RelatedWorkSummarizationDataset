@@ -1,0 +1,177 @@
+guiding semi-supervision with constraint-driven learning .
+abstract .
+over the last few years , two of the main research directions in machine learning of natural language processing have been the study of semi-supervised learning algorithms as a way to train classifiers when the labeled data is scarce , and the study of ways to exploit knowledge and global information in structured learning tasks .
+in this paper , we suggest a method for incorporating domain knowledge in semi-supervised learning algorithms .
+our novel framework unifies and can exploit several kinds of task specific constraints .
+the experimental results presented in the information extraction domain demonstrate that applying constraints helps the model to generate better feedback during learning , and hence the framework allows for high performance learning with significantly less training data than was possible before on these tasks .
+introduction .
+natural language processing ( nlp ) systems typically require large amounts of knowledge to achieve good performance .
+acquiring labeled data is a difficult and expensive task .
+therefore , an increasing attention has been recently given to semi-supervised learning , where large amounts of unlabeled data are used to improve the models learned from a small training set ( collins and singer , 1999 ; thelen and riloff , 2002 ) .
+the hope is that semi-supervised or even unsupervised approaches , when given enough knowledge about the structure of the problem , will be competitive with the supervised models trained on large training sets .
+however , in the general case , semi-supervised approaches give mixed results , and sometimes even degrade the model performance ( nigam et al. , 2000 ) .
+in many cases , improving semi-supervised models was done by seeding these models with domain information taken from dictionaries or ontology ( cohen and sarawagi , 2004 ; collins and singer , 1999 ; haghighi and klein , 2006 ; thelen and riloff , 2002 ) .
+on the other hand , in the supervised setting , it has been shown that incorporating domain and problem specific structured information can result in substantial improvements ( toutanova et al. , 2005 ; roth and yih , 2005 ) .
+this paper proposes a novel constraints-based learning protocol for guiding semi-supervised learning .
+we develop a formalism for constraints-based learning that unifies several kinds of constraints : unary , dictionary based and n-ary constraints , which encode structural information and interdependencies among possible labels .
+one advantage of our formalism is that it allows capturing different levels of constraint violation .
+our protocol can be used in the presence of any learning model , including those that acquire additional statistical constraints from observed data while learning ( see section 5 .
+in the experimental part of this paper we use hmms as the underlying model , and exhibit significant reduction in the number of training examples required in two information extraction problems .
+as is often the case in semi-supervised learning , the algorithm can be viewed as a process that improves the model by generating feedback through labeling unlabeled examples .
+our algorithm pushes this intuition further , in that the use of constraints allows us to better exploit domain information as a way to label , along with the current learned model , unlabeled examples .
+given a small amount of labeled data and a large unlabeled pool , our framework initializes the model with the labeled data and then repeatedly : uses constraints and the learned model to label the instances in the pool .
+updates the model by newly labeled data .
+this way , we can generate better training examples during the semi-supervised learning process .
+the core of our approach , ( 1 ) , is described in section 5 .
+the task is described in section 3 and the experimental study in section 6 .
+it is shown there that the improvement on the training examples via the constraints indeed boosts the learned model and the proposed method significantly outperforms the traditional semi-supervised framework .
+related work .
+in the semi-supervised domain there are two main approaches for injecting domain specific knowledge .
+one is using the prior knowledge to accurately tailor the generative model so that it captures the domain structure .
+for example , ( grenager et al. , 2005 ) proposes diagonal transition models for sequential labeling tasks where neighboring words tend to have the same labels .
+this is done by constraining the hmm transition matrix , which can be done also for other models , such as crf .
+however ( roth and yih , 2005 ) showed that reasoning with more expressive , non-sequential constraints can improve the performance for the supervised protocol .
+a second approach has been to use a small high- accuracy set of labeled tokens as a way to seed and bootstrap the semi-supervised learning .
+this was used , for example , by ( thelen and riloff , 2002 ; collins and singer , 1999 ) in information extraction , and by ( smith and eisner , 2005 ) in pos tagging . ( haghighi and klein , 2006 ) extends the dictionary- based approach to sequential labeling tasks by propagating the information given in the seeds with contextual word similarity .
+this follows a conceptually similar approach by ( cohen and sarawagi , 2004 ) that uses a large named-entity dictionary , where the similarity between the candidate named-entity and its matching prototype in the dictionary is encoded as a feature in a supervised classifier .
+in our framework , dictionary lookup approaches are viewed as unary constraints on the output states .
+we extend these kinds of constraints and allow for more general , n-ary constraints .
+in the supervised learning setting it has been established that incorporating global information can significantly improve performance on several nlp tasks , including information extraction and semantic role labeling . ( punyakanok et al. , 2005 ; toutanova et al. , 2005 ; roth and yih , 2005 ) .
+our formalism is most related to this last work .
+but , we develop a semi-supervised learning protocol based on this formalism .
+we also make use of soft constraints and , furthermore , extend the notion of soft constraints to account for multiple levels of constraints violation .
+conceptually , although not technically , the most related work to ours is ( shen et al. , 2005 ) that , in a somewhat ad-hoc manner uses soft constraints to guide an unsupervised model that was crafted for mention tracking .
+to the best of our knowledge , we are the first to suggest a general semi-supervised protocol that is driven by soft constraints .
+we propose learning with constraints - a framework that combines the approaches described above in a unified and intuitive way .
+tasks , examples and datasets .
+in section 4 we will develop a general framework for semi-supervised learning with constraints .
+however , it is useful to illustrate the ideas on concrete problems .
+therefore , in this section , we give a brief introduction to the two domains on which we tested our algorithms .
+we study two information extraction problems in each of which , given text , a set of pre-defined fields is to be identified .
+since the fields are typically related and interdependent , these kinds of applications provide a good test case for an approach like ours .
+to gain an insight to how the constraints can guide semi-supervised learning , assume that the sentence shown in figure 1 appears in the unlabeled data pool .
+part ( a ) of the figure shows the correct labeled assignment and part ( b ) shows the assignment labeled by a hmm trained on 30 labels .
+however , if we apply the constraint that state transition can occur only on punctuation marks , the same hmm model parameters will result in the correct labeling ( a ) .
+therefore , by adding the improved labeled assignment we can generate better training samples during semi-supervised learning .
+in fact , the punctuation marks are only some of the constraints that can be applied to this problem .
+the set of constraints we used in our experiments appears in table 1 .
+note that some of the constraints are non-local and are very intuitive for people , yet it is very difficult to inject this knowledge into most models .
+the second problem we consider is extracting fields from advertisements ( grenager et al. , 2005 ) .
+the dataset consists of 8,767 advertisements for apartment rentals in the san francisco bay area downloaded in june 2004 from the craigslist web- site .
+in the dataset , only 302 entries have been labeled with 12 fields , including size , rent , neighborhood , features , and so on .
+the data was preprocessed using regular expressions for phone numbers , email addresses and urls .
+the list of the constraints for this domain is given in table 1 .
+we implement some global constraints and include unary constraints which were largely imported from the list of seed words used in ( haghighi and klein , 2006 ) .
+we slightly modified the seedwords due to difference in preprocessing .
+notation and definitions .
+this decomposition applies both to discriminative linear models and to generative models such as hmms and crfs , in which case the linear sum corresponds to log likelihood assigned to the input / output pair by the model ( for details see ( roth , 1999 ) for the classification case and ( collins , 2002 ) for the structured case ) .
+even when not dictated by the model , the feature functions fi ( x , y ) used are local to allow inference tractability .
+local feature function can capture some context for each input or output variable , yet it is very limited to allow dynamic programming decoding during inference .
+when the constraints are soft , we want to incur some penalty for their violation .
+moreover , we want to incorporate into our cost function a measure for the amount of violation incurred by violating the constraint .
+a generic way to capture this intuition is to introduce a distance function d ( y , 1cz ( x ) ) between the space of outputs that respect the constraint , 1cz ( x ) , and the given output sequence y .
+one possible way to implement this distance function is as the minimal hamming distance to a sequence that respects the constraint ci , that is : d ( y , 1cz ( x ) ) = min ( y 'e1c ( . ) ) h ( y , y ' ) .
+if the penalty for violating the soft constraint ci is pi , we write the we refer to d ( y , 1c ( x ) ) as the valuation of the constraint c on ( x , y ) .
+the intuition behind ( 1 ) is as follows .
+instead of merely maximizing the models likelihood , we also want to bias the model using some knowledge .
+the first term of ( 1 ) is used to learn from data .
+the second term biases the mode by using the knowledge encoded in the constraints .
+note that we do not normalize our objective function to be a true probability distribution . 5 learning and inference with constraints in this section we present a new constraint-driven learning algorithm ( codl ) for using constraints to guide semi-supervised learning .
+the task is to learn the parameter vector a by using the new objective function ( 1 ) .
+while our formulation allows us to train also the coefficients of the constraints valuation , pi , we choose not to do it , since we view this as a way to bias ( or enforce ) the prior knowledge into the learned model , rather than allowing the data to brush it away .
+our experiments demonstrate that the proposed approach is robust to inaccurate approximation of the prior knowledge ( assigning the same penalty to all the pi ) .
+we note that in the presence of constraints , the inference procedure ( for finding the output y that maximizes the cost function ) is usually done with search techniques ( rather than viterbi decoding , see ( toutanova et al. , 2005 ; roth and yih , 2005 ) for a discussion ) , we chose beamsearch decoding .
+the semi-supervised learning with constraints is done with an em-like procedure .
+we initialize the model with traditional supervised learning ( ignoring the constraints ) on a small labeled set .
+given an unlabeled set u , in the estimation step , the traditional em algorithm assigns a distribution over labeled assignments y of each x e u , and in the maximization step , the set of model parameters is learned from the distributions assigned in the estimation step .
+however , in the presence of constraints , assigning the complete distributions in the estimation step is infeasible since the constraints reshape the distribution in an arbitrary way .
+as in existing methods for training a model by maximizing a linear cost function ( maximize likelihood or discriminative maximization ) , the distribution over y is represented as the set of scores assigned to it ; rather than considering the score assigned to all y 's , we truncate the distribution to the top k assignments as returned by the search .
+given a set of k top assignments yi , , yk , we approximate the estimation step by assigning uniform probability to the top k candidates , and zero to the other output sequences .
+we denote this algorithm top-k hard em .
+in this paper , we use beamsearch to generate k candidates according to ( 1 ) .
+our training algorithm is summarized in figure 2 .
+several things about the algorithm should be clarified : the top-k-inference procedure in line 7 , the learning procedure in line 9 , and the new parameter estimation in line 9 .
+the top-k-inference is a procedure that returns the k labeled assignments that maximize the new objective function ( 1 ) .
+in our case we used the top- k elements in the beam , but this could be applied to any other inference procedure .
+the fact that the constraints are used in the inference procedure ( in particular , for generating new training examples ) allows us to use a learning algorithm that ignores the constraints , which is a lot more efficient ( although algorithms that do take the constraints into account can be used too ) .
+we used maximum likelihood estimation of a but , in general , perceptron or quasi- newton can also be used .
+it is known that traditional semi-supervised training can degrade the learned models performance . ( nigam et al. , 2000 ) has suggested to balance the contribution of labeled and unlabeled data to the parameters .
+the intuition is that when iteratively estimating the parameters with em , we disallow the parameters to drift too far from the supervised model .
+the parameter re-estimation in line 9 , uses a similar intuition , but instead of weighting data instances , we introduced a smoothing parameter -y which controls the convex combination of models induced by the labeled and the unlabeled data .
+unlike the technique mentioned above which focuses on naive bayes , our method allows us to weight linear models generated by different learning algorithms .
+another way to look the algorithm is from the self-training perspective ( mcclosky et al. , 2006 ) .
+similarly to self-training , we use the current model to generate new training examples from the unlabeled set .
+however , there are two important differences .
+one is that in self-training , once an unlabeled sample was labeled , it is never labeled again .
+in our case all the samples are relabeled in each iteration .
+in self-training it is often the case that only high-confidence samples are added to the labeled data pool .
+while we include all the samples in the training pool , we could also limit ourselves to the high-confidence samples .
+the second difference is that each unlabeled example generates k labeled instances .
+the case of one iteration of top-1 hard em is equivalent to self training , where all the unlabeled samples are added to the labeled pool .
+there are several possible benefits to using k > 1 samples .
+( 1 ) it effectively increases the training set by a factor of k ( albeit by somewhat noisy examples ) .
+in the structured scenario , each of the top-k assignments is likely to have some good components so generating top-k assignments helps leveraging the noise .
+( 2 ) given an assignment that does not satisfy some constraints , using top-k allows for multiple ways to correct it .
+for example , consider the output 11101000 with the constraint that it should belong to the language 1 * 0 * .
+if the two top scoring corrections are 11111000 and 11100000 , considering only one of those can negatively bias the model .
+experiments and results .
+in this section , we present empirical results of our algorithms on two domains : citations and advertisements .
+both problems are modeled with a simple token-based hmm .
+we stress that token-based hmm cannot represent many of our constraints .
+the function d ( y , 1c ( x ) ) used is an approximation of a hamming distance function , discussed in section 7 .
+for both domains , and all the experiments , -y was set to 0.1 .
+the constraints violation penalty p is set to - log 10-4 and - log 10-1 for citations and advertisements , resp.2 note that all constraints share the same penalty .
+the number of semi-supervised training cycles ( line 3 of figure 2 ) was set to 5 .
+the constraints for the two domains are listed in table 1 .
+we trained models on training sets of size varying from 5 to 300 for the citations and from 5 to 100 for the advertisements .
+additionally , in all the semi-supervised experiments , 1000 unlabeled examples are used .
+we report token-based3 accuracy on 100 held-out examples ( which do not overlap neither with the training nor with the unlabeled data ) .
+we ran 5 experiments in each setting , randomly choosing the training set .
+the results reported below are the averages over these 5 runs .
+to verify our claims we implemented several baselines .
+the first baseline is the supervised learning protocol denoted by sup .
+the second baseline was a traditional top-1 hard em also known as truncated em4 ( denoted by h for hard ) .
+in the third baseline , denoted h & w , we balanced the weight of the supervised and unsupervised models as described in line 9 of figure 2 .
+we compare these baselines to our proposed protocol , h & w & c , where we added the constraints to guide the h & w protocol .
+we experimented with two flavors of the algorithm : the top-1 and the top-k version .
+in the top-k version , the algorithm uses k-best predictions ( k = 50 ) for each instance in order to update the model as described in figure 2 .
+figure 3 compares two protocols on the advertisements domain : h & w + i , where we first run the h & w protocol and then apply the constraints during testing stage , and h & w & c + i , which uses constraints to guide the model during learning and uses it also in testing .
+although injecting constraints in the learning process helps , testing with constraints is more important than using constraints during learning , especially when the labeled data size is large .
+this confirms results reported for the supervised learning case in ( punyakanok et al. , 2005 ; roth and yih , 2005 ) .
+however , as shown , our proposed algorithm h & w & c for training with constraints is critical when the amount labeled data is small .
+figure 4 further strengthens this point .
+in the citations domain , h & w & c + i achieves with 20 labeled samples similar performance to the supervised version without constraints with 300 labeled samples . ( grenager et al. , 2005 ) and ( haghighi and klein , 2006 ) also report results for semi-supervised learning for these domains .
+however , due to different preprocessing , the comparison is not straightforward .
+for the citation domain , when 20 labeled and 300 unlabeled samples are available , ( grenager et al. , 2005 ) observed an increase from 65.2 % to 71.3 % .
+our improvement is from 70.1 % to 79.4 % .
+for the advertisement domain , they observed no improvement , while our model improves from 68.1 % to 74.6 % with 20 labeled samples .
+moreover , we successfully use out-of-domain data ( web data ) to improve our model , while they report that this data did not improve their unsupervised model . ( haghighi and klein , 2006 ) also worked on one of our data sets .
+their underlying model , markov random fields , allows more expressive features .
+nevertheless , when they use only unary constraints they get 53.75 % .
+when they use their final model , along with a mechanism for extending the prototypes to other tokens , they get results that are comparable to our model with 10 labeled examples .
+additionally , in their framework , it is not clear how to use small amounts of labeled data when available .
+our model outperforms theirs once we add 10 more examples .
+soft constraints .
+this section discusses the importance of using soft constraints rather than hard constraints , the choice of hamming distance for d ( y , 1c ( , ,, ) ) and how we approximate it .
+we use two constraints to illustrate the ideas . ( c1 ) : state transitions can only occur on punctuation marks or newlines , and ( c2 ) : the field title must appear .
+first , we claim that defining d ( y , 1c ( , ,, ) ) to be the hamming distance is superior to using a binary value , d ( y , 1c ( , ,, ) ) = 0 if y e 1c ( , ,, ) and 1 otherwise .
+consider , for example , the constraint c1 in the advertisements domain .
+while the vast majority of the instances satisfy the constraint , some violate it in more than one place .
+therefore , once the binary distance is set to 1 , the algorithm looses the ability to discriminate constraint violations in other locations of the same instance .
+this may hurt the performance in both the inference and the learning stage .
+computing the hamming distance exactly can be a computationally hard problem .
+furthermore , it is unreasonable to implement the exact computation for each constraint .
+therefore , we implemented a generic approximation for the hamming distance assuming only that we are given a boolean function oc ( yn ) that returns whether labeling the token xn with state yn violates constraint with respect to an already labeled consider the prefix x1 , x2 , x3 , x4 , which contains no punctuation or newlines and was labeled auth , auth , date , date .
+this labeling violates c1 , the minimal hamming distance is 2 , and our approximation gives 1 , ( since there is only one transition that violates the constraint . )
+for constraints which cannot be validated based on prefix information , our approximation resorts to binary violation count .
+for instance , the constraint c2 cannot be implemented with prefix information when the assignment is not complete .
+otherwise , it would mean that the field title should appear as early as possible in the assignment .
+while ( roth and yih , 2005 ) showed the significance of using hard constraints , our experiments show that using soft constraints is a superior option .
+for example , in the advertisements domain , c1 holds for the large majority of the gold-labeled instances , but is sometimes violated .
+in supervised training with 100 labeled examples on this domain , sup gave 76.3 % accuracy .
+when the constraint violation penalty p was infinity ( equivalent to hard constraint ) , the accuracy improved to 78.7 % , but when the penalty was set to log ( 0.1 ) , the accuracy of the model jumped to 80.6 % .
+conclusions and future work .
+we proposed to use constraints as a way to guide semi-supervised learning .
+the framework developed is general both in terms of the representation and expressiveness of the constraints , and in terms of the underlying model being learned hmm in the current implementation .
+moreover , our framework is a useful tool when the domain knowledge cannot be expressed by the model .
+the results show that constraints improve not only the performance of the final inference stage but also propagate useful information during the semi- supervised learning process and that training with the constraints is especially significant when the number of labeled training data is small .

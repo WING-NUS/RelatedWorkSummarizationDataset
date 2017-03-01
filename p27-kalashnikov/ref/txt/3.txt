@@ -1,0 +1,49 @@
+a testbed for people searching strategies in the www .
+abstract .
+this paper describes the creation of a testbed to evaluate people searching strategies on the world-wide-web .
+this task involves resolving person names ambiguity and locating relevant information characterising every individual under the same name .
+motivation .
+finding people -information about people- in the worldwide-web is one of the most common activities of internet users : around 30 % of search engine queries include person names [ 2 ] .
+person names , however , are highly ambiguous : for instance , only 90,000 different names are shared by 100 million people according to the u.s. census bureau [ 2 ] .
+in most cases , therefore , the results for this type of searches are a mixture of pages about different people that share the same name .
+instead of a ranked list of results , an ideal search engine would return a list of people descriptions , from which the user might select the person she is looking for , and directly access all relevant information for this person .
+figure 1 illustrates this idea .
+in this paper , we describe the creation of a testbed to evaluate strategies addressing this people searching task on web documents .
+we provide : ( i ) a corpus of web pages retrieved using person names as queries to web search engines ; ( ii ) a classification of pages according to the different people ( with the same name ) they refer to ; ( iii ) manual annotations of relevant information -found in the web pages- describing them ( e-mail , image , profession , phone number , etc . ) ; ( iv ) the results of applying a general purpose clustering algorithm to that annotated data , which serve as a baseline for the ambiguity resolution problem .
+the weps corpus testbed .
+the creation of the weps ( web people search ) corpus consisted of the following steps : 1 .
+generating ten english person names , using random combinations of the most frequent first and last names in the u.s. census 19901 . 2 .
+collecting the first 100 web pages retrieved by the google search engine for every ( quoted ) person name . 3 .
+grouping documents according to the person they refer to , for every person name . 4 .
+classifying every web document in the collection as a ( i ) homepage entry ( ii ) part of a homepage ( iii ) reference page ( exclusively containing information about the person ) and ( iv ) other . 5 .
+annotating all the occurrences of certain types of descriptive information : name , job , person image , date of birth / death , place of birth / death , email address , postal address , fax / phone number , location ( where the person lives in ) , author of ( e.g. books , paintings , patents ... ) and description ( a brief definition of the person ) .
+table 1 summarises the results of this exhaustive annotation process .
+a total of 11,812 text fragments have been semantically annotated , with an average of 25.51 annotations per person .
+the ambiguity of our set of person names is very high , with an average of 41 different people sharing each person name ( see table 2 ) .
+this indicates that they are very common names , and also that , in general , none of them corresponds to any web celebrity ( i.e. a person dominating top-ranked web hits ) .
+the most common tags are name ( which includes name variants ) , job and author of ( mostly titles of books and other written materials ) .
+note that there are few pages classified as home page , and even less pages tagged as a part of a home page .
+nevertheless , each identified person has , in average , one explicit description ( reference page ) .
+baseline ambiguity resolution .
+using clustering techniques .
+how difficult is the ambiguity resolution task ?
+does it demand strategies specifically designed for it , or will generic clustering techniques suffice ?
+is it necessary to consider the full content of web pages , or the snippets provided by search engines provide enough information for an accurate grouping of results ?
+to provide initial answers to these questions , we have implemented and tested the agglomerative vector space clustering algorithm , which has been previously used to evaluate similar tasks [ 1 ] , and does not require fixing the number of clusters ( k ) a priori .
+in our experiments , terms have been weighted with a logarithmic tf-idf criteria .
+the clustering method has been tested using two approaches to build the vector representation of the documents : the first one ( full text ) uses all the textual contents of the web page as input for the algorithm , and the second one ( snippets ) only considers the snippets in the ranked lists provided by google .
+roughly speaking , they consist of a window of approximately 18 terms around one or more occurrences of the person name in the web page .
+in both cases , we only take into account text inside the html < body > tag , removing stopwords and html tags .
+words were stemmed using porter � s algorithm .
+the similarity threshold for the clustering algorithm has been empirically adjusted to 0.1 .
+table 2 shows the results of the experiment .
+two different evaluation measures are reported : f � = 0.5 is a harmonic mean of purity and inverse purity , and f � = 0.2 is a version of f that gives more importance to inverse purity .
+rationale for using f � = 0.2 is that , from a user � s point of view , it is easier to discard a few incorrect web pages in a cluster which has all the information needed , than having to collect the relevant information across many different clusters .
+in average , clustering with full text obtains f � = 0.2 = .80 , which can be seen as a reasonably strong baseline for the task .
+in addition , using only snippets ( which can be much more efficient when searching online ) gives f � = 0.2 = .79 ( - 1.3 % ) .
+this small difference suggests that snippets can be useful for clustering .
+but , of course , the next step would be extracting all descriptive features of each person , a task for which the full web page content is necessary .
+conclusions .
+the weps corpus provides an initial testbed to test people search strategies over the web .
+we are currently working to expand and balance the corpus , including two additional types of person names : less frequent names , on one hand ( for which ambiguity should be lower ) , and � celebrity � names , where one person dominates the top-ranked results of search engine results .
+the expanded corpus will be available at http : / / nlp.uned.es.

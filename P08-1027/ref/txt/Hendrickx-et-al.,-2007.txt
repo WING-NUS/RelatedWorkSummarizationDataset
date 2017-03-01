@@ -1,0 +1,92 @@
+ilk : machine learning of semantic relations with shallow features and almost no data .
+abstract .
+this paper summarizes our approach to the semeval 2007 shared task on classification of semantic relations between nominals .
+our overall strategy is to develop machine-learning classifiers making use of a few easily computable and effective features , selected independently for each classifier in wrapper experiments .
+we train two types of classifiers for each of the seven relations : with and without any wordnet information .
+introduction .
+we interpret the task of determining semantic relations between nominals as a classification problem that can be solved , per relation , by machine learning algorithms .
+we aim at using straightforward features that are easy to compute and relevant to preferably all of the seven relations central to the task .
+the starting conditions of the task provide us with a very small amount of training data , which further stresses the need for robust , generalizable features , that generalize beyond surface words .
+we therefore hypothesize that generic information on the lexical semantics of the entities involved in the relation is crucial .
+we developed two systems , based on two sources of semantic information .
+since the entities in the provided data were word-sense disambiguated , an obvious way to model their lexical semantics was by utilizing wordnet3.0 ( fellbaum , 1998 ) ( wn ) .
+one of the systems followed this route .
+we also entered a second system , which did not rely on wn but instead made use of automatically generated semantic clusters ( decadt and daelemans , 2004 ) to model the semantic classes of the entities .
+for both systems we trained seven binary classifiers ; one for each relation .
+from a pool of easily computable features , we selected feature subsets for each classifier in a number of wrapper experiments , i.e. repeated cross-validation experiments on the training set to test out subset selections systematically .
+along with feature subsets we also chose the machine-learning method independently for each classifier .
+system description .
+the development of the system consists of a preprocessing phase to extract the features , and the classification phase .
+preprocessing .
+each sentence is preprocessed automatically in the following steps .
+first , the sentence is tokenized with a rule-based tokenizer .
+next a part-of-speech tagger and text chunker that use the memory-based tagger mbt ( daelemans et al. , 1996 ) produces partof-speech tags and np chunk labels for each token .
+then a memory-based shallow parser predicts grammatical relations between verbs and np chunks such as subject , object or modifier ( buchholz , 2002 ) .
+the tagger , chunker and parser were all trained on the wsj corpus ( marcus et al. , 1993 ) .
+each token was also lemmatized with a memory-based lemmatizer ( van den bosch et al. , 1996 ) which is robust to handle unknown or new words such as labrador .
+the features extracted are of three types : semantic , lexical , and morpho-syntactic .
+the features that apply to the entities in a relation ( e 1 , e2 ) are extracted for term 1 ( t1 ) and term 2 ( t2 ) of the relation , where t1 is the first term in the relation name , and t2 is the second term .
+for example , in the relation cause effect , t1 is cause and t2 is effect .
+the semantic features are the following : wn semantic class of t1 and t2 .
+the wn semantic class of each entity in the relation .
+for the wnbased system , we determined the semantic class of the entities on the basis of the lexicographer file numbers ( lfn ) in wn3.0.
+the lfn are encoded in the synset number provided in the annotation of the data .
+for nouns there are 25 file numbers that correspond to suitably abstract semantic classes , namely : is container ( is c ) .
+exclusively for the content container relation we furthermore included two binary features that test whether the two entities in the relation are hyponyms of the synset container in wn .
+for the partwhole relation we also experimented with binary features expressing whether the two entities in the relation have some type of meronym and holonym relation , but these features did not prove to be predictive .
+cluster class of t1 and t2 .
+a cluster class identifier for each entity in the relation .
+this information is drawn from automatically generated clusters of semantically similar nouns ( decadt and daelemans , 2004 ) generated on the british national corpus ( clear , 1993 ) .
+the corpus was first preprocessed by a lemmatizer and the memory-based shallow parser , and the found verbobject relations were used to cluster nouns in groups .
+we used the top- 5000 lemmatized nouns , that are clustered into 250 groups .
+this is an example of two of these clusters : the lexical features are the following : lemma of t1 and t2 ( lem1 , lem2 ) .
+the lemmas of the entities involved in the relation .
+in case an entity consisted of multiple words ( e.g. storage room ) we use the lemma of the head noun ( i.e. room ) .
+main verb ( verb ) .
+the main verb of the sentence in which the entities involved in the relation appear , as predicted by the shallow parser .
+the morpho-syntactic features are : gramrel ( gr1 , gr2 ) .
+the grammatical relation tags of the entities .
+suffixes of t1 and t2 ( suf1 , suf2 ) .
+the suffixes of the entity lemmas .
+we implemented a rule-based suffix guesser , which determines whether the nouns involved in the relation end in a derivational suffix , such as -ee , -ment etc .
+suffixes often provide cues for semantic properties of the entities .
+for example , the suffix -ee usually indicates animate ( and typically human ) referents ( e.g. detainee etc . ) , whereas ( -ment ) points at abstract entities ( e.g. statement ) .
+while the features were selected independently for all relations , the seven classifiers in the wnbased system all make use of the wn semantic class features ; in the system that did not use wn , the seven classifiers make use of the cluster class features instead .
+classification .
+we experimented with several machine learning frameworks and different feature ( sub- ) sets .
+for rapid testing of different learners and feature sets , and given the size of the training data ( 140 examples for each relation ) , we made use of the weka machine learning software1 ( witten and frank , 1999 ) .
+we systematically tested the following algorithms : naivebayes ( nb ) ( langley et al. , 1992 ) , bayesnet ( bn ) ( cooper and herskovits , 1992 ) , j48 ( quinlan , 1993 ) , jrip ( cohen , 1995 ) , ib1 and ibk ( aha et al. , 1991 ) , lwl ( atkeson et al. , 1997 ) , and decision- stumps ( ds ) ( iba and langley , 1992 ) , all with default algorithm settings .
+the classifiers for all seven relations were optimized independently in a number of 10-fold cross- validation ( cv ) experiments on the provided training sets .
+several feature subsets were tried , varying from all features to only the two base features ( wn-or cluster-class ) .
+the feature sets and learning algorithms which were found to obtain the highest accuracies for each relation were then used when applying the classifiers to the unseen test data .
+the classifiers of the cluster-based system ( a ) all use the two cluster class features .
+the other selected features and the chosen algorithms ( cl ) are displayed in table 1 .
+knowledge of the identity of the lemmas was found to be beneficial for all classifiers .
+with respect to the machine learning framework , naive bayes was selected most frequently .
+the classifiers of the wn-based system ( b ) all use at least the wn semantic class features .
+table 2 shows the other selected features and algorithm for each relation .
+none of the classifiers use all the features .
+for the partwhole relation no extra features besides the wn class are selected .
+also the classifiers for the relations causeeffect and content container only use two additional features .
+the list of best found algorithms shows that like with the cluster-based system a bayesian approach is favorable , as it is selected in four of seven cases .
+results .
+in table 3 we first present the best results computed on the training set using 10-fold cv for the cluster- based system ( a ) and the wn-based system ( b ) .
+these results are generally higher than the official test set results , shown in tables 4 and 5 , possibly showing a certain amount of overfitting on the training sets .
+the official scores on the test set are computed by the task organizers : accuracy , precision , recall and f1 measure .
+table 4 presents the results of the cluster-based system .
+table 5 presents the results of the wn-based system . ( the column total shows the number of instances in the test set . )
+markable is the high accuracy for the partwhole relation as the classifier was only trained on two features coding the wn classes .
+the system using all training data with wordnet features , b4 ( table 5 ) , performs better in terms of f-measure on six out of the seven subtasks as compared to the system that does not use the word- net features but the semantic cluster information instead , a4 ( table 4 ) .
+this is largely due to a lower precision of the a4 system .
+the wordnet features appear to be directly responsible for a relatively higher precision .
+in contrast , the semantic cluster features of system a sometimes boost recall .
+a4s recall on the causeeffect relation is 97.6 % ( the classifier predicts the class true for 75 of the 80 examples ) , and on contentcontainer the system attains 78.9 % , markedly better than b4 .
+conclusion .
+we have shown that a machine learning approach using shallow and easily computable features performs quite well on this task .
+the system using word- net features based on the provided disambiguated word senses outperforms the cluster-based system .
+it would be interesting to compare both systems to a more realistic wn-based system that uses predicted word senses by a word sense disambiguation system .
+however we end by noting that the amount of training and test data in this shared task should be considered too small to base any reliable conclusions on .
+in a realistic scenario ( e.g. when high- precision relation classification would be needed as a component of a question-answering system ) , more training material would have been gathered , and the examples would not have been seeded by a limited number of queries especially the negative examples are very artificial now due to their similarity to the positive cases , and the fact that they are down- sampled very unrealistically .
+rather , the focus of the task should be on detecting positive instances of the relations in vast amounts of text ( i.e. vast amounts of implicit negative examples ) .
+positive training examples should be as randomly sampled from raw text as possible .
+the seven relations are common enough to warrant a focused effort to annotate a reasonable amount of randomly selected text , gathering several hundreds of positive cases of each relation .

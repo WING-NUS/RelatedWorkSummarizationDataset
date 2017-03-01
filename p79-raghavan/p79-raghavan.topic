@@ -1,0 +1,13 @@
+<topic index> 0 </topic index>
+<title> techniques for text categorization </title>
+<keywords> tc;techniques;text;categorization;classification;automatic;automated;survey; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> query-based learning </title>
+<keywords> query-based;active learning;selective sampling;learning;bootstrap; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> user term feedback </title>
+<keywords> user;term;feedback;query;document; </keywords>
+
+

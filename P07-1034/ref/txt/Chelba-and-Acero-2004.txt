@@ -1,0 +1,109 @@
+adaptation of maximum entropy capitalizer : little data can help a lot ciprian chelba and alex acero microsoft research one microsoft way redmond , wa 98052 { chelba , alexac } @ microsoft.com abstract a novel technique for maximum � a posteriori � ( map ) adaptation of maximum entropy ( maxent ) and maximum entropy markov models ( memm ) is presented .
+the technique is applied to the problem of recovering the correct capitalization of uniformly cased text : a � background � capitalizer trained on 20mwds of wall street journal ( wsj ) text from 1987 is adapted to two broadcast news ( bn ) test sets � one containing abc primetime live text and the other npr morning news / cnn morning edition text � from 1996 .
+the � in-domain � performance of the wsj capitalizer is 45 % better than that of the 1-gram baseline , when evaluated on a test set drawn from wsj 1994 .
+when evaluating on the mismatched � out-ofdomain � test data , the 1-gram baseline is outperformed by 60 % ; the improvement brought by the adaptation technique using a very small amount of matched bn data � 25-70kwds � is about 20-25 % relative .
+overall , automatic capitalization error rate of 1.4 % is achieved on bn data . 1 introduction automatic capitalization is a practically relevant problem : speech recognition output needs to be capitalized ; also , modern word processors perform capitalization among other text proofing algorithms such as spelling correction and grammar checking .
+capitalization can be also used as a preprocessing step in named entity extraction or machine translation .
+we study the impact of using increasing amounts of training data as well as using a small amount of adaptation data on this simple problem that is well suited to data-driven approaches since vast amounts of � training � data are easily obtainable by simply wiping the case information in text .
+as in previous approaches , the problem is framed as an instance of the class of sequence labeling problems .
+a case frequently encountered in practice is that of using mismatched � out-of-domain , in this particular case we used broadcast news � test data .
+for example , one may wish to use a capitalization engine developed on newswire text for email or office documents .
+this typically affects negatively the performance of a given model , and more sophisticated models tend to be more brittle .
+in the capitalization case we have studied , the relative performance improvement of the memm capitalizer over the 1-gram baseline drops from in-domain � wsj � performance of 45 % to 35-40 % when used on the slightly mismatched bn data .
+in order to take advantage of the adaptation data in our scenario , a maximum a-posteriori ( map ) adaptation technique for maximum entropy ( max- ent ) models is developed .
+the adaptation procedure proves to be quite effective in further reducing the capitalization error of the wsj memm capitalizer on bn test data .
+it is also quite general and could improve performance of maxent models in any scenario where model adaptation is desirable .
+a further relative improvement of about 20 % is obtained by adapting the wsj model to broadcast news ( bn ) text .
+overall , the memm capitalizer adapted to bn data achieves 60 % relative improvement in accuracy over the 1-gram baseline .
+the paper is organized as follows : the next section frames automatic capitalization as a sequence labeling problem , presents previous approaches as well as the widespread and highly sub-optimal 1- gram capitalization technique that is used as a baseline in most experiments in this work and others .
+the memm sequence labeling technique is briefly reviewed in section 3 .
+section 4 describes the map adaptation technique used for the capitalization of out-of-domain text .
+the detailed mathematical derivation is presented in appendix a. the experimental results are presented in section 5 , followed by conclusions and suggestions for future work .
+capitalization as sequence tagging .
+automatic capitalization can be seen as a sequence tagging problem : each lower-case word receives a tag that describes its capitalization form .
+similar to the work in ( lita et al. , 2003 ) , we tag each word in a sentence with one of the tags : the text is assumed to be already segmented into sentences .
+any sequence labeling algorithm can then be trained for tagging lowercase word sequences with capitalization tags .
+at test time , the uniform case text to be capitalized is first segmented into sentences1 after which each sentence is tagged . 1-gram capitalizer .
+a widespread algorithm used for capitalization is the 1-gram tagger : for every word in a given vocabulary ( usually large , 100kwds or more ) use the most frequent tag encountered in a large amount of training data .
+as a special case for automatic capitalization , the most frequent tag for the first word in a sentence is overridden by cap , thus capitalizing on the fact that the first word in a sentence is most likely capitalized .
+due to its popularity , both our work and that of ( lita et al. , 2003 ) uses the 1-gram capitalizer as a baseline .
+the work in ( kim and woodland , 2004 ) indicates that the same 1-gram algorithm is used in microsoft word 2000 and is consequently used as a baseline for evaluating the performance of their algorithm as well .
+previous work .
+we share the approach to capitalization as sequence tagging with that of ( lita et al. , 2003 ) .
+in their approach , a language model is built on pairs ( word , tag ) and then used to disambiguate over all possible tag assignments to a sentence using dynamic programming techniques .
+the same idea is explored in ( kim and woodland , 2004 ) in the larger context of automatic punctuation generation and capitalization from speech recognition output .
+a second approach they consider for capitalization is the use a rule-based tagger as described by ( brill , 1994 ) , which they show to outperform the case sensitive language modeling approach and be quite robust to speech recognition errors and punctuation generation errors .
+departing from their work , our approach builds on a standard technique for sequence tagging , namely memms , which has been successfully applied to part-of-speech tagging ( ratnaparkhi , 1996 ) .
+the memm approach models the tag sequence t conditionally on the word sequence w , which has a few substantial advantages over the 1-gram tagging approach : more recently , certain drawbacks of memm models have been addressed by the conditional random field ( crf ) approach ( lafferty et al. , 2001 ) which slightly outperforms memms on a standard partof-speech tagging task .
+in a similar vein , the work of ( collins , 2002 ) explores the use of discriminatively trained hmms for sequence labeling problems , a fair baseline for such cases that is often overlooked in favor of the inadequate maximum likelihood hmms .
+the work on adapting the memm model parameters using map smoothing builds on the gaussian prior model used for smoothing maxent models , as presented in ( chen and rosenfeld , 2000 ) .
+we are not aware of any previous work on map adaptation of maxent models using a prior , be it gaussian or a different one , such as the exponential prior of ( goodman , 2004 ) .
+although we do not have a formal derivation , the adaptation technique should easily extend to the crf scenario .
+a final remark contrasts rule-based approaches to sequence tagging such as ( brill , 1994 ) with the probabilistic approach taken in ( ratnaparkhi , 1996 ) : having a weight on each feature in the max- ent model and a sound probabilistic model allows for a principled way of adapting the model to a new domain ; performing such adaptation in a rule-based model is unclear , if at all possible .
+memm for sequence labeling .
+a simple approach to sequence labeling is the maximum entropy markov model .
+the model assigns a probability p ( t | w ) to any possible tag sequence t = t1 ... tn = t1n for a given word sequence w = w1 ... wn .
+the probability assignment is done according to : feature selection .
+we used a simple count cut-off feature selection algorithm which counts the number of occurrences of all features in a predefined set after which it discards the features whose count is less than a pre-specified threshold .
+the parameter of the feature selection algorithm is the threshold value ; a value of 0 will keep all features encountered in the training data .
+parameter estimation .
+in our experiments the variances are tied to ^ i = ^ whose value is determined by line search on development data such that it yields the best tagging accuracy .
+map adaptation of maximum entropy models .
+in the adaptation scenario we already have a max- ent model trained on the background data and we wish to make best use of the adaptation data by balancing the two .
+a simple way to accomplish this is to use map adaptation using a prior distribution on the model parameters .
+a gaussian prior for the model parameters ^ has been previously used in ( chen and rosenfeld , 2000 ) for smoothing maxent models .
+the prior has 0 mean and diagonal covariance : ^ ^ n ( 0 , diag ( ^ 2 i ) ) .
+in the adaptation scenario , the prior distribution used is centered at the parameter values ^ 0 estimated from the background data instead of 0 : ^ ^ n ( ^ 0 , diag ( ^ 2i ) ) .
+the effect of the prior is to keep the model parameters ^ i close to the background ones .
+the cost of moving away from the mean for each feature fi is specified by the magnitude of the variance ^ i : a small variance ^ i will keep the weight ^ i close to its mean ; a large variance ^ i will make the regularized log-likelihood ( see eq . 3 ) insensitive to the prior on ^ i , allowing the use of the best value ^ i for modeling the adaptation data .
+another observation is that not only the features observed in the adaptation data get updated : even if e � p ( x , y ) [ fi ] = 0 , the weight ^ i for feature fi will still get updated if the feature fi triggers for a context x encountered in the adaptation data and some predicted value y � not necessarily present in the adaptation data in context x .
+in our experiments the variances were tied to ^ i = ^ whose value was determined by line search on development data drawn from the adaptation data .
+the common variance ^ will thus balance optimally the log-likelihood of the adaptation data with the ^ 0 mean values obtained from the background data .
+other tying schemes are possible : separate values could be used for the fadapt \ fbackground and fbackground feature sets , respectively .
+we did not experiment with various tying schemes although this is a promising research direction .
+relationship with minimum divergence training .
+another possibility to adapt the background model is to do minimum kl divergence ( mindiv ) training ( pietra et al. , 1995 ) between the background exponential model b � assumed fixed � and an exponential model a built using the fbackground u fadapt feature set .
+it can be shown that , if we smooth the a model with a gaussian prior on the feature weights that is centered at 0 � following the approach in ( chen and rosenfeld , 2000 ) for smoothing maximum entropy models � then the mindiv update equations for estimating a on the adaptation data are identical to the map adaptation procedure we proposed5 .
+however , we wish to point out that the equivalence holds only if the feature set for the new model a is fbackground u fadapt .
+the straightforward application of mindiv training � by using only the fadapt feature set for a � will not result in an equivalent procedure to ours .
+in fact , the difference in performance between this latter approach and ours could be quite large since the cardinality of fbackground is typically several orders of magnitude larger than that of fadapt and our approach also updates the weights corresponding to features in fbackground \ fadapt .
+further experiments are needed to compare the performance of the two approaches .
+experiments .
+the baseline 1-gram and the background memm capitalizer were trained on various amounts of wsj ( paul and baker , 1992 ) data from 1987 � files ws 8 7 _ { 0 01-12 6 } .
+the in-domain test data used was file ws 94 _ 000 ( 8.7kwds ) .
+as for the adaptation experiments , two different sets of bn data were used , whose sizes are summarized in table 1 : bn cnn / npr data .
+the training / development / test partition consisted of a 3-way random split of file bn624bts .
+the resulting sets are denoted cnn-trn / dev / tst , respectively bn abc primetime data .
+in-domain experiments .
+we have proceeded building both 1-gram and memm capitalizers using various amounts of background training data .
+the model sizes for the 1- gram and memm capitalizer are presented in table 2 .
+count cut-off feature selection has been used for the memm capitalizer with the threshold set at 5 , so the memm model size is a function of the training data .
+the 1-gram capitalizer used a vocabulary of the most likely 100k wds derived from the training data .
+we first evaluated the in-domain and out-ofdomain relative performance of the 1-gram and the memm capitalizers as a function of the amount of training data .
+the results are presented in table 3 .
+the memm capitalizer performs about 45 % better than the 1-gram one when trained and evaluated on wall street journal text .
+the relative performance improvement of the memm capitalizer over the 1- gram baseline drops to 35-40 % when using out-ofdomain broadcast news data .
+both models benefit from using more training data .
+adaptation experiments .
+we have then adapted the best memm model built on 20mwds on the two bn data sets ( cnn / abc ) and compared performance against the 1-gram and the unadapted memm models .
+there are a number of parameters to be tuned on development data .
+table 4 presents the variation in model size with different count cut-off values for the feature selection procedure on the adaptation data .
+as can be seen , very few features are added to the background model .
+table 5 presents the variation in log-likelihood and capitalization accuracy on the cnn adaptation training and development data , respectively .
+the adaptation procedure was found to be insensitive to the number of reestimation iterations , and , more surprisingly , to the number of features added to the background model from the adaptation data , as shown in 5 .
+the most sensitive parameter is the prior variance q2 , as shown in figure 1 ; its value is chosen to maximize classification accuracy on development data .
+as expected , low values of q2 result in no adaptation at all , whereas high values of q2 fit the training data very well , and result in a dramatic increase of training data log- likelihood and accuracies approaching 100 % .
+finally , table 6 presents the results on test data for 1-gram , background and adapted memm .
+as can be seen , the background memm outperforms the 1-gram model on both bn test sets by about 35-40 % relative .
+adaptation improves performance even further by another 20-25 % relative .
+overall , the adapted models achieve 60 % relative reduction in capitalization error over the 1-gram baseline on both bn test sets .
+an intuitively satisfying result is the fact that the cross-test set performance ( cnn adaptation : training logl ( nats ) with adapted model evaluated on abc data and the other way around ) is worse than the adapted one .
+conclusions and future work .
+the memm tagger is very effective in reducing both in-domain and out-of-domain capitalization error by 35 % -45 % relative over a 1-gram capitalization model .
+we have also presented a general technique for adapting maxent probability models .
+it was shown to be very effective in adapting a background memm capitalization model , improving the accuracy by 20-25 % relative .
+an overall 50-60 % reduction in capitalization error over the standard 1-gram baseline is achieved .
+a surprising result is that the adaptation performance gain is not due to adding more , domain-specific features but rather making better use of the background features for modeling the in-domain data .
+as expected , adding more background training data improves performance but a very small amount of domain specific data also helps significantly if one can make use of it in an effective way .
+as future work we plan to investigate the best way to blend increasing amounts of less-specific background training data with specific , in-domain data for this and other problems .
+another interesting research direction is to explore the usefulness of the map adaptation of max- ent models for other problems among which we wish to include language modeling , part-of-speech tagging , parsing , machine translation , information extraction , text routing .

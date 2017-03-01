@@ -1,0 +1,271 @@
+acquisition of categorized named entities for web search .
+abstract .
+the recognition of names and their associated categories within unstructured text traditionally relies on semantic lexicons and gazetteers .
+the amount of effort required to assemble large lexicons confines the recognition to either a limited domain ( e.g. , medical imaging ) , or a small set of predefined , broader categories of interest ( e.g. , persons , countries , organizations , products ) .
+this constitutes a serious limitation in an information seeking context .
+in this case , the categories of potential interest to users are more diverse ( universities , agencies , retailers , celebrities ) , often refined ( e.g. , slr digital cameras , programming languages , multinational oil companies ) , and usually overlapping ( e.g. , the same entity may be concurrently a brand name , a technology company , and an industry leader ) .
+we present a lightly-supervised method for acquiring named entities in arbitrary categories .
+the method applies lightweight lexico-syntactic extraction patterns to the unstructured text of web documents .
+the method is a departure from traditional approaches to named entity recognition in that : 1 ) it does not require any start-up seed names or training ; 2 ) it does not encode any domain knowledge in its extraction patterns ; 3 ) it is only lightly supervised , and data-driven ; 4 ) it does not impose any a-priori restriction on the categories of extracted names .
+we illustrate applications of the method in web search , and describe experiments on 500 million web documents and news articles .
+introduction .
+problem .
+within the general goal of information retrieval - finding the documents that are relevant to a users information need - web retrieval must cope with additional complications in terms of user input and output .
+on the input side , users submit queries that usually contain a small number of words .
+on the output side , there are quantitative limits since most users actually inspect only the first few documents in the search result set [ 15 ] .
+the combination of these two constraints makes the web retrieval problem analogous to finding the proverbial needle in the haystack , where the haystack consists of billions of items ( web documents ) and the needle is a set of a few ( most-relevant ) documents .
+when looking closer at the unstructured text in documents and users queries , it is apparent that terms and phrases are not all equal .
+beyond measurements like document frequencies or term proximity , the occurrence of named entities signals prominent pieces of information .
+often , users will search for lists of names through queries such as middle eastern countries ( or islamic nations ) , races ( or sports events ) , movies ( or home video releases ) .
+even more often , searches refer to popular names such as paris , kentucky derby or harry potter , as indicated by the frequent occurrence of such names among the top search engine queries .
+in other cases , users might search for unfamiliar rather than popular names to address more basic information needs , e.g. figuring out what kind of name they are dealing with ( could it be a reptile ; a modern programming language ; or a greek dragon ? ) .
+as illustrated in figure 1 , our haystack of documents can be then considered from a different perspective : that of a goldmine that hides valuable information nuggets about various names , including nuggets that encode their categories .
+traditionally , the recognition of names and their associated categories within unstructured text relies on semantic lexicons and gazetteers .
+the amount of effort required to assemble large lexicons sometimes confines the recognition to a limited domain ( e.g. , medical imaging ) for which large- coverage resources already exist .
+alternatively , the recognition is limited to a small set of broader , pre-defined categories of interest , e.g. persons , countries , organizations and products .
+this latter alternative has become the de-facto standard after its introduction in the message understanding conference [ 6 ] .
+for many information and language processing tasks , such a coarse-grained set of categories is appropriate .
+it may become a serious limitation , however , in an information seeking context , especially in web search .
+in this case , the categories of potential interest to users are more diverse ( universities , agencies , retailers , celebrities ) and more refined ( e.g. , slr digital cameras , programming languages , multinational oil companies ) .
+moreover , the categories are usually overlapping since the same instance may be concurrently a brand name , a technology company , a storage provider , and an industry leader .
+ideally , the target instance should be retrieved consistently regardless of which of the legitimate categories is used in a particular query .
+approach .
+in this paper , we present a lightweight , lightly-supervised method for acquiring named entities in arbitrary categories from web documents .
+in the trade-off between method complexity and output coverage , we opted from the start for low complexity .
+the method is purposely designed to be simple , and thus handle robustly the noise and diversity of web documents .
+we focus on textual content rather than structural clues .
+shallow lexico-syntactic extraction patterns are applied to the unstructured text of web documents and web news articles .
+overall , the method is a departure from traditional approaches to named entity recognition in several respects .
+first , there is no need for training that would pro- vide extraction rules or knowledge about specific categories of names .
+second , the method does not require any initial clues or seed names , which would otherwise have to be specified for each category .
+third , the extraction patterns do not encode any domain knowledge , which avoids any restriction to a given domain .
+furthermore , the method is only lightly supervised , and data-driven .
+lastly , it does not impose any a-priori restriction on the categories of extracted names .
+the remainder of the paper is structured as follows .
+section 2 illustrates the process of derivation of categorized names from unstructured text .
+the categorized names can be loosely integrated into existing knowledge resources as shown in section 3 .
+they also enable several web search applications , which are described in section 4 .
+section 5 presents evaluation results for the extraction method on 12 million web news articles and 500 million web documents .
+after further discussion in section 6 , we glance at future work in section 7 .
+extracting categorized names .
+in this section , we introduce a lightweight method for identifying names and their categories within unstructured text .
+the input consists of a small set of domain-independent , lexico-syntactic patterns .
+the output is a set of names with their corresponding categories as derived from arbitrary web documents .
+as shown in later sections , these kinds of simple methods , when applied to large amounts of data , can open the path towards novel applications to web search .
+lightweight extraction method .
+the extraction is a three-step process consisting of document pre-processing , extraction of categorical facts , and derivation of categories .
+to ensure robustness on large collections , the extraction relies on minimal tools and resources .
+document pre-processing .
+after filtering out html tags , the input documents are tokenized , split into sentences and part-of-speech tagged using the tnt tagger [ 2 ] .
+the tags are only used in the last step to derive the name categories .
+languages such as english distinguish proper names from other nouns through capitalization .
+therefore each sequence of capitalized terms in the sentence is marked as a potential instance name .
+extraction of categorical facts .
+the presence of potential instance names and simple lexicosyntactic patterns in sentences , inspired by [ 14 ] , is interpreted as a signal of a categorical fact associated with the name .
+a categorical fact is a sentence nugget that is likely to provide explicitly the category of the associated instance name .
+the fact and associated instance name are captured with a set of patterns which can be summarized as : the matching of the patterns in the sentences results in pairs ( x , n ) of categorical facts and instance names , which are underlined the sample sentence that is because software firewalls , including zone alarm , offer some semblance of this feature .
+all potential instance names that are not associated with a categorical fact are discarded .
+derivation ofdata-driven categories .
+in the final step , the categorical facts x of the pairs ( x , n ) are searched for the noun phrase which encodes the category of the associated name .
+this phrase is approximated by the rightmost non-recursive noun phrase whose last component is a plural-form noun .
+while such a coarse approximation would cause certain complex categories to be missed on small collections , it is more scalable to millions of web documents since it avoids complications related to deeper text understanding , e.g. prepositional phrase attachments .
+one of the following situations may occur as illustrated in table 1 : 1 ) no plural-form noun phrase exists near the end of the categorical fact ; the pair ( x , n ) is discarded ; 2 ) a plural- form noun phrase exists near the end of the categorical fact , but it is immediately ( e.g. , within 5 tokens ) preceded by another plural-form noun phrase ; the pair ( x , n ) is discarded ; 3 ) otherwise , the noun phrase is retained as the lexicalized category of the instance name n. note that one of the categories selected in table 1 is programming languages rather than other programming languages .
+non-informative adjectives like other , several , or many are among the top- 20 most-frequent modifiers computed statistically in a post- processing phase over the entire set of categories .
+extensions .
+extraction of similar names .
+textual enumerations offer an inexpensive way of extracting multiple , rather than single , categorized names from a given categorical fact .
+to support multiple-name extraction , the patterns are slightly modified to match enumerations ( n1 [ , n2 , ... and nm ] ) in addition to single names ( n ) .
+automatically-derived patterns .
+even though the basic method is mostly unsupervised and does not require any clues to start up , it does rely on manually-selected patterns .
+a logical extension is the identification of additional patterns to increase coverage , i.e. the number of categorized pairs .
+figure 2 illustrates a statistical method for acquiring new extraction patterns from unstructured text .
+the idea is to match pairs ( c , n ) of categories and names , extracted in the previous iteration , back into text sentences .
+each potential pattern has the form : the entire pattern is completely contained within a sentence .
+to avoid any bias towards high-frequency pairs , duplicates of potential patterns that occur for the same category c and name n are discarded .
+table 2 shows the top-15 patterns ranked according to their frequency .
+in this experiment , leftcontext and rightcontext are defined by the part of speech tags of at most 5 terms in the same sentence .
+comparatively , innerpattern is defined by the actual words and their tags .
+the tags are from the penn treebank [ 17 ] tag set , e.g.
+nnp is a proper noun , cc is a conjunction etc .
+the results in table 2 show that , in addition to recovering the initial innerpatterns ( such as and including ) , the top automatically-derived patterns also uncover other useful matches ( and other ; include ; and are ) .
+the process continues with a next iteration , in which the new set of patterns generates an expanded set of categorized names , which in turn can be used iteratively to generate another set of potential patterns , as suggested in [ 4 , 23 ] .
+categorized names as lexical knowledge .
+each categorized name corresponds to an instanceof assertion between the name and the category , where the latter is a lexical concept .
+this section describes the use of the assertions to find related categories , and also to expand existing knowledge resources .
+category relatedness as set overlap .
+ideally , an isa semantic relation between two categories will be reflected in their sets of instance names , one of which will completely include the other .
+however , in practice the instance name sets are partial rather than complete .
+their overlap , or lack thereof , is no longer a pure reflection of the inter-category relations .
+on the positive side , overlaps between two sets still indicate a strong relation between the corresponding categories .
+in fact , set overlap will sometimes reveal something that formal knowledge resources may fail to capture , i.e. category relatedness .
+figure 3 illustrates categories identified as related based on their set overlap .
+all categorized names were actually extracted from web documents , even though only a subset of them is included in the figure for clarity .
+empty or very small overlaps correspond to categories that are not directly related . 1 this is the case for languages and search engines , for instance .
+medium or large-sized overlaps indicate related categories , e.g. search engines and internet portals , or search engines and software companies .
+in some cases , the overlap is complete in the sense of set inclusion .
+the corresponding categories are classified one under the other , e.g. high-level programming languages and programming languages , or programming languages and languages .
+but how does this compare to what other knowledge resources encode already ?
+wordnet [ 11 ] is among resources that have been widely studied in the context of information retrieval [ 28 , 12 ] .
+wordnet is a lexical database which organizes english lexical concepts along several semantic relations .
+for our example , wordnet explicitly encodes that a programming language is a subconcept ( or hyponym , in wordnet terminology ) of language .
+however , wordnet does not encode any of the other relatedness relations mentioned above .
+in fact , software companies , internet portals and high-level programming languages do not have any corresponding concept in wordnet .
+this makes the categorized names a useful addition to various knowledge resources , as discussed in the following .
+integration into existing knowledge resources .
+an immediate extension to any knowledge resources that organize english concepts hierarchically is to map ( some of ) the extracted names into new instanceo f assertions .
+in the case of wordnet and other similar resources , the new assertion corresponds to a new instance node being linked to an existing node at the bottom of the hierarchies .
+for example , the categorized names google ( in the category search engines ) , swiss national bank ( in central banks ) , joschka fischer ( in foreign ministers ) and state farm ( in insurance companies ) each generates a new leaf node inserted under the wordnet concepts search engine , central bank , foreign minister and insurance company respectively .
+the process is straightforward only if there is exactly one possible insertion point , i.e. the name belongs to exactly one category , the category matches exactly one wordnet concept ( after reduction of the category to its base , singular form ) , and the latter is a leaf node . 2 in the general case , however , the name belongs to multiple categories , each of which matches zero , one , or multiple wordnet concepts .
+for example , the category european companies does not match any wordnet concept , whereas the category rappers matches two word- net concepts ( one with the sense of artists , the other with the sense of knocking devices ) .
+the conservative insertion algorithm shown in figure 4 links a name to at most one wordnet concept . 3 initially , the algorithm matches each category of the input name against wordnet concepts .
+if a category does not match any wordnet concept , its modifiers are discarded until one or more matches are found .
+thus , high-level programming languages , internet portals and science fiction writers match the wordnet concepts programing language , portal , and writer respectively .
+for each explicit match into a wordnet concept , there is an implicit match into each of its hyponyms , i.e. concepts in the hierarchy rooted at the matching word- net concept .
+for instance , the explicit match of languages to language entails implicit matches to artificial language , natural language , indo-european language and so forth .
+the algorithm selects as insertion point the wordnet leaf concept with the highest number of matches over all categories .
+in case of ties , the least-general unifying concept is selected .
+the algorithm in figure 4 introduces only instanceof assertions via the inserted instance names .
+the hierarchical structures are otherwise preserved .
+the alternative is to create intermediate concepts as well , which may be missing due to the fact that wordnet is a general-purpose resource that does not aim at fully representing specialized domains [ 11 ] .
+intermediate concepts , e.g. software company , high-level programming language act as a middle layer between existing concepts ( companies , programming languages ) and newly acquired names .
+their introduction brings additional complications in terms of consistency ( is a search engine a kind of engine or rather a kind of company ? ) and coverage ( what other concepts besides high-level programming language form 3a more relaxed insertion would insert a name under several wordnet concepts , based on a confidence threshold. a partition over programming language ? ) .
+on the other hand , the simplifying factor in tackling intermediate concepts is precisely their reliance on the sets of names acquired from web documents .
+each name in the category is equivalent to an anonymous , democratic vote that the category actually corresponds to a useful concept that collectively represents the properties of its members .
+from this point of view , red car or tall company are less useful or improbable concepts since the web as a decentralized knowledge repository provides little or no evidence for them . 4 besides instanceof assertions , category relatedness represents another piece of knowledge to integrate in other resources .
+while less formal and reliable , the knowledge that search engines and internet portals , or storage providers and companies are related is certainly helpful .
+each pair of related categories is represented as an additional relatedto link in the existing hierarchical structure .
+resources enriched with relatedto links become more useful in linguistic- oriented applications that search for loose rather than strict relations among pairs of concepts .
+for example , any application computing lexical chains [ 12 , 13 , 27 ] among words , phrases or concepts can use the relatedto links as the main raw material in the identified lexical chains .
+the relatedto links are equally useful for query expansion , or suggestions for query refinement .
+applications to web search .
+the categories of names acquired offline from the web offer an alternative view of the underlying documents - one that transcends document boundaries through the extraction of knowledge captured collectively within disparate document sentences .
+the names provide enhancements to the search results returned to users queries , as described below .
+processing list-type queries .
+let us consider a scenario involving a medical school student .
+once she collects lab data , the user would like to find out how to process it automatically .
+her next possible action is to submit a query such as statistical packages or statistical package to a web search engine .
+the user has no previous experience with any such package .
+therefore the set of the most representative software packages available constitutes a very desirable output from the search engine .
+in this and other scenarios , users search for lists of items by typing their category ; other examples of list-type queries are risc processors or clinton administration officials .
+to support list-type queries , when the input query matches a known category , the search results also include the top ( i.e. , most frequent ) names as representative elements of that category .
+for instance , sas , spss , minitab and bmdp are returned in addition to the top documents for the query statistical packages .
+similarly , national security adviser sandy berger , vice president al gore and madeleine k. albright are returned for clinton administration officials .
+thus , categorized names supplement the regular search results for list-type queries .
+retrieval of siblings .
+as mentioned earlier , a significant fraction of search engine logs are direct queries for names .
+sometimes the queries refer to names that are completely unknown to the users , who want to find out about them .
+concurrently , it is often the case , that the user is already familiar with other similar names .
+one who searches for kazaa or bengali may know already about the similar names napster or hindi .
+retrieval of similar names , or sibling names , generally anchors the name into a set of possibly-known names , thus guiding the users in their search .
+figure 5 illustrates the top siblings retrieved from web news articles for the names kazaa and bengali .
+the rank of a sibling is inversely proportional to its frequency of co- occurrence in the same category as the name being asked about .
+in the example , the frequency is converted to a threshold-based , three-valued reliability metric ( high , medium and low ) .
+note that siblings span across categories , e.g.
+tamil is one of the indian languages whereas russian is one of the other languages besides bengali .
+table 3 shows other ranked siblings , which are extracted from web documents rather than news articles .
+from a user perspective , very small output sets might fail to anchor the input name .
+for instance , if the user is unaware what vodafone is , and only one sibling is returned for it , namely orange , the output has little use since orange belongs simultaneously in companies , counties , cities etc .
+the addition of other , less-ambiguous siblings to the result set will provide the necessary disambiguation context .
+a similar problem occurs when the input name itself is ambiguous , e.g. the user searches for orange .
+since currently the siblings are retrieved across categories , the siblings of the most frequent category of that name are promoted to the detriment of the other siblings .
+query refinement suggestions .
+in the query refinement application , the goal is to suggest a few related queries , based on the analysis of the current query and its relationships with the acquired names and categories .
+therefore query refinement suggestions have the potential of affecting both names and categories .
+if the query is a known name or a known category , a set of related queries is generated and offered to the user as suggestions for refinement .
+this is in contrast with list-type queries and retrieval of siblings , which operate on input that matches either categories or names .
+if the input query is a known name , each related query consists of the name and one of its categories .
+since a name may belong to many categories , a key issue is to decide which categories are the most representative .
+we use a ranking criterion that is complementary to the case of list-type queries , where the most representative names in a category are those names that are the most frequently found to belong to that category .
+for query refinement , the most representative categories for a name are those that are the most frequently found to contain that name .
+for illustration , according to the set of categorized names that we acquired in an experiment from web documents , the 10 most representative categories for orange are in order : counties , operators , areas , companies , cities , topics and flavors , brands , organizations and colors .
+therefore the top 10 related queries suggested when the user types orange would be orange county , orange operator , orange area , orange company , ... , orange color .
+when the input query is a known category ( up to base form normalization ) , each related query consists of a category that is relatedto it .
+as discussed in section 3 , the concept of category relatedness builds upon the overlap of the instance sets .
+the overlap is measured by the cardinality of the set intersections relatively to the whole sets .
+the categories with the highest overlap are the most representative and therefore included in the related queries .
+the exception handles the high-overlap related categories that are more general based on simple lexical comparison .
+for illustration , this is the case for companies given software companies , or cities given california cities .
+such more-general categories are deemed as useless and discarded from the set of query refinement suggestions .
+evaluation and results .
+data .
+the experiments are performed on two document collections .
+they contain web news articles ( newsdata ) and web documents ( webdata ) respectively ( see table 4 ) .
+the news articles in newsdata are part of the google news repository ; they span from april 2003 until january 2004 .
+the web documents in webdata are a random selection from a snapshot of the google index taken last year .
+all documents are in english .
+only the textual part of the documents is considered ; everything else is ignored .
+note that , on average , news articles are cleaner and more reliable than web documents .
+results .
+table 5 illustrates a few of the acquired categories and their instance names from web documents .
+in the case of hybrid cars , the displayed set of instances is complete ; for the others , only the top subset is shown .
+instance names are ranked in decreasing order of their frequency within the given category .
+thus , black , los angeles and linux have the highest frequency for colors , california cities and operating systems respectively .
+intuitively , more general categories like cities capture larger sets of instance names than california cities .
+this was discussed and illustrated earlier in figure 3 .
+the results in table 6 confirm the intuition on both newsdata and webdata .
+companies are one of the important categories , followed by players in newsdata and preceded by people in webdata .
+table 7 shows a view opposite to table 6 , that is , instance names that belong to many categories , rather than categories with many instance names .
+in the webdata collection , the ubiquitous internet is the instance name associated with the highest number of categories .
+among the top categories in table 7 , clients and vendors share a common property .
+rather than ( or in addition to ) acting as regular class holders for their instance name sets , they also encode invisible functional relations to other instance names .
+indeed , a vendor is a vendor of something ( e.g. , a certain product ) .
+similarly , a client could be a client of a given company .
+this corresponds to the notion of functions from a constant to another in first-order logic [ 24 ] .
+when abstracting away from unstructured text to categorized names , these kinds of functional relations are lost .
+due to the diversity of the acquired categories , we do not currently have a complete qualitative evaluation in terms of precision and recall of all acquired names .
+incipient evaluations indicate an average precision of 88 % .
+the precision was computed over the top 50 instance names ( or all names , if less than 50 ) of 20 randomly-selected , compound-noun categories .
+examples of errors are singapore categorized in european capitals , and dr. dean ornish in medical fields .
+we plan to perform further evaluations of categories against other resources , e.g. , gazetteers for categories that are of geographical nature .
+the ranking induced by category size depends on the data source .
+for example , california cities are the 1184th ( news- data ) and 8220th ( webdata ) largest category .
+figure 6 illustrates the distribution of the largest categories according to the cardinality of their sets of unique instance names .
+as the extraction method progresses through a new chunk of texts , some of the category-name pairs ( c , n ) that it encounters are duplicates of what was previously seen .
+non- duplicates bring new information , whereas duplicates enforce previous information .
+in one experiment , the news- data collection is split into chunks of documents based on the article posting date .
+table 8 shows the percentage of unique items ( pairs , categories or names ) acquired from a new chunk of documents , that were not already acquired from previous chunks .
+for example , 16 % of the unique pairs acquired from the fourth chunk were already seen in the previous chunks ( 1 through 3 ) .
+the numbers are higher in the case of the names and categories that were already seen , with 39 % and 35 % .
+over all newsdata chunks , table 8 suggests that the percentage of unseen instances decreases asymptotically .
+however , it is unclear whether the process would saturate over a news collection that would be larger by several orders of magnitude .
+previous work .
+the importance of semantic lexicons and lists of names has been recognized in many text processing tasks such as prepositional attachment [ 3 ] and coreference resolution [ 18 ] .
+more importantly , many named entity recognizers traditionally rely on lists of names [ 16 , 19 ] .
+the lists are compiled by humans , or assembled from authoritative sources .
+it is also possible to build recognizers that identify names automatically in text [ 7 , 9 , 26 ] .
+as opposed to the method presented in this paper , such approaches usually attempt to learn general categories such as persons , organizations , rather than refined categories .
+they also use a closed , pre-specified set of categories of interest , as a result of both explicit and implicit restrictions .
+in the first case , the training data introduces explicit restrictions .
+in the second case , it is the set of seed names , typically used in previous approaches , which introduces implicit restrictions on the acquired categories .
+comparatively , we use an initial set of domain-independent patterns which leads to arbitrary categories .
+in order to process natural language robustly , a variety of previous approaches apply lightweight techniques to unrestricted text [ 21 , 22 , 20 ] .
+in [ 1 , 14 ] and other work , it is shown that patterns are useful for acquiring isa and instanceof information from unstructured text .
+similarly , we focus on unstructured text as the source of our categorized names .
+structural information such as html tags in web documents offer a different means of extracting the same kind of relations [ 25 ] .
+the organization of acquired relations into larger structures [ 5 ] , and the more ambitious objective of constructing knowledge bases from the web , lead to projects like webkb [ 8 ] and more recently [ 10 ] .
+conclusions .
+the web as a whole represents a huge repository of human knowledge .
+most of the web knowledge is not readily available in clean , structured , non-ambiguous form .
+instead , it is encoded implicitly and scattered across billions of textual documents .
+this paper presented a lightly supervised method for accessing , decoding and exploiting a very small part of the information that web texts wear on their sleeves .
+we showed that lightweight text processing techniques make it possible to acquire a very broad range of categorized instance names from unstructured text .
+the collected categories of names effectively fuse and summarize semantic relations detected within initially-isolated documents .
+in addition to enhancing existing knowledge resources , the acquired categorized names also enable novel web search applications .
+in our experiments , word capitalization was the only clue used to detect possible names in text .
+the simplicity of this heuristic cannot cover names containing numbers , for instance 7 eleven and 49ers .
+in addition , the heuristic does not generalize to other languages where capitalization alone cannot distinguish between common and proper nouns , e.g.
+german .
+to increase precision and recall , we will explore other clues for finding candidate names , as well as a full-fledged iterative learning algorithm for detecting contextual extraction patterns .
+some of the semantics of each data-driven category is captured by its instance names .
+a direction to explore further is the recovery followed by discovery of relations among categories , based on the analysis of their sets of instance names .
+the relation recovery exploits existing resources to analyze the sets of instance names , e.g. for countries and nations which are known to be sometimes synonymous , or african countries and countries which are known to be in an isa relation .
+the relation discovery then identifies relations among previously-unknown categories within unstructured text , e.g. a possible relation between non-steroidal anti-inflammatory drugs and herbal medicines .
+in a parallel effort , it will be useful to assess the strength of the relations , e.g. to what degree a category is relatedto another .
+the extraction patterns used in the paper focus on categorical facts .
+these facts usually capture the genus of the category to which an instance name belongs , e.g.
+prius is an instance of cars .
+an equally useful piece of information would be the differentia .
+the differentia can be extracted from unstructured text with a different set of patterns , leading to descriptive rather than categorical facts .
+examples of descriptive facts for prius are uses a combination gasoline and electric engine and runs on electricity and petrol .
+descriptive facts are a source of definitions when inserting names in existing knowledge resources like wordnet .
+in addition , the combination of descriptive and categorical facts is a step towards building large networks of interconnected categories , instance names and their associated facts .

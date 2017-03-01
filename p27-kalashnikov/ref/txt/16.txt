@@ -1,0 +1,817 @@
+domain-independent data cleaning via analysis of entity-relationship graph .
+in this article , we address the problem of reference disambiguation .
+specifically , we consider a situation where entities in the database are referred to using descriptions ( e.g. , a set of instantiated attributes ) .
+the objective of reference disambiguation is to identify the unique entity to which each description corresponds .
+the key difference between the approach we propose ( called reldc ) and the traditional techniques is that reldc analyzes not only object features but also inter-object relationships to improve the disambiguation quality .
+our extensive experiments over two real data sets and over synthetic datasets show that analysis of relationships significantly improves quality of the result .
+introduction .
+recent surveys [ kdsurvey 2003 ] show that more than 80 % of researchers working on data mining projects spend more than 40 % of their project time on cleaning and preparation of data .
+the data cleaning problem often arises when information from heterogeneous sources is merged to create a single database .
+many distinct data cleaning challenges have been identified in the literature : dealing with missing data [ little and rubin 1986 ] , handling erroneous data [ maletic and marcus 2000 ] , record linkage [ bilenko and mooney 2003 ; jin et al. 2003 ; chaudhuri et al. 2003 ] , and so on .
+in this article , we address one such challenge called reference disambiguation , which is also known as fuzzy match [ chaudhuri et al. 2003 ] and fuzzy lookup [ chaudhuri et al. 2005 ] .
+the reference disambiguation problem arises when entities in a database contain references to other entities .
+if entities were referred to using unique identifiers , then disambiguating those references would be straightforward .
+instead , frequently , entities are represented using properties / descriptions that may not uniquely identify them leading to ambiguity .
+for instance , a database may store information about two distinct individuals donald l. white and donald e. white , both of whom are referred to as d. white in another database .
+references may also be ambiguous due to differences in the representations of the same entity and errors in data entries ( e.g. , don white misspelled as don whitex ) .
+the goal of reference disambiguation is for each reference to correctly identify the unique entity it refers to .
+the reference disambiguation problem is related to the problem of record de- duplication or record linkage [ jin et al. 2003 ; chaudhuri et al. 2003 ; bilenko and mooney 2003 ] that often arise when multiple tables ( from different data sources ) are merged to create a single table .
+the causes of record linkage and reference disambiguation problems are similar ; viz . , differences in representations of objects across different data sets , data entry errors , etc .
+the differences between the two can be intuitively viewed using the relational terminology as follows : while the record linkage problem consists of determining when two records are the same , reference disambiguation corresponds to ensuring that references ( i.e. , foreign keys ' ) in a database point to the correct entities .
+given the tight relationship between the two data cleaning tasks and the similarity of their causes , existing approaches to record linkage can be adapted for reference disambiguation .
+in particular , feature-based similarity ( fbs ) methods that analyze similarity of record attribute values ( to determine whether two records are the same ) can be used to determine if a particular reference corresponds to a given entity or not .
+this article argues that quality of disambiguation can be significantly improved by exploring additional semantic information .
+in particular , we observe that references occur within a context and define relationships / connections between entities .
+for instance , d. white might be used to refer to an author in the context of a particular publication .
+this publication might also refer to different authors , which can be linked to their affiliated organizations , etc . , forming chains of relationships among entities .
+such knowledge can be exploited alongside attribute-based similarity resulting in improved accuracy of disambiguation .
+in this article , we propose a domain-independent data cleaning approach for reference disambiguation , referred to as relationship-based data cleaning ( reldc ) , which systematically exploits not only features but also relationships among entities for the purpose of disambiguation .
+reldc views the database as a graph of entities that are linked to each other via relationships .
+it first utilizes a feature-based method to identify a set of candidate entities ( choices ) for a reference to be disambiguated .
+graph theoretic techniques are then used to discover and analyze relationships that exist between the entity containing the reference and the set of candidates .
+the primary contributions of this article are : developing a systematic approach to exploiting both attributes as well as relationships among entities for reference disambiguation , developing a set of optimizations to achieve an efficient and scalable ( to large graphs ) implementation of the approach , establishing that exploiting relationships can significantly improve the quality of reference disambiguation by testing the developed approach over 2 real-world data sets as well as synthetic data sets .
+a preliminary version of this article appeared in kalashnikov et al. [ 2005 ] ; it presents an overview of the approach , without implementation and other details , required for implementing the approach in practice .
+the rest of this article is organized as follows : section 2 presents a motivational example .
+in section 3 , we precisely formulate the problem of reference disambiguation and introduce notation that will help explain the reldc approach .
+section 4 describes the reldc approach .
+the empirical results of reldc are presented in section 6 .
+section 7 contains the related work , and section 8 concludes the article .
+motivation for analyzing relationships .
+in this section , we will use an instance of the author matching problem to illustrate that exploiting relationships among entities can improve the quality of reference disambiguation .
+we will also schematically describe one approach that analyzes relationships in a systematic domain-independent fashion .
+consider a database about authors and publications .
+authors are represented in the database using the attributes ( id , authorname , affiliation ) and information about papers is stored in the form ( id , title , authorref 1 , authorref 2 , ... , authorref n ) .
+consider a toy database consisting of the author and publication records shown in figures 1 and 2 .
+the goal of the author matching problem is to identify for each authorref in each paper the correct author it refers to .
+we can use existing feature-based similarity ( fbs ) techniques to compare the description contained in each authorref in papers with values in authorname attribute in authors .
+this would allow us to resolve almost every authorref references in the above example .
+for instance , such methods would identify that sue grey reference in p2 refers to a3 ( susan grey ) .
+the only exception will be d. white references in p2 and p6 : d. white could match either a1 ( dave white ) or a2 ( don white ) .
+perhaps , we could disambiguate the reference d. white in p2 and p6 by exploiting additional attributes .
+for instance , the titles of papers p1 and p2 might be similar while titles of p2 and p3 might not , suggesting that d. white of p2 is indeed don white of paper p1 .
+we next show that it may still be possible to disambiguate the references d. white in p2 and p6 by analyzing relationships among entities even if we are unable to disambiguate the references using title ( or other attributes ) .
+first , we observe that author don white has co-authored a paper ( p1 ) with john black who is at mit , while the author dave white does not have any co-authored papers with authors at mit .
+we can use this observation to disambiguate between the two authors .
+in particular , since the co-author of d. white in p2 is susan grey of mit , there is a higher likelihood that the author d. white in p2 is don white .
+the reason is that the data suggests a connection between author don white with mit and an absence of it between dave white and mit .
+second , we observe that author don white has co-authored a paper ( p4 ) with joe brown who in turn has co-authored a paper with liz pink .
+in contrast , author dave white has not co-authored any papers with either liz pink or joe brown .
+since liz pink is a co-author of p6 , there is a higher likelihood that d. white in p6 refers to author don white compared to author dave white .
+the reason is that often co-author networks form groups / clusters of authors that do related research and may publish with each other .
+the data suggests that don white , joe brown and liz pink are part of the cluster , while dave white is not .
+at first glance , the analysis above ( used to disambiguate references that could not be resolved using conventional feature-based techniques ) may seem domain specific .
+a general principle emerges if we view the database as a graph of interconnected entities ( modeled as nodes ) linked to each other via relationships ( modeled as edges ) .
+figure 3 illustrates the entity-relationship graph corresponding to the toy database consisting of authors and papers records .
+in the graph , entities containing references are linked to the entities they refer to .
+for instance , since the reference sue grey in p2 is unambiguously resolved to author susan grey , paper p2 is connected by an edge to author a3 .
+similarly , paper p5 is connected to authors a5 ( joe brown ) and a6 ( liz pink ) .
+the ambiguity of the references d. white in p2 and p6 is captured by linking papers p2 and p6 to both dave white and don white via two choice nodes ( labeled 1 and 2 in the figure ) .
+these choice nodes represent the fact that the reference d. white refers to either one of the entities linked to the choice nodes .
+given the graph view of the toy database , the analysis we used to disambiguate d. white in p2 and p6 can be viewed as an application of the following general principle : context attraction principle ( cap ) : if reference r made in the context of entity x refers to an entity y ; whereas the description provided by r matches multiple entities y1 , y2 , ... , y ; , ... , yn , then x and y ; are likely to be more strongly connected to each other via chains of relationships than x and yf , where f = 1 , 2 , ... , n and f = a ; .
+let us now get back to the toy database .
+the first observation we made , regarding disambiguation of d. white in p2 , corresponds to the presence of the following path ( i.e. , relationship chain or connection ) between the nodes don white and p2 in the graph : p2 h susan greyh mit h john blackh p1 h don white .
+similarly , the second observation , regarding disambiguation of d. white in p6 as don white , was based on the presence of the following path : p6 h liz pinkh p5 h joe brownh p4 h don white .
+there were no paths between p2 and dave white or between p6 and dave white ( if we ignore 1 and 2 nodes ) .
+therefore , after applying the cap principle , we concluded that the reference d. white in both cases probably corresponded to the author don white .
+in general , there could have been paths not only between p2 ( p6 ) and don white , but also between p2 ( p6 ) and dave white .
+in that case , to determine if d. white is don white or dave white we should have been able to measure whether don white or dave white is more strongly connected to p2 ( p6 ) .
+the generic approach therefore first discovers connections between the entity , in the context of which the reference appears , and the matching candidates for that reference .
+it then measures the connection strength of the discovered connections in order to give preference to one of the matching candidates .
+of course , the second question is only important if the answer to the first is positive .
+however , we cannot really answer the first unless we develop a general strategy to exploiting relationships for disambiguation and testing it over real data .
+we will develop one such general , domain-independent strategy for exploiting relationships for disambiguation , which we refer to as reldc in section 4 .
+we perform extensive testing of reldc over both real data from two different domains as well as synthetic data to establish that exploiting relationships ( as is done by reldc ) significantly improves the data quality .
+before we develop reldc , we first develop notation and concepts needed to explain our approach in section 3 .
+problem definition .
+in this section , we first develop notation and then formally define the problem of reference disambiguation .
+the notation is summarized in table i. let d be the database that contains references that are to be resolved .
+let x = { x } be the set of all entities2 in d. each entity x consists of a set of m properties { a1 , a2 , ... , am } and of a set of n references { r1 , r2 , ... , rn } .
+the num ber of attributes m and the number of references n in those two sets can be different for different entities .
+each reference r is essentially a description of some entity and may itself consist of one or more attributes .
+for instance , in the example in section 2 , paper entities contain one-attribute authorref references in the form ( author name ) .
+if , besides author names , author affiliation were also stored in the paper records , then authorref references would have consisted of two attributes ( author name , author affiliation ) .
+each reference r maps uniquely into the entity , in the context of which it is made .
+that entity is called the context entity of reference r and denoted xr .
+the set of all references in the database d will be denoted as r. option set .
+each reference r ^ r semantically refers to a single specific entity in x called the answer for reference r and denoted r ^ .
+the description provided by r may , however , match a set of one or more entities in x. we refer to this set as the option set of reference r and denote it by sr. the option set consists of all the entities that r could potentially refer to .
+we assume sr is given for each r .
+if it is not given , we assume a feature-based similarity approach is used to construct sr by choosing all of the candidates such that fbs similarity between them and r exceed a given threshold .
+to simplify notation , we will use n to mean | sr | , that is n = | sr | .
+example 3.1.1 ( notation ) .
+let us consider an example of using notation .
+consider the reference r = john black in publication p1 illustrated in figure 2 .
+then xr = p1 , r ^ = a4 , sr = { a4 } , and yr1 = a4 .
+if we consider the reference s = d. white in publication p2 and assume that in reality it refers to a2 ( i.e. , don white ) , then xs = p2 , s ^ = a2 , ss = { a1 , a2 } , ys1 = a1 , and ys2 = a2 .
+the entity-relationship graph .
+reldc views the resulting database d as an undirected entity-relationship graph3 g = ( v , e ) , where v is the set of nodes and e is the set of edges .
+the set of nodes v is comprised of the set of regular nodes vreg and the set of choice nodes vcho , that is v = vreg ^ vcho .
+each regular node corresponds to some entity x ^ x. we will use the same notation x for both the entity and the node that represents x .
+choice nodes will be defined shortly .
+each edge in the graph corresponds to a relationship.4 let us note that if entity x1 contains a reference to entity x2 , then nodes x1 and x2 are linked via an edge , since the reference establishes a relationship between the two entities .
+for instance , an authorref reference from a paper to an author corresponds to the writes relationship between the author and the paper .
+in the graph , the edges have weights and the nodes do not have weights .
+each edge weight is a real number between zero and one .
+it reflects the degree of confidence the relationship that corresponds to the edge exists .
+for instance , in the context of our author matching example , if we are absolutely confident a given author is affiliated with a given organization , then we assign the weight of 1 to the corresponding edge .
+by default , all edge weights are equal to 1.5 we will use the notation edge label and edge weight interchangeably .
+references and linking .
+to illustrate when the edge weights can be different from 1 , consider the following scenario .
+assume the dataset being processed is originally derived from raw data by some extraction software .
+for example , the author affiliations can be derived by crawling the web , retrieving various web pages perceived to be faculty homepages , extracting what appears to be faculty names and their affiliations and putting them in the dataset .
+the extraction software is not always 100 % confident in all the associations among entities it extracts , but might be able to assign the degree of its belief instead .
+the objective of reference disambiguation .
+to resolve reference r means to choose one entity yr , from sr in order to determine r ^ .
+if entity yr , is chosen as the outcome of such a disambiguation , then r is said to be resolved to yr , or simply resolved .
+reference r is said to be resolved correctly if this yr , is r ^ .
+notice , if sr has just one element yr1 ( i.e. , n = 1 ) , then reference r is automatically resolved to yr1 .
+thus , reference r is said to be unresolved or uncertain if it is not resolved yet to any yr , and n > 1 .
+from the graph theoretic perspective , to resolve r means to assign weight 1 to one edge er , , where 1 ^ , ^ n , and assign weight 0 to the other n ^ 1 edges erj , where j = 1 , 2 , ... , n ; j = ~ , .
+this will indicate the algorithm chooses yr , as r ^ .
+the goal of reference disambiguation is to resolve all references as correctly as possible , that is , for each reference r ^ r to correctly identify r ^ .
+the accuracy of reference disambiguation is the fraction of references being resolved that are resolved correctly .
+the alternative goal is for each yr , ^ sr to associate weight wr , that reflects the degree of confidence that yr , is r ^ .
+for this alternative goal , each edge er , should be labeled with such a weight .
+those weights can be interpreted later to achieve the main goal : for each r try to identify only one yr , as r ^ correctly .
+we emphasize this alternative goal since most of our discussion will be devoted to a method for computing those weights .
+an interpretation of those weights ( in order to try to identify r ^ ) is a small final step of reldc .
+namely , it achieves this by picking yr , such that wr , is the largest among wr1 , wr2 , ... , wrn .
+that is , the algorithm resolves r to yr , where , : wr , = maxj = 1,2 , ... , n wrj .
+connection strength and cap principle .
+reldc resolves references by employing the context attraction principle presented in section 2 .
+we now state the principle more formally .
+crucial to the principle is the notion of the connection strength c ( x1 , x2 ) between two entities x1 and x2 , which captures how strongly x1 and x2 are connected to each other through relationships .
+many different approaches can be used to measure c ( x1 , x2 ) , they will be discussed in section 4 .
+given the concept of c ( x1 , x2 ) , we can restate the context attraction principle as follows : context attraction principle : let r be a reference and yr1 , yr2 , . . . , yrn be elements of its option set sr with the corresponding option weights wr1 , wr2 , . . . , wrn .
+then , for all , , j ^ [ 1 , n ] , if crj ^ cr , , then it is likely that wrj ^ wr , , where crj = c ( xr , yrj ) and cr , = c ( xr , yr , ) .
+let us remark that , as will be elaborated in section 4.1.2 , not all of the connection strength models are symmetric , that is , c ( u , v ) = ~ c ( v , u ) for some of them .
+in the above definition of the cap , when resolving a reference r , the connection strength is measured in the direction of from xr to yr , , for any , .
+reldc approach .
+we now have developed all the concepts and notation needed to explain the reldc approach for reference disambiguation .
+the input to reldc is the entity-relationship graph g discussed in section 3 .
+we assume that feature- based similarity approaches are used in constructing the graph g. the choice nodes are created only for those references that could not be disambiguated using only attribute similarity .
+reldc will exploit relationships for further disambiguation and will output a resolved graph g in which each entity is fully resolved .
+reldc disambiguates references using the following four steps : compute connection strengths .
+for each reference r ^ r , compute the connection strength c ( xr , yrj ) for each yrj ^ sr. the result is a set of equations that relate c ( xr , yrj ) with the option weights w : c ( xr , yrj ) = grj ( w ) .
+here , w is the set of all option weights in the graph g : w = { wrj : for all r , j } .
+determine equations for option weights .
+using the equations from step ( 1 ) and the cap , determine a set of equations that relate option weights to each other .
+compute weights .
+solve the set of equations from step ( 2 ) .
+resolve references .
+interpret the weights computed in step ( 3 ) , as well as attribute-based similarity , to resolve references .
+we now discuss the above steps in more detail in the following sections .
+computing connection strength .
+the concept of connection strength is at the core of the proposed data cleaning approach .
+the connection strength c ( u , v ) between the two nodes u and v should reflect how strongly these nodes are related to each other via relationships in the graph g. the value of c ( u , v ) should be computed according to some connection strength model .
+below , we first motivate one way for computing c ( u , v ) ( section 4.1.1 ) , followed by a discussion of the existing connection strength ( c.s. ) models ( section 4.1.2 ) .
+we will conclude our discussion on c.s. models with one specific model , called the weight-based model , which is the primary model we use in our empirical evaluation of reldc ( section 4.1.3 ) .
+motivating a way to compute c ( u , v ) .
+many existing measures , such as the length of the shortest path or the value of the maximum network flow between nodes u and v , could potentially be used for this purpose .
+such measures , however , have some drawbacks in our context .
+for instance , consider the example in figure 6 which illustrates a subgraph of g. the subgraph contains two paths between nodes u and v : pa = u ^ a ^ v and pb = u ^ b ^ v. in this example , node b connects multiple nodes , not just u and v , whereas node a connects only u and v. if this subgraph is a part of an author-publication graph , for example , as illustrated in figure 7 , then nodes u and v may correspond to two authors , node a to a specific publication , and node b to a university which connects numerous authors .
+intuitively , we expect that the connection strength between u and v via a is stronger than the connection strength between u and v via b : since b connects many nodes , it is not surprising we can also connect u and v via b , whereas the connection via a is unique to u and v. let c ( pa ) and c ( pb ) denote the connection strength via paths pa and pb .
+then , based on our intuition , we should require that c ( pa ) > c ( pb ) .
+let us observe that measures such as path length and maximum network flow do not capture the fact that c ( pa ) > c ( pb ) .
+that is , the path length of pa and pb is 2 .
+the maximum network flow via pa is 1 and via pb is 1 as well [ cormen et al. 2001 ] , provided the weight of all edges in figure 6 is 1 .
+next , we cover several existing connection strength models , most of which will return for the case in figure 6 that c ( pa ) > c ( pb ) , as we desire .
+to measure c ( u , v ) , several of those models try to send a flow in the graph g from the node u and then analyze which fraction of this flow reaches v. this fraction then determines the value of c ( u , v ) . 4.1.2 existing connection strength models .
+recently , there has been a spike of interest by various research communities in the measures directly related to the c ( u , v ) measure .
+below we summarize several principal models .
+the reader who is primarily interested in the actual model employed by reldc , might skip this section and proceed directly to section 4.1.3 covering the weight-based model .
+to measure c ( u , v ) between nodes u and v , a connection strength model can take many factors into account : the paths in g between u and v , how they overlap , how they connect to the rest of g , the degree of nodes on those paths , the types of relationships that constitute those paths and so on .
+the existing models , and the two models proposed in this article , analyze only some of those factors .
+nevertheless , we will show that even those models can be employed quite effectively by reldc . 4.1.2.1 diffusion kernels .
+the area of kernel-based pattern analysis [ shawe-taylor and cristianni 2004 ] studies diffusion kernels on graph nodes , which are closely related to c.s. models .
+they are defined as follows .
+a base similarity graph g = ( s , e ) for a dataset s is considered .
+the vertices in the graph are the data items in s. the undirected edges in this graph are labeled with a base similarity ^ ( x , y ) measure .
+that measure is also denoted as ^ 1 ( x , y ) , because only the direct links ( of size 1 ) between nodes are utilized to derive this similarity .
+the base similarity matrix b = b1 is then defined as the matrix whose elements bxy , indexed by data items , are computed as bxy = ^ ( x , y ) = ^ 1 ( x , y ) .
+given such ^ k ( x , y ) measure , the corresponding similarity matrix bk is defined .
+it can be shown that bk = bk .
+the idea behind this process is to enhance the base similarity by those indirect similarities .
+for example , the base similarity b1 can be enhanced with similarity b2 , for example , by considering a combination of the two matrices : b1 + b2 .
+the idea generalizes to more then two matrices .
+for instance , by observing that in practice the relevance of longer paths should decay , a decay factor ^ is used , resulting in the so-called exponential diffusion kernel : k = ek o 1 ! ^ kbk = exp ( ^ b ) .
+the von neumann diffusion kernel is defined similarly : k = eko ^ kbk = ( i ^ ^ b ) ^ 1 .
+the elements of the matrix k exactly define what we refer to as the connection strength : c ( x , y ) = kxy .
+while connection strength between nodes in a graph can be computed using diffusion kernels , it is of limited utility in our setting since the procedure in shawe-taylor and cristianni [ 2004 ] cannot be directly applied in graphs with choice nodes . 4.1.2.2 relevant importance in graphs .
+a natural way to compute the connection strength c ( u , v ) between node u and v is to compute it as the probability of reaching node v from node u via random walks in graph g. each step of the random walk is done according to certain probability derived from edge labels .
+such problems have been studied for graphs in the previous work under markovian assumptions .
+for example , white and smyth [ 2003 ] study the related problem of computing the relative importance of a given set of nodes with respect to the set of root nodes by generalizing the pagerank algorithm [ brin and page 1998 ] .
+their primary approach views such a graph as a markov chain where nodes represent states of the markov chain and probabilities are determined by edge labels .
+white and smyth [ 2003 ] also evaluate different models and compare them with the pagerank-based model .
+the problem of computing c ( u , v ) can be postulated as computing the relevant importance of node u with respect to the root node v. the procedural part of the pagerank-based algorithm in white and smyth [ 2003 ] , however , cannot be employed directly in our approach .
+the main reason is that the markovian assumptions do not hold for our graphs .
+for example , consider two paths g ^ f and d ^ f in figure 8 .
+in that figure , f is a choice node and bf and fd are its mutually exclusive option-edges .
+in general , we can continue g ^ f path by following f ^ b link ; however , we cannot continue d ^ f path by following the same f h b link .
+thus , the decision of whether we can follow f h b link is determined by the past links on the path .
+this violates the markovian assumption , since a markov chain is a random process , which has the property that , conditional on its present value , the future is independent of the past .
+electric circuit analogy .
+faloutsos et al. [ 2004 ] consider a model for computing c ( u , v ) .
+they view the graph as an electric circuit consisting of resistors , and compute c ( u , v ) as the amount of electric current that goes from u to v. one of the primary contributions of that article is the optimizations that scale their approach to large graphs . 4.1.3 weight-based model .
+this section covers one of the c.s. models , which we will use to empirically evaluate reldc in section 6 .
+we refer to this model as the weigh-based model ( wm ) .
+wm is a simplification of the probabilistic model ( pm ) , covered in the electronic appendix .
+pm model is more involved than wm model and will be a significant diversion from our main objective of explaining reldc .
+pm computes c ( u , v ) as the probability of reaching the node u starting from the node v in the graph g. like the model proposed in white and smyth [ 2003 ] , wm and pm are also random walk-based models .
+wm computes c ( u , v ) as the sum of the connection strengths of each simple path between nodes u and v. the connection strength c ( p ) of each path p from u to v is computed as the probability of following path p in graph g. in wm , computation of c ( u , v ) consists of two phases .
+the first phase discovers connections ( paths ) between u and v. the second phase measures the strength in the connections discovered by the first phase .
+phase i : path discovering .
+in general , there can be many connections between nodes u and v in g. intuitively , many of those ( e.g. , very long ones ) are not very important .
+to capture most important connections while still being efficient , instead of discovering all paths , the algorithm discovers only the set of all l- short simple paths pl ( u , v ) between nodes u and v in graph g. a path is l-short if its length is no greater than parameter l. a path is simple if it does not contain duplicate nodes .
+complications due to choice nodes .
+not all of the discovered paths are considered when computing c ( xr , yrj ) to resolve reference r : some of them are illegal paths , which are ignored by the algorithm .
+let er1 , er2 , ... , ern be the option-edges associated with the reference r .
+when resolving r , reldc tries do determine weights of these edges via connections that exist in the remainder of the graph not including those edges .
+to achieve this , reldc actually discovers paths not in graph g , but in gr = g ^ r , as illustrated in figure 9 .
+that is , gr is graph g with node r removed .
+also , in general , paths considered when computing c ( xr , yrj ) may contain option-edges of some choice nodes .
+if a path p contains an option-edge esj of some choice node s , it should not contain another option-edge esf , where f = ~ j , of the same choice node s , because edges esj and es f are mutually exclusive .
+phase ii : measuring connection strength .
+in general , each l-short simple path p can be viewed as a sequence of in nodes v1 ^ v2 ^ ^ vin , where in ^ l + 1 , as illustrated in figure 10 .
+this figure shows that from a node vi , where i = 1 , 2 , ... , in ^ 1 , it is possible-to-follow6 ni + 1 edges , labeled ai0 , ai1 , ... , aini .
+wm computes the connection strength of path p as the probability pr of following path p : c ( p ) = pr .
+probability pr is computed as the product of two probabilities : pr = pr1pr2 , where pr1 is the probability that path p exists and pr2 is the probability of following path p given that p exists .
+probability that path exists .
+first , path p should exist and thus each edge on this path should exist .
+wm computes the probability pr1 that p exist as the product of probabilities that each edge on path p exists : pr1 = a10a20 a ( in ^ 1 ) 0 .
+that is , wm assumes that each edge ei0 exists independently from edge ef0 where f = ~ i .
+new labels , given path exists .
+if we assume that p exists , then situation will look like that illustrated in figure 11 .
+in that figure , all edges are labeled with new weights a 'i , , derived from the old weights ai , under the assumption that path p exists .
+for example , a 'i0 = 1 for all i , because each edge ei0 exists if path p exists .
+for each a 'i , where , = ~ 0 it holds that either a 'i , = ai , , or a 'i , = 0 .
+to understand why a 'i , can be zero , consider path p1 = don white ^ p4 ^ joe ^ p5 ^ liz ^ p6 ^ 2 ^ dave white in figure 3 as an example .
+if we assume p1 exists , then edge ( 2 , dave white ) must exist and consequently edge ( 2 , don white ) does not exist .
+thus , if path p1 exists , the weight of edge ( 2 , don white ) is zero .
+that is why in general either a 'i , = ai , , or , if the corresponding edge ei , cannot exist under assumption that path p exists , then a 'i , = 0 .
+general walk model .
+before we present the way wm computes probability pr2 of following path p given that p exists , let us discuss the general walk model utilized by wm when computing c ( u , v ) .
+each path starts from u .
+assume wm at some intermediate stage of a walk observes a path px = u -- + x .
+if x = v , then px is a legitimate u-v path and the walk stops .
+if x = ~ v and the length of the path p is l , then the walk stops since l is the path length limit .
+otherwise , wm examines the incident edges of x , specifically those that can be followed , such that if an edge is followed the new path will remain simple ( will not have duplicate edges ) .
+if there are no such edges , than this walk reached a dead-end and the walk stops .
+otherwise , wm chooses one edge to follow and continues the path px by following this edge to some new node y , such that p y = u -- + x ^ y .
+then , the above procedure is repeated for p y .
+probability of following path .
+next , wm computes probability pr2 of following path p given that p exists as the product of probabilities of following each edge on p .
+measure c ( u , v ) is the probability of reaching v from u by following only l-short simple paths , such that the probability of following an edge is proportional to the weight of the edge .
+example 4.1.1 .
+let us demonstrate wm formulae on the example in figure 6 .
+wm measures c ( pa ) and c ( pb ) as the probabilities of following paths pa and pb , respectively .
+wm computes those probabilities as follows .
+for path pa , we start from u , we go to a with probability 21 at which point we have no choice but to go to v , so the probability of following pa is 12 .
+for path pb , we start from u .
+next , we have a choice to go to a or b with probabilities of 12 , and we choose to follow ( u , b ) edge .
+from node b , we can go to any of the n ^ 1 nodes ( cannot go back to u ) but we go specifically to v. therefore , the probability of reaching v via path pb is2 ( n1 ^ 1 ) .let us observe that 21 > 2 ( n1 ^ 1 ) when n ^ 2 and thus wm captures that c ( pa ) > c ( pb ) .
+connection strengths in toy database .
+let us compute connection strengths c11 , c12 , c21 , c22 for the toy database illustrated in figure 3 .
+those connection strength are defined as : later , those connection strengths will be used to compute option weights w11 , w12 , w21 , w22 .
+consider first computing c11 = c ( p2 , dave white ) in the context of disambiguating d. white reference in p2 .
+recall , for that reference choice node 1 has been created .
+the first step is to remove choice 1 from consideration .
+the resulting graph gr = g ^ 1 is shown in figure 12 .
+the next step is to discover all l-short simple paths in graph gr between p2 and dave white .
+let us set l = ^ , then there is only one such path : p1 = p2 ^ susan ^ mit ^ john ^ p1 ^ don ^ p4 ^ joe ^ p5 ^ liz ^ p6 ^ 2 ^ dave white .
+the discovered connection is too long to be meaningful in practice , but we will consider it for pedagogical reasons .
+to compute c ( p1 ) we first compute the probability pr1 that path p1 exists .
+path p1 exists if and only if edge between 2 and dave white exists , so pr1 = w21 .
+now we assume that p1 exists and compute the probability pr2 of following p1 given that p1 exists on the graph shown in figure 13 .
+determining equations for option-edge weights .
+given the connection strength measures c ( xr , yrj ) for each unresolved reference r and its options yr1 , yr2 , ... , yrn , we can use the context attraction principle to determine the relationships between the weights associated with the option-edges in the graph g. note that the context attraction principle does not contain any specific strategy on how to relate weights to connection strengths .
+any strategy that assigns weight such that , if crj ^ crj , then wrj ^ wrj is appropriate , where crj = c ( xr , yrj ) and crj = c ( xr , yrj ) .
+in particular , we use the strategy where weights wr1 , wr2 , ... , wrn are proportional to the corresponding connection strengths : wrjcrj = wrjcrj .
+determining all weights by solving equations .
+given a system of equations , relating option-edge weights as derived in section 4.2 , our goal next is to determine values for the option-edge weights that satisfy the equations .
+solving equations fo , toy database .
+before we discuss how such equations can be solved in general , let us first solve eqs . ( 6 ) for the toy example .
+those equations , given an additional constraint 0 ^ w11 , w12 , w21 , w22 ^ 1 , have a unique solution w11 = 0 , w12 = 1 , w21 = 0 , w22 = 1 .
+once we have computed the weights , reldc will interpret these weights to resolve the references .
+in the toy example , the above computed weights will lead reldc to resolve d. white in both p2 and p6 to don white , since w12 > w11 and w22 > w21 .
+the exact function for w , j is determined by eqs . ( 1 ) , ( 2 ) , and ( 5 ) , and by the paths that exists between x , and y , j in g. in practice , often f , j ( w ) is constant leading to the equation of the form w , j = const .
+the goal is to solve system ( 7 ) .
+system ( 7 ) might be over-constrained and thus might not have an exact solution .
+thus , we add slack to it by transforming each equation w , j = f , j ( w ) into f , j ( w ) ^ t , j ^ w , j ^ f , j ( w ) + t , j .
+here , t , j is a slack variable that can take on any real nonnegative value .
+system ( 8 ) always has a solution .
+to show that , it is sufficient to prove that there is at least one solution that satisfies the constraints of system ( 8 ) .
+let us prove that by constructing such a solution .
+notice , functions f , j ( w ) ( for all , , j ) are such that 0 ^ f , j ( w ) ^ 1 , if 0 ^ wsf ^ 1 ( for all s , f ) .
+thus , the following combination : w , j = 0 and t , j = 1 ( for all , , j ) is a solution that satisfies the constraints of system ( 8 ) , though it does not satisfy the objective in general .
+the goal , of course , is to find a better solution that minimizes e , , j t , j .
+the pseudocode for the above procedure will be discussed in section 5.1.1 .
+iteative solution .
+the straightforward approach to solving the resulting nlp problem ( 8 ) is to use one of the off-the-shelf math solver such as snopt .
+such solvers , however , do not scale to large problem sizes that we encounter in data cleaning as will be discussed in section 6 .
+we therefore exploit a simple iterative approach , which is outlined below .
+note , however , other methods can be devised to solve ( 8 ) as well , for example , in kalashnikov and mehrotra [ 2005 ] , we sketch another approximate algorithm for solving ( 8 ) , which first computes bounding intervals for all option weights wrjs and then employs techniques from cheng et al. [ 2003a , 2003b , 2004 ] .
+that method is more involved than the iterative solution , which we will present next .
+the pseudocode for the iterative method is given in figure 15 in section 5.1.2 .
+the iterative method first iterates over each reference r ^ r and assigns initial weights of | sr | to each wrj .
+it then starts its major iterations in which it first computes c ( xr , yrj ) for all r , j using eq . ( 2 ) .
+after c ( xr , yrj ) s are computed , they are used to compute wrj for all r , j using eq . ( 5 ) .
+note that the values of wrj for all r , j will change from | sr | to new values .
+the algorithm performs several major iterations until the weights converge ( the resulting changes across iterations are negligible ) or the algorithm is explicitly stopped .
+let us perform an iteration of the iterative method for the example above .
+note that the above-described iterative procedure computes only an approximate solution for the system whereas the solver finds the exact solution .
+let us refer to iterative implementation of reldc as it-reldc and denote the implementation that uses a solver as sl-reldc .
+for both it-reldc and sl-reldc , after the weights are computed , those weights are interpreted to produce the final result , as discussed in section 3.3 .
+it turned out that the accuracy of itreldc ( with a small number of iterations , such as 1020 ) and of sl-reldc is practically identical .
+this is because even though the iterative method does not find the exact weights , the weights computed by the iterative algorithm are close enough to those computed using a solver .
+thus , when the weights are interpreted , both methods obtain similar results .
+resolving references by interpreting weights .
+when resolving references r and deciding which entity among yr1 , yr2 , ... , yrn from sr is r ^ , reldc chooses such yrj that wrj is the largest among wr1 , wr2 , ... , wrn .
+notice , to resolve r we could have also combined wrj weights with feature-based similarities fbs ( xr , yrj ) ( e.g. , as a weighted sum ) , but we do not study that approach in this paper .
+once the interpretation of the weights is done , the main disambiguation goal is achieved , and the outcome of the disambiguation can be used to create a regular database .
+implementations .
+in this section , we discuss several implementations of reldc , which are crucial to scale the approach to large datasets .
+iterative and solver implementations of reldc .
+the nlp problem in eq . ( 8 ) can be solved iteratively or using a solver .
+in this section we present pseudocode for naive implementations of sl-reldc and itreldc .
+in the subsequent sections , we discuss optimizations of these naive implementations .
+solver .
+figure 14 shows an outline of sl-reldc , which we have discussed in section 4 .
+in lines 12 , if the greedy implementation of all-paths is used ( see section 5.3 ) , the algorithm initializes weights .
+initial values of option weights wr1 , wr2 , ... , wrn of each choice node r are assigned such that wr1 = wr2 = = wrn = n1 and w r1 + wr2 + + wrn = 1 .
+lines 39 correspond to creating equations for connection strengths c ( xr , yrj ) ( for all r , j ) described in section 4.1 : each c ( xr , yrj ) is derived based on the simple paths that exist between nodes for xr and yrj in the graph .
+lines 1013 correspond to the procedure from section 4.2 that constructs the equations for option weighs wrj ( for all r , j ) .
+then , in line 14 , the algorithm takes the nlp problem shown in eq . ( 8 ) and creates its representation s suitable for the solver .
+next , the solver takes the input s , solves the problem , and outputs the resulting weights .
+as the final steps , all the references are resolved by interpreting those weights .
+iterative .
+the pseudocode in figure 15 formalizes the it-reldc procedure described in section 4.3 .
+it-reldc first initializes weights .
+then , it iterates recomputing new values for c ( xr , yrj ) and wrj ( for all r , j ) .
+finally , all the references are resolved by interpreting the weights .
+bottleneck of reldc .
+to optimize reldc for performance we need to understand where it spends most of its computation time .
+the most computationally expensive part of both it-reldc and sl-reldc is all-paths procedure , which discovers connections between two nodes in the graph .
+for certain combinations of parameters , solve-using-solver procedure , which invokes the solver to solve the nlp problem , can be expensive as well .
+however , that procedure is performed by a third party solver , hence there is little possibility of optimizing it .
+therefore , all of the optimizations presented in this section target all-paths procedure .
+constraining the problem .
+this section lists several optimizations that improve the efficiency of reldc by constraining / simplifying the problem .
+limiting paths length .
+all-paths algorithm can be specified to look only for paths of length no greater than a parameter l. this optimization is based on the premise that longer paths tend to have smaller connection strengths while reldc will need to spend more time to discover those paths .
+weight cut-off threshold .
+this optimization can be applied after a few iterations of it-reldc .
+when resolving reference r , see figure 5 , it-reldc can use a threshold to prune several yrjs from sr. if the current value of wrj is too small compared to wrf for f = 1 , 2 , ... , n ; f = ~ j , then reldc will assume yrj cannot be r ^ and will remove yrj from sr. the threshold is computed per each reference r as ^ 1 | sr | , where ^ ( 0 ^ ^ < 1 ) is a real number ( a fixed parameter ) .7 this optimization improves the efficiency since if yrj is removed from sr , then it-reldc will not recompute pl ( xr , yrj ) , c ( xr , yrj ) , and wrj any longer .
+restricting path types .
+the analyst can specify path types of interest ( or for exclusion ) explicitly . 8 for example , the analyst can specify that only paths of type t1 h t2 h t4 h t1 are of interest , where tis are node types .
+some of such rules are easy to specify , however it is clear that for a generic framework here should be some method ( e.g. , a language ) for an analyst to specify rules that are more complicated .
+our ongoing work addresses the problem of such a language [ seid and mehrotra 2006 ] .
+depth-first and greedy versions of all-paths .
+reldc utilizes all-paths procedure to discover all l-short simple paths between two nodes .
+we have considered two approaches for implementing all- paths algorithm : the depth-first ( df-all-paths ) and greedy ( gr-all-paths ) provided in figures 16 and 17 respectively.9 the reason for having those two implementations is as follows .
+the dfall-paths is a good choice if skipping of paths is not allowed : we shall show that in this case df-all-paths is better in terms of time and space complexity than its greedy counterpart .
+however , gr-all-paths is a better option if one is interested in fine-tuning the accuracy vs. performance trade-off by restricting the running time of the all-paths algorithm .
+the reason for this is as follows .
+if df-all-paths is stopped abruptly in the middle of its execution , then certain important paths can still be not discovered .
+to address this drawback , gr-all-paths discovers the most important paths first and least important last .
+depth-first and greedy algorithms .
+as can be seen from figures 16 and 17 , the depth-first and greedy algorithms are quite similar .
+the difference between them is that df-all-paths utilizes a stack to account for intermediate paths while gr-all-paths utilizes a priority queue .
+the key in this queue is the connection strengths of intermediate paths .
+also , gr-all-paths stops if the stop conditions are met ( line 3 in figure 17 ) even if not all paths have been examined yet , whereas df-all-paths discovers all paths without skipping any paths .
+both algorithms look for u -- + v paths and start with the intermediate path consisting of just the source node u ( line 2 ) .
+they iterate until no intermediate paths are left under consideration ( line 3 ) .
+the algorithms extract the next intermediate path p to consider ( from the stack or queue ) ( line 4 ) .
+if p is a u -- + v path , then p is added to the answer set a and algorithm proceeds to line 3 ( lines 56 ) .
+if p is not a u -- + v path and the length of p is less than l , then the expand-path procedure is called for path p ( lines 78 ) .
+the expand-path procedure first determines the last node x of the intermediate path p = u -- + x .
+it then analyzes each direct neighbor z of node x and if path p ^ z is a legal paths , then it inserts this path into the stack ( or queue ) for further consideration .
+the stopcondition ( ) procedure in line 3 of gr-all-paths algorithm allows to fine-tune when to stop the greedy algorithm .
+using this procedure , it is possible to restrict the execution time and space required by gr-all-paths .
+for example , gr-all-paths can limit the total number of times line 4 is executed ( the number of intermediate paths examined ) , the total number of times line 8 is executed , the maximum number of paths in a and so on .
+gr-all-paths achieves that by maintaining auxiliary statistic ( count ) variables that account for the number of times line 4 is executed so far and other parameters .
+then stopcondition ( ) simply check whether those statistic variables still satisfy the predefined constraints , and if not , gr-all-paths will stop looking for new paths and it will output the paths discovered so far as its result .
+thus , gr-all-paths discovers most important paths first and least important paths last and can be stopped at a certain point whereas df-all-paths discovers all paths . 5.3.2 paths storage .
+when looking for all l-short simple u-v paths , all- paths maintains several intermediate paths .
+to store paths compactly and efficiently , it uses a data structure called a paths storage .
+df-all-paths and grall-paths procedures actually operates with pointers to paths while the paths themselves are stored in the paths storage .
+each path is stored as a list , in reverse order .
+the paths storage is organized as a set of overlapping lists as follows .
+since all of the paths start from u , many of them share common prefix .
+this gives an opportunity to save space .
+for example , to store paths shown in figure 18 , it is not necessary to keep four separate lists shown in figure 19 of lengths 2 , 3 , 4 , and 4 , respectively .
+it is more efficient to store them as shown in figure 20 where the combined length of the lists is just 8 nodes ( versus 13 nodes when keeping separate lists ) .
+this storage is also efficient because the algorithm always knows where to find the right prefix in the storageit does not need to scan the paths storage to find the right prefix .
+this is because when the algorithm creates a new intermediate path p ^ z , the following holds : comparing complexity of greedy and depth-first implementations .
+let us analyze complexity of the depth-first and greedy implementations of all- paths procedure .
+the df-all-paths and gr-all-paths procedures in figures 16 and 17 are conceptually different only in lines 2 and 3 of all-paths and in line 4 of expand-paths .
+the stopcondition procedure in line 3 allows to fine- tune when to stop the greedy algorithm and determines the complexity of grreldc .
+but we will analyze only the differences in complexity which arise due to df-reldc using a stack and gr-reldc using a priority queue .
+that is , we will assume stopcondition always returns false .
+for a stack , push and pop procedure take o ( 1 ) time .
+if n is the size of a priority queue , each get and insert procedures take o ( lg n ) time [ cormen et al. 2001 ] .
+therefore , it takes o ( 1 ) time to process lines 48 of df-all-paths and it takes o ( lg n ) to process the same lines 48 of df-all-paths where n is the current size of the priority queue .
+also it take o ( degree ( x ) ) time to execute dfexpand-path procedure and it takes o ( degree ( x ) lg ( n + degree ( x ) ) to execute gr-expand-path procedure .
+thus , if the goal is to discover all l-short simple paths without skipping any paths , then the df-all-paths is expected to show better results than gr-allpaths .
+however , since the greedy version discovers the most important path first , it is a better choice in terms of the accuracy versus performance trade-off than its depth-first counterpart .
+therefore , the greedy version is expected to be better if the execution time of the algorithm needs to be constrained .
+nbh optimization .
+the nbh optimization is the most important performance optimization presented in this article .
+it consistently achieves 12 orders of magnitude performance improvement under variety of conditions .
+the neighbo , hood nk ( v ) of node v of radius k is the set of all the nodes that are reachable from v via at most k edges .
+each member of the set is tagged with the minimum distance to v information .
+that is , for graph g = ( v , e ) the neighborhood of node v of radius k is defined as the following set of pairs : nk ( v ) = { ( u , d ) : u ^ v , d = mindist ( u , v ) , d ^ k } .
+when resolving references of entity x , , the algorithm first computes the neighborhood nk ( x , ) of x , of radius k , where k ^ l , see figure 21 .
+the neighborhood is computed only once per each distinct x , and discarded after x , is processed .
+there are two factors responsible for the speedup achieved by the nbh optimization : this will allow pruning certain paths using the nbh optimization .
+the prunepath-nbh ( p , nk ( v ) ) procedure is provided in figure 22 .
+it takes advantage of nk ( v ) to decide whether a given intermediate path p = u -- + x can be pruned .
+first , it determines the length m of path p .
+if m is such that ( m + k ) < l , then it cannot prune p , so it returns false .
+however , if ( m + k ) ^ l , then x must be inside nk ( v ) .
+if it is not inside , then path p is pruned , because there cannot be an l-short path u p ~ x p1 ~ v for any path p1 : x p1 ~ v. if x is inside nk ( v ) , then the procedure retrieves from nk ( v ) the minimum distance d from x to v. this distance d should be such that ( m + d ) ^ l : otherwise path p is pruned .
+the nbh optimization can be improved further .
+let us first define the actual radius of neighborhood nk ( v ) : kact = maxu : ( u , d ) ^ nk ( v ) mindist ( u , v ) .
+while usually kact = k , sometimes10 kact < k .
+the latter happens when nodes from the neighborhood of v and their incident edges form a cluster which is not connected to the rest of the graph or when this cluster is the whole graph .
+in this situation nkact ( v ) = nf ( v ) for any f = kact , kact + 1 , ... , ^ .
+in other words , when kact < k , we know the neighborhood of v of radius k = ^ .
+regarding prunepath-nbh , this means that all intermediate nodes must always be inside the according neighborhood .
+this further improvement is reflected in line 2 of the prune-path-nbh procedure in figure 22 .
+storing discovered paths explicitly .
+once the paths are discovered on the first iteration of it-reldc , they can be exploited for speeding up the subsequent iterations when those paths need to be rediscovered again .
+one solution would be to store such paths explicitly .
+after paths are stored , the subsequent iterations do not rediscover them , but rather work with the stored paths .
+next , we present several techniques that reduce the storage overhead of storing paths explicitly .
+path compression .
+we store paths because we need to recompute the connection strengths of those paths ( on subsequent iterations ) , which can change as weights of option-edges change .
+one way of compressing path information is to find fixed-weight paths .
+fixed-weight paths are paths the connection strength of which will not change because it does not depend on any other system variables that can change .
+rather than storing a path itself , it is more efficient to store the ( fixed ) connection strength of that path , which , in turn , can be aggregated with other fixed connection strengths .
+for wm model , a path connection strength is guaranteed to be fixed if none of the intermediate or source nodes on the path are incident to an option-edge ( the weight of which might change ) .
+storing graph instead of paths .
+instead of storing paths one by one , it is more space efficient to store the connection subgraphs .
+the set of all l-short simple paths pl ( u , v ) between nodes u and v defines the connection subgraph g ( u , v ) between u and v. storing g ( u , v ) is more efficient because in pl ( u , v ) some of the nodes can be repeated several times , whereas in g ( u , v ) each node occurs only once .
+notice , when we store pl ( u , v ) or g ( u , v ) , we store only nodes : edges need not be stored since they can be restored from the original graph g. there is a price to pay for storing only g ( u , v ) : the paths need to be rediscovered .
+however , this rediscovering happens in a small subgraph g ( u , v ) instead of the whole graph g. miscellaneous implementation issues .
+compatibility of implementations .
+in general , it is possible to combine various implementations and optimizations of reldc .
+for example , there can be an implementation of reldc that combines it-reldc , df-all-paths , nbh , and the optimization that stores paths .
+however , certain implementations and optimizations are mutually exclusive .
+let us note that there are some compatibility issues of gr-reldc with slreldc .
+notice , gr-reldc computes the connection strengths of intermediate paths .
+consequently , it must know weights of certain edges and , in general , it must know weights of option-edges .
+that is why lines 12 of the nave-slreldc procedure assign to option-edge weights some initial values . 5.6.2 preventing path rediscovering .
+since the all-paths algorithm is the bottleneck of the approach , once pl ( u , v ) is computed for given nodes u and v , it should not be recomputed later on again for the same u and v , neither as pl ( u , v ) nor as pl ( v , u ) .
+currently , this issue does not arise in our implementation of reldc due to a systematic way the processing is done .
+specifically , for the datasets being tested , when computing pl ( u , v ) , all us belong to one class of entities c1 ( e.g. , publications ) , and all vs belong to a different class c2 ( e.g. , authors ) .
+the algorithm first iterates over each entity u in c1 and then over each reference r in entity u .
+after u is processed , the algorithm never comes back to it on the same iteration , so that the issue mentioned above cannot arise .
+in general case , this issue can be handled by maintaining the set sp of all ( u , v ) pairs for which pl ( u , v ) is already computed by the algorithm .
+specifically , after computing pl ( u , v ) , if u.id < v.id , the algorithm should store ( u , v ) in sp , and , if u.id > v.id , it should store ( v , u ) in sp .
+here , u.id and v.id are unique identifiers of nodes u and v. to check whether pl ( u , v ) has already been discovered , the algorithm should check whether ( u , v ) pair ( if u.id < v.id ) , or ( v , u ) pair ( if u.id > v.id ) is in sp yet .
+this simple procedure will allow the algorithm to prevent rediscovering pl ( u , v ) multiple times , by performing a lookup in sp .
+let us clarify that the purpose of the above u.id < v.id comparisons is to make one lookup in sp , instead of two .
+computational complexity of reldc .
+let us analyze the computational complexity of nonoptimized it-reldc with gr-all-paths procedure .
+gr-all-paths procedure , provided in section 5.3 , discovers l-short simple u -- + v paths such that it finds paths with the highest connection strength first and with the lowest last .
+it achieves that by maintaining the current connection strength for intermediate paths and by using a priority queue to retrieve the best ( in terms of connection strength ) intermediate path to expand next .
+gr-all-paths ( u , v ) maintains the connection strength of intermediate paths , so a straightforward modification of this procedure can return not only the desired set of paths but also the value of c ( u , v ) .
+gr-all-paths has several thresholds that limit the number of nodes it can expand , the total number of edges it can examine , the length of each path , the total number of u -- + v paths it can discover , and the total number of all paths it can examine .
+those thresholds can be specified as constants , or as functions of iv i , ie i , and l. if they are constants , then the time and space complexity needed to compute c ( u , v ) is limited by constants ctime and cspace .
+assume that there are nref references that need to be disambiguated , where typically nref = o ( i v i ) .
+the average cardinality of their option sets is typically a constant , or o ( ivi ) .
+thus , it-reldc will need to compute c ( xr , yrj ) for at most o ( ivi2 ) pairs of ( xr , yrj ) per iteration .
+therefore , the time complexity of an iteration of it-reldc is o ( ivi2 ) multiplied by the complexity of the gr-all-paths procedure , plus the cost to construct all option sets using an fbs approach , which is at most o ( ivi2 ) .
+the space complexity is o ( i v i + i e i ) to store the graph plus the space complexity of one gr-all-paths procedure .
+experimental results .
+in this section we experimentally study reldc using two real ( publications and movies ) and synthetic datasets .
+reldc was implemented using c + + and snopt solver [ gams solvers 2005 ] .
+the system runs on a 1.7ghz pentium machine .
+we test and compare the following implementations of reldc : it-reldc vs. sl-reldc .
+the prefixes indicate whether the corresponding nlp problem discussed in section 4.3 is solved iteratively or using a solver .
+if none of those prefixes is specified , it-reldc is assumed by default .
+sl-reldc is applicable only to more restricted problems ( e.g. , smaller graphs and smaller values of l ) than it-reldc .
+sl-reldc is also slower than it-reldc .
+wm-reldc vs. pm-reldc .
+the prefixes indicate whether the weight- based model ( wm ) covered in section 4.1.3 , or the probabilistic model ( pm ) covered in the electronic appendix , has been utilized for computing connection strengths .
+by default , wm-reldc is assumed .
+df-reldc vs. gr-reldc .
+the prefixes specify whether the depth-first ( df ) or greedy ( gr ) implementation of all-paths is used .
+by default df-reldc is assumed .
+various optimizations of reldc can be turned on or off .
+by default , optimizations from section 5 are on .
+in each of the reldc implementations , the value of l used in computing the l-short simple paths is set to 7 by default .
+in this section , we will demonstrate that wm-df-it-reldc is on of the best implementations of reldc in terms of both accuracy and efficiency .
+that is why the bulk of our experiments use that implementation .
+case study 1 : the publications dataset .
+datasets .
+in this section , we will introduce realpub and synpub datasets .
+our experiments will solve author matching ( am ) problem , defined in section 2 , on these datasets .
+realpub dataset .
+realpub is a real data set constructed from two public- domain sources : citeseer [ citeseer 2005 ] and hpsearch [ homepagesearch 2005 ] .
+citeseer is a collection of information about research publication created by crawling the web .
+hpsearch is a collection of information about authors .
+hpsearch can be viewed as a set of ( id , authorname , department , organization ) tuples .
+that is , the affiliation consists of not just organization like in section 2 , but also of department .
+information stored in citeseer is in the same form as specified in section 2 , that is ( id , title , authorref1 , authorref 2 , ... , authorrefn ) per each paper , where each authorref reference is a one-attribute ( author name ) reference .
+tables ii and iii show sample content of two tables derived from citeseer and hpsearch based on which the corresponding entity-relationship graph is constructed for reldc .
+figure 23 shows a sample entity-relationship graph that corresponds to the information in those two tables .
+the various types of entities and relationships present in realpub are shown in table iv .
+realpub data consists of 4 types of entities : papers ( 176k ) , organizations ( 13k ) , and departments ( 25k ) .
+to avoid confusion , we use authorref for author names in paper entities and authorname for author names in author entities .
+there are 573k authorrefs in total .
+our experiments on realpub will explore the efficiency of reldc in resolving these references .
+to test reldc , we first constructed an entity-relationship graph g for the realpub database .
+each regular node in the graph corresponds to an entity of one of these types .
+if author a is affiliated with department d , then there is ( a , d ) edge in the graph .
+if department d is a part of organization u , then there is ( d , u ) edge .
+if paper p is written by author a , then there is ( a , p ) edge .
+for each of the 573k authorref references , feature-based similarity ( fbs ) was used to construct its option set .
+in the realpub data set , the paper entities refer to authors using only their names ( and not affiliations ) .
+this is because the paper entities are derived from the data available from citeseer , which did not directly contain information about the authors affiliation .
+as a result , only similarity of author names was used to initially construct the graph g. this similarity has been used to construct option sets for all authorref references .
+as the result , 86.9 % ( 498k ) of all authorref references had option set of size one and the corresponding papers and authors were linked directly .
+for the remaining 13.1 % ( 75k ) references , 75k choice nodes were created in the graph g. reldc was used to resolve these remaining references .
+the specific experiments conducted and results will be discussed later in the section .
+notice that the realpub data set allowed us to test reldc only under the condition that a majority of the references are already correctly resolved .
+to test robustness of the technique , we tested reldc over synthetic data sets where we could vary the uncertainty in the references from 0 to 100 % .
+synpub dataset .
+we have created two synthetic datasets synpub1 and synpub2 , which emulate realpub .
+the synthetic data sets were created since , for the realpub dataset , we do not have the true mapping between papers and the authors of those papers .
+without such a mapping , as will become clear when we describe experiments , testing for accuracy of reference disambiguation algorithm requires a manual effort ( and hence experiments can only validate the accuracy over small samples ) .
+in contrast , since in the synthetic data sets , the paper-author mapping is known in advance , accuracy of the approach can be tested over the entire data set .
+another advantage of the synpub dataset is that by varying certain parameters we can manually control the nature of this dataset allowing for the evaluation of all aspects of reldc under various conditions ( e.g. , varying level of ambiguity / uncertainty in the data set ) .
+both the synpub1 and synpub2 datasets contain 5000 papers , 1000 authors , 25 organizations and 125 departments .
+the average number of choice nodes that will be created to disambiguate the authorrefs is 15k ( notice , the whole realpub dataset has 75k choice nodes ) .
+the difference between synpub1 and synpub2 is that author names are constructed differently as will be explained shortly .
+accuracy experiments .
+in the context , accuracy is defined as the fraction of all authorref references that are resolved correctly .
+this definition includes the references that have option sets of cardinality 1 .
+in all figures in this section , the higher accuracy of reldc , compared to fbs , is the direct result of applying the cap principle , discussed in section 3.4 , to the dataset being processed .
+experiment 1 ( realpub : manually checking samples for accuracy ) .
+since the correct paper-author mapping is not available for realpub , it is infeasible to test the accuracy on this dataset .
+however , it is possible to find a portion of this paper-author mapping manually for a sample of realpub by going to authors web pages and examining their publications .
+we have applied reldc to realpub in order to test the effectiveness of analyzing relationships .
+to analyze the accuracy of the result , we concentrated only on the 13.1 % of uncertain authorref references .
+recall , the cardinality of the option set of each such reference is at least two .
+for 8 % of those references , there were no xr -- + yrj paths for all js , thus reldc used only fbs and not relationships .
+since we want to test the effectiveness of analyzing relationships , we remove those 8 % of references from further consideration as well .
+we then chose a random sample of 50 uncertain references that were still left under consideration .
+for this sample , we compared the reference disambiguation result produced by reldc with the true matches .
+the true matches for authorref references in those papers were computed manually .
+in this experiment , reldc was able to resolve all of the 50 sample references correctly !
+this outcome is , in reality , not very surprising since in the realpub data sets , the number of references that were ambiguous was only 13.1 % .
+our experiments over the synthetic data sets will show that reldc reaches very high disambiguation accuracy when the number of uncertain references is not very high .
+ideally , we would have liked to perform further accuracy tests over realpub by testing on larger samples : around 1 , 000 references should be tested to get an estimation of the accuracy within 3 % error interval and 95 % confidence .
+however , due to the time-consuming manual nature of this experiment , this was infeasible .
+instead , we next present another experiment that studies accuracy of reldc on the whole realpub .
+experiment 2 ( realpub : accuracy of identifying author first names ) .
+we conducted another experiment over the realpub data set to test the accuracy of reldc in disambiguating references .
+we first remove from realpub all the paper entities that have an authorref in format first initial + last name .
+this leaves only papers with authorrefs in format full first name + last name .
+then , we pretend we only know first initial + last name for those authorrefs .
+next , we run fbs and reldc and see whether or not they would disambiguate those authorrefs to authors whose full first names coincide with the original full first names .
+in this experiment , for 82 % of the authorrefs the cardinality of their option sets is 1 and there is nothing to resolve .
+for the rest 18 % the problem is more interesting : the cardinality of their option sets is at least 2 .
+figure 25 shows the outcome for those 18 % .
+notice that the reference disambiguation problem tested in the above experiment is of a limited nature .
+the tasks of identifying ( a ) the correct first name of the author and ( b ) the correct author , are not the same in general.11 nevertheless , the experiment allows us to test the accuracy of reldc over the entire database and does show the strength of the approach .
+let us compare experiments 1 and 2 .
+experiment 1 addresses the lack of the paper-author mapping by requiring laborious manual work and allows only testing on a sample of authors .
+experiment 2 does not suffer from those drawbacks .
+however , experiment 2 introduces substantial uncertainty to data by assuming that only the first initial instead of the full first name is available for each authorref .
+knowing the full first name in an authorref , instead of just the first initial , would have allowed to significantly narrow down the option set for this authorref and , thus , improve the accuracy of disambiguating this and , potentially , other references .
+to address the drawbacks of experiments 1 and 2 , we next study the approach on synthetic datasets .
+accuracy on synpub .
+the next set of experiments tests accuracy of reldc and fbs approaches on synpub dataset .
+reldc 100 % ( reldc 80 % ) means for 100 % ( 80 % ) of author entities the affiliation information is available .
+once again , paper entities do not have author affiliation attributes , so fbs cannot use affiliation , see table iv .
+thus , those 100 % and 80 % have no effect on the outcome of fbs .
+notation l = 4 means reldc explores paths of length no greater than 4 .
+experiment 3 ( accuracy on synpub1 ) .
+synpub1 uses uncertainty of type 1 defined as follows .
+there are nauth = 1000 unique authors in synpub1 , but 11that is , it is not enough to correctly identify that j. in j. smith corresponds to john if there are multiple john smiths in the dataset .
+comparing the reldc implementations .
+figure 27 shows that the accuracy results of wm-it-reldc , pm-it-reldc , wm-sl-reldc implementations are comparable , whereas figure 28 demonstrates that wm-it-reldc is the fastest among them .
+experiment 4 ( accuracy on synpub2 ) .
+synpub2 uses uncertainty of type 2 .
+in synpub2 , authornames ( in author entities ) are constructed such that the following holds , see table iv .
+if an authorref reference ( in a paper entity ) is in the format first name + last name then it matches only one ( correct ) author .
+but if it is in the format first initial + last name it matches exactly two authors .
+parameter unc2 is the fraction of authorrefs specified as first initial + last name .
+if unc2 = 0 , then there is no uncertainty and the accuracy of all methods is 1 .
+also notice that the case when unc2 = 1.0 is equivalent to unc1 = 2.0 .
+there is less uncertainty in experiment 4 than in experiment 3 .
+this is because for each author there is a chance that he is referenced to by his full name in some of his papers , so for these cases the paper-author associations are known with 100 % confidence .
+figure 29 shows the effect of unc2 on the accuracy of reldc .
+as in figure 26 , in figure 29 the accuracy decreases as uncertainty increases .
+however , this time the accuracy of reldc is much higher .
+the fact that curves for reldc 100 % and reldc 80 % are almost indiscernible until unc2 reaches 0.5 , shows that reldc relies less heavily on weak author affiliation relationships but rather on stronger connections via papers .
+other experiments .
+experiment 5 ( importance of relationships ) .
+figure 30 studies the effect of the number of relationships and the number of relationship types on the accuracy of reldc .
+when resolving authorrefs , reldc uses three types of relationships : ( 1 ) paper-author , ( 2 ) author-department , ( 3 ) department-organization .
+the affiliation relationships ( i.e. , ( 2 ) and ( 3 ) ) are derived from the affiliation information in author entities .
+the affiliation information is not always available for each author entity in realpub .
+in our synthetic datasets , we can manually vary the amount of available affiliation information .
+the x-axis shows the fraction p of author entities for which their affiliation is known .
+if p = 0 , then the affiliation relationships are eliminated completely and reldc has to rely solely on connections via paper-author relationships .
+if p = 1 , then the complete knowledge of author affiliations is available .
+figure 30 studies the effect of p on accuracy .
+the curves in this figure are for both synpub1 and synpub2 : unc1 = 1.75 , unc1 = 2.00 , and unc2 = 0.95 .
+the accuracy increases as p increases showing that reldc deals with newly available relationships well .
+experiment 6 ( longer paths ) .
+figure 31 examines the effect of path limit parameter l on the accuracy .
+for all the curves in the figure , the accuracy monotonically increases as l increases with the only one exception for reldc 100 % , unc1 = 2 and l = 8 .
+the usefulness of longer paths depends on the combination of other parameters .
+for synpub , l of 7 is a reasonable compromise between accuracy and efficiency .
+experiment 7 ( the neighborhood optimization ) .
+we have developed several optimizations that make reldc 12 orders of magnitude more efficient .
+figure 32 shows the effect of one of those optimizations , called nbh ( see section 5.4 ) , for subsets of 11k and 22k papers of citeseer .
+in this figure , the radius of neighborhood is varied from 0 to 8 .
+the radius of zero corresponds to the case where nbh is not used .
+figure 33 shows the speedup achieved by nbh optimization with respect to the case when nbh is off .
+the figure shows another positive aspect of nbh optimization : the speed up grows as the size of the dataset and l increase .
+experiment 8 ( efficiency of reldc ) .
+to show the applicability of reldc to a large dataset we have successfully applied it to clean realpub with l ranging from 2 up to 8 .
+figure 34 shows the execution time of reldc as a function of the fraction of papers from realpub dataset , for example , 1.0 corresponds to all papers in realpub ( the whole citeseer ) dataset .
+experiment 9 ( greedy vs. depth-first all-paths implementations ) .
+this experiment compares accuracy and performance of greedy and depth-first versions of reldc .
+the depth-first version discovers exhaustively all paths in a depth-first fashion .
+reldc has been heavily optimized and this discovery process is very efficient .
+the greedy implementation of all-paths discovers paths with the best connection strength first and with the worst last .
+this gives an opportunity to fine-tune in a meaningful way when to stop the algorithm by using various thresholds .
+those thresholds can limit , for example , not only path length but also the memory that all intermediate paths can occupy , the total number of paths that can be analyzed , and so on .
+figures 35 and 36 study the effect of nexp parameter on the accuracy and efficiency of gr-reldc and df-reldc .
+parameter nexp is the upper bound on the number of paths that can be extracted from the priority queue for gr-reldc .
+the all-paths part of gr-reldc stops if either nexp is exceeded or the priority queue is empty .
+the series in the experiment are obtained by varying : ( 1 ) df-reldc and grreldc , ( 2 ) path length limit l = 5 and l = 7 and ( 3 ) the amount of affiliation information 100 % and 80 % .
+since df-reldc does not use nexp parameter , all df-reldc curves are flat .
+let us analyze what behavior is expected from grreldc and then see if the figures corroborate it .
+we will always assume that path length is limited for both df-reldc and gr-reldc .
+if nexp is small , then gr-reldc should discover only a few paths and its accuracy should be close to that of fbs .
+if nexp is sufficiently large , then grreldc should discover the same paths as df-reldc .
+that is , we can compute m , j = | pl ( x , , y , j ) | , where | pl ( x , , y , j ) | is the number of paths in pl ( x , , y , j ) .
+then , if we choose nexp such that nexp ^ max , ,j ( m , j ) , then the set of all paths that grreldc will discover will be identical to that of df-reldc .
+thus , the accuracy of gr-reldc is expected to increase monotonically and then stabilize ( and be equal to the accuracy of df-reldc ) as nexp increases .
+the execution time of gr-reldc should increase monotonically and then stabilizes as well ( and be larger than the execution time of df-reldc after stabilizing ) .
+the curves in figures 35 and 36 behave as expected except for one surprise : when l = 5 , gr-reldc is actually faster than df-reldc .
+it is explained by the fact that when l = 5 , nbh optimization prunes very effectively many paths .
+that keeps the priority queue small .
+thus , the performance of df-reldc and gr-reldc becomes comparable .
+notice , in all of the experiments nbh optimization was turned on , because the efficiency of any implementation of reldc with nbh off is substantially worse than the efficiency of any implementation with nbh on .
+figure 37 combines figures 35 and 36 .
+it plots the achieved accuracy by dfreldc and gr-reldc when l = 5 and l = 7 as a function of time .
+using this figure , it is possible to perform a retrospective analysis of which implementation has shown the best accuracy when allowed to spend only at most certain amount of time t on the cleaning task .
+for example , in time interval [ 0 , 17.7 ) reldc cannot achieve better accuracy than fbs , so it is more efficient just to use fbs .
+in time interval [ 17.7 , 18.6 ) , it is better to use gr-reldc with l = 5 .
+if one is allowed to spend only [ 18.6 , 41 ) seconds , it is better to use gr-reldc with l = 5 for only 18.6 seconds .
+if you intend to spend between 41 and 76.7 seconds it is better to use gr-reldc with l = 7 .
+if you can spend 76.7 seconds or more , it is better to run df-reldc with l = 7 , which will terminate in 76.7 seconds .
+case study 2 : the movies dataset .
+dataset .
+realmov is a real public-domain movies dataset described in [ wiederhold 2005 ] , which has been made popular by the textbook [ garcia- molina et al. 2002 ] .
+unlike realpub dataset , in realmov all the needed correct mappings are known , so it is possible to test the disambiguation accuracy of various approaches more extensively .
+however , realmov dataset is much smaller , compared to realpub .
+realmov contains entities of three types : movies ( 11 , 453 entities ) , studios ( 992 entities ) , and people ( 22 , 121 entities ) .
+there are five types of relationships in the realmov dataset : actors , directors , producers , producingstudios , and distributingstudios .
+relationships actors , directors , and producers map entities of type movies to entities of type people .
+relationships producingstudios and distributingstudios map movies to studios .
+figure 38 illustrate a sample graph for realmov dataset , and figure 39 shows its e / r diagram .
+accuracy experiments .
+experiment 10 ( realmov : accuracy of disambiguating director references ) .
+in this experiment , we study the accuracy of disambiguating references from movies to directors of those movies .
+since in realmov each reference , including each director reference , already points directly to the right match , we artificially introduce ambiguity in the references manually .
+similar approach to testing data cleaning algorithms have also been commonly used by other researchers , for example , in singla and domingos [ 2004 ] and chaudhuri et al. [ 2003 ] .
+given the specifics of our problem , to study the accuracy of reldc , we will simulate that we used fbs to determine the option set of each reference but fbs was uncertain in some of the cases .
+to achieve that , we first choose a fraction p of director references ( that will be uncertain ) .
+for each reference in this fraction , we will simulate that fbs part of reldc has done its best but still was uncertain as follows .
+each director reference from this fraction is assigned a option set of n people .
+one of those people is the true director , the rest ( n ^ 1 ) are chosen randomly from the set of people entities .
+figure 40 is similar to figure 41 but n is always 2 .
+the figures show that reldc achieves better accuracy than fbs .
+the accuracy is 1.0 when p = 0 , since all references are linked directly .
+the accuracy decreases almost linearly as p increases to 1 .
+when p = 1 , the cardinality of the option set of each reference is at least 2 .
+the larger the value of l , the better the results .
+the accuracy of reldc improves significantly as l increases from 3 to 4 .
+related work .
+in recent years the data-cleaning challenge has attracted numerous efforts both in the industry as well as academia [ raedt et al. 2001 ; getoor 2001 ; cohen and richman 2002 ; monge and elkan 1996 ; gravano et al. 2001 ; verykios et al. 2003 ; christen et al. 2002 ; cohen 1998 ; sarawagi and bhamidipaty 2002 ; ristad and yianilos 1998 ; cohen et al. 2003 ] .
+in this section , we present an overview of the existing work most related to the reldc approach proposed in this article .
+we will classify data-cleaning approaches along three dimensions .
+the first dimension is the type of data-cleaning problem a particular approach solves .
+many types of data-cleaning problems have been identified and explored in the literature : dealing with missing data [ little and rubin 1986 ] , handling erroneous data [ maletic and marcus 2000 ] , disambiguation and entity resolution [ ananthakrishna et al. 2002 ] etc .
+this article focuses on one of the disambiguation problems , called reference disambiguation .
+in general , there are many variations of disambiguation problems studied by various research communities , such as record linkage [ fellegi and sunter 1969 ; lee et al. 1999 ; monge and elkan 1997 ; jaro 1989 , 1995 ] , reference matching [ mccallum et al. 2000 ] , object identification [ tejada et al. 2002 ] , identity uncertainty [ pasula et al. 2002 ] , name disambiguation [ li et al. 2004 ; malin 2005 ] , reference reconciliation [ dong et al. 2005 ] , and so on ; though sometimes different names are used for virtually identical problems .
+in the general setting of the problem , the dataset contains information about the set of objects o = { o1 , o2 , ... , on } .
+the objects in the dataset are represented by the set of their descriptions r = { r1 , r2 , ... , rm } , where m ^ n , such that each object is represented by one or more descriptions .
+the subtle differences among the various disambiguation challenges arise because different types of extra information about r and o can be available in each particular problem .
+the most studied disambiguation challenges include : reference disambiguation .
+the problem of reference disambiguation [ kalashnikov et al. 2005 ] , which is also known as fuzzy match [ chaudhuri et al. 2003 ] , assumes that some information about each object in o is available and the goal is for each reference ri ^ r to identify the object oj ^ o to which it refers .
+object consolidation .
+in object consolidation [ mccallum and wellner 2003 ] it is assumed that very limited information is available about o. the goal is to correctly group the representations in r that refer to the same object .
+record linkage .
+the problem of record linkage is similar to the problem of object consolidation .
+unlike object consolidation , which deals with objects , record linkage deals with lower-level representation of informationrecords in one or more tables .
+the goal is to identify duplicate records in the database .
+a record , in general , does not have to represent an object from o. each record has the same fixed set of attributes .
+it is often assumed that each record has many attributes , which can be very effectively employed for de-duplication .
+in contrast , in object consolidation often only a few attributes can be available , making the problem more complex [ dong et al. 2005 ] .
+the second dimension we use to classify data-cleaning methods is whether a given method employs the standard fbs approach or a more advanced technique .
+the difference between them will be covered in sections 7.1 and 7.2 .
+finally , an approach can be domain-specific or domain-independent .
+let us note that it can be hard to draw a line between domain-specific and domain- independent data-cleaning techniques .
+in distinguishing between domain independent and dependent techniques , we will follow the classification developed in chaudhuri et al. [ 2005 ] where the authors define domain-specific approaches as those where the analyst , supervising the cleaning process , has to handcraft rules and logic for cleaning , which are applicable only to the specific domain .
+let us note that many of the prevalent industrial solutions for data cleaning by companies such as trillium , vality , firstlogic , dataflux are domain specific .
+in this section , we focus instead on domain-independent techniques , since they are more directly related to our work .
+we note that in the reldc project , we have taken an even more stringent definition of domain-independence than suggested by chaudhuri et al. [ 2005 ] .
+in our view , a domain-independent solution should be such that ( a ) it can be incorporated into a real dbms , ( b ) be applicable to different types of dataset , ( c ) scale to datasets of reasonable size , and ( d ) require minimum participation from the analyst so that even regular ( nonexpert ) database users can use it .
+those have been the guiding principles in designing reldc .
+to fully achieve this goal , our ongoing work [ kalashnikov and mehrotra 2004 ] studies the issue of learning connection strength models directly from data .
+traditional fbs methods .
+many domain-independent fbs-based techniques for data cleaning have been proposed in the literature , including newcombe et al. [ 1959 ] , fellegi and sunter [ 1969 ] , hernandez and stolfo [ 1995 ] , ananthakrishna et al. [ 2002 ] , mccallum et al. [ 2000 ] , and winkler [ 1994 , 1999 ] .
+their work can be viewed as addressing two challenges : ( 1 ) improving similarity function , as in bilenko and mooney [ 2003 ] ; and ( 2 ) improving efficiency of linkage , as in chaudhuri et al. [ 2003 ] .
+typically , two-level similarity functions are employed to compare two records .
+first , such a function computes attribute-level similarities by comparing values in the same attributes of two records .
+next , the function combines the attribute- level similarity measures to compute the overall similarity of two records .
+a recent trend has been to employ machine learning techniques , for example , svm , to learn the best similarity function for a given domain [ bilenko and mooney 2003 ] .
+many techniques have been proposed to address the efficiency challenge as well : for example , using specialized indexes [ chaudhuri et al. 2003 ] , sortings , etc .
+methods that go beyond fbs .
+the domain-independent techniques mentioned above deal only with attributes .
+a number of data-cleaning techniques have been developed recently that go beyond the traditional fbs approaches .
+in particular , many of them in addition to attributes / features , can also take into account so-called context attributes , or attributes derived from the context .
+for example , ananthakrishna et al. [ 2002 ] employ similarity of directly linked entities , for the case of hierarchical relationships , to solve the record de-duplication challenge .
+the example the authors consider is as follows : two records united states and usa might have similar context attributes ca , in , mo while the records canada and usa do not have the same context attributes .
+this fact might suggest that united states and usa are duplicates whereas canada and usa are not .
+let us note that there is no straightforward way to apply this technique to clean author-references in publications .
+for example , if we were to apply that technique , author-references should play the role of countries , for example , united states , and publications will play the role of context attributes , for example , states .
+first , the relationship author-writespaper is not a hierarchical relationship .
+second , there are no duplicate papers .
+the latter means if for two author-references their context attributes match , then the two authors are merely co-authors of the same paper , but they are not the same person and must not be de-duplicated .
+therefore , such context attributes are of little value in our case and the approach in ananthakrishna et al. [ 2002 ] cannot perform better than fbs methods on our datasets .
+bhattacharya and getoor [ 2004 ] propose an interesting object consolidation approach that is related to ananthakrishna et al. [ 2002 ] , but does not limit itself to hierarchical relationships only .
+lee et al. [ 2004 ] develop an association rule mining based method to disambiguate references using similarity of the context attributes .
+the proposed technique is still an fbs method , but the paper discusses concept hierarchies , which are related to relationships .
+in their approach , the authors rely on more information / attributes than is available in our datasets and the exact hierarchies they employ are not yet available to others for testing purposes .
+overall , however , this is a very promising data-cleaning approach in our view , especially if it is enhanced to make it less analyst dependent .
+cohen et al. [ 2000 ] the authors study the problem of hardening soft databases , which is related to the problem of object consolidation .
+while that work does not consider relationships , it is similar to reldc as it also attempts to find an optimal global solution , rather than using a local approach , such as merging references one by one .
+specifically , the authors try to determine what is the most likely hard database , that corresponds to a particular soft database , under the assumptions of their model .
+the authors prove that the task of finding such a hard database is np-hard , and instead propose a priority-queue-based algorithm .
+however , the empirical evaluation , model calibration and many implementation details are amiss in cohen et al. [ 2000 ] , making it hard to compare against other object consolidation techniques , such as chen et al. [ 2005 ] .
+in pasula et al. [ 2002 ] , the authors study the problem of identity uncertainty ( object consolidation , fuzzy grouping ) and specifically its application to the problem of citation matching .
+the approach builds on a relational probability model and is capable of simultaneous reasoning about various types of references .
+the authors demonstrate , on datasets consisting of 300 publications , that the approach achieves high disambiguation quality .
+unlike reldc and many other data-cleaning methods , the approach in pasula et al. [ 2002 ] is analyst-dependent and rather complex for a regular user [ singla and domingos 2004 ; mccallum and wellner 2004 ] , as it requires an analyst ( an expert user ) with deep understanding of the approach , probabilistic modeling , and nature / aspects of many components of the domain .
+the analyst should be able to model all the dependencies in the dataset and be capable of identifying the right external datasets / sources for model calibration .
+the authors suggest that scaling up the approach to 300 publications is a challenge since it employs the mcmc algorithm and discuss a way to improve the efficiency .
+however , the efficiency of the approach is not evaluated empirically .
+in singla and domingos [ 2004 ] , mccallum and wellner [ 2004 ] , and dong et al. [ 2005 ] the authors propose relational object consolidation techniques where pair-wise matching decisions are not made independently , but rather a decision of whether given attributes match , or do not match , can further trigger similar decisions about more attributes , which ultimately leads to grouping or not grouping of various object representations .
+the authors demonstrate that such an approach leads to better consolidation quality , compared to the standard approach , where the pair-wise matching decisions are made independently .
+another interesting solution is proposed in li et al. [ 2004 ] , where the authors study the problem of robust reading a natural language problem that corresponds to the problem of object consolidation and fuzzy grouping in database research .
+the authors show that grouping documents originated in about the same time period and analyzing co-occurrences of mentions of locations and organizations , found in the documents , can improve the quality of object consolidation , across those documents .
+reldc approach .
+to better distinguish reldc from other related work , we next review some of its pertinent aspects .
+reldc has been first publicly released in kalashnikov and mehrotra [ 2003 ] as a domain-independent data-cleaning framework that employs analysis of interobject relationships to achieve better quality of the result .
+reldc enhances , but does not substitute , the traditional domain-independent fbs methods , as it applies an analysis of relationships only to the cases which fbs methods cannot resolve with high confidence .
+this article concentrates on one data-cleaning challenge , known as reference disambiguation or fuzzy lookup .
+in chen et al. [ 2005 ] we have applied similar techniques to another related data-cleaning challenge , known as object consolidation .
+relationships .
+reldc is based specifically on analyzing inter-object ( chains of ) relationships , where relationships has the same definition as in the standard e / r model [ garcia-molina et al. 2002 ] .
+there is a difference between what is known as relational approaches , such as singla and domingos [ 2004 ] , and techniques that analyze interobject relationships for data-cleaning , such as reldc .
+relational data-cleaning techniques are those , which take into account the dependence among multiple co-reference decisions [ singla and domingos 2004 ; mccallum and wellner 2004 ] .
+for example , in a relational approach the analyst can specify a rule that if a pair of attributes co-refer , then another pair of attributes must co-refer as well .
+in general , relational techniques are different from techniques that analyze interobject relationships .
+scalability .
+the problem of data-cleaning is treated by the database research community as an applied practical problem .
+a thorough empirical evaluation of the proposed solution is a must , and the authors are expected to demonstrate that their solution is efficient ( i.e. , scales ) and achieves high cleaning quality for datasets of reasonable size .
+that is why significant effort , and significant portion of this article , has been devoted to the scalability issues of reldc .
+let us note that various communities study problems closely related to data-cleaning .
+a number of interesting and involved techniques have been designed to address those problems .
+however , in contrast to data-cleaning , scalability is not always considered to be an important issue there .
+as a result , scaling those techniques to even small datasets , found in data-cleaning , is often a nontrivial challenge [ pasula et al. 2002 ] , or the authors do not evaluate their solutions empirically at all [ cohen et al. 2000 ] .
+weaknesses of reldc .
+reldc relies on a all-paths procedure , which is computationally expensive and the absolute bottleneck of the approach .
+consequently , the efficiency of reldc will strongly depend on how well this procedure is implemented and optimized in a particular dbms system .
+other related work .
+finally , let us conclude this section by summarizing related work , which does not deal with the problem of data-cleaning directly .
+in bhalotia et al. [ 2002 ] , the authors propose a system called banks ( browsing and keyword searching ) for keyword-based search on relational databases , together with data and schema browsing .
+while the heuristic algorithm proposed in that paper does not deal with data-cleaning , it has many similarities with the reldc approach .
+for instance , the approach in bhalotia et al. [ 2002 ] models the database as a directed graph .
+conceptually , the graph is similar ( but different ) to the undirected graph employed by reldc .
+like reldc , the banks algorithm also weighs edges for computing the proximity through links : a measure related to the connection strength measure , employed by reldc .
+finally , similar to reldc , banks is also a domain-independent approach , the way we defined it above .
+another related work is on similarity joins [ cohen and lewis 1999 ; kalashnikov and prabhakar 2003 , 2006 ] , as reldc essentially performs a similarity join when constructing the choice sets for all references .
+in addition cohen and lewis [ 1999 ] covers several other related concepts , such as random walks in graphs .
+conclusion .
+in this article , we have shown that analysis of interobject relationships allows to significantly improve the quality of reference disambiguation .
+we have developed a domain-independent approach , called reldc , which combines traditional feature-based similarity techniques with techniques that analyze relationships for the purpose of reference disambiguation .
+to analyze relationships , reldc views the database as the corresponding entity-relationship graph and then utilizes graph theoretic techniques to analyze paths that exist between nodes in the graph , which corresponds to analyzing chains of relationships between entities .
+two models have been developed to analyze the connection strength in the discovered paths .
+several optimizations of reldc have been presented to scale the approach to large datasets .
+the extensive empirical evaluation of the approach has demonstrated that reldc improves the quality of reference disambiguation beyond the traditional techniques .
+this article demonstrated the usefulness of analyzing relationships for one data-cleaning challenge known as the reference disambiguation or fuzzy lookup .
+in chen et al. [ 2005 ] , we have applied similar techniques to the problem of object consolidation .
+our ongoing work [ kalashnikov and mehrotra 2004 ] addresses the challenge of automatically adapting the proposed data-cleaning techniques to datasets at hand , by learning how to weigh different connections directly from data , in an automated fashion .
+solving this challenge , in general , can not only make the approach a plug-and-play solution , but also can improve both the accuracy and efficiency of the approach , as discussed in kalashnikov and mehrotra [ 2004 ] .

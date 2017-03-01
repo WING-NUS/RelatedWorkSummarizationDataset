@@ -1,0 +1,223 @@
+a comparative study on feature selection in text categorization .
+abstract .
+this paper is a comparative study of feature selection methods in statistical learning of text categorization .
+the focus is on aggressive dimensionality reduction .
+five methods were evaluated , including term selection based on document frequency ( df ) , information gain ( ig ) , mutual information ( mi ) , a xz-test ( chi ) , and term strength ( ts ) .
+we found ig and chi most effective in our experiments .
+using ig thresholding with a k- nearest neighbor classifier on the reuters corpus , removal of up to 98 % removal of unique terms actually yielded an improved classification accuracy ( measured by average precision ) .
+df thresholding performed similarly .
+indeed we found strong correlations between the df , ig and chi values of a term .
+this suggests that df thresholding , the simplest method with the lowest cost in computation , can be reliably used instead of ig or chi when the computation of these measures are too expensive .
+ts compares favorably with the other methods with up to 50 % vocabulary reduction but is not competitive at higher vocabulary reduction levels .
+in contrast , mi had relatively poor performance due to its bias towards favoring rare terms , and its sensitivity to probability estimation errors .
+introduction .
+text categorization is the problem of automatically assigning predefined categories to free text documents .
+while more and more textual information is available online , effective retrieval is difficult without good indexing and summarization of document content .
+documents categorization is one solution to this problem .
+a growing number of statistical classification methods and machine learning techniques have been applied to text categorization in recent years , including multivariate regression models [ 8 , 27 ] , nearest neighbor classification [ 4 , 23 ] , bayes probabilistic approaches [ 20 , 13 ] , decision trees [ 13 ] , neural networks [ 21 ] , symbolic rule learning [ 1 , 16 , 3 ] and inductive learning algorithms [ 3 , 12 ] .
+a major characteristic , or difficulty , of text categorization problems is the high dimensionality of the feature space .
+the native feature space consists of the unique terms ( words or phrases ) that occur in documents , which can be tens or hundreds of thousands of terms for even a moderate-sized text collection .
+this is prohibitively high for many learning algorithms .
+few neural networks , for example , can handle such a large number of input nodes .
+bayes belief models , as another example , will be computationally intractable unless an independence assumption ( often not true ) among features is imposed .
+it is highly desirable to reduce the native space without sacrificing categorization accuracy .
+it is also desirable to achieve such a goal automatically , i.e. , no manual definition or construction of features is required .
+automatic feature selection methods include the removal of non-informative terms according to corpus statistics , and the construction of new features which combine lower level features ( i.e. , terms ) into higher- level orthogonal dimensions .
+lewis & ringuette [ 13 ] used an information gain measure to aggressively reduce the document vocabulary in a naive bayes model and a decision-tree approach to binary classification .
+wiener et al. [ 21 , 19 ] used mutual information and a x2 statistic to select features for input to neural networks .
+yang [ 24 ] and schutze et al. [ 19 , 21 , 19 ] used principal component analysis to find orthogonal dimensions in the vector space of documents .
+yang & wilbur [ 28 ] used document clustering techniques to estimate probabilistic " term strength " , and used it to reduce the variables in linear regression and nearest neighbor classification .
+moulinier et al. [ 16 ] used an inductive learning algorithm to obtain features in disjunctive normal form for news story categorization .
+lang [ 11 ] used a minimum description length principle to select terms for netnews categorization .
+while many feature selection techniques have been tried , thorough evaluations are rarely carried out for large text categorization problems .
+this is due in part to the fact that many learning algorithms do not scale to a high-dimensional feature space .
+that is , if a classifier can only be tested on a small subset of the native space , one cannot use it to evaluate the full range of potential of feature selection methods .
+a recent theoretical comparison , for example , was based on the performance of decision tree algorithms in solving problems with 6 to 180 features in the native space [ 10 ] .
+an analysis on this scale is distant from the realities of text categorization .
+the focus in this paper is the evaluation and comparison of feature selection methods in the reduction of a high dimensional feature space in text categorization problems .
+we use two classifiers which have already scaled to a target space with thousands or tens of thousands of categories .
+we seek answers to the following questions with empirical evidence : what are the strengths and weaknesses of existing feature selection methods applied to text categorization ?
+to what extend can feature selection improve the accuracy of a classifier ?
+how much of the document vocabulary can be reduced without losing useful information in category prediction ?
+section 2 describes the term selection methods .
+due to space limitations , we will not include phrase selection ( e.g. [ 3 ] ) and approaches based on principal component analysis [ 5 , 24 , 21 , 19 ] .
+section 3 describes the classifiers and the document corpus chosen for empirical validation .
+section 4 presents the experiments and the results .
+section 5 discusses the major findings .
+section 6 summarizes the conclusions .
+feature selection methods .
+five methods are included in this study , each of which uses a term-goodness criterion thresholded to achieve a desired degree of term elimination from the full vocabulary of a document corpus .
+these criteria are : document frequency ( df ) , information gain ( ig ) , mutual information ( mi ) , a xz statistic ( chi ) , and term strength ( ts ) .
+document frequency thresholding ( df ) .
+document frequency is the number of documents in which a term occurs .
+we computed the document frequency for each unique term in the training corpus and removed from the feature space those terms whose document frequency was less than some predetermined threshold .
+the basic assumption is that rare terms are either non-informative for category prediction , or not influential in global performance .
+in either case removal of rare terms reduces the dimensionality of the feature space .
+improvement in categorization accuracy is also possible if rare terms happen to be noise terms .
+df thresholding is the simplest technique for vocabulary reduction .
+it easily scales to very large corpora , with a computational complexity approximately linear in the number of training documents .
+however , it is usually considered an ad hoc approach to improve efficiency , not a principled criterion for selecting predictive features .
+also , df is typically not used for aggressive term removal because of a widely received assumption in information retrieval .
+that is , low-df terms are assumed to be relatively informative and therefore should not be removed aggressively .
+we will re-examine this assumption with respect to text categorization tasks .
+information gain ( ig ) .
+information gain is frequently employed as a term- goodness criterion in the field of machine learning [ 17 , 14 ] .
+it measures the number of bits of information obtained for category prediction by knowing the presence or absence of a term in a document .
+let { ci } mi = 1 denote the set of categories in the target space .
+this definition is more general than the one employed in binary classification models [ 13 , 16 ] .
+we use the more general form because text categorization problems usually have a m-ary category space ( where m may be up to tens of thousands ) , and we need to measure the goodness of a term globally with respect to all categories on average .
+given a training corpus , for each unique term we computed the information gain , and removed from the feature space those terms whose information gain was less than some predetermined threshold .
+the computation includes the estimation of the conditional probabilities of a category given a term , and the entropy computations in the definition .
+the probability estimation has a time complexity of o ( n ) and a space complexity of o ( vn ) where n is the number of training documents , and v is the vocabulary size .
+the entropy computations has a time complexity of o ( vm ) .
+mutual information ( mi ) .
+mutual information is a criterion commonly used in statistical language modelling of word associations and related applications [ 7 , 2 , 21 ] .
+to measure the goodness of a term in a global feature selection , we combine the category- specific scores of a term into two alternate ways : the mi computation has a time complexity of o ( vm ) , similar to the ig computation .
+a weakness of mutual information is that the score is strongly influenced by the marginal probabilities of terms , as can be seen in this equivalent form : for terms with an equal conditional probability pr ( t1c ) , rare terms will have a higher score than common terms .
+the scores , therefore , are not comparable across terms of widely differing frequency .
+the x2 statistic measures the lack of independence between t and c and can be compared to the x2 distribution with one degree of freedom to judge extremeness .
+using the two-way contingency table of a term t and a category c , where a is the number of times t and c co-occur , b is the number of time the t occurs without c , c is the number of times c occurs without t , d is the number of times neither c nor t occurs , and n is the total number of documents , the term-goodness measure is defined to be : the x2 statistic has a natural value of zero if t and c are independent .
+we computed for each category the x2 statistic between each unique term in a training corpus and that category , and then combined the category- specific scores of each term into two scores : the computation of chi scores has a quadratic complexity , similar to mi and ig .
+a major difference between chi and mi is that x2 is a normalized value , and hence x2 values are comparable across terms for the same category .
+however , this normalization breaks down ( can no longer be accurately compared to the x2 distribution ) if any cell in the contingency table is lightly populated , which is the case for low frequency terms .
+hence , the x2 statistic is known not to be reliable for low-frequency terms [ 6 ] .
+term strength ( ts ) .
+term strength is originally proposed and evaluated by wilbur and sirotkin [ 22 ] for vocabulary reduction in text retrieval , and later applied by yang and wilbur to text categorization [ 24 , 28 ] .
+this method estimates term importance based on how commonly a term is likely to appear in " closely-related " documents .
+it uses a training set of documents to derive document pairs whose similarity ( measured using the cosine value of the two document vectors ) is above a threshold .
+" term strength " then is computed based on the estimated conditional probability that a term occurs in the second half of a pair of related documents given that it occurs in the first half .
+let x and y be an arbitrary pair of distinct but related documents , and t be a term , then the strength of the term is defined to be : the term strength criterion is radically different from the ones mentioned earlier .
+it is based on document clustering , assuming that documents with many shared words are related , and that terms in the heavily overlapping area of related documents are relatively informative .
+this method is not task-specific , i.e. , it does not use information about term-category associations .
+in this sense , it is similar to the df criterion , but different from the ig , mi and the x2 statistic .
+a parameter in the ts calculation is the threshold on document similarity values .
+that is , how close two documents must be to be considered a related pair .
+we use arel , the average number of related documents per document in threshold tuning .
+that is , we compute the similarity scores of all the documents in a training set , try different thresholds on the similarity values of document pairs , and then choose the threshold which results in a reasonable value of arel .
+the value of arel is chosen experimentally , according to how well it optimized the performance in the task .
+according to previous evaluations of retrieval and categorization on several document collections [ 22 , 28 ] , the arel values between 10 to 20 yield satisfactory performance .
+the computation of ts is quadratic in the number of training documents .
+classifiers and data .
+classifiers .
+to assess the effectiveness of feature selection methods we used two different m-ary classifiers , a knearest-neighbor classifier ( knn ) [ 23 ] and a regression method named the linear least squares fit mapping ( llsf ) [ 27 ] .
+the input to both systems is a document which is represented as a sparse vector of word weights , and the output of these systems is a ranked list of categories with a confidence score for each category .
+category ranking in knn is based on the categories assigned to the k nearest training documents to the input .
+the categories of these neighbors are weighted using the similarity of each neighbor to the input , where the similarity is measured by the cosine between the two document vectors .
+if one category belongs to multiple neighbors , then the sum of the similarity scores of these neighbors is the the weight of the category in the output .
+category ranking in the llsf method is based on a regression model using words in a document to predict weights of categories .
+the regression coefficients are determined by solving a least squares fit of the mapping from training documents to training categories .
+several properties of knn and llsf make them suitable for our experiments : both systems are top-performing , state-of-the-art classifiers .
+in a recent evaluation of classification methods [ 26 ] on the reuters newswire collection ( next section ) , the break-even point values were 85 % for both knn and llsf , outperforming all the other systems evaluated on the same collection , including symbolic rule learning by ripper ( 80 % ) [ 3 ] , swap- 1 ( 79 % ) [ 1 ] and charade ( 78 % ) [ 16 ] , a decision approach using c4.5 ( 79 % ) [ 15 ] , inductive learning by sleeping experts ( 76 % ) [ 3 ] , and a typical information retrieval approach named rocchio ( 75 % ) [ 3 ] .
+on another variation of the reuters collection where the training set and the test set are partitioned differently , knn has a break-even point of 82 % which is the same as the result of neural networks [ 21 ] , and llsf has a break-even point of 81 % .
+both systems scale to large classification problems .
+by " large " we mean that both the input and the output of a classifier can have thousands of dimensions or higher [ 25 , 24 ] .
+we want to examine all the degrees of feature selection , from no reduction ( except removing standard stop words ) to extremely aggressive reduction , and observe the effects on the accuracy of a classifier over the entire target space .
+for this examination , we need a scalable system .
+both knn and llsf are a m-ary classifier providing a global ranking of categories given a document .
+this allows a straight-forward global evaluation of per document categorization performance , i.e. , measuring the goodness of category ranking given a document , rather than per category performance as is standard when applying binary classifiers to the problem .
+4 ) both classifiers are context sensitive in the sense that no independence is assumed between either input variables ( terms ) or output variables ( categories ) .
+llsf , for example , optimizes the mapping from a document to categories , and hence does not treat words separately .
+similarly , knn treats a document as an single point in a vector space .
+the context sensitivity is in distinction to context ~ free methods based on explicit independence assumptions such as naive bayes classifiers [ 13 ] and some other regression methods [ 8 ] ) .
+a context-sensitive classifier makes better use of the information provided by features than a context-free classifier do , thus enabling a better observation on feature selection .
+5 ) the two classifiers differ statistically .
+llsf is based on a linear parametric model ; knn is a non-parametric and non-linear classifier , that makes few assumptions about the input data .
+hence a evaluation using both classifiers should reduce the possibility of classifier bias in the results .
+data collections .
+we use two corpora for this study : the reuters-22173 collection and the ohsumed collection .
+the reuters news story collection is commonly used corpora in text categorization research [ 13 , 1 , 21 , 16 , 3 ] 1 .
+there are 21,450 documents in the full collection ; less than half of the documents have human assigned topic labels .
+we used only those documents that had at least one topic , divided randomly into a training set of 9,610 and a test set of 3,662 documents .
+this partition is similar to that employed in [ 1 ] , but differs from [ 13 ] who use the full collection including unlabelled documents 2 .
+the stories have a mean length of 90.6 words with standard deviation 91.6 .
+we considered the 92 categories that appear at least once in the training set .
+these categories cover topics such as commodities , interest rates , and foreign exchange .
+while some documents have up to fourteen assigned categories , the mean is only 1.24 categories per document .
+the frequency of occurrence varies greatly from category to category ; earnings , for example , appears in roughly 30 % of the documents , while platinum is assigned to only five training documents .
+there are 16,039 unique terms in the collection ( after performing inflectional stemming , stop word removal , and conversion to lower case ) .
+ohsumed is a bibliographical document collection 3 , developed by william hersh and colleagues at the oregon health sciences university .
+it is a subset of the medline database [ 9 ] , consisting of 348,566 references from 270 medical journals from the years 1987 to 1991 .
+all of the references have titles , but only 233,445 of them have abstracts .
+we refer to the title plus abstract as a document .
+the documents were manually indexed using subject categories ( medical subject headings , or mesh ) in the national library of medicine .
+there are about 18,000 categories defined in mesh , and 14,321 categories present in the ohsumed document collection .
+we used the 1990 documents as a training set and the 1991 documents as the test set in this study .
+there are 72,076 unique terms in the training set .
+the average length of a document is 167 words .
+on average 12 categories are assigned to each document .
+in some sense the ohsumed corpus is more difficult than reuters because the data are more " noisy " . that is , the word / category correspondences are more " fuzzy " in ohsumed .
+consequently , the categorization is more difficult to learn for a classifier .
+empirical validation. sperformance measures .
+we apply feature selection to documents in the preprocessing of knn and llsf .
+the effectiveness of a feature selection method is evaluated using the performance of knn and llsf on the preprocessed documents .
+since both knn and llsf score categories on a per-document basis , we use the standard definition of recall and precision as performance measures. where " categories found " means that the categories are above a given score threshold .
+given a document , for recall thresholds of 0 % , 10 % , 20 % , ... 100 % , the system assigns in decreasing score order as many categories as needed until a given recall is achieved , and computes the precision value at that point [ 18 ] .
+the resulting 11 point precision values are then averaged to obtain a single-number measure of system performance on that document .
+for a test set of documents , the average precision values of individual documents are further averaged to obtain a global measure of system performance over the entire set .
+in the following , unless otherwise specified , we will use " precision " or " avgp " to refer to the 11-point average precision over a set of test documents .
+experimental settings .
+before applying feature selection to documents , we removed the words in a standard stop word list [ 18 ] .
+then each of the five feature selection methods was evaluated with a number of different term-removal thresholds .
+at a high threshold , it is possible that all the terms in a document are below the threshold .
+to avoid removing all the terms from a document , we added a meta rule to the process .
+that is , apply a threshold to a document only if it results in a non- empty document ; otherwise , apply the closest threshold which results in a non-empty document .
+we also used the smart system [ 18 ] for unified preprocessing followed feature selection , which includes word stemming and weighting .
+we tried several term weighting options ( " ltc " , " atc " , " lnc " , " bnn " etc. in smart 's notation ) which combine the term frequency ( tf ) measure and the inverted document frequency ( idf ) measure in a variety of ways .
+the best results ( with using " ltc " ) are reported in the next section . 4.3 primary results figure 1 displays the performance curves for knn on reuters ( 9,610 training documents , and 3,662 test documents ) after term selection using ig , df , ts , mi and chi thresholding , respectively .
+we tested the two options , avg and max in mi and chi , and the better results are represented in the figure .
+that is , we computed only 200 largest singular values in solving llsf , although the best results ( which is similar to the performance of knn ) appeared with using 1000 singular values [ 24 ] .
+nevertheless , this simplification of llsf should not invalidate the examination of feature selection which is the focus of the experiments .
+an observation merges from the categorization results of knn and llsf on reuters .
+that is , ig , df and chi thresholding have similar effects on the performance of the classifiers .
+all of them can eliminate up to 90 % or more of the unique terms with either an improvement or no loss in categorization accuracy ( as measured by average precision ) .
+using ig thresholding , for example , the vocabulary is reduced from 16,039 terms to 321 ( a 98 % reduction ) , and the avgp of knn is improved from 87.9 % to 89.2 % .
+chi has even better categorization results except that at extremely aggressive thresholds ig is better .
+ts has a comparable performance with up-to 50 % term removal in knn , and about 60 % term removal in llsf .
+with more aggressive thresholds , its performance declines much faster than ig , chi and df .
+mi does not have comparable performance to any of the other methods .
+correlations between df , ig and chi .
+the similar performance of ig , df and chi in term selection is rather surprising because no such an observation has previously been reported .
+a natural question therefore is whether these three corpus statistics are correlated .
+figure 3 plots the values of df and ig given a term in the reuters collection .
+figure 4 plots the values of df and chia , 119 correspondingly .
+clearly there are indeed very strong correlations between the df , ig and chi values of a term .
+figures 5 and 6 shows the results of a cross-collection examination .
+a strong correlation between df and ig is also observed in the ohsumed collection .
+the performance curves of knn with df versus ig are identical on this collection .
+the observations on reuters and on ohsumed are highly consistent .
+given the very different application domains of the two corpus , we are convinced that the observed effects of df and ig thresholding are general rather than corpus-dependent .
+discussion .
+what are the reasons for good or bad performance of feature selection in text categorization tasks ?
+table 1 compares the five criteria from several angles : from table 1 , the methods with an " excellent " performance share the same bias , i.e. , scoring in favor of common terms over rare terms .
+this bias is obviously in the df criterion .
+it is not necessarily true in ig or chi by definition : in theory , a common term can have a zero-valued information gain or x2 score .
+however , it is statistically true based on the strong correlations between the df , ig and chi values .
+the mi method has an opposite bias , as can be seen in the formula i ( t , c ) = log pr ( t i c ) � log pr ( t ) .
+this bias becomes extreme when pr ( t ) is near zero .
+ts does not have a clear bias in this sense , i.e. , both common and rare terms can have high strength .
+the excellent performance of df , ig and chi indicates that common terms are indeed informative for text categorization tasks .
+if significant amounts of information were lost at high levels ( e.g. 98 % ) of vocabulary reduction it would not be possible for knn or llsf to have improved categorization preformance .
+to be more precise , in theory , ig measures the number of bits of information obtained by knowing the presence or absence of a term in a document .
+the strong df-if correlations means that common terms are often informative , and vice versa ( this statement of course does not extend to stop words ) .
+this is contrary to a widely held belief in information retrieval that common terms are non-informative .
+our experiments show that this assumption may not apply to text categorization .
+another interesting point in table 1 is that using category information for feature selection does not seem to be crucial for excellent performance .
+df is task-free , i.e. , it does use category information present in the training set , but has a performance similar to ig and chi which are task-sensitive .
+mi is task-sensitive , but significantly under-performs both ts and df which are task-free .
+the poor performance of mi is also informative .
+its bias towards low frequency terms is known ( section 2 ) , but whether or not this theoretical weakness will cause significant accuracy loss in text categorization has not been empirically examined .
+our experiments quantitatively address this issue using a cross-method comparison and a cross-classifier validation .
+beyond this bias , mi seems to have a more serious problem in its sensitivity to probability estimation errors .
+that is , the second term in the formula i ( t , c ) = log pr ( t i c ) � log pr ( t ) makes the score extremely sensitive to estimation errors when pr ( t ) is near zero .
+these formulas show that information gain is the weighted average of the mutual information i ( t , c ) and i ( t , c ) , where the weights are the joint probabilities pr ( t , c ) and pr ( t , c ) , respectively .
+so information gain is also called average mutual information [ 7 ] .
+there are two fundamental differences between ig and mi : 1 ) ig makes a use of information about term absence in the form of i ( t , c ) , while mi ignores such information ! and 2 ) ig normalizes the mutual information scores using the joint probabilities while mi uses the non- normalized scores .
+conclusion .
+this is an evaluation of feature selection methods in dimensionality reduction for text categorization at all the reduction levels of aggressiveness , from using the full vocabulary ( except stop words ) as the feature space , to removing 98 % of the unique terms .
+we found ig and chi most effective in aggressive term removal without losing categorization accuracy in our experiments with knn and llsf .
+df thresholding is found comparable to the performance of ig and chi with up to 90 % term removal , while ts is comparable with up to 50-60 % term removal .
+mutual information has inferior performance compared to the other methods due to a bias favoring rare terms and a strong sensitivity to probability estimation errors .
+we discovered that the df , ig and chi scores of a term are strongly correlated , revealing a previously unknown fact about the importance of common terms in text categorization .
+this suggests that that df thresholding is not just an ad hoc approach to improve efficiency ( as it has been assumed in the literature of text categorization and retrieval ) , but a reliable measure for seleting informative features .
+it can be used instead of ig or chi when the computation ( quadratic ) of these measures is too expensive .
+the availability of a simple but effective means for aggressive feature space reduction may significantly ease the application of more powerful and computationally intensive learning methods , such as neural networks , to very large text categorization problems which are otherwise intractable .

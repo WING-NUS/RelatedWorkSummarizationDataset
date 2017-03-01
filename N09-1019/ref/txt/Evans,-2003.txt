@@ -1,0 +1,206 @@
+a framework for named entity recognition in the open domain .
+abstract .
+in this paper , a system for named entity recognition in the open domain ( nero ) is described .
+it is concerned with recognition of various types of entity , types that will be appropriate for information extraction in any scenario context .
+the recognition task is performed by identifying normally capitalised phrases in a document and then submitting queries to a search engine to find potential hypernyms of the capitalised sequences .
+these hypernyms are then clustered to derive a typology of named entities for the document .
+the hypernyms of the normally capitalised phrases are used to classify them with respect to this typology .
+the method is tested on a small corpus and its classifications are evaluated .
+finally , conclusions are drawn and future work considered .
+introduction .
+information extraction ( ie ) is defined as the automatic identification of selected types of entities , relations , or events in free text ( grishman 03 ) .
+some of the most significant multi-site evaluations of ie have been carried out in the message understanding competitions ( eg .
+muc-7 ( chinchor 98b ) ) .
+in the context of ie , the events of interest described in documents are encoded using templates ( chinchor 98a ) .
+an ie system attempts to assign the participants of an event to functional slots in the template .
+the slots accept elements of particular types .
+for instance , a template corresponding to management succession events includes slots for the person who is leaving the post ; the organisation in which the event is taking place ; etc .
+each slot has a particular semantics and participants that are appropriate for each slot are subject to that semantics .
+the templates used in muc-7 have slots for entity and location elements .
+entity elements are divided into classes for person , organization , and artifact .
+the goal of named entity recognition ( ner ) is to identify these elements in texts automatically .
+muc-7 represents just one ie scenario and many more types of entity must be recognised for effective ie in different domains .
+in the domains of medicine , e-retail , or entertainment , systems will need to identify pharmaceutical names , product names , or pop groups .
+the set of required name types varies from case to case .
+the ner approaches developed for muc-7 are able to recognise a small set of named entity ( ne ) types with considerable accuracy .
+however , in most cases , the classification models used rely on specific domain knowledge .
+they cannot easily be extended to recognise the pertinent entities occurring in documents from other domains .
+in the current state of the art , ie systems must either be re-tuned or else implemented from scratch for new scenarios .
+in this paper , the goal is to automatically identify the entities that are likely to be of interest in any scenario context , with no knowledge a priori .
+a system called nero ' is described that embodies a framework for ner in the open domain .
+the paper is structured as follows .
+section 2 describes the methods by which nero addresses its goals - deriving a document specific ontology for nes ( section 2.1 ) ; identifying sequences of words that are normally capitalised in the document ( section 2.2 ) ; and then classifying normally capitalised words with respect to the derived typology ( section 2.3 ) .
+in section 3 , the small corpus used to test the system is described and in section 4 the resulting evaluation is reported .
+in section 5 , related work is reviewed and in section 6 conclusions are drawn and directions for future research considered .
+the method for named entity recognition in the open domain .
+the process of open-domain ner is tackled in three stages .
+firstly , a document-specific typology for nes is derived automatically ( section 2 . 1 ) .
+secondly , nes are identified ( section 2.2 ) .
+thirdly , nes are classified in line with the derived typology ( section 2.3 ) .
+typology derivation .
+the typology is obtained by collecting the hypernyms of capitalised phrases ( section 2.1.1 ) , clustering the hypernyms ( section 2.1.2 ) , and labelling those clusters ( section 2.1.3 ) .
+collection of hypernyms .
+the method for identification of hyponyms described in ( hearst 92 ) was applied in order to identify potential hypernyms of sequences of capitalised words appearing in the document .
+here , sequences include single words .
+in the first sentence of the abstract of this paper , the sequences of capitalised words are { in , named entity recognition , open , and nero } .
+numerous patterns were used to produce queries that were submitted to the google2 search engine .
+the summaries returned by google were then used to derive the hypernyms .
+following ( hearst 92 ) , when x is a capitalised sequence , the query such as x , was submitted to google .
+the fdg parser ( tapanainen & jirvinen 97 ) was used to find the part of speech and lemma of words in the returned summaries .
+the lemma of the immediately preceding noun was chosen as the hypernym of x. three other patterns ( figure 1 ) were included in an effort to improve coverage .
+in these patterns , y is a phrase whose head is a potential hypernym of x. one problem that results from exploiting google for information retrieval is that case and punctuation are ignored in the queries .
+this is a particular problem in the current context because many effective patterns are best expressed using a combination of words and punctuation marks .
+to illustrate , the pattern x and other y shown in figure 1 was originally expressed as np { , np } * { , } and other np in ( hearst 92 ) .
+despite this , the coverage provided by google means that it is currently preferred over alternative search engines .
+when running the system , queries were submitted for each capitalised sequence and all of its substrings .
+the first 1000 results from google were processed in each case .
+a sample of output from the system is shown in figure 2 .
+the result of the method on processing substrings of internet explorer cannot be displayed due to space restrictions .
+the ten most frequent potential hypernyms are shown with their frequency of occurrence as returned by google .
+use of the internet , rather then the documents in which nes appear , as the source of potential hypernyms is justified because the documents used to test the nero system in the present study are rather small , and the four patterns shown in figure 1 are used very rarely within them .
+in fact , for these documents only 1.19 % of the nes appear in those patterns .
+this contrasts with 96.46 % when the internet is taken as the source of potential hypernyms .
+intuitively , it is expected that a document specific approach would yield high precision , and be less affected by the problems of word sense ambiguity that the internet based method is vulnerable to ( see section 4.2 for more details ) .
+unfortunately , poor recall is the cost of applying patterns under a document specific framework .
+coverage could be improved under a document specific approach by identifying additional patterns .
+in its favour , this would allow for the exploitation of such features as punctuation in the patterns .
+the drawbacks are that additional manual effort would be required to formulate them , and there is a risk that such patterns would only apply well in the document for which they were identified .
+for these reasons , this approach was not implemented in the current study .
+clustering hypernyms .
+having obtained sets of potential hypernyms for all sequences of capitalised words in the input text , the system clusters the global set of hypernyms in an attempt to find the general types of ne that appear in that document .
+nes will subsequently be classified on the basis of the resultant typology .
+a hard , bottom-up , hierarchical clustering algorithm was used ( manning & sch � utze 99 ) .
+it is presented in figure 3 .
+the similarity function sim is a group average method that assesses similarity between hypernyms on the basis of their taxonomic similarity in wordnet ( fellbaum 98 ) .
+taxonomic similarity was computed using a measure known as learning accuracy which was implemented to assist evaluation in ( hahn & schnattinger 98 ) .
+the clustering process is halted when the similarity measure for the two most similar clusters proposed for merging drops below a threshold , t. empirical observation indicated that a threshold of 0.5 was suitable .
+the stopping condition is set in an attempt to prevent hypernyms indicative of distinct types from being merged .
+this type of clustering algorithm was suitable for the task because no information on the desired properties of the set of derived types is available 0.5 surface : labelling clusters .
+the wordnet package ( fellbaum 98 ) was used in order to assign easy-to-read labels to the clusters resulting from the algorithm described in section 2.1.2 .
+for all senses of all words in a cluster , increasingly general hypernyms were listed .
+these lists were compared within the cluster and the most specific hypernym common to all words3 was used to label the cluster as a whole .
+each label was assigned a number , hereafter referred to as height that is the mean depth of the words in the cluster measured from the common hypernym .
+this measure is used to weight the classification of named entities , as described in section 2.3 .
+when no such common hypernym exists , the cluster is simply labelled miscn where n is a unique reference number for that cluster .
+when testing nero , it was found that the cluster labels were often unhelpful , as illustrated in figure 4 .
+the clusters themselves were referred to in the evaluation process to determine whether or not a ne had been classified appropriately . 2.2 identification of named entities ( capitalised word normalisation ) capitalisation is one signal that can distinguish nes from other phrases in texts .
+unfortunately , it is also used in the general layout of documents , indicating the start of sentences or dialogue , section headings , or instructions in block capitals .
+for this reason it is necessary to disambiguate capitalisation to determine whether a given word is normally capitalised in all contexts , or whether the capitalisation of a given word is context dependent .
+this disambiguation is referred to as normalisation in ( mikheev 00 ) .
+nero exploits a method for normalisation that uses memory based learning ( daelemans et al. 01 ) .
+each instance of a capitalised word in the training data is associated with a vector of feature values and a binary classification ( normally capitalised or not normally capitalised ) .
+features appearing in the vectors include positional information , the proportion of times the word is capitalised in the document , the proportion of times the word is sentence initial in the document and in the bnc ( burnard 95 ) , whether the instance appears in a gazetteer of person names or , following ( mikheev 00 ) , in a list of the top 100 most frequent sentence initial words in the bnc , the part of speech of the word and the surrounding words , agreement of the instance � s grammatical number with the following verb to be or to have .
+grammatical information such as part of speech and number is available via the use of conexor � s fdg parser ( tapanainen & j ^ arvinen 97 ) .
+the training data contains 3168 instances .
+the method was evaluated using ten-fold cross validation .
+it obtained an overall precision of 98.63 % and recall of 98.51 % for normally capitalised instances and 100 % precision and 98.31 % recall for not normally capitalised instances .
+classification of named entities .
+classification of nes exploits the derived typology .
+the typology is extended to mark the beginnings and ends of spans of nes .
+the approach described here assumes that normally capitalised sequences of words ( section 2.2 ) correspond to nes .
+a ne is either identical to , or is a substring of , one of the set of capitalised sequences in the document .
+each ne can be associated with a capitalised sequence that covers its position in the document .
+if t is a type that subsumes hypernyms { t1 , ... , tm } and 0 is a coefficient inversely proportional to the height of t , let w be a word that matches or is a substring of a capitalised sequence c. further , let c have hypernyms { c1 , ... , cn } where each hypernym has a frequency f cz .
+the likelihood that w should be classified as t is given by : having computed the likelihood for all types , w is classified as belonging to the one for which this measure is greatest .
+if no hypernym was obtained for the complete phrase c , then hypernyms of substrings of c that contain w are used instead .
+the test corpus .
+the creation of evaluation data is very difficult for the non-expert due to the � open � nature of the ne typology .
+for the pilot study presented in this paper , just nine documents were hand annotated and an assessment of nero � s performance was made against this human annotated data .
+of the nine texts , eight were from the semcor corpus ( landes et al. 98 ) and one was a technical document , windows help file ( win ) .
+this was chosen in order to demonstrate system performance on a document containing many nes of a type not found in the muc-7 ne typology .
+one point to be made about the documents taken from semcor is that these are extracts from larger texts , and are thus incomplete .
+as will be noted in section 4.1 this has some unfortunate consequences .
+evaluation .
+the system is evaluated with respect to its ability to identify nes using text normalisation , to derive an appropriate typology of nes for a given document , and to classify nes in line with the derived typology .
+quantitative and automatic evaluation of the derived typology and the classification of nes with respect to that typology relies on large amounts of annotated data .
+such data is difficult to produce because elements must be assigned types that are not known to annotators a priori .
+we undertook a small-scale manual evaluation of the system � s performance .
+evaluating normalisation .
+some substantive evaluation has been performed for the capitalised word normalisation system ( section 2.2 ) .
+that method was applied to the documents used to test nero .
+overall , for the capitalised words in the corpus , the system was able to identify normally capitalised words with a precision of 97.48 % and recall of 88.39 % .
+for words that are not normally capitalised , the figures were 100 % and 97.11 % respectively .
+the performance of the normalisation system on the nine test documents was significantly worse than was suggested by ten-fold cross validation based on the training data .
+part of the problem is that the literary documents in the test corpus contain a lot of dialogue .
+here , new sentences are introduced using quotation marks without ending the introducing sentence with a full stop .
+in addition , as noted in section 3 , the documents from semcor ( landes et al. 98 ) are incomplete , and many person nes are referred to using only a surname or nickname .
+the full name may have been introduced earlier in the text , but this evidence is missing from the extract available in semcor .
+this affected nero � s performance as it rendered the gazetteers used in feature 4 redundant in many cases .
+while most systems for capitalised word normalisation are able to correctly classify nicknames and surnames when they appear , these successful classifications are usually facilitated by the appearance of the full names elsewhere in the document ( mikheev 00 ) . 4.2 evaluating typology derivation .
+table 2 shows , for each file in the test corpus , the set of ne types that were manually annotated in each document ( ne types ) and the set of ne types derived by nero ( derived typology ) .
+evaluation is problematic because manual annotation may require a high level of expertise within a given domain in order to classify new types of entity , e.g. menu items in software technical manuals , and non-experts will tend to assign general types such as artifact to these nes .
+hiring experts will be an expensive undertaking within the context of annotation in the open- domain .
+the typology induced by nero may actually assist the non-expert annotator in selecting an appropriate type for a given ne .
+with respect to the ne types , several match those that are used in muc-7 but there are additional types used here .
+nat lan covers nes that refer to nationalities or languages .
+the titles of creative works such as paintings or books are marked ctve ttl .
+the names of menu items or buttons in computer software are marked opt but .
+a quantitative assessment was made of system performance in the derivation of a typology .
+a large number of clusters results from the clustering phase , but the statistical classification method causes only a small subset of the total number of clusters to be evidenced in the output classification .
+for this crucial subset , the precision and recall of the clustering method was calculated .
+precision is defined here as the ratio of the number of machine derived clusters that correlate well with a human derived type , to the total number of machine derived clusters .
+recall is defined as the ratio of the number of machine derived clusters that correlate well with a human derived type to the total number of human derived types annotated in the key file .
+when calculating these figures , it was noted that in many cases ( 27 out of 66 ) , the machine derived clusters were seen to correlate only partially with human derived types .
+in these cases , the machine derived cluster was counted as a good match if more than half of the senses in the cluster were felt to be indicative of the human derived type .
+otherwise , it was not counted .
+the precision of the clustering method is poor , at 46.97 % .
+recall is mediocre , at 67.39 % .
+the performance of the clustering method will limit precision and recall in the ne classification task .
+table 2 can be inspected in order to check the degree of correlation between machine derived clusters and human derived types .
+it can be noted that the type body derived for text a01 is too general , and incorporates hypernyms that distinguish two important types , org and loc .
+the type concept derived from document k09 highlights the problem of word sense ambiguity .
+here the hypernym character has been merged with words that share its symbolic , rather than human sense .
+it would be necessary to perform word sense disambiguation ( wsd ) to solve this problem .
+evaluating ne classification .
+table 3 summarises the performance of the system .
+the column norm acc indicates the accuracy with which the system is able to identify the nes in a document . # nesidd gives the exact number of capitalised words identified by nero .
+it can be compared with the column # nes in table 1 which shows the actual number of words used in ne references in the document .
+the remaining columns in table 3 show the number of instances classified correctly ( correct ) or incorrectly ( incorrect ) .
+in some cases , correctness of the classification is open to interpretation and these are marked uncertain .
+an example of this is the classification of the windows program as concept , a very general type that does include several pertinent hypernyms such as product but also many irrelevant ones such as privilege or right .
+in many cases , the queries submitted to google are unable to indicate any potential hypernyms for a capitalised sequence .
+when this happens , the system uses any hypernyms that have been found for substrings of the sequence .
+when no potential hypernyms are available for any substrings , then the instance remains unclassified .
+the frequency of such occurrences in a document appears in the column unclassified .
+note that these cases are included in the figures under incorrect .
+related work .
+research activity in ie and ner since the mid- 90s has left a large literary footprint .
+in the first instance , readers are directed to the proceedings of muc-7 ( chinchor 98b ) for a description and evaluation of competing ner systems for english .
+similar competitions have been held with respect to japanese in the irex ( sekine 99 ) conferences .
+the continuing influence of the muc competitions on the fields of ie and ner is significant .
+papers such as ( zhou & su 02 ) , and the shared task at the conll workshop at acl 2003 address the classification of nes on the basis of the typology originally used in muc-7 .
+the method recently reported in ( collins 02 ) was trained on data in which an extended set of ne types is annotated .
+the system was assessed on its ability to classify test data in line with a typology derived from the training corpus .
+the classification model identifies name types such as person , organization , and location , but also brand names , scientific terms , and event titles , as well as others that are not described in the paper .
+despite this , the approach is still scenario specific and is unlikely to be able to cater to other domains .
+the typology used in ( collins 02 ) is incomplete with respect to the open domain .
+the development of an extended ne hierarchy , including more than 150 ne types , is described in ( sekine et al. 02 ) .
+the researchers involved in this work have also developed a classification system for the extended set of nes .
+however , the system is based on manually proposed rules specific to each type of entity .
+from this perspective , despite covering an extended typology , the classification process cannot yet be regarded as fully automatic , or robust in the open domain .
+as mentioned in section 2.2 , the domain- independent task of text normalization has been addressed before , and with greater accuracy than the system reported in this paper , by ( mikheev 00 ) .
+he used a maximum entropy classification model which also incorporated information about abbreviations and the occurrence of capitalised sequences in the document .
+conclusion .
+this paper has presented a framework for ner in the open domain , and has described an implemented system , nero , that embodies this framework ( section 2 ) .
+it includes automatic components for derivation of a typology of nes ( section 2.1 ) , for normalisation of capitalised words ( section 2.2 ) , and for classification of nes in a given document ( section 2.3 ) .
+the paper has described these components and conducted a small- scale evaluation ( section 4 ) .
+related work has also been reviewed ( section 5 ) .
+the unsupervised nature of the approach , its independence from annotated training data , and the fact that it has addressed the open-domain are all strengths of the system .
+the fact that , to a certain extent , nero is able to derive appropriate typologies of nes for a variety of documents is also a favourable aspect of its performance .
+unfortunately , these strengths are overbalanced by numerous weaknesses .
+firstly , the patterns used to collect suitable hypernyms for capitalised sequences are vulnerable to data sparseness .
+in many cases , no suitable hypernyms were identified by the system .
+this problem can be addressed by formulating additional patterns , and by using alternative ir tech nology that recognises punctuation symbols in queries .
+despite the rapid growth of the internet , this problem of data sparseness is unlikely to be eliminated .
+alternative approaches will be required in order to obtain the semantic type of entities for which the current hypernym collection method fails .
+as noted in section 4.2 , word sense ambiguity is a major problem in the hypernym collection and clustering processes that nero performs .
+in future work , it will be interesting to assess the feasibility of using a method for wsd in the hypernym collection and clustering phases .
+soft clustering algorithms , in which elements may belong to more than one cluster , are another potential solution to the problem of word sense ambiguity .
+it will be useful to experiment with different classification methods for the identified nes .
+the weighting on different types can be adjusted not only with respect to the height of the label , but also with respect to the size of the cluster , or information from wsd .
+the evaluation reported in this paper has been insufficient .
+in future work it may be useful to apply the system to the muc-7 data in order to assess the effectiveness of the typologies derived from those documents .
+an alternative approach will be to incorporate nero into different ie systems and obtain extrinsic evaluation results .
+the overall value of the framework proposed in this paper remains an open question .
+the current performance by nero of the clustering , normalisation , and classification tasks does leave much scope for improvement .
+these areas must be further explored , improved , and new assessments made before there are sufficient grounds for rejecting the approach suggested here .

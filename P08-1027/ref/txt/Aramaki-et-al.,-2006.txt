@@ -1,0 +1,61 @@
+semantic relation classification using physical sizes .
+abstract .
+although researchers have shown increasing interest in extracting / classifying semantic relations , most previous studies have basically relied on lexical patterns between terms .
+this paper proposes a novel way to accomplish the task : a system that captures a physical size of an entity .
+experimental results revealed that our proposed method is feasible and prevents the problems inherent in other methods .
+introduction .
+classification of semantic relations is important to nlp as it would benefit many nlp applications , such as machine translation and information retrieval .
+researchers have already proposed various schemes .
+for example , hearst ( 1992 ) manually designed lexico-syntactic patterns for extracting is-a relations .
+berland and charniak ( 1999 ) proposed a similar method for part-whole relations .
+brin ( 1998 ) employed a bootstrapping algorithm for more specific relations ( author-book relations ) .
+kim and baldwin ( 2006 ) and moldovan et al. ( 2004 ) focused on nominal relations in compound nouns .
+turney ( 2005 ) measured relation similarity between two words .
+while these methods differ , they all utilize lexical patterns between two entities .
+we chose to use physical size for the following reasons : most entities ( except abstract entities ) have a physical size .
+several semantic relations are sensitive to physical size .
+for example , a content-container relation ( e1 content-container e2 ) naturally means that e1 has a smaller size than e2 .
+a book is also smaller than its container , library .
+a part-whole relation has a similar constraint .
+experimental results revealed that our proposed approach is feasible and prevents the problems inherent in other methods .
+corpus .
+we gathered basic patterns for each relation , and identified if each pattern had been obtained as a svm feature or not ( 1 or 0 ) .
+we refer to these features as basic pattern features .
+selected pattern features .
+we applied support vector machine ( svm ) -based learning ( vapnik , 1999 ) using three types of features : ( 1 ) basic pattern features ( section 3.1 ) , ( 2 ) selected pattern features ( section 3.2 ) , and ( 3 ) physical size features ( section 3.3 ) .
+figure 1 presents some examples of these features .
+basic pattern features .
+then , the system extracts the word ( or word sequences ) between two entities from the snippets in the top 1,000 search results .
+we considered the extracted word sequences to be basic patterns .
+for example , given ' s ... library contains the book ... ' s , the basic pattern is ' s ( e1 ) contains the ( e2 ) ' s 2 .
+because basic pattern features are generated only from snippets , precise co-occurrence statistics are not available .
+therefore , the system searches again with more specific queries , such as ' slibrary contains the book 's .
+however , this second search is a heavy burden for a search engine , requiring huge numbers of queries ( # of samples x # of basic patterns ) .
+we thus selected the most informative n patterns ( step 1 ) and conducted specific searches ( # of samples x n basic patterns ) ( step2 ) as follows : step1 : to select the most informative patterns , we applied a decision tree ( c4.5 ) ( quinlan , 1987 ) and selected the basic patterns located in the top n branches 3 .
+step2 : then , the system searched again using the selected patterns .
+we considered log weighted hits ( loglolhits l ) to be selected pattern features .
+for example , if ' slibrary contains the book 's produced 120,000 hits in google , it yields the value loglo ( 12 , 000 ) = 5 .
+physical size features .
+as noted in section 1 , we theorized that an entity 'ss size could be a strong clue for some semantic relations .
+we estimated entity size using the following queries : in these queries , < entity > indicates a slot for each entity , such as ' sbook 's , ' slibrary 's , etc .
+then , the system examines the search results for the numerous expressions located in ' s * ' s and considers the average value to be the size .
+when results of size expressions were insufficient ( numbers < 10 ) , we considered the entity to be nonphysical , i.e. , to have no size .
+experiments .
+experimental set-up .
+to evaluate the performance of our system , we used a semeval-task no # 4 training set .
+we compared the following methods using a ten-fold cross- validation test : results .
+table 2 presents the results .
+proposed was the most accurate , demonstrating the basic feasibility of our approach .
+table 3 presents more detailed results . + size made a contribution to some relations ( rel2 and rel4 ) .
+particularly for rel4 , + size significantly boosted accuracy ( using mcnemar tests ( gillick and cox , 1989 ) ; p = 0.05 ) .
+however , contrary to our expectations , size features were disappointing for part- whole relations ( rel6 ) and content-container relations ( rel7 ) .
+the reason for this was mainly the difficulty in estimating size .
+table 4 lists the sizes of several entities , revealing some strange results , such as a library sized 12.1 x 8.4 cm , a house sized 53 x 38 cm , and a car sized 39 x 25 cm .
+these sizes are unusually small for the following reasons : some entities ( e.g. ' scar 's ) rarely appear with their size , in contrast , entities such as ' stoy car 's or ' smini car 's frequently appear with a size .
+figure 2 presents the size distribution of ' scar . ' s few instances appeared of real cars sized approximately 500 x 400 cm , while very small cars smaller than 100 x 100 cm appeared frequently .
+our current method of calculating average size is ineffective under this type of situation .
+in the future , using physical size as a clue for determining a semantic relation will require resolving this problem .
+conclusion .
+we briefly presented a method for obtaining the size of an entity and proposed a method for classifying semantic relations using entity size .
+experimental results revealed that the proposed approach yielded slightly higher performance than a baseline , demonstrating its feasibility .
+if we are able to estimate entity sizes more precisely in the future , the system will become much more accurate .

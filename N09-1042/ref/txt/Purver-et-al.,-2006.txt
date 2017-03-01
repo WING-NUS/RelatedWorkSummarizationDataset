@@ -1,0 +1,114 @@
+unsupervised topic modelling for multi-party spoken discourse .
+abstract .
+we present a method for unsupervised topic modelling which adapts methods used in document classification ( blei et al. , 2003 ; griffiths and steyvers , 2004 ) to unsegmented multi-party discourse transcripts .
+we show how bayesian inference in this generative model can be used to simultaneously address the problems of topic segmentation and topic identification : automatically segmenting multi-party meetings into topically coherent segments with performance which compares well with previous unsupervised segmentation-only methods ( galley et al. , 2003 ) while simultaneously extracting topics which rate highly when assessed for coherence by human judges .
+we also show that this method appears robust in the face of off-topic dialogue and speech recognition errors .
+introduction .
+topic segmentation division of a text or discourse into topically coherent segments and topic identification classification of those segments by subject matter are joint problems .
+both are necessary steps in automatic indexing , retrieval and summarization from large datasets , whether spoken or written .
+both have received significant attention in the past ( see section 2 ) , but most approaches have been targeted at either text or monologue , and most address only one of the two issues ( usually for the very good reason that the dataset itself provides the other , for example by the explicit separation of individual documents or news stories in a collection ) .
+spoken multi-party meetings pose a difficult problem : firstly , neither the segmentation nor the discussed topics can be taken as given ; secondly , the discourse is by nature less tidily structured and less restricted in domain ; and thirdly , speech recognition results have unavoidably high levels of error due to the noisy multi- speaker environment .
+in this paper we present a method for unsupervised topic modelling which allows us to approach both problems simultaneously , inferring a set of topics while providing a segmentation into topically coherent segments .
+we show that this model can address these problems over multi-party discourse transcripts , providing good segmentation performance on a corpus of meetings ( comparable to the best previous unsupervised method that we are aware of ( galley et al. , 2003 ) ) , while also inferring a set of topics rated as semantically coherent by human judges .
+we then show that its segmentation performance appears relatively robust to speech recognition errors , giving us confidence that it can be successfully applied in a real speech-processing system .
+the plan of the paper is as follows .
+section 2 below briefly discusses previous approaches to the identification and segmentation problems .
+section 3 then describes the model we use here .
+section 4 then details our experiments and results , and conclusions are drawn in section 5 .
+background and related work .
+in this paper we are interested in spoken discourse , and in particular multi-party human-human meetings .
+our overall aim is to produce information which can be used to summarize , browse and / or retrieve the information contained in meetings .
+user studies ( lisowska et al. , 2004 ; banerjee et al. , 2005 ) have shown that topic information is important here : people are likely to want to know which topics were discussed in a particular meeting , as well as have access to the discussion on particular topics in which they are interested .
+of course , this requires both identification of the topics discussed , and segmentation into the periods of topically related discussion .
+work on automatic topic segmentation of text and monologue has been prolific , with a variety of approaches used . ( hearst , 1994 ) uses a measure of lexical cohesion between adjoining paragraphs in text ; ( reynar , 1999 ) and ( beeferman et al. , 1999 ) combine a variety of features such as statistical language modelling , cue phrases , discourse information and the presence of pronouns or named entities to segment broadcast news ; ( maskey and hirschberg , 2003 ) use entirely non-lexical features .
+recent advances have used generative models , allowing lexical models of the topics themselves to be built while segmenting ( imai et al. , 1997 ; barzilay and lee , 2004 ) , and we take a similar approach here , although with some important differences detailed below .
+turning to multi-party discourse and meetings , however , most previous work on automatic segmentation ( reiter and rigoll , 2004 ; dielmann and renals , 2004 ; banerjee and rudnicky , 2004 ) , treats segments as representing meeting phases or events which characterize the type or style of discourse taking place ( presentation , briefing , discussion etc . ) , rather than the topic or subject matter .
+while we expect some correlation between these two types of segmentation , they are clearly different problems .
+however , one comparable study is described in ( galley et al. , 2003 ) .
+here , a lexical cohesion approach was used to develop an essentially unsupervised segmentation tool ( lcseg ) which was applied to both text and meeting transcripts , giving performance better than that achieved by applying text / monologue-based techniques ( see section 4 below ) , and we take this as our benchmark for the segmentation problem .
+note that they improved their accuracy by combining the unsupervised output with discourse features in a supervised classifier while we do not attempt a similar comparison here , we expect a similar technique would yield similar segmentation improvements .
+in contrast , we take a generative approach , modelling the text as being generated by a sequence of mixtures of underlying topics .
+the approach is unsupervised , allowing both segmenta tion and topic extraction from unlabelled data .
+learning topics and segments .
+we specify our model to address the problem of topic segmentation : attempting to break the discourse into discrete segments in which a particular set of topics are discussed .
+assume we have a corpus of u utterances , ordered in sequence .
+the uth utterance consists of nu words , chosen from a vocabulary of size w. the set of words associated with the uth utterance are denoted wu , and indexed as wu , z .
+the entire corpus is represented by w .
+following previous work on probabilistic topic models ( hofmann , 1999 ; blei et al. , 2003 ; griffiths and steyvers , 2004 ) , we model each utterance as being generated from a particular distribution over topics , where each topic is a probability distribution over words .
+the utterances are ordered sequentially , and we assume a markov structure on the distribution over topics : with high probability , the distribution for utterance u is the same as for utterance u -1 ; otherwise , we sample anew distribution over topics .
+this pattern of dependency is produced by associating a binary switching variable with each utterance , indicating whether its topic is the same as that of the previous utterance .
+the joint states of all the switching variables define segments that should be semantically coherent , because their words are generated by the same topic vector .
+we will first describe this generative model in more detail , and then discuss inference in this model .
+a hierarchical bayesian model .
+we are interested in where changes occur in the set of topics discussed in these utterances .
+to this end , let cu indicate whether a change in the distribution over topics occurs at the uth utterance and let p ( cu = 1 ) = 7r ( where 7r thus defines the expected number of segments ) .
+the distribution over topics associated with the uth utterance will be denoted o ( u ) , and is a multinomial distribution over t topics , with the probability of topic t being otu ) .
+if cu = 0 , then o ( u ) = o ( u-1 ) .
+otherwise , o ( u ) is drawn from a symmetric dirichlet distribution with parameter a .
+the distribution is thus : inference .
+the fact that the cu variables effectively divide the sequence of utterances into segments that use the same distribution over topics simplifies solving the integral and we obtain : equations 2 , 3 , and 5 allow us to evaluate the numerator of the expression in equation 1 .
+however , computing the denominator is intractable .
+consequently , we sample from the posterior distribution p ( z , c | w ) using markov chain monte carlo ( mcmc ) ( gilks et al. , 1996 ) .
+we use gibbs sampling , drawing the topic assignment for each word , zu , z, conditioned on all other topic assignments , z ( u , z ) , all topic change indicators , c , and all words , w ; and then drawing the topic change indicator for each utterance , cu , conditioned on all other topic change indicators , cu , all topic assignments z , and all words w .
+our algorithm is related to ( barzilay and lee , 2004 ) s approach to text segmentation , which uses a hidden markov model ( hmm ) to model segmentation and topic inference for text using a bigram representation in restricted domains .
+due to the adaptive combination of different topics our algorithm can be expected to generalize well to larger domains .
+it also relates to earlier work by ( blei and moreno , 2001 ) that uses a topic representation but also does not allow adaptively combining different topics .
+however , while hmm approaches allow a segmentation of the data by topic , they do not allow adaptively combining different topics into segments : while a new segment can be modelled as being identical to a topic that has already been observed , it can not be modelled as a combination of the previously observed topics.1 note that while ( imai et al. , 1997 ) s hmm approach allows topic mixtures , it requires supervision with hand-labelled topics .
+in our experiments we therefore compared our results with those obtained by a similar but simpler 10 state hmm , using a similar gibbs sampling algorithm .
+the key difference between the two models is shown in figure 1 .
+in the hmm , all variation in the content of utterances is modelled at a single level , with each segment having a distribution over words corresponding to a single state .
+the hierarchical structure of our topic segmentation model allows variation in content to be expressed at two levels , with each segment being produced from a linear combination of the distributions associated with each topic .
+consequently , our model can often capture the content of a sequence of words by postulating a single segment with a novel distribution over topics , while the hmm has to frequently switch between states .
+to analyze the properties of this algorithm we first applied it to a simulated dataset : a sequence of 10,000 words chosen from a vocabulary of 25 .
+each segment of 100 successive words had a constant topic distribution ( with distributions for different segments drawn from a dirichlet distribution with q = 0 . 1 ) , and each subsequence of 10 words was taken to be one utterance .
+the topic- word assignments were chosen such that when the vocabulary is aligned in a 5 5 grid the topics were binary bars .
+the inference algorithm was then run for 200,000 iterations , with samples collected after every 1,000 iterations to minimize autocorrelation .
+figure 2 shows the inferred topic-word distributions and segment boundaries , which correspond well with those used to generate the data .
+we applied the algorithm to the icsi meeting corpus transcripts ( janin et al. , 2003 ) , consisting of manual transcriptions of 75 meetings .
+for evaluation , we use ( galley et al. , 2003 ) s set of human-annotated segmentations , which covers a sub-portion of 25 meetings and takes a relatively coarse-grained approach to topic with an average of 5-6 topic segments per meeting .
+note that these segmentations were not used in training the model : topic inference and segmentation was unsupervised , with the human annotations used only to provide some knowledge of the overall segmentation density and to evaluate performance .
+the transcripts from all 75 meetings were linearized by utterance start time and merged into a single dataset that contained 607,263 word tokens .
+we sampled for 200,000 iterations of mcmc , taking samples every 1,000 iterations , and then averaged the sampled cu variables over the last 100 samples to derive an estimate for the posterior probability of a segmentation boundary at each utterance start .
+this probability was then thresholded to derive a final segmentation which was compared to the manual annotations .
+more precisely , we apply a small amount of smoothing ( gaussian kernel convolution ) and take the mid points of any areas above a set threshold to be the segment boundaries .
+varying this threshold allows us to segment the discourse in a more or less fine- grained way ( and we anticipate that this could be user-settable in a meeting browsing application ) .
+if the correct number of segments is known for a meeting , this can be used directly to determine the optimum threshold , increasing performance ; if not , we must set it at a level which corresponds to the desired general level of granularity .
+for each set of annotations , we therefore performed two sets of segmentations : one in which the threshold was set for each meeting to give the known gold- standard number of segments , and one in which the threshold was set on a separate development set to give the overall corpus-wide average number of segments , and held constant for all test meetings.2 this also allows us to compare our results with those of ( galley et al. , 2003 ) , who apply a similar threshold to their lexical cohesion function and give corresponding results produced with known / unknown numbers of segments .
+segmentation we assessed segmentation performance using the pk and windowdiff ( wd ) error measures proposed by ( beeferman et al. , 1999 ) and ( pevzner and hearst , 2002 ) respectively ; both intuitively provide a measure of the probability that two points drawn from the meeting will be incorrectly separated by a hypothesized segment boundary thus , lower pk and wd figures indicate better agreement with the human-annotated results.3 for the numbers of segments we are dealing with , a baseline of segmenting the discourse into equal-length segments gives both pk and wd about 50 % .
+in order to investigate the effect of the number of underlying topics t , we tested models using 2 , 5 , 10 and 20 topics .
+we then compared performance with ( galley et al. , 2003 ) s lcseg tool , and with a 10-state hmm model as described above .
+results are shown in table 1 , averaged over the 25 test meetings .
+results show that our model significantly outperforms the hmm equivalent because the hmm cannot combine different topics , it places a lot of segmentation boundaries , resulting in inferior performance .
+using stemming and a bigram representation , however , might improve its performance ( barzilay and lee , 2004 ) , although similar benefits might equally apply to our model .
+it also performs comparably to ( galley et al. , 2003 ) s unsupervised performance ( exceeding it for some settings of t ) .
+it does not perform as well as their hybrid supervised system , which combined lcseg with supervised learning over discourse features ( pk = .23 ) ; but we expect that a similar approach would be possible here , combining our segmentation probabilities with other discourse-based features in a supervised way for improved performance .
+interestingly , segmentation quality , at least at this relatively coarse-grained level , seems hardly affected by the overall number of topics t. figure 3b shows an example for one meeting of how the inferred topic segmentation probabilities at each utterance compare with the gold-standard segment boundaries .
+figure 3c illustrates the performance difference between our model and the hmm equivalent at an example segment boundary : for this example , the hmm model gives almost no discrimination .
+identification figure 3a shows the most indicative words for a subset of the topics inferred at the last iteration .
+encouragingly , most topics seem intuitively to reflect the subjects we know were discussed in the icsi meetings the majority of them ( 67 meetings ) are taken from the weekly meetings of 3 distinct research groups , where discussions centered around speech recognition techniques ( topics 2 , 5 ) , meeting recording , annotation and hardware setup ( topics 6 , 3 , 1 , 8 ) , robust language processing ( topic 7 ) .
+others reflect general classes of words which are independent of subject matter ( topic 4 ) .
+to compare the quality of these inferred topics we performed an experiment in which 7 human observers rated ( on a scale of 1 to 9 ) the semantic coherence of 50 lists of 10 words each .
+of these lists , 40 contained the most indicative words for each of the 10 topics from different models : the topic segmentation model ; a topic model that had the same number of segments but with fixed evenly spread segmentation boundaries ; an equivalent with randomly placed segmentation boundaries ; and the hmm .
+the other 10 lists contained random samples of 10 words from the other 40 lists .
+results are shown in figure 3d , with the topic segmentation model producing the most coherent topics and the hmm model and random words scoring less well .
+interestingly , using an even distribution of boundaries but allowing the topic model to infer topics performs similarly well with even segmentation , but badly with random segmentation topic quality is thus not very susceptible to the precise segmentation of the text , but does require some reasonable approximation ( on icsi data , an even segmentation gives a pk of about 50 % , while random segmentations can do much worse ) .
+however , note that the full topic segmentation model is able to identify meaningful segmentation boundaries at the same time as inferring topics .
+experiment 2 : dialogue robustness .
+meetings often include off-topic dialogue , in particular at the beginning and end , where informal chat and meta-dialogue are common .
+galley et al. ( 2003 ) annotated these sections explicitly , together with the icsi digit-task sections ( participants read sequences of digits to provide data for speech recognition experiments ) , and removed them from their data , as did we in experiment 1 above .
+while this seems reasonable for the purposes of investigating ideal algorithm performance , in real situations we will be faced with such off-topic dialogue , and would obviously prefer segmentation performance not to be badly affected ( and ideally , enabling segmentation of the off-topic sections from the meeting proper ) .
+one might suspect that an unsupervised generative model such as ours might not be robust in the presence of numerous off-topic words , as spurious topics might be inferred and used in the mixture model throughout .
+in order to investigate this , we therefore also tested on the full dataset without removing these sections ( 806,026 word tokens in total ) , and added the section boundaries as further desired gold-standard segmentation boundaries .
+table 2 shows the results : performance is not significantly affected , and again is very similar for both our model and lcseg .
+experiment 3 : speech recognition .
+it is surprising to notice that the segmentation accuracy in this experiment was actually slightly higher than achieved in experiment 1 ( especially given that asr word error rates were generally above 20 % ) .
+this may simply be a smoothing effect : differences in vocabulary and its distribution can effectively change the prior towards sparsity instantiated in the dirichlet distributions .
+summary and future work .
+we have presented an unsupervised generative model which allows topic segmentation and identification from unlabelled data .
+performance on the icsi corpus of multi-party meetings is comparable with the previous unsupervised segmentation results , and the extracted topics are rated well by human judges .
+segmentation accuracy is robust in the face of noise , both in the form of off-topic discussion and speech recognition hypotheses .
+future work spoken discourse exhibits several features not derived from the words themselves but which seem intuitively useful for segmentation , e.g. speaker changes , speaker identities and roles , silences , overlaps , prosody and so on .
+as shown by ( galley et al. , 2003 ) , some of these features can be combined with lexical information to improve segmentation performance ( although in a supervised manner ) , and ( maskey and hirschberg , 2003 ) show some success in broadcast news segmentation using only these kinds of non-lexical features .
+we are currently investigating the addition of non-lexical features as observed outputs in our unsupervised generative model .
+we are also investigating improvements into the lexical model as presented here , firstly via simple techniques such as word stemming and replacement of named entities by generic class tokens ( barzilay and lee , 2004 ) ; but also via the use of multiple asr hypotheses by incorporating word confusion networks into our model .
+we expect that this will allow improved segmentation and identification performance with asr data .

@@ -1,0 +1,118 @@
+integrating topics and syntax .
+abstract .
+statistical approaches to language learning typically focus on either short-range syntactic dependencies or long-range semantic dependencies between words .
+we present a generative model that uses both kinds of dependencies , and is capable of simultaneously finding syntactic classes and semantic topics despite having no knowledge of syntax or semantics beyond statistical dependency .
+this model is competitive on tasks like part-of-speech tagging and document classification with models that exclusively use short- and long- range dependencies respectively .
+introduction .
+a word can appear in a sentence for two reasons : because it serves a syntactic function , or because it provides semantic content .
+words that play different roles are treated differently in human language processing : function and content words produce different patterns of brain activity [ 1 ] , and have different developmental trends [ 2 ] .
+so , how might a language learner discover the syntactic and semantic classes of words ?
+cognitive scientists have shown that unsupervised statistical methods can be used to identify syntactic classes [ 3 ] and to extract a representation of semantic content [ 4 ] , but none of these methods captures the interaction between function and content words , or even recognizes that these roles are distinct .
+here we explore how statistical learning , with no prior knowledge of either syntax or semantics , can discover the difference between function and content words and simultaneously organize words into syntactic classes and semantic topics .
+our approach relies on the different kinds of dependencies between words produced by syntactic and semantic constraints .
+syntactic constraints result in relatively short-range dependencies , spanning several words but not going beyond the limits of a sentence .
+semantic constraints result in long-range dependencies : different sentences within a document are likely to have similar content , and use similar words .
+we present an algorithm that captures the interaction between short- and long-range dependencies , based upon a generative model for text in which a hidden markov model ( hmm ) determines when to emit a word from a topic model .
+the different capacities of the two components of the model result in a factorization of a sentence into function words , handled by the hmm , and content words , handled by the topic model .
+each component divides words into finer groups according to a different criterion : the function words are divided into syntactic classes , and the content words are divided into semantic topics .
+in addition to producing clean syntactic and semantic classes and identifying function and content words , our composite model is competitive in quantitative tasks , such as part-of-speech tagging and document classification , with models specialized to detect only one kind of dependency .
+the plan of the paper is as follows .
+first , we introduce the approach , considering the general question of how syntactic and semantic generative models might be combined , and arguing that a composite model is necessary to capture the different roles that words can play in a document .
+we then define a generative model of this form , and describe a markov chain monte carlo algorithm for inference in this model .
+finally , we present results illustrating the quality of the recovered syntactic classes and semantic topics .
+combining syntactic and semantic generative models .
+a probabilistic generative model specifies a simple stochastic procedure by which data might be generated , usually making reference to unobserved random variables that express latent structure .
+once defined , this procedure can be inverted using statistical inference , computing distributions over latent variables conditioned on a dataset .
+such an approach is appropriate for modeling language , where words are generated from the latent structure of the speaker � s intentions , and is widely used in statistical natural language processing ( e.g. , [ 5 ] ) .
+probabilistic models of language are typically driven exclusively by either short-range or long-range dependencies between words .
+hmms and probabilistic context-free grammars ( e.g. , [ 5 ] ) generate documents purely based on syntactic relations among unobserved word classes , while � bag-of-words � models like naive bayes or topic models ( e.g. , [ 6 ] ) generate documents based on semantic correlations between words , independent of word order .
+by considering only one of the factors influencing the words that appear in documents , these approaches are forced to assess all words on a single criterion : an hmm will group nouns together , as they play the same syntactic role even though they vary across contexts , and a topic model will assign determiners to topics , even though they bear little semantic content .
+a major advantage of generative models is modularity .
+a generative model for text specifies a probability distribution over words in terms of other probability distributions over words , and different models are thus easily combined .
+we can produce a model that expresses both the short- and long-range dependencies of words by combining two models that are each sensitive to one kind of dependency .
+however , the form of combination must be chosen carefully .
+in a mixture of syntactic and semantic models , each word would exhibit either short-range or long-range dependencies , while in a product of models ( e.g. [ 7 ] ) , each word would exhibit both short-range and long-range dependencies .
+consideration of the structure of language reveals that neither of these models is appropriate .
+in fact , only a subset of words � the content words � exhibit long-range semantic dependencies , while all words obey short-range syntactic dependencies .
+this asymmetry can be captured in a composite model , where we replace one of the probability distributions over words used in the syntactic model with the semantic model .
+this allows the syntactic model to choose when to emit a content word , and the semantic model to choose which word to emit .
+a composite model .
+we will explore a simple composite model , in which the syntactic component is an hmm and the semantic component is a topic model .
+the graphical model for this composite is shown in figure 1 ( a ) .
+the model is defined in terms of three sets of variables : a sequence of words w = { wl , ... , wn } , with each wi being one of w words , a sequence of topic assignments z = { zl , ... zn } , with each zi being one of t topics , and a sequence of classes c = { c1 , ... , cn } , with each ci being one of c classes .
+one class , say ci = 1 , is designated the � semantic � class .
+the zth topic is associated with a distribution over words .
+inference .
+the em algorithm can be applied to the graphical model shown in figure 1 , treating the document distributions b , the topics and classes o , and the transition probabilities 7r as parameters .
+however , em produces poor results with topic models , which have many parameters and many local maxima .
+consequently , recent work has focused on approximate inference algorithms [ 6 , 8 ] .
+we will use markov chain monte carlo ( mcmc ; see [ 9 ] ) to perform full bayesian inference in this model , sampling from a posterior distribution over assignments of words to classes and topics .
+we assume that the document-specific distributions over topics , b , are drawn from a dirichlet ( a ) distribution , the topic distributions o ( z ) are drawn from a dirichlet ( ^ ) distribution , the rows of the transition matrix for the hmm are drawn from a dirichlet ( y ) distribution , the class distributions o ( c ) are drawn from a dirichlet ( s ) distribution , and all dirichlet distributions are symmetric .
+we use gibbs sampling to draw iteratively a topic assignment zi and class assignment ci for each word wi in the corpus ( see [ 8 , 9 ] ) .
+results .
+we tested the models on the brown corpus and a concatenation of the brown and tasa corpora .
+the brown corpus [ 10 ] consists of d = 500 documents and n = 1,137,466 word tokens , with part-of-speech tags for each token .
+the tasa corpus is an untagged collection of educational materials consisting of d = 37,651 documents and n = 12,190 , 931 word tokens .
+words appearing in fewer than 5 documents were replaced with an asterisk , but punctuation was included .
+the combined vocabulary was of size w = 37,202 .
+we dedicated one hmm class to sentence start / end markers { . , ? , ! } .
+in addition to running the composite model with t = 200 and c = 20 , we examined two special cases : t = 200 , c = 2 , being a model where the only hmm classes are the start / end and semantic classes , and thus equivalent to latent dirichlet allocation ( lda ; [ 6 ] ) ; and t = 1 , c = 20 , being an hmm in which the semantic class distribution does not vary across documents , and simply has a different hyperparameter from the other classes .
+on the brown corpus , we ran samplers for lda and 1 st , 2nd , and 3rd order hmm and composite models , with three chains of 4000 iterations each , taking samples at a lag of 100 iterations after a burn-in of 2000 iterations .
+on brown + tasa , we ran a single chain for 4000 iterations for lda and the 3rd order hmm and composite models .
+we used a gaussian metropolis proposal to sample the hyperparameters , taking 5 draws of each hyperparameter for each gibbs sweep .
+syntactic classes and semantic topics .
+the two components of the model are sensitive to different kinds of dependency among words .
+the hmm is sensitive to short-range dependencies that are constant across documents , and the topic model is sensitive to long-range dependencies that vary across documents .
+as a consequence , the hmm allocates words that vary across contexts to the semantic class , where they are differentiated into topics .
+the results of the algorithm , taken from the 20th sample on brown + tasa , are shown in figure 2 .
+the model cleanly separates words that play syntactic and semantic roles , in sharp contrast to the results of the lda model , also shown in the figure , where all words are forced into topics .
+the syntactic categories include prepositions , pronouns , past-tense verbs , and punctuation .
+while one state of the hmm , shown in the eighth column of the figure , emits common nouns , the majority of nouns are assigned to the semantic class .
+the designation of words as syntactic or semantic depends upon the corpus .
+identifying function and content words .
+identifying function and content words requires using information about both syntactic class and semantic context .
+in a machine learning paper , the word � control � might be an innocuous verb , or an important part of the content of a paper .
+likewise , � graph � could refer to a figure , or indicate content related to graph theory .
+tagging classes might indicate that � control � appears as a verb rather than a noun , but deciding that � graph � refers to a figure requires using information about the content of the rest of the document .
+the factorization of words between the hmm and the lda component provides a simple means of assessing the role that a given word plays in a document : evaluating the posterior probability of assignment to the lda component .
+the results of using this procedure to identify content words in sentences excerpted from nips papers are shown in figure 4 .
+probabilities were evaluated by averaging over assignments from all 20 samples , and take into account the semantic context of the whole document .
+as a result of combining short- and long-range dependencies , the model is able to pick out the words in each sentence that concern the content of the document .
+in contrast to this approach , we study here how the overall network activity can control single cell parameters such as input resistance , as well as time and space constants . , parameters that are crucial for being assigned to syntactic hmm classes produces templates for writing nips papers , into which content words can be inserted .
+for example , replacing the content words that the model identifies in the second sentence with content words appropriate to the topic of the present paper , we could write : the integrated architecture in this paper combines simple probabilistic syntax and topic-based semantics using generative models .
+marginal probabilities .
+we assessed the marginal probability of the data under each model , p ( w ) , using the harmonic mean of the likelihoods over the last 2000 iterations of sampling , a standard method for evaluating bayes factors via mcmc [ 11 ] .
+this probability takes into account the complexity of the models , as more complex models are penalized by integrating over a latent space with larger regions of low probability .
+the results are shown in figure 5 .
+lda outperforms the hmm on the brown corpus , but the hmm out-performs lda on the larger brown + tasa corpus .
+the composite model provided the best account of both corpora , being able to use whichever kind of dependency information was most predictive .
+using a higher-order transition matrix for either the hmm or the composite model produced little improvement in marginal likelihood for the brown corpus , but the third-order models performed best on brown + tasa .
+part-of-speech tagging .
+part-of-speech tagging � identifying the syntactic class of a word � is a standard task in computational linguistics .
+most unsupervised tagging methods use a lexicon that identifies the possible classes for different words .
+this simplifies the problem , as most words belong to a single class .
+however , genuinely unsupervised recovery of parts-of-speech has been used to assess statistical models of language learning , such as distributional clustering [ 3 ] .
+we assessed tagging performance on the brown corpus , using two tagsets .
+one set consisted of all brown tags , excluding those for sentence markers , leaving a total of 297 tags .
+the other set collapsed these tags into ten high-level designations : adjective , adverb , conjunction , determiner , foreign , noun , preposition , pronoun , punctuation , and verb .
+we evaluated tagging performance by using the adjusted rand index [ 12 ] , to measure the concordance between the tags and the class assignments of the hmm and composite models in the 20th sample .
+the adjusted rand index ranges from � 1 to 1 , with an expectation of 0 .
+results are shown in figure 6 .
+both models produced class assignments that were strongly concordant with part-of-speech , although the hmm gave a slightly better match to the full tagset , and the composite model gave a closer match to the top-level tags .
+this is partly because all words that vary strongly in frequency across contexts get assigned to the semantic class in the composite model , so it misses some of the fine-grained distinctions expressed in the full tagset .
+both the hmm and the composite model performed better than the distributional clustering method described in [ 3 ] , which was used to form the 1000 most frequent words in brown into 19 clusters .
+figure 6 compares this clustering with the classes for those words from the hmm and composite models trained on brown .
+document classification .
+the 500 documents in the brown corpus are classified into 15 groups , from editorial journalism to romance fiction .
+we assessed the quality of the topics recovered by the lda and composite models by training a naive bayes classifier on the topic vectors produced by the two models .
+we computed classification accuracy using 10-fold cross validation for the 20th sample from a single chain .
+the two models perform similarly .
+baseline accuracy , choosing classes according to the prior , was 0.09 .
+trained on brown , the lda model gave an accuracy of 0.51 , while 1 st , 2nd , and 3rd order composite models gave 0 . 45 , 0.41 , 0.42 respectively .
+trained on brown + tasa , the lda model gave 0 . 54 , while the 1 st . 2nd , and 3rd order composite models gave 0 . 48 , 0.48 , 0.46 respectively .
+the slightly lower accuracy of the composite model may result from having fewer data in which to find correlations : it only sees the words allocated to the semantic component , which account for approximately 20 % of the words in the corpus .
+conclusion .
+the composite model we have described captures the interaction between short- and long- range dependencies between words .
+as a consequence , it is able to simultaneously learn syntactic classes and semantic topics and identify the role that words play in documents , and is competitive in part-of-speech tagging and classification with models that specialize in only one form of dependency .
+clearly , such a model does not do justice to the depth of syntactic or semantic structure , or their interaction .
+however , it illustrates how a sensitivity to different kinds of statistical dependency might be sufficient for the first stages of language acquisition , discovering the syntactic and semantic building blocks that form the basis for learning more sophisticated representations .

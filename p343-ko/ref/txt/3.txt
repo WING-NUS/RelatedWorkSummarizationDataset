@@ -1,0 +1,182 @@
+in question answering , two heads are better than one .
+abstract .
+motivated by the success of ensemble methods in machine learning and other areas of natural language processing , we developed a multi- strategy and multi-source approach to question answering which is based on combining the results from different answering agents searching for answers in multiple corpora .
+the answering agents adopt fundamentally different strategies , one utilizing primarily knowledge-based mechanisms and the other adopting statistical techniques .
+we present our multi-level answer resolution algorithm that combines results from the answering agents at the question , passage , and / or answer levels .
+experiments evaluating the effectiveness of our answer resolution algorithm show a 35.0 % relative improvement over our baseline system in the number of questions correctly answered , and a 32.8 % improvement according to the average precision metric .
+introduction .
+traditional question answering ( qa ) systems typically employ a pipeline approach , consisting roughly of question analysis , document / passage retrieval , and answer selection ( see e.g. , ( prager et al. , 2000 ; moldovan et al. , 2000 ; hovy et al. , 2001 ; clarke et al. , 2001 ) ) .
+although a typical qa system classifies questions based on expected answer types , it adopts the same strategy for locating potential answers from the same corpus regardless of the question classification .
+in our own earlier work , we developed a specialized mechanism called virtual annotation for handling definition questions ( e.g. , who was galileo ? and what are antibiotics ? ) that consults , in addition to the standard reference corpus , a structured knowledge source ( wordnet ) for answering such questions ( prager et al. , 2001 ) .
+we have shown that better performance is achieved by applying virtual annotation and our general purpose qa strategy in parallel .
+in this paper , we investigate the impact of adopting such a multi- strategy and multi-source approach to qa in a more general fashion .
+our approach to question answering is additionally motivated by the success of ensemble methods in machine learning , where multiple classifiers are employed and their results are combined to produce the final output of the ensemble ( for an overview , see ( dietterich , 1997 ) ) .
+such ensemble methods have recently been adopted in question answering ( chu-carroll et al. , 2003b ; burger et al. , 2003 ) .
+in our question answering system , piquant , we utilize in parallel multiple answering agents that adopt different processing strategies and consult different knowledge sources in identifying answers to given questions , and we employ resolution mechanisms to combine the results produced by the individual answering agents .
+we call our approach multi-strategy since we combine the results from a number of independent agents implementing different answer finding strategies .
+we also call it multi-source since the different agents can search for answers in multiple knowledge sources .
+in this paper , we focus on two answering agents that adopt fundamentally different strategies : one agent uses predominantly knowledge-based mechanisms , whereas the other agent is based on statistical methods .
+our multi-level resolution algorithm enables combination of results from each answering agent at the question , passage , and / or answer levels .
+our experiments show that in most cases our multi-level resolution algorithm outperforms its components , supporting a tightly-coupled design for multi- agent qa systems .
+experimental results show significant performance improvement over our single-strategy , single-source baselines , with the best performing multilevel resolution algorithm achieving a 35.0 % relative improvement in the number of correct answers and a 32.8 % improvement in average precision , on a previously unseen test set .
+a multi-agent qa architecture .
+in order to enable a multi-source and multi-strategy approach to question answering , we developed a modular and extensible qa architecture as shown in figure 1 ( chu-carroll et al. , 2003a ; chu-carroll et al. , 2003b ) .
+with a consistent interface defined for each component , this architecture allows for easy plug-and-play of individual components for experimental purposes .
+in our architecture , a question is first processed by the question analysis component .
+the analysis results are represented as a qframe , which minimally includes a set of question features that help activate one or more answering agents .
+each answering agent takes the qframe and generates its own set of requests to a variety of knowledge sources .
+this may include performing search against a text corpus and extracting answers from the resulting passages , or performing a query against a structured knowledge source , such as wordnet ( miller , 1995 ) or cyc ( lenat , 1995 ) .
+the ( intermediate ) results from the individual answering agents are then passed on to the answer resolution component , which combines and resolves the set of results , and either produces the system s final answers or feeds the intermediate results back to the answering agents for further processing .
+we have developed multiple answering agents , some general purpose and others tailored for specific question types .
+figure 1 shows the answering agents currently available in piquant .
+the knowledge-based and statistical answering agents are general-purpose agents that adopt different processing strategies and consult a number of different text resources .
+the definition-q agent targets definition questions ( e.g. , what is penicillin ? and who is picasso ? ) with a technique called virtual annotation using the external knowledge source wordnet ( prager et al. , 2001 ) .
+the ksp-based answering agent focuses on a subset of factoid questions with specific logical forms , such as capital ( ? country ) and state tree ( ? state ) .
+the answering agent sends requests to the ksp ( knowledge sources portal ) , which returns , if possible , an answer from a structured knowledge source ( chu-carroll et al. , 2003a ) .
+in the rest of this paper , we briefly describe our two general-purpose answering agents .
+we then focus on a multi-level answer resolution algorithm , applicable at different points in the qa process of these two answering agents .
+finally , we discuss experiments conducted to discover effective methods for combining results from multiple answering agents .
+component answering agents .
+we focus on two end-to-end answering agents designed to answer short , fact-seeking questions from a collection of text documents , as motivated by the requirements of the trec qa track ( voorhees , 2003 ) .
+both answering agents adopt the classic pipeline architecture , consisting roughly of question analysis , passage retrieval , and answer selection components .
+although the answering agents adopt fundamentally different strategies in their individual components , they have performed quite comparably in past trec qa tracks ( voorhees , 2001 ; voorhees , 2002 ) .
+knowledge-based answering agent .
+our first answering agent utilizes a primarily knowledge- driven approach , based on predictive annotation ( prager et al. , 2000 ) .
+a key characteristic of this approach is that potential answers , such as person names , locations , and dates , in the corpus are predictively annotated .
+in other words , the corpus is indexed not only with keywords , as is typical for most search engines , but also with the semantic classes of these pre-identified potential answers .
+during the question analysis phase , a rule-based mechanism is employed to select one or more expected answer types , from a set of about 80 classes used in the predictive annotation process , along with a set of question keywords .
+a weighted search engine query is then constructed from the keywords , their morphological variations , synonyms , and the answer type ( s ) .
+the search engine returns a hit list of typically 10 passages , each consisting of 1-3 sentences .
+the candidate answers in these passages are identified and ranked based on three criteria : 1 ) match in semantic type between candidate answer and expected answer , 2 ) match in weighted grammatical relationships between question and answer passages , and 3 ) frequency of answer in candidate passages ( redundancy ) .
+the answering agent returns the top n ranked candidate answers along with a confidence score for each answer .
+statistical answering agent .
+the second answering agent takes a statistical approach to question answering ( ittycheriah , 2001 ; ittycheriah et al. , 2001 ) .
+given a question , an answer , and the predicted answer type , it seeks to model the correctness of this configuration .
+these distributions are modeled using a maximum entropy formulation ( berger et al. , 1996 ) , using training data which consists of human judgments of question answer pairs .
+for the answer type model , 13k questions were annotated with 31 categories .
+for the answer selection model , 892 questions from the trec 8 and trec 9 qa tracks were used , along with 4k trivia questions .
+during runtime , the question is first analyzed by the answer type model , which selects one out of a set of 31 types for use by the answer selection model .
+simultaneously , the question is expanded using local context analysis ( xu and croft , 1996 ) with an encyclopedia , and the top 1000 documents are retrieved by the search engine .
+from these documents , the top 100 passages are chosen that 1 ) maximize the question word match , 2 ) have the desired answer type , 3 ) minimize the dispersion of question words , and 4 ) have similar syntactic structures as the question .
+from these passages , candidate answers are extracted and ranked using the answer selection model .
+the top n candidate answers are then returned , each with an associated confidence score .
+answer resolution .
+given two answering agents with the same pipeline architecture , there are multiple points in the process at which ( intermediate ) results can be combined , as illustrated in figure 2 .
+more specifically , it is possible for one answering agent to provide input to the other after the question analysis , passage retrieval , and answer selection phases .
+in piquant , the knowledge based agent may accept input from the statistical agent after each of these three phases.1 the contributions from the statistical agent are taken into consideration by the knowledge based answering agent in a phase-dependent fashion .
+the rest of this section details our combination strategies for each phase .
+question-level combination .
+one of the key tasks of the question analysis component is to determine the expected answer type , such as person for who discovered america ? and date for when did world wariiend ?
+this information is taken into account by most existing qa systems when ranking candidate answers , and can also be used in the passage retrieval process to increase the precision of candidate passages .
+we seek to improve the knowledge-based agent s performance in passage retrieval and answer selection through better answer type identification by consulting the statistical agent s expected answer type .
+this task , however , is complicated by the fact that qa systems employ different sets of answer types , often with different granularities and / or with overlapping types .
+for instance , while one system may generate royalty for the question who was the king of france in 1702 ? , another system may produce person as the most specific answer type in its repertoire .
+this is quite a serious problem for us as the knowledge based agent uses over 80 answer types while the statistical agent adopts only 31 categories .
+in order to distinguish actual answer type discrepancies from those due to granularity differences , we first manually created a mapping between the two sets of answer types .
+this mapping specifies , for each answer type used by the statistical agent , a set ofpossible corresponding types used by the knowledge-based agent .
+for example , the geologicalobj class is mapped to a set of finer grained classes : river , mountain , lake , and ocean .
+at processing time , the statistical agent s answer type is mapped to the knowledge-based agent s classes ( sa-types ) , which are then merged with the answer type ( s ) selected by the knowledge-based agent itself ( kba-types ) as follows : if the intersection of kba-types and sa-types is non-null , i.e. , the two agents produced consistent answer types , then the merged set is kba-types .
+otherwise , the two sets of answer types are truly in disagreement , and the merged set is the union of kba-types and sa-types .
+the merged answer types are then used by the knowledge-based agent in further processing .
+passage-level combination .
+the passage retrieval component selects , from a large text corpus , a small number of short passages from which answers are identified .
+oftentimes , multiple passages that answer a question are retrieved .
+some of these passages may be better suited than others for the answer selection algorithm employed downstream .
+for example , consider when was benjamin disraeli prime minister ? , whose answer can be found in both passages below : benjamin disraeli , who had become prime minister in 1868 , was born into judaism but was baptized a christian at the age of 12 .
+france had a jewish prime minister in 1936 , england in 1868 , and spain , of all countries , in 1835 , but none of them , leon blum , benjamin disraeli or juan alvarez mendizabel , were devoutly observant , as lieberman is .
+although the correct answer , 1868 , is present in both passages , it is substantially easier to identify the answer from the first passage , where it is directly stated , than from the second passage , where recognition of parallel constructs is needed to identify the correct answer .
+because of strategic differences in question analysis and passage retrieval , our two answering agents often retrieve different passages for the same question .
+thus , we perform passage-level combination to make a wider variety of passages available to the answer selection component , as shown in figure 2 .
+the potential advantages are threefold .
+first , passages from agent 2 may contain answers absent in passages retrieved by agent 1 .
+second , agent 2 may have retrieved passages better suited for the downstream answer selection algorithm than those retrieved by agent 1 .
+third , passages from agent 2 may contain additional occurrences of the correct answer , which boosts the system s confidence in the answer through the redundancy measure.2 our passage-level combination algorithm adds to the passages extracted by the knowledge-based agent the top- ranked passages from the statistical agent that contain candidate answers of the right type .
+more specifically , the statistical agent s passages are semantically annotated and the top 10 passages containing at least one candidate of the expected answer type ( s ) are selected .
+answer-level combination .
+the answer selection component identifies , from a set of passages , the top n answers for the given question , with their associated confidence scores .
+an answer-level combination algorithm takes the top answer ( s ) from the individual answering agents and determines the overall best answer ( s ) .
+of our three combination algorithms , this most closely resembles traditional ensemble methods , as voting takes place among the end results of individual answering agents to determine the final output of the ensemble .
+we developed two answer-level combination algorithms , both utilizing a simple confidence-based voting mechanism , based on the premise that answers selected by both agents with high confidence are more likely to be correct than those identified by only one agent .4 in both algorithms , named entity normalization is first performed on all candidate answers considered .
+in the first algorithm , only the top answer from each agent is taken into account .
+if the two top answers are equivalent , the answer is selected with the combined confidence from both agents ; otherwise , the more confident answer is selected.5 in the second algorithm , the top 5 answers from each agent are allowed to participate in the voting process .
+each instance of an answer votes with a weight equal to its confidence value and the weights of equivalent answers are again summed .
+the answer with the highest weight , or confidence value , is selected as the system s final answer .
+since in our evaluation , the second algorithm uniformly outperforms the first , it is adopted as our answer-level combination algorithm in the rest of the paper .
+performance evaluation .
+experimental setup .
+to assess the effectiveness of our multi-level answer resolution algorithm , we devised experiments to evaluate the impact of the question , passage , and answer-level combination algorithms described in the previous section .
+the baseline systems are the knowledge-based and statistical agents performing individually against a single reference corpus .
+in addition , our earlier experiments showed that when employing a single answer finding strategy , consulting multiple text corpora yielded better performance than using a single corpus .
+we thus configured a version of our knowledge-based agent to make use of three available text corpora , 6 the aquaint corpus ( news articles from 1998-2000 ) , the trec corpus ( news articles from 1988-1994 ) , 7 and a subset of the encyclopedia britannica .
+this multi-source version of the knowledge-based agent will be used in all answer resolution experiments in conjunction with the statistical agent .
+we configured multiple versions of piquant to evaluate our question , passage , and answer-level combination algorithms individually and cumulatively .
+for cumulative effects , we 1 ) combined the algorithms pair-wise , and 2 ) employed all three algorithms together .
+the two test sets were selected from the trec 10 and 11 qa track questions ( voorhees , 2002 ; voorhees , 2003 ) .
+for both test sets , we eliminated those questions that did not have known answers in the reference corpus .
+furthermore , from the trec 10 test set , we discarded all definition questions , 8 since the knowledge-based agent adopts a specialized strategy for handling definition questions which greatly reduces potential contributions from other answering agents .
+this results in a trec 10 test set of 313 questions and a trec 11 test set of 453 questions .
+experimental results .
+we ran each of the baseline and combined systems on the two test sets .
+for each run , the system outputs its top answer and its confidence score for each question .
+all answers for a run are then sorted in descending order of the confidence scores .
+two established trec qa evaluation metrics are adopted to assess the results for each run as follows : a confidence-weighted score that rewards systems with high confidence in correct answers as follows , where n is the number of questions : the top section shows the comparable baseline results from the statistical agent ( sa-ss ) and the single-source knowledge- based agent ( kba-ss ) .
+it also includes results for the multi-source knowledge-based agent ( kba-ms ) , which improve upon those for its single-source counterpart ( kba-ss ) .
+the middle section of the table shows the answer resolution results , including applying the question , passage , and answer-level combination algorithms individually ( q , p , and a , respectively ) , applying them pair-wise ( q + p , p + a , and q + a ) , and employing all three algorithms ( q + p + a ) .
+finally , the last row of the table shows the relative improvement by comparing the best performing system configuration ( highlighted in boldface ) with the better performing single-source , single-strategy baseline system ( sa-ss or kba-ss , in italics ) .
+overall , piquant s multi-strategy and multi-source approach achieved a 35.0 % relative improvement in the number of correct answers and a 32.8 % improvement in average precision on the trec 11 data set .
+of the combined improvement , approximately half was achieved by the multi-source aspect of piquant , while the other half was obtained by piquant s multi-strategy feature .
+although the absolute average precision values are comparable on both test sets and the absolute percentage of correct answers is lower on the trec 11 data , the improvement is greater on trec 11 in both cases .
+this is because the trec 10 questions were taken into account for manual rule refinement in the knowledge-based agent , resulting in higher baselines on the trec 10 test set .
+we believe that the larger improvement on the previously unseen trec 11 data is a more reliable estimate of piquant s performance on future test sets .
+we applied an earlier version of our combination algorithms , which performed between our current p and p + a algorithms , in our submission to the trec 11 qa track .
+using the average precision metric , that version of piquant was among the top 5 best performing systems out of 67 runs submitted by 34 groups .
+discussion and analysis .
+a cursory examination of the results in table 1 allows us to draw two general conclusions about piquant s performance .
+first , all three combination algorithms applied individually improved upon the baseline using both evaluation metrics on both test sets .
+in addition , overall performance is generally better the later in the process the combination occurs , i.e. , the answer-level combination algorithm outperformed the passage-level combination algorithm , which in turn outperformed the question- level combination algorithm .
+second , the cumulative improvement from multiple combination algorithms is in general greater than that from the components .
+for instance , the q + a algorithm uniformly outperformed the q and a algorithms alone .
+note , however , that the q + p + a algorithm achieved the highest performance only on the trec 11 test set using the % correct metric .
+we believe that this is because of compounding errors that occurred during the multiple combination process .
+in ensemble methods , the individual components must make different mistakes in order for the combined system to potentially perform better than the component systems ( dietterich , 1997 ) .
+we examined the differences in results between the two answering agents from their question analysis , passage retrieval , and answer selection components .
+we focused our analysis on the potential gain / loss from incorporating contributions from the statistical agent , and how the potential was realized as actual performance gain / loss in our end-to-end system .
+at the question level , we examined those questions for which the two agents proposed incompatible answer types .
+on the trec 10 test set , the statistical agent introduced correct answer types in 6 cases and incorrect answer types in 9 cases .
+as a result , in some cases the question-level combination algorithm improved system performance ( comparing a and q + a ) and in others it degraded performance ( comparing p and q + p ) .
+on the other hand , on the trec 11 test set , the statistical agent introduced correct and incorrect answer types in 15 and 6 cases , respectively .
+as a result , in most cases performance improved when the question-level combination algorithm was invoked .
+the difference in question analysis performance again reflects the fact that trec 10 questions were used in question analysis rule refinement in the knowledge-based agent .
+at the passage level , we examined , for each question , whether the candidate passages contained the correct answer .
+table 2 shows the distribution of questions for which correct answers were ( + ) and were not ( - ) present in the passages for both agents .
+the boldfaced cells represent questions for which the statistical agent retrieved passages with correct answers while the knowledge-based agent did not .
+there were 43 and 58 such questions in the trec 10 and trec 11 test sets , respectively , and employing the passage-level combination algorithm resulted only in an additional 18 and 8 correct answers on each test set .
+this is because the statistical agent s proposes in its 10 passages , on average , 29 candidate answers , most of which are incorrect , of the proper semantic type per question .
+as the downstream answer selection component takes redundancy into account in answer ranking , incorrect answers may reinforce one another and become top ranked answers .
+this suggests that the relative contributions of our answer selection features may not be optimally tuned for our multi-agent approach to qa .
+we plan to investigate this issue in future work .
+at the answer level , we analyzed each agent s top 5 answers , used in the combination algorithm s voting process .
+table 3 shows the distribution of questions for which an answer was found in 1 st place , in 2nd-5th place , and not found in top 5 .
+since we employ a linear voting strategy based on confidence scores , we classify the cells in table 3 as follows based on the perceived likelihood that the correct answers for questions in each cell wins in the voting process .
+the boldfaced and underlined cells contain highly likely candidates , since a correct answer was found in 1 st place by both agents.
+the boldfaced cells consist of likely candidates , since a 1 st place correct answer was supported by a 2nd-5th place answer .
+the italicized and underlined cells contain possible candidates , while the rest of the cells cannot produce correct 1 st place answers using our current voting algorithm .
+on trec 10 data , 194 questions fall into the highly likely , likely , and possible categories , out of which the voting algorithm successfully selected 155 correct answers in 1st place .
+on trec 11 data , 197 correct answers were selected out of 248 questions that fall into these categories .
+these results represent success rates of 79.9 % and 79.4 % for our answer-level combination algorithm on the two test sets .
+related work .
+there has been much work in employing ensemble methods to increase system performance in machine learning .
+in nlp , such methods have been applied to tasks such as pos tagging ( brill and wu , 1998 ) , word sense disambiguation ( pedersen , 2000 ) , parsing ( henderson and brill , 1999 ) , and machine translation ( frederking and nirenburg , 1994 ) .
+in question answering , a number of researchers have investigated federated systems for identifying answers to questions .
+for example , ( clarke et al. , 2003 ) and ( lin et al. , 2003 ) employ techniques for utilizing both unstructured text and structured databases for question answering .
+however , the approaches taken by both these systems differ from ours in that they enforce an order between the two strategies by attempting to locate answers in structured databases first for select question types and falling back to unstructured text when the former fails , while we explore both options in parallel and combine the results from multiple answering agents .
+the multi-agent approach to question answering most similar to ours is that by burger et al. ( 2003 ) .
+they applied ensemble methods to combine the 67 runs submitted to the trec 11 qa track , using an unweighted centroid method for selecting among the 67 proposed answers for each question .
+however , their combined system did not outperform the top scoring system ( s ) .
+furthermore , their approach differs from ours in that they focused on combining the end results of a large number of systems , while we investigated a tightly-coupled design for combining two answering agents .
+conclusions .
+in this paper , we introduced a multi-strategy and multi-source approach to question answering that enables combination of answering agents adopting different strategies and consulting multiple knowledge sources .
+in particular , we focused on two answering agents , one adopting a knowledge-based approach and one using statistical methods .
+we discussed our answer resolution component which employs a multi-level combination algorithm that allows for resolution at the question , passage , and answer levels .
+best performance using the % correct metric was achieved by the three-level algorithm that combines after each stage , while highest average precision was obtained by a two-level algorithm merging at the question and answer levels , supporting a tightly-coupled design for multi-agent question answering .
+our experiments showed that our best performing algorithms achieved a 35.0 % relative improvement in the number of correct answers and a 32.8 % improvement in average precision on a previously unseen test set .

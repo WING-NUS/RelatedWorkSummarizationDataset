@@ -1,0 +1,315 @@
+person resolution in person search results : webhawk .
+abstract .
+finding information about people on the web using a search engine is difficult because there is a many-to-many mapping between person names and specific persons ( i.e. referents ) .
+this paper describes a person resolution system , called webhawk .
+given a list of pages obtained by submitting a person query to a search engine , webhawk facilitates person search in three steps : first of all , a filter removes those pages that contain no information about any person .
+secondly , a cluster groups the remaining pages into different clusters , each for one specific person .
+to make the resulting clusters more meaningful , an extractor is used to induce query-oriented personal information from each page .
+finally , a namer generates an informative description for each cluster so that users can find any specific person easily .
+the architecture of webhawk is presented , and the four components are discussed in detail , with a separate evaluation of each component presented where appropriate .
+a user study shows that webhawk complements most existing search engines and successfully improves users experience of person search on the web .
+introduction .
+person search is one of the most popular search types on the web .
+for example , according to [ 6 ] , 5-10 % of the english queries from alltheweb include person names .
+however , most of the current search engines ( e.g.
+google , yahoo , msn and alltheweb , etc . ) do not provide any specific function aiming at person search .
+they treat a person query the same as a general query , and return all web pages that contain one or more terms in the person query .
+it is difficult for users to find the expected person in such retrieval results due to following reasons .
+first of all , some pages may not contain any person information , referred to as junk pages in this paper , because person names may refer to non-person entities , such as products , companies , or places .
+for example , ford may refer to the ford company .
+those junk pages should be removed from person search results .
+secondly , there are a lot of ambiguities in person search .
+as taffet [ 17 ] pointed out , those ambiguities can be categorized into two kinds .
+one is called the multi-referent ambiguity due to the fact that many persons ( i.e. referents ) may have the same name .
+the other is called the multi-morphic ambiguity due to the fact that one name may have different written forms .
+multi-referent ambiguity is very common .
+to investigate how severe the multi-referent ambiguity is in reality , we selected the 200 most-frequent person queries from the log of msn .
+we issued these queries to msn , and manually counted for each query the number of different referents that occur in top-100 retrieved pages .
+the statistics are shown in figure 1 .
+we see that 68 % of person queries retrieve two or more referents , and about 20 % retrieve more than ten referents .
+the worst case is the query michael , which retrieves 48 referents .
+multi-morphic ambiguity is also common because the same person usually goes by different names in different contexts such as susan dumais and susan t. dumais .
+this would also annoy users when they browse search results .
+unfortunately , the issues in person search mentioned above have not been dealt with successfully in most of the existing search engines .
+they treat person queries the same as other generic queries , and simply present the retrieval results as a mixed list of non-person ( or junk ) pages and person pages with different referents .
+thus , users have to browse those pages one at a time to find the expected person , making person search a painful experience .
+usually , veteran users can get refined results by adding appropriate contextual words ( e.g. title , organization , etc . ) into the query and elaborating the query expression .
+however , most users are not experienced search experts and the inappropriate contextual words and query expression will ever deteriorate the results e.g. , lose relevant web pages and introduce irrelevant web pages .
+recently , some meta-search engines have been developed to handle ambiguities in search results .
+some representative examples include vivisimo ( www.vivisimo.com ) , dogpile ( www.dogpile.com ) and iboogie ( www.iboogie.com ) .
+however , they focus on general information organization , and can only partially resolve the two kinds of ambiguities in person search .
+in this paper we present a person resolution system , called webhawk .
+given a list of pages obtained by submitting a person query to a search engine ( i.e.
+msn in this study ) , webhawk facilitates person search by re-organizing the search results in three steps : first of all , a filter removes junk pages that contain no person information .
+secondly , a cluster groups the remaining pages into different clusters , each for one specific person ( i.e. referent ) .
+to make the resulting clusters more meaningful in the context of person search , an extractor has been developed for inducing query-oriented personal information from each page .
+finally , a namer generates an informative description ( which consists of a name and a set of key words ) for each cluster so that users can easily determine the specific person to which each cluster refers .
+note that the system is currently focusing on english name resolution .
+consider the example of david lee aforementioned .
+the result of webhawk , generated from the top-100 retrieved pages , is shown in figure 2 .
+we see that there are 11 junk pages being removed .
+for the remaining 89 pages , webhawk groups them into a list of clusters , each for one referent .
+the clusters are ranked by the number of pages contained .
+the cluster named other topics is a collection of single-page clusters .
+each cluster is described by its name ( i.e. person name like david lee murphy ) and a set of keywords that can best distinguish the referent from all of the others ( e.g.
+david lee murphy is an artist ) .
+now , users can easily find the referent of each cluster ( e.g. the professor named david m. lee in figure 2 ) without browsing pages .
+in the rest of this paper , we first review related work in section 2 .
+section 3 describes the corpora we used in our study .
+in sections 4 to 7 , we describe each of the four components ( i.e. , filter , cluster , extractor and namer ) in detail , presenting a separate evaluation of each component where appropriate .
+in section 8 , we present a pilot user study , where webhawk is compared with another state-of-the-art system .
+results show that webhawk complements most existing search engines and successfully improves users experience of person search on the web .
+finally , we conclude the paper in section 9 .
+related work .
+mann and yarowsky [ 11 ] employ a bottom-up centroid agglomerative clustering algorithm to generate person clusters based on extracted biographic features .
+however , the algorithm can only handle a small number of clusters , and has only been tested on some artificial test data .
+so it is questionable how well the method generalizes to real world problems .
+al-kamha and embley [ 1 ] also use an approach that clusters search results .
+but they use a different feature set , including attributes , links and page similarity .
+then , a so-called relatedness confidence matrix is constructed for each page-pair using a probabilistic model .
+clustering is performed by merging pairs whose matching confidence value is larger than a preset threshold .
+guha and garg [ 6 ] follow a different scenario .
+instead of the clustering algorithm , they use a re-ranking algorithm to disambiguate people .
+the algorithm requires a user to select one of the returned web pages as a start point .
+then , through comparing the person descriptions , the algorithm re-ranks the entire search results in such a way that pages referring to the same person described in the user-selected page are ranked higher .
+in this scenario , a user needs to browse the documents in order to find one which matches the users intended referent , which is inconvenient to the user .
+bekkerman and mccallum [ 3 ] present two unsupervised frameworks for finding those web pages referring to a particular person : one based on link structure and another using agglomerative / conglomerative double clustering ( a / cdc ) .
+but their scenario focuses on simultaneously disambiguating an existing social network of people , or lists of people who are known to be somewhat connected , which is not the case for person search in reality .
+on the one hand , webhawk can be viewed as an extension of the above approaches .
+for example , webhawk also uses a clustering algorithm to group pages based on extracted personal information , referred to as biographic features in [ 1 , 6 , 12 ] .
+on the other hand , webhawk differs from the above work in that it has been designed as a pragmatic system where we take into account more pragmatic factors , among which three of the most important ones are as follows .
+first , we remove junk pages by a filter .
+this problem is not discussed thoroughly in previous works , but we think that it is very critical for any pragmatic person search system that is based on re-organizing search results of general search engines .
+second , we perform an in-depth study of user-interface issues , such as how to provide an informative title / description for each cluster .
+finally , webhawk is tested on real data , and evaluated by real users , in comparison with other search systems .
+in practice , some commercial systems , such as zoominfo ( www.zoominfo.com ) , have been developed to find people information .
+but these systems have high cost and low scalability because the person information in the systems is collected mainly by human labors .
+in addition , our work is generally related to a number of other researches , e.g. object identification in [ 14 , 16 ] , citation matching in [ 12 ] , and name matching in [ 7 ] .
+search result clustering has been discussed in [ 4 , 19 , 20 ] .
+person name resolution can also be formulated as a general co-reference resolution problem discussed in [ 8 ] .
+in particular , wacholder et al. [ 18 ] describe how to resolve person names within one document .
+it has also been extended to the multi-document case in [ 2 , 5 , 13 , 15 ] .
+data set .
+we have selected the 200 most-frequent person queries from the log of msn .
+for each page , we collected the top 100 web pages that are retrieved successfully by msn .
+those pages have been manually annotated as follows .
+all junk pages ( as defined in section 4 ) have been labeled .
+we also assumed that one page refers to one referent , and removed all pages that refer to two or more referents .
+as a result , 2 % of pages have been removed .
+all remaining person pages have been grouped into different clusters , each for one referent .
+for each person page , we have manually extracted a set of personal information features , including full person name , title , organization , email address , and phone number .
+the distribution of the numbers of referents for the 200 person queries is shown in figure 1 .
+the average number is 6.88 .
+we have separated the person queries into two data sets : 160 queries as the training set and the remaining 40 queries as the test set .
+the following evaluations are based on these two data sets , unless stated otherwise .
+filter : removing junk pages . 
+method .
+a junk page , in the context of person search , refers to a retrieved web page , with respect to a person query , where no occurrence of the person query in the page occurs as a ( part of ) person name .
+junk pages are retrieved because person names may refer to non-person entities such as products ( e.g.
+abercrombie , bloomberg ) , companies ( e.g.
+ford , disney ) , places ( e.g.
+edmunds ) , and nature / law systems ( e.g.
+claudette , white , aarne ) .
+according to our study , junk pages amount to 35 % in the top-100 retrieved pages , with respect to a person query .
+therefore , junk page filtering is not only a critical initial step for subsequent processes such as clustering , but also prevents users from being detracted .
+unfortunately , this problem has not been studied thoroughly in a systematic manner previously .
+in webhawk , a component called filter has been developed for this purpose , where junk page filtering is formulated as a binary classification problem .
+in our implementation , the filter employs a particular svm classifier , svmlight [ 9 ] .
+in the next subsection , we will discuss the features used in the classifier .
+evaluation .
+we evaluate the performance of the filter using the data set described in section 3 .
+in particular , we denote manually labeled junk pages as positive examples and other pages as negative examples .
+the evaluation metrics are standard precision ( p ) , recall ( r ) and f1 = 2pr / ( p + r ) .
+we explore the effectiveness of different feature sets in the filter .
+these feature sets are simple lexical features : these features include title words , meta words1 , and body text words .
+we use frequency as their real-valued weight .
+stylistic lexical features : these features include words in bold font , words in anchor text , and words in heading text .
+we use frequency as their real-valued weight .
+query-relevant lexical features : these features include words adjacent to any of the query terms ( i.e. previous word and next word ) .
+we use frequency as their real-valued weight .
+linguistic features : these features include three real- valued numbers , which are the counts of person names , organizations , and locations extracted by an in-house named entity recognition ( ner ) tool .
+query-relevant possessive feature : this feature refers to the frequency of those occurrences of s after query terms , e.g. , bills .
+query-relevant abbreviation feature : this feature refers to the number of those cases where a token of the form x or x. appears before or next to any of the query terms .
+here , x refers to any capital letter from a to z. in our experiments , only the simple lexical features are used in the baseline system .
+table 1 shows the results , where w / o means that we use all features except the specified features .
+we can observe from that both the lexical features ( 1-3 ) and the linguistic features ( 4 ) have a substantial positive impact on the performance while the query-relevant features ( 5 and 6 ) bring only marginal improvements .
+to further improve the performance of the filter , we will also employ new features such as link information and annotate more data for training .
+method .
+personal information includes person name , title , organization , email address and phone number .
+intuitively , a combination of the above five biographical features can almost uniquely characterize a specific referent , and thus contribute most to the subsequent processes in webhawk , such as clustering and naming .
+extracting personal information is similar to the problem of named entity recognition ( ner ) , which is a long-standing research topic in natural language processing ( nlp ) .
+however , it is challenging to extend traditional ner techniques to our case for two reasons .
+first , our task is query-oriented .
+that is , we only extract biographical attributes of a specific referent in a page , with respect to a person query .
+the second reason is that web data is very noisy , so traditional nlp techniques may not be robust enough .
+our method uses a hybrid approach based on two techniques : pattern matching and mutual reinforcement learning .
+now , we discuss in detail how to extract each of the five biographical features .
+we assume that terms in a person query form ( partially ) the person name and are key clues for person name extraction .
+full english person names are usually composed of three fields : first name , middle name and last name , e.g.
+michael jeffrey jordan .
+person names with two words or one word also appear frequently in documents , e.g.
+michael jordan and jordan .
+we prefer person names with more words because those names are more like full names and have a better distinguishing capability .
+we can simply extract the full names from web pages given person queries with three words , but the difficult case lies in the person queries composed of only one or two words ( e.g.
+david and david lee ) .
+we employ the technique of mutual reinforcement learning .
+person names are extracted from a web page in the following three steps .
+to extract candidate person names from web text .
+candidate names are those substrings that are composed of capitalized words and contain the query terms .
+these candidate person names may include incorrect names ( e.g.
+david lee homepage ) and names of different persons ( e.g.
+david h. lee , david m. lee and david lee arnold ) .
+to assign each candidate person name a saliency score .
+the score is a linear combination of heuristic score ( see table 2 ) and normalized frequency , with equal weights .
+the higher the score , the better the candidate name is .
+to adjust the scores of candidate names and choose the one with the highest score .
+we employ mutual reinforcement learning to simultaneously compute the scores of the bi-names ( person name with two words ) and the tri-names ( person name with three words ) .
+the scores of uni-names ( person name with one word ) are not changed in this step .
+the technique of mutual reinforcement learning is based on the following assumption .
+a bi-name should have a high saliency score if it appears in many tri-names with high saliency scores and if its two terms are boundaries of a tri-name with high saliency scores .
+conversely , a tri-name should have a high saliency score if it contains many binames with high saliency scores and if its boundary words are just the two terms of a bi-name with high saliency score .
+for each web page , we generate two sets of candidate names : the set of bi-names b = { b1 , ... , bn } and the set of tri-names t = { t1 , ... , tm } .
+we build a weighted bipartite graph from b and t as follows : we create an edge between bi and tj and specify nonnegative weights wij on the edge indicating the relation between them ( wij = 0.1 if bi appears in tj and wij = 0.5 if terms in bi are boundaries of tj ) .
+we denote the weighted bipartite graph by g ( b , t,w ) where w = [ wij ] is the m-by-n weight matrix containing all the pairwise edge weights .
+for each bi-name bi and each tri-name tj we wish to compute their saliency scores u ( bi ) and v ( tj ) , respectively .
+we alternate computing and normalizing scores of bi-names and tri-names according to the above equation until convergence .
+at last we choose the person name with the highest saliency score .
+different from person name extraction , title , organization , email address and phone number are extracted using pattern matching .
+we manually author a set of extraction patterns for email address and phone number due to their simplicity .
+as for title and organization , we employ a simple learning method to collect extraction patterns .
+first , we select sentences in the annotated training corpus and tokenize them , smooth variations , and then subject them to simple generalization to constitute candidate patterns .
+for example , in this sentence david lee is a painter , painter is annotated as a title , so we replace david lee by < person > and generate a candidate pattern like < person > is a < title > .
+then , all these patterns are applied to the same training corpus to evaluate their accuracies .
+those patterns with high accuracy are adopted to extract title and organization .
+the numbers of patterns for title , organization , email address and phone number are 13 , 11 , 5 and 4 , respectively .
+some patterns can handle most cases except a few peculiar instances , e.g. webmaster @ x .. x is not an appropriate email address though it conforms to the pattern of x .. x @ x .. x .
+here , x represents any character .
+these negative examples are manually induced to form total 25 patterns , named anti -patterns , and we use these patterns to avoid similar extraction errors .
+with these patterns , we might extract more than one title or organization for a web page in that various patterns could be applied appropriately .
+then we use anti-patterns to filter the inappropriate instances .
+in order to improve the accuracy of title extraction , we have built a person title gazetteer beforehand , and those extracted titles not in this gazetteer will be excluded .
+lastly we rank the remaining instances by frequency and select the best ones .
+evaluation .
+in our experiments , standard precision ( p ) , recall ( r ) and f1 = 2pr / ( p + r ) are used as evaluation metrics .
+the baseline method of extracting personal information is to select the most frequent one from the corresponding set of candidate entities .
+the candidate sets for different types of personal information are produced as follows , respectively : person name candidates are those names which are extracted by the in-house ner tool and contain query terms ; organization candidates are all organizations extracted by the in-house ner tool ; title candidates are those terms co-occur both in the web page and in the person title gazetteer ; email address candidates are those substrings containing character @ ; phone number candidates are those substrings containing only numbers and hyphen and having at least 6 characters .
+table 3 compares the performance of the baseline methods with our methods .
+in the first column , # denotes the number of names ( or titles , etc . ) in the test set .
+for name extraction , w / o step 3 means that we only apply the first two steps to assign saliency scores to candidate names , and w / step3 means that mutual reinforcement learning is employed to adjust those scores .
+we can see that the learning step improves the performance of name extraction .
+as shown in table 3 , our approaches significantly outperform the baseline methods .
+in our pilot study , we have found that though the in-house ner tool achieves a good performance on the wsj corpus , it performs much worse on web pages due to the complexity and irregularity of web pages .
+for example , a web page has a person name ashton kutcher in heading text , but there are no contextual words surrounding it and the terms in this name do not exist in the name list of the ner tool .
+so , the ner tool cannot recognize it as a person name .
+while in our approach , the query ashton kutcher is a good contextual clue for distinguishing this person name .
+overall , the performance of the pattern matching approach to extraction of title , email address and phone number benefits from the use of query terms as contextual clues and the use of anti-patterns for filtering noisy answers .
+however , organization extraction is still a difficult task because it is hard to determine the boundary of organization . 6 .
+cluster : resolving referents 6.1 method .
+cluster is used to group person pages into different clusters , each for one specific person .
+we use the agglomerative clustering algorithm to produce clusters in a bottom-up way as follows : initially , each web page is an individual cluster ; then we iteratively merge two clusters with the largest similarity value to form a new cluster until this similarity value is below a pre-set merging threshold .
+the merging threshold can be determined through cross-validation .
+we employ the widely used average-link method to compute the similarity between two clusters as follows ; the principal problem of using the clustering algorithm described above is how to measure the similarity between two web pages pi and pj .
+different types of features extracted from web pages are explored in the experiments , including lexical features , linguistic features and personal information ( i.e.
+personinfo ) extracted as described in section 5 .
+the lexical features include title words , meta words and text words ( we consider both unigrams and bigrams ) .
+the linguistic features include basenp ( base noun phrase ) and ne ( named entity , including person , organization and location ) , which are produced by the in-house ner and basenp recognizer .
+here , the ne features refer to all named entities extracted from the web page by the tool , no matter whether they are correct or who they are related to .
+the basenp features refer to all basenps extracted from the web page .
+for each type of features , we generate a feature vector for a web page and the weight of a feature unit is its frequency .
+take ne features as an example .
+the vector is composed of all named entities in a web page .
+having generated those feature vectors for two web pages , we use the cosine measure to calculate similarity value between each pair of the same typed feature vectors .
+we then linearly combine such similarity values to get the final similarity value .
+the weights for different types of features are hard to be estimated empirically , so we use the perceptron algorithm with uneven margins ( paum ) [ 10 ] to estimate them .
+the paum is an extension of the perceptron algorithm specially designed to cope with two class problems where positive examples are rare compared to negative ones , which is suitable for the clustering context .
+evaluation .
+metrics .
+in the test set , each query corresponds to several non- overlapping clusters annotated by hand .
+for simplicity , the manually annotated clusters are called classes and the automatically generated clusters are called clusters .
+our evaluation involves two steps : first , we evaluate the performance for each query .
+second , we average the results over the 40 queries in test set .
+after we get the performance values of all 40 queries , we average the values to produce the overall performance value .
+results .
+in the experiments , we compare the performance of the clusters using different types of features and explore the influence of the filter on the performance .
+the comparison results are shown in figure 3 .
+in the figure , all data refers to all retrieved web pages including junk pages , clean data refers only to person pages and auto-cleaned data refers to the remaining web pages after applying filtering , which may include both person pages and junk pages .
+from figure 3 we can see that linguistic features slightly improve the performance , while automatically extracted personal information contributes substantially to the performance over all kinds of data .
+with linguistic features and personal information , the performance on clean data is 7 % higher than that with only lexical features .
+the results validate the intuition that personal information can almost uniquely characterize a specific referent .
+we can observe that given the same feature set , the gap between the performance on clean data and the performance on all data is large .
+it demonstrates that junk pages deteriorate significantly the performance and junk page filtering is necessary for person resolution .
+the filter that we have developed , though by no means perfect , can already improve the visible performance across all types of features .
+namer : generating description .
+namer is used to generate for each cluster an informative description so that users can find any specific person easily .
+here we propose a method to name the cluster concisely and informatively .
+we define a name template which consists of two parts : full person name and informative term .
+the informative term is content-focused and contains information unique to a particular referent .
+title is used as a preferential informative term .
+the filling of this template consists of two steps : candidate generation and ranking .
+in the candidate generation process , we collect those names and titles , which have been extracted from web pages , as the candidates .
+in the ranking process , we rank the candidate names and titles by their frequencies in the cluster and then fill the template with the most frequent ones .
+note that the extractor may not extract any title from the web pages in some clusters .
+in such a case , as backoff , we use the most salient word or phrase in the cluster as the informative term .
+for example , for david lee murphy , we use the title artist as the informative term , but for david lee smith , we use the phrase fan sites as the backoff informative term .
+the most salient term is the highest weighted term in the set of uni-grams and bi-grams extracted from those web pages , after excluding stop words and all bi-grams containing stop words .
+we assign the weight of a uni-gram as its frequency and the weight of a bi-gram as the double of its frequency .
+the name for a cluster is very concise .
+users may want to take a look in more detail at the cluster .
+so we provide a short summary as a supplement .
+the summary is produced based on a simple sentence extraction method .
+the details are skipped due to the page limit .
+the summary is located in the top of the right frame of the user interface of webhawk as shown in figure 4 .
+user study .
+in order to assess how easily and effectively to use webhawk for person search on the web , we perform a pilot user study .
+we compare webhawk with traditional msn and the award-winning vivisimo .
+msn returns a ranked list of search results while both vivisimo and webhawk show clusters in the left pane and a ranked list of documents in the right pane ( as shown in figures 4- 5 ) .
+because vivisimo can combine various results returned by a variety of search engines , in order to evaluate the three systems on the same data source , we select msn as the underlying search engine for vivisimo in the user study .
+note that previous work in [ 1 , 3 , 6 , 11 ] does not provide available pragmatic systems for person search , the comparison between webhawk and those works through user study is impossible .
+the webhawks system implementation details , which are important for real-time person search , are omitted due to the space limit .
+prior to the user study , a list of 12 tasks was developed .
+each of them was to find a specific piece of information about a specific person .
+each task had only one correct answer .
+the person queries were selected from msns logs and the specific information need for each person query was designed .
+it was guaranteed that the correct answer could be found from the top 100 web pages returned by msn .
+for example , one of the tasks was to find the name of the college where a person named michael williams , the vice president of viral products , got his b.s. degree , and the correct answer was lynchburg college .
+the usability study metrics were as follows : effectiveness metric - accuracy : this was the percentage of tasks successfully completed by a system .
+a task could be completed successfully , completed unsuccessfully or aborted .
+all these occurrences were recorded .
+a successfully completed task was the one where a user completed the task and obtained the correct answer .
+an unsuccessfully completed task was the one where a user completed the task but obtained the incorrect answer .
+an aborted task was the one that a user quit while performing the task .
+efficiency metric - completion time : this was the time taken for a user to complete a task using the system .
+subjective acceptance : this relates a users subjective satisfactory level by asking the user to fill out pre-designed questionnaires . 36 students from different departments were employed as subjects for performing person searches and filling out questionnaires .
+a graeco-latin square was used to establish task order for each participant and to confound task order effects .
+according to the task order , each subject carried out all 12 searches , four on msn , four on vivisimo and four on webhawk .
+note that besides the provided person name query , subjects were allowed to design and use any other queries they wished on msn or vivisimo during a search task .
+each search task had to be finished in 10 minutes2 ; otherwise the task was considered to be aborted .
+if the user already knew the answer , she or he still had to perform the search and find it .
+the start time and the end time of each task were re2 the time limit of 10 minutes is defined in the trec 2002 interactive track guidelines ( http : / / trec.nist.gov / data / t1 1 _ interactive / guidelines.html ) . corded to measure the completion time if the task was not aborted .
+the obtained answer for each task was saved and then compared with the correct answer .
+the averaged completion time and the accuracy were obtained for each participant and then the values were averaged across all the participants , as shown in table 4 .
+as a complement to the objective measures , an exit-system questionnaire was designed to gauge a users overall acceptance of a system after the user performed four tasks on it .
+the questionnaire asked subjects to assess each system in the following four aspects : ease of use : how easy the system was to use ?
+informativeness : were the cluster descriptions produced by the system ( i.e.
+vivisimo or webhawk ) informative enough to help the search ?
+satisfaction : were you satisfied with your search experience with the system ?
+preference : did you prefer to use the system when you searched specific information about a person ?
+subjects were required to express an opinion over a 5-point scale for each of the above questions , where 1 stood for not at all , 3 for somewhat and 5 for extremely .
+we collected the responses of subjects and averaged them , as shown in table 5 .
+table 4 shows that completion time for webhawk was the lowest and the accuracy for webhawk was a little higher than other systems .
+as can be seen in table 5 , both vivisimo and webhawk were a little more difficult to use than traditional msn in that the two-pane-based user interface was more complex than the simple ranked list .
+webhawk produced an informative person description for each cluster and these descriptions helped the person search .
+lastly , users were more satisfied with webhawk and preferred to use webhawk for person search .
+this user study showed that webhawk was efficient and effective and could improve users search experience for person search , which could be attributed to its good performance for person resolution and its ability to provide an informative interface .
+conclusions and future work .
+we have presented an effective system for person resolution in person search results , called webhawk .
+it is composed of four components : filter , extractor , cluster and namer .
+the experiments and results have shown the performance of each component and demonstrated that personal information extracted by the extractor improves the performance substantially and the filter does benefit the system by removing noisy data .
+it is verified through a user study that users person search experience is indeed improved by webhawk .
+either by simply providing a search option on the search interface indicting whether the search is a person search or a general search , or by providing an automatic person query identification mechanism , general search engines can integrate with webhawk easily and issue person queries to the person search engine-webhawk .
+we have attempted a new method where we categorized person pages into more elaborate sub-categories ( e.g. newswire , citation list , short bios , etc . ) , clustered web pages within each category , and combined these clusters .
+the intuition underlying this method is that each kind of web pages has their own characteristics and has better be clustered using their own distinguishing features .
+this method however did not improve the performance as we expected in our pilot experiments .
+we will explore new clustering scenarios in our future work .
+new features , e.g. link information , will also be explored for different components in webhawk .
+at present , webhawk focuses only on english person names and we will adapt the system to other languages in the near future .

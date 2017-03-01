@@ -1,0 +1,166 @@
+a probabilistic approach to language change .
+abstract .
+we present a probabilistic approach to language change in which word forms are represented by phoneme sequences that undergo stochastic edits along the branches of a phylogenetic tree .
+this framework combines the advantages of the classical comparative method with the robustness of corpus-based probabilistic models .
+we use this framework to explore the consequences of two different schemes for defining probabilistic models of phonological change , evaluating these schemes by reconstructing ancient word forms of romance languages .
+the result is an efficient inference procedure for automatically inferring ancient word forms from modern languages , which can be generalized to support inferences about linguistic phylogenies .
+introduction .
+languages evolve over time , with words changing in form , meaning , and the ways in which they can be combined into sentences .
+several centuries of linguistic analysis have shed light on some of the key properties of this evolutionary process , but many open questions remain .
+a classical example is the hypothetical proto-indo-european language , the reconstructed common ancestor of the modern indo-european languages .
+while the existence and general characteristics of this proto-language are widely accepted , there is still debate regarding its precise phonology , the original homeland of its speakers , and the date of various events in its evolution .
+the study of how languages change over time is known as diachronic ( or historical ) linguistics ( e.g. , [ 4 ] ) .
+most of what we know about language change comes from the comparative method , in which words from different languages are compared in order to identify their relationships .
+the goal is to identify regular sound correspondences between languages and use these correspondences to infer the forms of proto-languages and the phylogenetic relationships between languages .
+the motivation for basing the analysis on sounds is that phonological changes are generally more systematic than syntactic or morphological changes .
+comparisons of words from different languages are traditionally carried out by hand , introducing an element of subjectivity into diachronic linguistics .
+early attempts to quantify the similarity between languages ( e.g. , [ 15 ] ) made drastic simplifying assumptions that drew strong criticism from diachronic linguists .
+in particular , many of these approaches simply represent the appearance of a word in two languages with a single bit , rather than allowing for gradations based on correspondences between sequences of phonemes .
+we take a quantitative approach to diachronic linguistics that alleviates this problem by operating at the phoneme level .
+our approach combines the advantages of the classical , phoneme-based , comparative method with the robustness of corpus-based probabilistic models .
+we focus on the case where the words are etymological cognates across languages , e.g.
+french faire and spanish hacer from latin facere ( to do ) .
+following [ 3 ] , we use this information to estimate a contextualized model of phonological change expressed as a probability distribution over rules applied to individual phonemes .
+the model is fully generative , and thus can be used to solve a variety of problems .
+for example , we can reconstruct ancestral word forms or inspect the rules learned along each branch of a phylogeny to identify sound laws .
+alternatively , we can observe a word in one or more modern languages , say french and spanish , and query the corresponding word form in another language , say italian .
+finally , models of this kind can potentially be used as a building block in a system for inferring the topology of phylogenetic trees [ 3 ] .
+in this paper , we use this general approach to evaluate the performance of two different schemes for defining probability distributions over rules .
+the first scheme , used in [ 3 ] , treats these distributions as simple multinomials and uses a dirichlet prior on these multinomials .
+this approach makes it difficult to capture rules that apply at different levels of granularity .
+inspired by the prevalence of multi-scale rules in diachronic phonology and modern phonological theory , we develop a new scheme in which rules possess a set of features , and a distribution over rules is defined using a log- linear model .
+we evaluate both schemes in reconstructing ancient word forms , showing that the new linguistically-motivated change can improve performance significantly .
+background and previous work .
+most previous computational approaches to diachronic linguistics have focused on the reconstruction of phylogenetic trees from a boolean matrix indicating the properties of words in different languages [ 10 , 6 , 14 , 13 ] .
+these approaches descend from glottochronology [ 15 ] , which measures the similarity between languages ( and the time since they diverged ) using the number of words in those languages that belong to the same cognate set .
+this information is obtained from manually curated cognate lists such as the data of [ 5 ] .
+the modern instantiations of this approach rely on sophisticated techniques for inferring phylogenies borrowed from evolutionary biology ( e.g. , [ 11 , 7 ] ) .
+however , they still generally use cognate sets as the basic data for evaluating the similarity between languages ( although some approaches incorporate additional manually constructed features [ 14 ] ) .
+as an example of a cognate set encoding , consider the meaning eat .
+there would be one column for the cognate set which appears in french as manger and italian as mangiare since both descend from the latin mandere ( to chew ) .
+there would be another column for the cognate set which appears in both spanish and portuguese as comer , descending from the latin comedere ( to consume ) .
+if these were the only data , algorithms based on this data would tend to conclude that french and italian were closely related and that spanish and portuguese were equally related .
+however , the cognate set representation has several disadvantages : it does not capture the fact that the cognate is closer between spanish and portuguese than between french and spanish , nor do the resulting models let us conclude anything about the regular processes which caused these languages to diverge .
+also , curating cognate data can be expensive .
+in contrast , each word in our work is tracked using an automatically obtained cognate list .
+while these cognates may be noisier , we compensate for this by modeling phonological changes rather than boolean mutations in cognate sets .
+another line of computational work has explored using phonological models as a way to capture the differences between languages . [ 16 ] describes an information theoretic measure of the distance between two dialects of chinese .
+they use a probabilistic edit model , but do not consider the reconstruction of ancient word forms , nor do they present a learning algorithm for such models .
+there have also been several approaches to the problem of cognate prediction in machine translation ( essentially transliteration ) , e.g. , [ 12 ] .
+compared to our work , the phenomena of interest , and therefore the models , are different . [ 12 ] presents a model for learning sound laws , general phonological changes governing two completely observed aligned cognate lists .
+this model can be viewed as a special case of ours using a simple two-node topology .
+a generative model of phonological change .
+in this section , we outline the framework for modeling phonological change that we will use throughout the paper .
+assume we have a fixed set of word types ( cognate sets ) in our vocabulary v and a set of languages l. each word type i has a word form wil in each language l e l , which is represented as a sequence of phonemes which might or might not be observed .
+the languages are arranged according to some tree topology t ( see figure 2 ( a ) for examples ) .
+it is possible to also induce the topology or cognate set assignments , but in this paper we assume that the topology is fixed and cognates have already been identified .
+the probabilistic model specifies a distribution over the word forms { wil } for each word type i e v and each language l e l via a simple generative process ( figure 1 ( a ) ) .
+the generative process starts at the root language and generates all the word forms in each language in a top-down manner .
+the w languagemodel distribution is a simple bigram phoneme model .
+a root word form w consisting of n phonemes x1 xn is generated with probability plm ( x1 ) = ~ nj = 2 plm ( xj i xj-1 ) , where plm is the distribution of the language model .
+the stochastic edit model w ' edit ( w , ^ ) describes how a single old word form w = x1 xn changes along one branch of the phylogeny with parameters ^ to produce a new word form w ' .
+this process is parametrized by rule probabilities ^ kl , which are specific to branch ( k > l ) .
+the generative process used in the edit model is as follows : for each phoneme xi in the old word form , walking from left to right , choose a rule to apply .
+there are three types of rules : ( 1 ) deletion of the phoneme , ( 2 ) substitution with some phoneme ( possibly the same one ) , or ( 3 ) insertion of another phoneme , either before or after the existing one .
+the probability of applying a rule depends on the context ( xi-1 , xi + 1 ) .
+context-dependent rules are often used to characterize phonological changes in diachronic linguistics [ 4 ] .
+figure 1 ( b ) shows an example of the rules being applied .
+the context-dependent form of these rules allows us to represent phenomena such as the likely deletion of s in word-final positions .
+defining distributions over rules .
+in the model defined in the previous section , each branch ( k > l ) e t has a collection of context-dependent rule probabilities ^ kl .
+specifically , ^ kl specifies a collection of multinomial distributions , one for each c = ( cl , x , ct ) , where cl is left phoneme , x is the old phoneme , ct is the right phoneme .
+each multinomial distribution is over possible right-hand sides a of the rule , which could consist of 0 , 1 , or 2 phonemes .
+we write ^ kl ( c , a ) for the probability of rule x > a / c1 c2 .
+previous work using this probabilistic framework simply placed independent dirichlet priors on each of the multinomial distributions [ 3 ] .
+while this choice results in a simple estimation procedure , it has some severe limitations .
+sound changes happen at many granularities .
+for example , from latin to vulgar latin , u > o occurs in many contexts while s > 0 occurs only in word-final contexts .
+using independent dirichlets forces us to commit to a single context granularity for c. since the different multinomial distributions are not tied together , generalization becomes very difficult , especially as data is limited .
+it is also difficult to interpret the learned rules , since the evidence for a coarse phenomenon such as u > o would be unnecessarily fragmented across many different context-dependent rules .
+we would like to ideally capture a phenomenon using a single rule or feature .
+we could relate the rule probabilities via a simple hierarchical bayesian model , but we would still have to define a single hierarchy of contexts .
+this restriction might be inappropriate given that sound changes often depend on different contexts that are not necessarily nested .
+for these reasons , we propose using a feature-based distribution over the rule probabilities .
+let f ( c , ^ ) be a feature vector that depends on the context-dependent rule ( c , ^ ) , and ^ k-l be the log-linear weights for branch ( k > l ) .
+we use a normal prior on the log-linear weights , ^ k-l ^ n ( 0 , q2i ) .
+the rule probabilities are then deterministically related to the weights via the softmax function : for each rule x > ^ / cl ct , we defined features based on whether x = ^ ( i.e. self-substitution ) , and whether | ^ | = n for each n = 0 , 1 , 2 ( corresponding to deletion , substitution , and insertion ) .
+we also defined sets of features using three partitions of phonemes c into natural classes .
+these correspond to looking at the place of articulation ( denoted a2 ( c ) ) , testing whether c is a vowel , consonant , or boundary symbol ( a1 ( c ) ) , and the trivial wildcard partition ( a0 ( c ) ) , which allows rules to be insensitive to c .
+using these partitions , the final set of features corresponded to whether ake ( cl ) = al and akr ( ct ) = at for each type of partitioning kl , kt e { 0 , 1 , 2 } and natural classes al , at .
+the move towards using a feature-based scheme for defining rule probabilities is not just motivated by the greater expressive capacity of this scheme .
+it also provides a connection with contemporary phonological theory .
+recent work in computational linguistics on probabilistic forms of optimality theory has begun to use a similar approach , characterizing the distribution over word forms within a language using a log-linear model applied to features of the words [ 17 , 9 ] .
+using similar features to define a distribution over phonological changes thus provides a connection between synchronic and diachronic linguistics in addition to a linguistically-motivated method for improving reconstruction .
+learning and inference .
+we use a monte carlo em algorithm to fit the parameters of both models .
+the algorithm iterates between a stochastic e-step , which computes reconstructions based on the current edit parameters , and an m-step , which updates the edit parameters based on the reconstructions .
+monte carlo e-step : sampling the edits .
+the e-step computes the expected sufficient statistics required for the m-step , which in our case is the expected number of times each edit ( such as o > a ) was used in each context .
+note that the sufficient statistics do not depend on the prior over rule probabilities ; in particular , both the model based on independent dirichlet priors and the one based on a log-linear prior require the same e-step computation .
+an exact e-step would require summing over all possible edits involving all languages in the phylogeny ( all unobserved { e } , { w } variables in figure 1 ( c ) ) , which does not permit a tractable dynamic program .
+therefore , we resort to a monte carlo e-step , where many samples of the edit variables are collected , and counts are computed based on these samples .
+samples are drawn using gibbs sampling [ 8 ] : for each word form of a particular language wil , we fix all other variables in the model and sample wil along with its corresponding edits .
+consider the simple four-language topology in figure 1 ( c ) .
+suppose that the words in languages a , c and d are fixed , and we wish to sample the word at language b along with the three corresponding sets of edits ( remember that the edits fully determine the words ) .
+while there are an exponential number of possible words / edits , we can exploit the markov structure in the edit model to consider all such words / edits using dynamic programming , in a way broadly similar to the forward-backward algorithm for hmms .
+see [ 3 ] for details of the dynamic program .
+m-step : updating the parameters .
+in the m-step , we estimate the distribution over rules for each branch ( k ^ l ) .
+in the dirichlet model , this can be done in closed form [ 3 ] .
+in the log-linear model , we need to optimize the feature weights ak-l .
+let us fix a single branch and drop the subscript .
+let n ( c , a ) be the expected number of times the rule ( c , a ) was used in the e-step .
+given these sufficient statistics , the estimate of a is given by optimizing the expected complete log-likelihood plus the regularization penalty from the prior on a , we use l-bfgs to optimize this convex objective. which only requires the partial derivatives : experiments .
+in this section , we summarize the results of the experiments testing our different probabilistic models of phonological change .
+the experimental conditions are summarized in table 2 .
+training and test data sets were taken from [ 3 ] .
+reconstruction of ancient word forms .
+we ran the two models using topology 1 in figure 2 to assess the relative performance of dirichletparametrized versus log-linear-parametrized models .
+half of the latin words at the root of the tree were held out , and the ( uniform cost ) levenshtein edit distance from the predicted reconstruction to the truth was computed .
+while the uniform-cost edit distance misses important aspects of phonology ( all phoneme substitutions are not equal , for instance ) , it is parameter-free and still seems to correlate to a large extent with linguistic quality of reconstruction .
+it is also superior to held-out log-likelihood , which fails to penalize errors in the modeling assumptions , and to measuring the percentage of perfect reconstructions , which ignores the degree of correctness of each reconstructed word .
+we ran em for 10 iterations for each model , and evaluated performance via a viterbi derivation produced using these parameters .
+our baseline for comparison was picking randomly , for each heldout node in the tree , an observed neighboring word ( i.e. , copy one of the modern forms ) .
+both models outperformed this baseline ( see figure 3 ) , and the log-linear model outperformed the dirichlet model , suggesting that the featurized system better captures the phonological changes .
+moreover , adding more features further improved the performance , indicating that being able to express rules at multiple levels of granularity allows the model to capture the underlying phonological changes more accurately .
+to give a qualitative feel for the operation of the system ( good and bad ) , consider the example in figure 3 , taken from the dirichlet-parametrized experiment .
+the latin dentis / dentis / ( teeth ) is nearly correctly reconstructed as / dentes / , reconciling the appearance of the / j / in the spanish and the disappearance of the final / s / in the italian .
+note that the / is / vs. / es / ending is difficult to predict in this context ( indeed , it was one of the early distinctions to be eroded in vulgar latin ) .
+inference of phonological changes .
+another use of this model is to automatically recover the phonological drift processes between known or partially-known languages .
+to facilitate evaluation , we continued in the well-studied romance evolutionary tree .
+again , the root is latin , but we now add an additional modern language , portuguese , and two additional hidden nodes .
+one of the nodes characterizes the least common ancestor of modern spanish and portuguese ; the other , the least common ancestor of all three modern languages .
+in figure 2 , topology 2 , these two nodes are labeled vl ( vulgar latin ) and ib ( protoibero romance ) , respectively .
+since we are omitting many other branches , these names should not be understood as referring to actual historical proto-languages , but , at best , to collapsed points representing several centuries of evolution .
+nonetheless , the major reconstructed rules still correspond to well-known phenomena and the learned model generally places them on reasonable branches .
+figure 4 shows the top four general rules for each of the evolutionary branches recovered by the log-linear model .
+the rules are ranked by the number of times they were used in the derivations during the last iteration of em .
+the la , es , pt , and it forms are fully observed while the vl and ib forms are automatically reconstructed .
+figure 4 also shows a specific example of the evolution of the latin verbum ( word ) , along with the specific edits employed by the model .
+for this particular example , both the dirichlet and the log-linear models produced the same reconstruction in the internal nodes .
+however , the log-linear parametrization makes inspection of sound laws easier .
+indeed , with the dirichlet model , since the natural classes are of fixed granularity , some rules must be redundantly discovered , which tends to flood the top of the rule lists with duplicates .
+in contrast , the log-linear model groups rules with features of the appropriate degree of generality .
+while quantitative evaluation such as measuring edit distance is helpful for comparing results , it is also illuminating to consider the plausibility of the learned parameters in a historical light , which we do here briefly .
+in particular , we consider rules on the branch between la and vl , for which we have historical evidence .
+for example , documents such as the appendix probi [ 2 ] provide indications of orthographic confusions which resulted from the growing gap between classical latin and vulgar latin phonology around the 3rd and 4th centuries ad .
+the appendix lists common misspellings of latin words , from which phonological changes can be inferred .
+on the la to vl branch , rules for word-final deletion of classical case markers dominate the list .
+it is indeed likely that these were generally eliminated in vulgar latin .
+for the deletion of the / m / , the appendix probi contains pairs such as passim non passi and olim non oli .
+for the deletion of final / s / , this was observed in early inscriptions , e.g.
+cornelio for cornelios [ 1 ] .
+the frequent leveling of the distinction between / o / and / u / ( which was ranked 5 , but was not included for space reasons ) can be also be found in the appendix probi : coluber non colober .
+note that in the specific example shown , the model lowers the original / u / and then re-raises it in the pt branch due to a later process along that branch .
+similarly , major canonical rules were discovered in other branches as well , for example , / v / to / b / fortition in spanish , palatalization along several branches , and so on .
+of course , the recovered words and rules are not perfect .
+for example , reconstructed ibero / trinta / to spanish / treinta / ( thirty ) is generated in an odd fashion using rules / e / to / i / and / n / to / in / .
+in the dirichlet model , even when otherwise reasonable systematic sound changes are captured , the crudeness of the fixed-granularity contexts can prevent the true context from being captured , resulting in either rules applying with low probability in overly coarse environments or rules being learned redundantly in overly fine environments .
+the featurized model alleviates this problem .
+conclusion .
+probabilistic models have the potential to replace traditional methods used for comparing languages in diachronic linguistics with quantitative methods for reconstructing word forms and inferring phylogenies .
+in this paper , we presented a novel probabilistic model of phonological change , in which the rules governing changes in the sound of words are parametrized using the features of the phonemes involved .
+this model goes beyond previous work in this area , providing more accurate reconstructions of ancient word forms and connections to current work on phonology in synchronic linguistics .
+using a log-linear model to define the probability of a rule being applied results in a straightforward inference procedure which can be used to both produce accurate reconstructions as measured by edit distance and identify linguistically plausible rules that account for phonological changes .
+we believe that this probabilistic approach has the potential to support quantitative analysis of the history of languages in a way that can scale to large datasets while remaining sensitive to the concerns that have traditionally motivated diachronic linguistics .

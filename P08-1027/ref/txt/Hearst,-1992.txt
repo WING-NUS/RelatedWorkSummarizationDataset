@@ -1,0 +1,143 @@
+automatic acquisition of hyponyms from large text corpora .
+abstract .
+we describe a method for the automatic acquisition of the hyponymy lexical relation from unrestricted text .
+two goals motivate the approach : ( i ) avoidance of the need for pre-encoded knowledge and ( ii ) applicability across a wide range of text .
+we identify a set of lexico-syntactic patterns that are easily recognizable , that occur frequently and across text genre boundaries , and that indisputably indicate the lexical relation of interest .
+we describe a method for discovering these patterns and suggest that other lexical relations will also be acquirable in this way .
+a subset of the acquisition algorithm is implemented and the results are used to augment and critique the structure of a large hand-built thesaurus .
+extensions and applications to areas such as information retrieval are suggested .
+introduction .
+currently there is much interest in the automatic acquisition of lexical syntax and semantics , with the goal of building tip large lexicons for natural language processing .
+projects that center around extracting lexical information from machine readable dictionaries ( mrds ) have shown much success but are inherently limited , since the set of entries within a dictionary is fixed .
+in order to find terms and expressions that are not defined in mrds we must turn to other textual resources .
+for this purpose , we view a text corpus not only as a source of information , but also as a source of information about the language it is written in .
+when interpreting unrestricted , domain-independent text , it is difficult to determine in advance what kind of information will be encountered and how it will be expressed .
+instead of interpreting everything in the text in great detail , we can search for specific lexical relations that are expressed in well-known ways .
+surprisingly useful information can be found with only a very simple understanding of a text .
+consider the following sentence : most fluent readers of english who have never before encountered the term " bambara ndang " will nevertheless from this sentence infer that a " bambara ndang " is a kind of " bow lute " .
+this is true even if the reader has only a fuzzy conception of what a bow lute is .
+note that the author of the sentence is not deliberately defining the term , as would a dictionary or a children 's book containing a didactic sentence like a bambara ndany is a kind of bow lute .
+however , the semantics of the lexico-syntactic construction indicated by the pattern : we use the term hyponym similarly to the sense used in ( miller et al. 1990 ) : a concept represented by a lexical item lo is said to be a hyponym of the concept represented by a lexical item l5 if native speakers of english accept sentences constructed from the frame an lo is a ( kind of ) l. here li _ is the hypernyin of lo and the relationship is reflexive and transitive , but not symmetric .
+this example shows a way to discover a hyponymic lexical relationship between two or more noun phrases in a naturally-occurring text .
+this approach is similar in spirit to the pattern-based interpretation techniques being used in mrd processing .
+for example , ( alshawi 1987 ) , in interpreting ldoce definitions , uses a hierarchy of patterns which consist mainly of part-of-speech indicators and wildcard characters . ( markowitz et al. 1986 ) , ( jensen sr binot 1987 ) , and ( nakamura nagao 1988 ) also use pattern recognition to extract semantic relations such as taxonomy from various dictionaries . ( ahlswede & evens 1988 ) compares an approach based on parsing webster 's 7th definitions with one based on pattern recognition , and finds that for finding simple semantic relations , pattern recognition is far more accurate and efficient than parsing .
+the general feeling is that the structure and function of mrds makes their interpretation amenable to pattern-recognition techniques .
+thus one could say by interpreting sentence ( si ) according to ( la-b ) we are applying pattern-based relation recognition to general texts .
+since one of the goals of building a lexical hierarchy automatically is to aid in the construction of a natural language processing program , this approach to acquisition is preferable to one that needs a complex parser and knowledge base .
+the tradeoff is that the the information acquired is coarse-grained .
+there are many ways that the structure of a language can indicate the meanings of lexical items , but the difficulty lies in finding constructions that frequently and reliably indicate the relation of interest .
+it might seem that because free text is so varied in form and content ( as compared with the somewhat regular structure of the dictionary ) that it may not be possible to find such constructions .
+however , we have identified a set of lexico-syntactic patterns , including the one shown in ( 1a ) above , that indicate the hyponymy relation and that satisfy the following desiderata : item ( i ) indicates that the pattern will result in the discovery of many instances of the relation , item ( ii ) that the information extracted will not be erroneous , and item ( iii ) that making use of the pattern does not require the tools that it is intended to help build .
+finding instances of the hyponymy relation is useful for several purposes : lexicon augmentation .
+hyponymy relations can be used to augment and verify existing lexicons , including ones built from mrds .
+section 3 of this paper describes an example , comparing results extracted from a text corpus with information stored in the noun hierarchy of wordnet ( ( miller et al. 1990 ) ) , a hand-built lexical thesaurus .
+noun phrase semantics .
+another purpose to which these relations can be applied is the identification of the general meaning of an unfamiliar noun phrases .
+for example , discovering the predicate hyponym ( " broken bone " , " injury " ) indicates that the term " broken bone " can be understood at some level as an " injury " without having to determine the correct senses of the component words and how they combine .
+note also that a term like " broken bone " is not likely to appear in a dictionary or lexicon , although it is a common locution .
+semantic relatedness information .
+there has recently been work in the detection of semantically related nouns via , for example , shared argument structures ( hindle 1990 ) , and shared dictionary definition context ( wilks et al. 1990 ) .
+these approaches attempt to infer relationships among lexical terms by looking at very large text samples and determining which ones are related in a statistically significant way .
+the technique introduced in this paper can be seen as having a similar goal but an entirely different approach , since only one sample need be found in order to determine a salient relationship ( and that sample may be infrequently occurring or nonexistent ) .
+thinking of the relations discovered as closely related semantically instead of as hyponymic is most felicitous when the noun phrases involved are modified and atypical .
+consider , for example , the predicate hyponytn ( " detonating explosive " , " blasting agent " ) this relation may not be a canonical isa relation but the fact that it was found in a text implies that the terms ' meanings are close .
+connecting terms whose expressions are quite disparate but whose meanings are similar should be useful for improved synonym expansion in information retrieval and for finding chains of semantically related phrases , as used in the approach to recognition of topic boundaries of ( morris & hirst 1991 ) .
+we observe that terms that occur in a list are often related semantically , whether they occur in a hyponymy relation or not .
+in the next section we outline a way to discover these lexico-syntactic patterns as well as illustrate those we have found .
+section 3 shows the results of searching texts for a restricted version of one of the patterns and compares the results against a hand-built thesaurus .
+section 4 is a discussion of the merits of this work and describes future directions .
+lexico-syntactic patterns for hyponymy .
+since only a subset of the possible instances of the hyponymy relation will appear in a particular form , we need to make use of as many patterns as possible .
+below is a list of lexico-syntactic patterns that indicate the hyponymy relation , followed by illustrative sentence fragments and the predicates that can be derived from them ( detail about the environment surrounding the patterns is omitted for simplicity ) : when a relation hyponyzmn po , np1 ) is discovered , aside front some lemmatizing and removal of unwanted modifiers , the noun phrase is left as an atomic unit , not broken clown and analyzed .
+if a more detailed interpretation is desired , the results can be passed on to a more intelligent or specialized language analysis component .
+and , as mentioned above , tins kind of discovery procedure can be a partial solution for a problem like noun phrase interpretation because at least part of the meaning of the phrase is indicated by the hyponymy relation .
+some considerations .
+discovery of new patterns .
+how can these patterns be found ?
+initially we discovered patterns ( 1 ) - ( 3 ) by observation , looking through text and noticing the patterns and the relationships they indicate , in order to find new patterns automatically , we sketch the following procedure : decide on a lexical relation , 11 , that is of interest , e.g. , " group / member " ( in our formulation this is a subset of the hyponymy relation ) .
+gather a list of terms for which this relation is known to hold , e.g. , " england-country " . this list can be found automatically using the method described here , bootstrapping from patterns found by hand , or by bootstrapping from an existing lexicon or knowledge base .
+find places in the corpus where these expressions occur syntactically near one another and record the environment .
+find the commonalities among these environments and hypothesize that common ones yield patterns that indicate the relation of interest .
+once a new pattern has been positively identified , use it to gather more instances of the target relation and go to step 2 .
+we tried this procedure by hand using just one pair of terms at a time .
+in the first case we tried the " england-country " example , and with just this pair we found new patterns ( 4 ) and ( 5 ) , as well as ( 1 ) - ( 3 ) which were already known .
+next we tried " tank. vehicle " and discovered a very productive pattern , pattern ( 6 ) . ( note that for tins pattern , even though it has an emphatic element , this does not affect the fact that the relation indicated is hyponymic . )
+we have tried applying this technique to meronymy ( i.e. , the part / whole relation ) , but without great success .
+the patterns found for this relation do not tend to uniquely identify it , but can be used to express other relations as well .
+it may be the case that in english the hyponymy relation is especially amenable to this kind of analysis , perhaps due to its " naming " nature , however , we have had some success at identification of more specific relations , such as patterns that indicate certain types of proper nouns .
+we have not implemented an automatic version of this algorithm , primarily because step 4 is underdetermined .
+related work .
+this section discusses work in acquisition of lexical information from text corpora , although as mentioned earlier , significant work has been done in acquiring lexical information from mrds . ( coates-stephens 1991 ) acquires semantic descriptions of proper nouns in a system called funes .
+funes attempts to fill in frame roles , ( e.g. , name , age , origin , position , and works-for , for a person frame ) by processing newswire text .
+this system is similar to the work described here in that it recognizes some features of the context in which the proper noun occurs in order to identify some relevant semantic attributes .
+for instance .
+coates-stephens mentions that " known as " can explicitly introduce meanings for terms , as can appositives .
+we also have considered these markers , but the former often does not cleanly indicate " another name for " and the latter is difficult to recognize accurately .
+funes differs quite strongly from our approach in that , because it is able to fill in many kinds of frame roles , it requires a parser that produces a detailed structure , and it requires a domain-dependent knowlege base / lexicon . ( velardi pazienza 1989 ) makes use of hand-coded selection restriction and conceptual relation rules in order to assign case roles to lexical items , and ( jacobs & zernik 1988 ) uses extensive domain knowledge to fill in missing category information for unknown words .
+work on acquisition of syntactic information from text corpora includes brent 's ( brent 1991 ) verb subcategorization frame recognition technique and smadja 's ( smadja 8.c mckeown 1990 ) collocation acquisition algorithm . ( calzolari sz bindi 1990 ) use corpus-based statistical association ratios to determine lexical information such as prepositional complementation relations , modification relations , and significant compounds .
+our methodology is similar to brent 's in its effort to distinguish clear pieces of evidence from ambiguous ones .
+the assumption is that that given a large enough corpus , the algorithm can afford wait until it encounters clear examples .
+brent 's algorithm relies on a clever trick : in the configuration of interest ( in tins case , verb valence descriptions ) , where noun phrases are the source of ambiguity , it uses only sentences which have pronouns in the crucial position , since pronouns do not allow this ambiguity .
+this approach is quite effective , but the disadvantage is that it isn 't clear that it is applicable to any other tasks .
+the approach presented in this paper , using the algorithm sketched in the previous subsection , is potentially extensible .
+incorporating results into wordnet .
+to validate this acquisition method , we compared the results of a restricted version of the algorithm with information found in wordnet.2 wordnet ( miller et al. 1990 ) is a hand-built online thesaurus whose organization is modeled after the results of psycholinguistic research .
+to use the authors ' words , wordnet " ... is an attempt to organize lexical information in terms of word meanings , rather than word forms .
+in that respect , wordnet resembles a thesaurus more than a dictionary ... "
+to tins end , word forms with synonymous meanings are grouped into sets , called synsets .
+tins allows a distinction to be made between senses of homographs .
+for example , the noun " board " appears in the synsets { board , plank } and { board , committee } , and this grouping serves for the most part as the word 's definition .
+in version 1.1 , wordnet contains about 34,000 noun word forms , including some compounds and proper nouns , organized into about 26,000 synsets .
+noun synsets are organized hierarchically according to the hyponymy relation with implied inheritance and are further distinguished by values of features such as meronymy .
+wordnet 's coverage and structure are impressive and provide a good basis for an automatic acquisition algorithm to build on .
+when comparing a result hyponym ( n0,1v1 ) to the contents of wordnet 's noun hierarchy , three kinds of outcomes are possible : verify .
+if both no and ni are in wordnet , and if the relation hyponym ( no , no is in the hierarchy ( possibly through transitive closure ) then the thesaurus is verified .
+critique .
+if both no and ni are in wordnet , and if the relation hyponym ( no , no is not in the hierarchy ( even through transitive closure ) then the thesaurus is critiqued , i.e. , a new set of hyponym connections is suggested .
+after the hypernym is detected the hyponyins are identified .
+often they occur in a list and each element in the list holds a hyponym relation with the hypernym .
+the main difficulty here lies in determining the extent of the last term in the list .
+results and evaluation .
+figure 2 illustrates some of the results of a run of the acquisition algorithm on grolier 's american academic encyclopedia ( grolier 1990 ) , where a restricted version of pattern ( la ) is the target ( space constraints do not allow a full listing of the results ) .
+after the relations are found they are looked up in wordnet .
+we placed the wordnet noun hierarchy into a b-tree data structure for efficient retrieval and update and used a breadth-first-search to search through the transitive closure .
+out of 8.6m words of encyclopedia text , there are 7067 sentences that contain the lexemes " such as " contiguously .
+out of these , 152 relations fit the restrictions of the experiment , namely that both the hyponyms and the hypernyms are unmodified ( with the exceptions mentioned above ) .
+when the restrictions were eased slightly , so that nps consisting of two nouns or a present / past participle plus a noun were allowed , 330 relations were found .
+when the latter experiment was run on about 20m words of new york times text , 3178 sentences contained " such as " contiguously , and 46 relations were found using the strict no-modifiers criterion .
+when the set of 152 grolier ' s relations was looked up in wordnet , 180 out of the 226 unique words involved in the relations actually existed in the hierarchy , and 61 out of the 106 feasible relations ( i.e. , relations in which both terms were already registered in word- net ) were found .
+the quality of the relations found seems high overall , although there are difficulties .
+as to be expected , metonymy occurs , as seen in hyponym ( " king " , " institution " ) . a more common problem is under- specification .
+for example , one relation is nyponym ( " steatornis " , " species " ) , which is problematic because what kind of species needs to be known and most likely this information was mentioned in the previous sentence .
+similarly , relations were found between " device " and " plot " , " metaphor " , and " character " , underspecifying the fact that literary devices of some sort are under discussion .
+sometimes the relationship expressed is slightly askance of the norm .
+for example , the algorithm finds hyponym ( " washington " , " nationalist " ) and hyponym ( " aircraft " , " target " ) which are somewhat context and point-of-view dependent .
+this is not necessarily a problem ; as mentioned above , finding alternative ways of stating similar notions is one of our goals .
+however , it is important to try to distinguish the more canonical and context-independent relations for entry in a thesaurus .
+there are a few relations whose hypernyms are very high-level terms , e.g. , " substance " and " form " . these are not incorrect ; they just may not be as useful as more specific relations .
+overall , the results are encouraging .
+although the number of relations found is small compared to the size of the text used , this situation can be greatly improved in several ways .
+less stringent restrictions will increase the numbers , as the slight loosening shown in the grolier 's experiment indicates .
+a more savvy grammar for the constituent analyzer should also increase the results .
+automatic updating .
+the question arises as to how to automatically insert relations between terms into the hierarchy .
+this involves two main difficulties .
+first , if both lexical expressions are present in the noun hierarchy but one or both have more than one sense , the algorithm must decide which senses to link together .
+we have preliminary ideas as to how to work around this problem .
+say the hyponym in question has only one sense , but the hypernym has several .
+then the task is simplified to determining which sense of the hypernym to link the hyponym to .
+we can then make use of a lexical disambiguation algorithm , e.g. , ( hearst 1991 ) , to determine which sense of the hypernym is being used in the sample sentence .
+furthermore , since we 've assumed the hyponym has only one main sense we could do the following : look through a corpus for occurrences of the hyponym and see if its environment tends to be similar to one of the senses of its hypernym .
+for example , if the hypernym is " bank " and the hyponym is " first national " , every time , within a sample of text , the term " first national " occurs , replace it with " bank " , and then run the disambiguation algorithm as usual .
+if this term can be positively classified as having one sense of bank over the others , then this would provide strong evidence as to which sense of the hypernym to link the hyponym to .
+this idea is purely speculative ; we have not yet tested it .
+the second main problem with inserting new relations arises when one or both terms do not occur in the hierarchy at all .
+in this case , we have to determine which , if any , existing synset the term belongs in and then do the sense determination mentioned above .
+conclusions .
+we have described a low-cost approach for automatic acquisition of semantic lexical relations from unrestricted text .
+this method is meant to provide an incremental step toward the larger goals of natural language processing .
+our approach is complementary to statistically based approaches that find semantic relations between terms , in that ours requires a single specially expressed instance of a relation while the others require a statistically significant number of generally expressed relations .
+we 've shown that our approach is also useful as a critiquing component for existing knowledge bases and lexicons .
+we plan to test the pattern discovery algorithm on more relations and on languages other than english ( depending on the corpora available ) .
+we would also like to do some analysis of the noun phrases that are acquired , and to explore the effects of various kinds of modifiers on the appropriateness of the noun phrase .
+we plan to do this in the context of analyzing environmental impact reports .

@@ -1,0 +1,53 @@
+Sentiment analysis has been studied by many
+researchers recently. Two main directions are
+sentiment classification at the document and sentence
+levels, and feature-based opinion mining.
+Sentiment classification at the document level
+investigates ways to classify each evaluative
+document (e.g., product review) as positive or
+negative (Pang et al 2002; Turney 2002). Sentiment
+classification at the sentence-level has also
+been studied (e.g., Riloff and Wiebe 2003; Kim
+and Hovy 2004; Wilson et al 2004; Gamon et al
+242
+2005; Stoyanov and Cardie 2006). These works
+are different from ours as we study comparatives.
+The works in (Hu and Liu 2004; Liu et al 2005;
+Popescu and Etzioni 2005; Mei et al 2007) perform
+opinion mining at the feature level. The
+task involves (1) extracting entity features (e.g.,
+“picture quality” and “battery life” in a camera
+review) and (2) finding orientations (positive,
+negative or neutral) of opinions expressed on the
+features by reviewers. Again, our work is different
+because we deal with comparisons.
+Discovering orientations of context dependent
+opinion comparative words is related to identifying
+domain opinion words (Hatzivassiloglou and
+McKeown 1997; Kanayama and Nasukawa
+2006). Both works use conjunction rules to find
+such words from large domain corpora. One conjunction
+rule states that when two opinion words
+are linked by “and”, their opinions are the same.
+Our method is different in three aspects. First, we
+argue that finding domain opinion words is problematic
+because in the same domain the same
+word may indicate different opinions depending
+on what features it is applied to. For example, in
+the camera domain, “long” is positive in “the
+battery life is very long” but negative in “it takes
+a long time to focus”. Thus, we should consider
+both the feature and the opinion word rather than
+only the opinion word. Second, we focus on
+studying opinionated comparative words. Third,
+our technique is quite different as we utilize readily
+available external opinion sources.
+As discussed in the introduction, a closely related
+work to ours is (Jindal and Liu 2006).
+However, it does not find which entities are preferred
+by authors. (Bos and Nissim 2006) proposes
+a method to extract some useful items from
+superlative sentences. (Fiszman et al 2007) studied
+the problem of identifying which entity has
+more of certain features in comparative sentences.
+It does not find which entity is preferred.

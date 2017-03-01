@@ -1,0 +1,256 @@
+citances : citation sentences for semantic analysis of bioscience text .
+abstract .
+we propose the use of the text of the sentences surrounding citations as an important tool for semantic interpretation of bioscience text .
+we hypothesize several different uses of citation sentences ( which we call citances ) , including the creation of training and testing data for semantic analysis ( especially for entity and relation recognition ) , synonym set creation , database curation , document summarization , and information retrieval generally .
+we illustrate some of these ideas , showing that citations to one document in particular align well with what a hand-built curator extracted .
+we also show preliminary results on the problem of normalizing the different ways that the same concepts are expressed within a set of citances , using and improving on existing techniques in automatic paraphrase generation .
+introduction .
+the scientific literature of biomedicine , genomics , and other biosciences is a rich , complex , and continually growing resource .
+with appropriate information extraction and retrieval tools , bioscience researchers can use the contents of the literature to further their research goals .
+in recent years the interest in automatic tools for information extraction and retrieval from bioscience literature has increased considerably .
+evidence for that trend is the addition of the genomics track to the text retrieval conference ( trec ) [ 37 ] , and the new biocreative ( critical assessment of information extraction systems in biology ) competition [ 34 ] .
+as part of the biotext project [ 35 ] we are interested in utilizing the large volume of available bioscience text when designing information extraction and retrieval tools .
+for example , instead of analyzing each document separately , multiple related documents can be analyzed together , thus increasing the accuracy of tools for tasks such as entity recognition , relation extraction , synonym disambiguation , and automatic summarization .
+so far , most of the natural language processing ( nlp ) work in the bioscience domain has been done on medline abstracts .
+however , full text is becoming more available , providing new opportunities for automatic text processing .
+one such opportunity lies in the text around citations in full text papers .
+in this paper we put forward a new vision for the path towards robust and large-coverage algorithms for semantic interpretation of bioscience articles .
+we suggest using the sentences that surround the citations to related work as the data from which to build semantic interpretation models .
+we also introduce a neologism , citances , to mean the sentence ( s ) surrounding the citation within a document .
+citations are used in every scientific literature , but they are particularly abundant in biosciences .
+nearly every statement is backed up with at least one citation , and , conversely , it is quite common for papers in the bioscience domain to be cited by 30-100 other papers .
+the text around citations tends to state known biological facts with reference to the original papers that discovered them .
+the cited facts are typically stated in a more concise way in the citing papers than in the original papers .
+as the same facts are repeatedly stated in different ways in different papers , statistical models can be trained on existing citances to identify similar facts in unseen text .
+with the availability of full text articles , and the nature of citation in bioscience literature , traditional citation analysis work can be greatly expanded .
+we believe that citations have great potential to be a valuable resource in mining the bioscience literature .
+in particular , we identify the following promising applications of citation analysis .
+a source for unannotated comparable corpora .
+comparable corpora , which are typically generated from news articles on related events , are a useful resource for the development of nlp tools for question answering [ 20 ] and summarization [ 3 ] .
+most domains outside of news do not contain many articles discussing the same events , but bioscience citances have some of the requisite characteristics in that they include redundancies that allow identification of comparable sentences .
+in the case of news articles , dates and named entities help link related sentences .
+in section 4 we demonstrate the use of citances as comparable corpora for automatic paraphrase extraction .
+summarization of the target papers .
+the set of citances that refer to a specific paper can be viewed as an indication of the important facts in the paper as seen by the scientific community in that field .
+this is an excellent resource for summarization .
+in fact , we believe that a paper that is cited enough times can be summarized using only the citances pointing to it .
+instead of showing the user all the citances pointing to a paper ( as is done in citeseer and in nanba et al. [ 25 ] ) , we propose to first cluster related citances , and then display to the user only a summary of each cluster .
+the facts expressed by each cluster can be extracted and stored in a database in a normalized form .
+this could facilitate answering advanced queries on facts , such as retrieve all documents that describe which genes upregulate gene g. synonym identification and disambiguation .
+bioscience literature is rife with abbreviations and synonyms .
+citances referring to the same article may allow synonyms to be identified and recorded .
+on the flip side , in many cases the same terms have multiple meanings .
+again , a collection of related citances can help disambiguate these meanings , since in some of the citances an unambiguous form of the term might be present .
+entity recognition and relation extraction .
+citances in bioscience literature are more likely to state biological facts than arbitrarily chosen sentences in an article .
+they also tend to be more concise , since the authors try to summarize previous related work , which has already been described in detail in the original paper .
+language presents a myriad number of ways to express the same or similar concepts .
+citances provide us a way to build a model of many of the different ways to express a relationship type r between entities of type a and b. we can seed learning algorithms with several examples using concepts that are semantically similar to a and similar to b , for which relation r is known to hold .
+then we can train a model to recognize this kind of relation for situations for which the relation is not known .
+since the results may extend to sentences that are not citances as well , citances-based corpora should provide a good collection for building nlp tools for recognizing entities and relations in unseen text .
+targets for curation .
+we hypothesize that citances contain the most important information expressed in the cited document , and therefore contain the information that curators would want to make use of .
+we have found support for this hypothesis with two sample papers being used by a cancer researcher who is recording information about the process of apoptosis .
+improved citation indexes for information retrieval .
+in addition to supporting advance queries over facts as just described , citation indexes can be improved by combining methods that use citances context ( e.g. , mercer and di marco [ 23 ] ) with methods that use citances content ( e.g. [ 7 ] ) .
+for example , indexing terms can be taken from citances referring to a target paper , weighting them both by their relative frequency and the type of citations they appear in .
+this section has defined and motivated the use of citances for semantic processing of bioscience text .
+in the next sections we first describe related work in the analysis of citation sentences , and then describe some of the challenges in processing such sentences .
+this is followed by a description of an algorithm for paraphrasing citances that discuss the same relationship between entities , its evaluation and relationship to related work on paraphrases extraction .
+finally , we conclude with future work .
+related work .
+white [ 32 ] provides a good recent review of the field of citation analysis ( for a more thorough but less recent review of the field see [ 22 ] ) .
+white describes three major lines of research in the field of citation analysis .
+all three focus on ( mostly manual ) analysis of citations based on the text around them .
+first , citation categorization schemes date back to the 1960s [ 14 , 21 ] .
+citations are placed into categories such as conceptual vs. operational , organic vs. perfunctory , evolutionary vs. juxtapositional , and confirmational vs. negative [ 24 ] .
+the number of categories and their definitions vary between different classification schemes .
+second , context analysis is concerned with identifying recurring terms in citances , and potentially using them as subject headings for indexing purposes .
+our proposal can be seen as an extension of this approach to the level of facts , such as relationships between entities , rather than being limited to keywords .
+the third research area identified by white is the classification of citer motivation , identifying the reason authors cite earlier work , and the reasons some works are cited more often than others .
+this area is based mostly on sociological studies .
+in addition to citation analysis , citations are used in citation indexing systems , which were first proposed in 1955 by garfield [ 13 ] , and are now in wide use in systems like isis sci and citeseer [ 15 ] .
+a citation index aims to disambiguate the bibliographic references in scientific literature , making explicit the links between articles , which are formed by these references .
+it allows information retrieval tools to cluster the related articles , and to estimate the importance of a paper by counting the number of articles citing it .
+citation indexes also allow users to navigate the scientific literature by following the links between articles going forwards and backwards in time .
+this feature is especially useful when looking for related work , or when learning about a new topic .
+recently , mercer and di marco have described their work on using citances to improve indexing tools for biomedical literature [ 23 ] .
+they are mostly concerned with automatically classifying citations into a predefined classification scheme using cue phrases in citances .
+they propose to use these classifications to improve existing citation indexes that currently ignore the type of the citations in their algorithms .
+they do not use the terms in the citances directly to improve information retrieval .
+bradshaw [ 6 , 7 ] proposes to improve information retrieval of scientific literature using a metric on citations called reference directed indexing ( rdi ) .
+rdi indexes articles based on the terms used in the citances citing them .
+rdi gives higher weight to terms that are more common in the citances to the target specific document compared to citances to other documents .
+when ranking retrieval results , rdi takes into account both the relevance of a document to the query terms , and the number of papers citing it .
+rdi treats all citations equivalently without using a classification scheme .
+teufel and moens [ 31 ] identify and classify citations in scientific articles .
+they use the identified citances to improve summarization performance by using them as a feature when classifying candidate sentences in the citing paper , giving lower weight to citances as compared to other sentences .
+they do not use citances in the citing papers to summarize the cited paper , as we propose .
+nanba et al. [ 25 ] use citances as features for classifying papers into topics .
+they also propose to use citances as part of a support system for writing review articles on specific topics .
+given a document , their system displays the citances originating from other papers .
+however , when many citances are uncovered for the same document the summary will be too large .
+a related field to citation indexing is the use of link structure and anchor text of web pages .
+anchor text is used in search engines such as google [ 8 ] for indexing and retrieval of web pages .
+applications of anchor text include identification of home pages of people and companies [ 11 ] , classification of web pages [ 10 , 12 ] , web crawlers [ 27 ] , and improved ranking of search results [ 28 ] .
+amitay and paris [ 1 ] present a system for web page summarization using sentences around links to the target web page .
+their system picks a single representing snippet as a description of the target web page , helping users to follow the best search result .
+for a more extensive review on the use of anchor text see [ 7 ] .
+issues for processing citances .
+several issues must be addressed in order to effectively use citances in various applications .
+text span .
+the span or scope of the text that should be included with the citation must be determined .
+the appropriate span can be a phrase , a clause , a sentence , or several sentences or their fragments .
+furthermore , citations themselves must be parsed , as they can be shown as lists or groups ( e.g. , [ 22-25 ] ) .
+identifying the different topics .
+the different reasons a given paper is cited must be determined , and citances that cite a document for a similar reason must be grouped together .
+normalizing or paraphrasing citances .
+once the citances with the same meaning are grouped together , they will convey essentially the same information in different ways , or express different subsets of the same information .
+thus it is important to be able to normalize or paraphrase the citances for many applications , including indexing in a database or an ir system , document summarization [ 4 , 3 ] , learning synonyms [ 16 , 17 ] , building a model of the different expressions of the same relationship for ie [ 30 , 29 ] , extracting patterns for question answering [ 20 ] , machine translation [ 26 ] .
+in the next section we describe our early experiments in addressing the normalization problem , as well as sketching a preliminary attempt at the topic grouping problem .
+paraphrasing citances 4.1 example paraphrases .
+our strategy is to extract paraphrases expressing roughly the same relation between two named entities , such as gene / protein names or mesh terms .
+for the sample sentences below , the target entities are bim and ngf ( nerve growth factor ) .
+we also need to identify a gold standard or target sentence to which we want to convert the citances via paraphrase .
+we begin with the target sentence bim is induced after ngf withdrawal .
+now consider the following citances which refer to the target paper [ 33 ] , ordered according to how well they reflect the meaning of the target sentence , where the part that matches the target relation is underlined .
+below are shown the paraphrases that should be extracted from these sentences .
+here we adopt a liberal definition of good paraphrase , which does not require an exact meaning equivalence , but allows for minor variations , provided that no elements are removed or added ( as in paraphrases 1-3 ) .
+we consider a candidate paraphrase acceptable , if it adds more details than expected , such as modifiers and prepositional phrases , but otherwise expresses roughly the same meaning ( as seen in paraphrase 4 ) .
+in all other cases , we consider the candidate paraphrase to be bad ( as in paraphrase 5 , which does not talk about induction or upregulation but instead is rather vague about the role of bim ) .
+in the next subsections we describe how these paraphrases are extracted from the citances and present a preliminary evaluation of the results for one set of citances .
+paraphrase extraction algorithm .
+our paraphrase extraction algorithm is a variation of that proposed by lin and pantel [ 20 ] , at whose core is a dependency parse , and shinyama et al. [ 30 ] , who extend this idea to use specific named entities to anchor the paraphrase .
+we discuss steps 1-4 only . '
+the dependency parse was produced by minipar [ 19 ] , which builds a rooted directed tree where each node ( not just the leaves , as in a constituency parse ) is associated with a word from the sentence and annotated with its part of speech .
+the directed links represent grammatical relations between nodes .
+figure 1 shows a sample dependency parse for the sentence ngf withdrawal from sympathetic neurons induces bim ..
+the grammatical relations ( e.g. , subject , determiner , modifier etc . ) are not shown as , unlike [ 20 ] , we do not use them as constraints .
+we extract a paraphrase from the simple dependency path between the two target named entities ( there is exactly one path , since this is a tree ) .
+in figure 1 , the path is shown in bold and omits the unnecessary prepositional phrase from sympathetic neurons .
+as the arrows show , the path starts at ngf , goes up to the root ( induces ) , and then descends to bim .
+here the root is a verb , but this is not always the case : sometimes it is a noun or an artificial non-word entity , which is created by minipar when it tries to perform co-reference resolution .
+the second step is needed because the simple dependency path often omits words that then render it ungrammatical .
+in particular , there is a problem with the complex verb forms ( e.g. , passive , infinitive , past tense etc . ) .
+unlike lin and pantel [ 20 ] and ibrahim et al. [ 18 ] , who manipulate the parsers output to account for some of these before proceeding to path extraction , we use the following 2-word heuristic .
+if the path extracted from the dependency parse skips over either one or two words , those one or two words are inserted back into the paraphrase , unless those words are adverbs .
+the number 2 was chosen because most of the verb forms contain up to 3 words .
+this heuristic appears to work well in practice and accounts for a variety of other cases , e.g. , omission of prepositions , determiners , etc .
+however , it needs to be refined further as sometimes it includes more details than necessary , mainly in the form of additional adjectives .
+for the five example citances above , we obtained the following paraphrases ( words in square brackets ^ have been added by the 2-word heuristic ) .
+all are grammatical except for the last one , which contains a redundant starting word : member ( we will consider this issue below ) .
+note the third example , where the 2-word heuristic added all missing verb forms , including the important passive upregulated .
+the gene / protein bim and the mesh term neural growth factor are marked prior to parsing , using biotext [ 35 ] group tools for the trec 2003 genomics track [ 5 ] .
+evaluation .
+for our experiments , we chose an influential journal paper from neuron [ 33 ] and collected 99 journal papers that cited it , where we were able to identify 203 citances in total .
+an expert in apoptosis identified 36 different types of important biological factoids that could be extracted from the target paper .
+a person with a background in genomics then examined the 203 citances and identified which of the 36 categories each citance could be associated with , and the degree to which it covered the factoid .
+additionally , a citance could support more than one factoid .
+in the current experiments , we used as our model ( target ) sentence the factoid for which the most citances were identified ( bim is induced after ngf withdrawal ) .
+the corresponding set of 67 citances defines our set 1 .
+we plan in future to examine paraphrases for all of the remaining categories .
+we defined another subset of the 203 citances , set 2 , which is limited to the ones that contain both bim and ngf ( or their variant ( s ) , identified using biotext group tools ) .
+finally , we built set 3 by extracting 102 sentences that contained both bim and ngf and were not necessarily citances , resulting in the following three sets of sentences .
+set 1 was introduced to assess the system under ideal conditions , which is an upper bound on the performance of a filtering limited to citances .
+the systems performance on set 2 vs. set 3 allows us to test our hypothesis that citances will produce more accurate paraphrases than general sentences .
+we ran the paraphrase extraction algorithm on the 3 sets .
+some longer sentences produced more than one paraphrase , as either bim or ngf ( or both ) had been mentioned multiple times , but we kept only one paraphrase from each sentence2 , obtaining 55 , 65 and 102 paraphrases , accordingly .
+the results of the annotations are shown in table 1 .
+correctness .
+all paraphrases were manually investigated and judged on their correctness ( good : 1 ; acceptable : .5 ; bad : 0 ) and grammaticality ( grammatical : 1 ; almost grammatical : .5 ; non- grammatical : 0 ) .
+a paraphrase was judged as bad under the following conditions : ( 1 ) different relation between bim and ngf than in the model ( often phosphorylation aspect ) ; ( 2 ) opposite meaning ; or ( 3 ) vagueness ( wording not clear enough for conclusion ) .
+a paraphrase was judged acceptable , if it was not bad and : ( 1 ) it contained additional terms ( e.g. , dp5 protein ) or topics ( e.g. , prepositional phrases like in sympathetic neurons ) ; or ( 2 ) the relation was suggested in the statement but not definitely .
+the correctness judgements were done by the same person with biological background as the citations assignment .
+table 1 shows that 81.82 % are labeled good or acceptable when using citances known to have paraphrases , and 69.23 % are labeled good or acceptable from the set 2 citances .
+this is compared to 61.76 % when sentences at large are used .
+table 1 shows there is a significant drop in correctness when going from set 2 to set 3 ( see the first column labeled % ) , which supports our hypothesis that citances help focus the paraphrases .
+the systems recall is easiest to calculate on set 1 , where 60 paraphrases have been extracted out of the 67 citances .
+five sentences produced two different paraphrases , which yields a sentence-level recall of 55 / 67 , i.e. 82.09 % .
+most of the misses were judged acceptable rather than bad .
+all 12 misses were due to unrecognized variants of the term ngf : mostly contextual hyponyms ( e.g. neurotrophin ) , hypernyms ( e.g. growth factor , factor , serum ) or related terms ( e.g. survival factors ) .
+in fact , missing a target term is the only possible reason for not producing a candidate paraphrase as the system always generates a dependency path when the target nes are discovered and the sentence is parsed correctly .
+an example of such missed sentence is ( no ngf or its variants have been found ) : growth factor withdrawal was shown to cause increased bim expression in various populations of neuronal cell types .
+it is interesting to note though that 10 of the 67 relevant citances in set 1 were initially missed by the human annotator and were added only later ( 8 of these were subsequently judged good , 2 were acceptable ) .
+thus the human recall on this set is 57 / 67 , i.e. , about 85.07 % , which compares very favorably to the 82.09 % for the system .
+the missed sentences were generally quite complex and the bim-ngf relation was not central and thus they were easy to overlook .
+an example of such a missed sentence is : the precise targets of c-jun necessary for the induction of apoptosis have been the subject of intense interest and recently , bim and dp5 , both ' bh3-domain only family members , have been identified as pro-apoptotic genes induced in a c-jun-dependent manner in both sympathetic neurons subjected to ngf withdrawal and in cerebellar granule cells deprived of kcl .
+while containing an acceptable paraphrase , it is also an example of a case where no good paraphrase can be possibly extracted : there is simply no subsequence of words that can be judged good .
+even if we can figure out how to automatically remove the prepositional phrase ( pp ) in sympathetic neurons , we still cannot get a good paraphrase without damaging the grammaticality , as this pp is needed for the pp to ngf withdrawal to attach itself to .
+the correctness of the paraphrases for set 1 is much better than that for the set 2 .
+this is due to the fact that citances to the same paper do not necessarily express the same facts even if they include the target entities .
+since manual annotation of every citance , as was done for set 1 , is impractical for larger collections , we would like to automatically group citances by their semantics .
+the cluster row in table 1 shows the results of an initial attempt in this direction .
+we can see that the correctness is improved as compared to set 2 .
+to cluster the 203 citances ( we cluster all of them , not just those from set 1 , set 2 or set 3 ) we use an in-house tool that identifies gene names in text and maps them to their id in locuslink [ 36 ] .
+the affinity between two citances ^ k ( c1 , c2 ) is then defined using a polynomial kernel : ^ k ( c1 , c2 ) _ ( k ( c1 , c2 ) + r ) d , where k ( c1 , c2 ) is the number of identical genes in the two citances , r is non-negative , and d is a positive integer .
+we use a spectral clustering algorithm [ 2 ] to cluster the citances .
+the cluster dataset is obtained by selecting the citances in clusters for which more than 80 % of the citances include both ngf and bim .
+grammaticality .
+the grammaticality was judged by a native speaker .
+the last column of table 1 shows that set 1 and set 2 were judged more grammatical than set 3 .
+this is partially due to the better sentence extraction for the first two sets , where more conservative regular expressions were used , while set 3 included truncated or merged sentences , or sentences coming from titles , which produced ungrammatical paraphrases .
+we discovered multiple repeating sources of bad grammaticality .
+for example , the minipar parser does not include the coordinating and in the parse and so and cannot be placed into the path .
+this led to errors in which two noun phrases are run together , as in : hrk / dp5 bim [ have ] [ been ] found [ to ] be upregulated after ngf withdrawal .
+correcting the parsers output would fix this problem .
+other problems are caused by the fact that a verb-rooted path between the target terms includes exactly two arguments for that verb .
+while most of the time ignoring any additional arguments is desirable , there are cases when it leads to ungrammatical sentences in which the subject or object of a verb can be missing , for example : caused by ngf role for bim .
+repairing this problem would require knowledge about the possible sub-categorization frames of the target verb ( as is done in [ 29 ] ) .
+another common problem is the inclusion of extra subject words , e.g. , member in member bim implicated in apoptosis caused by ngf deprivation , due to its dependency on bim in the original sentence : in neurons , the bh3-only bcl2 member , bim , and jnk are both implicated in apoptosis caused by ngf deprivation ..
+previous paraphrase work .
+most work on automatic paraphrasing is relatively recent .
+we identify four classes of related work : word-level , phrase- level , template-based , and sentence-level paraphrases .
+word-level paraphrases .
+grefenstette uses a semantic parser to explore the local context surrounding a word and to compare the distributional similarity of such contexts to learn word synonyms ( [ 16 ] , [ 17 ] ) .
+the assumption is that similar contexts tend to contain similar words .
+these are not necessarily synonyms though , e.g. cat and dog .
+phrase-level paraphrases .
+barzilay and mckeown [ 4 ] use a corpus of multiple translations of the same text and part of speech ( pos ) information from the local context surrounding the target words to extract word- and contiguous phrase-level paraphrases , e.g. ( countless , lots of ) .
+they use co-training ( fix the known paraphrases and collect their contexts , then fix the contexts and try to find more paraphrases , then repeat again etc . ) to train a classifier that uses the local surrounding context to decide whether two phrases are paraphrases or not .
+template paraphrases .
+lin and pantel [ 20 ] use an idea similar to that of grefenstette , that words used in the same contexts tend to have a similar meaning , but apply it to dependency tree paths ( extracted with the minipar parser ) .
+the paths are generalized by converting their ends to slots and are considered similar if these slots tend to contain similar sets of words .
+a single large text corpus is used to extract the template rules , e.g.
+y is resolved by x , x resolves y , x finds a solution to y and x tries to solve y are example paraphrases for x solves y. many limitations are imposed on the kinds of paths considered .
+shinyama et al. [ 30 ] produce similar kinds of templates for japanese .
+they use an ir system to find newspaper texts on a given topic and then find pairs of articles describing the same event .
+then the named entities are tagged and used to align sentences , from which paraphrases are extracted using a dependency parse with the approximately matched nes as anchors .
+lastly , the nes are generalized as variables like location , organization etc . , as defined by their ne recognition system .
+the same idea is further refined in a later work by shinyama and sekine [ 29 ] where a very limited form of coreference resolution is added and some structural restrictions on the possible portions of expressions to be extracted are applied .
+in addition , more than two anchors per sentence pair are allowed during matching .
+a variation of the same approach is described by ibrahim et al. [ 18 ] , who use multiple translations of the same text and extract paraphrases from sentence pairs .
+the sentences are parsed and paraphrases are extracted from pairs of aligned sentences , when the paths have compatible slots and depending on the distribution of the slot values .
+sentence-level paraphrases .
+barzilay and lee [ 3 ] use comparable texts ( news from reuters and afp ) and multiple sequence alignment algorithms to learn paraphrases represented as word lattices .
+cross-corpus sentence pairs written on the same day and on the same topic are compared in terms of word overlap .
+the approach however tends to produce ungrammatical sentences .
+pang et al. [ 26 ] use multiple human translations of chinese documents into english .
+they perform syntactic parsing and try to merge parse trees into a single finite-state transducer similar to the lattices built by barzilay and lee [ 3 ] .
+while no slots are generated , the lattices thus produced capture several different generalizations and can be used to generate a large number of sentences given only a small number of training examples .
+relationship to previous paraphrase work .
+in this work we focused on the extraction of grammatical template-level paraphrases similar to those described by lin and pantel [ 20 ] , and further refined by [ 18 ] , [ 29 ] and [ 30 ] .
+the main differences from this earlier work is : citances .
+we focus the extraction by using multiple citations of the same fixed target document .
+the assumption is that there are a limited number of important facts in the target that it could be cited for .
+extracting complex paths .
+unlike the above mentioned methods we do not impose any limitations on the path , which can get quite complex .
+focus on grammatical paraphrases .
+we extract grammatical paraphrases rather than just templates that can be matched against text .
+thus , we have a postprocessing step , which adds some additional words that were not in the dependency path .
+use of lexical resources .
+this allows for the identification of the entities of interest such as genes / proteins and mesh terms .
+we believe these are much better as anchors than simply compatible nouns or noun phrases .
+in addition , they are the natural candidates for slots .
+further , using a lexical hierarchy allows for different levels of generalization the appropriate one can be chosen to be consistent with e.g. all observations in the text .
+biomedical domain .
+finally , we work in the biomedical domain ; most other work used newswire text .
+overall , the results show the grammaticality of the extracted paraphrases is high and almost uniform across the three sets , which is not surprising .
+at the same time , the paraphrases extracted from citances have a correctness of over 20 % higher as compared to set 3 .
+however , this is a small preliminary study ; in future we need to evaluate the algorithm on more examples .
+conclusions .
+we have motivated and discussed the potentially enormous role that the use of sentences surrounding citations , or citances , can have for automated analysis of bioscience literature .
+in work not yet reported , we have found that citances align very well with rich information being curated by hand by a molecular biologist , and suspect they will be equally useful for other curation tasks .
+we also hypothesize that it will be a gold mine of data for training algorithms to perform semantic analysis of bioscience text , and will improve the results of querying the bioscience literature .
+much work must be done before citances can be put to full use .
+we have demonstrated some initial results in paraphrasing citances that discuss the same topic , but more work remains to be done to improve results , and to group similar citances together .
+in future work , we plan to thoroughly explore the possibilities surrounding the analysis and use of citances for bioscience text analysis .

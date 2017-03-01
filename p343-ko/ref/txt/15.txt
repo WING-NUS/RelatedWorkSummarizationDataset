@@ -1,0 +1,228 @@
+comparing statistical and content-based techniques for answer validation on the web .
+abstract .
+answer validation is an emerging topic in question answering , where open domain systems are often required to rank huge amounts of candidate answers .
+we present a novel approach to answer validation based on the intuition that the amount of implicit knowledge which connects an answer to a question can be estimated by exploiting the redundancy of web information .
+two techniques are considered in this paper : a statistical approach , which uses the web to obtain a large amount of pages , and a content-based approach , which analyses text snippets retrieved by the search engine .
+both the approaches do not require to download the documents .
+experiments carried out on the trec-2001 judged-answer collection show that a combination of the two approaches achieves a high level ofperformance ( i.e. about 88 % success rate ) .
+the simplicity and the efficiency of these web-based techniques make them suitable to be used as a module in question answering systems .
+introduction .
+open domain question-answering ( qa ) systems search for answers to a natural language question either on the web or in a local document collection .
+different techniques , varying from surface patterns [ 6 ] to deep semantic analysis [ 8 ] , are used to extract the text fragments containing candidate answers .
+several systems apply answer validation techniques with the goal of filtering out improper candidates by checking how adequate a candidate answer is with respect to a given question .
+these approaches rely on discovering semantic relations between the question and the answer .
+as an example , [ 3 ] describes answer validation as an abductive inference process , where an answer is valid with respect to a question if an explanation for it , based on background knowledge , can be found .
+although theoretically well motivated , the use of semantic techniques on open domain tasks is quite expensive both in terms of the involved linguistic resources and in terms of computational complexity , thus motivating a research on alternative solutions to the problem .
+this paper presents a novel approach to answer validation based on the intuition that the amount of implicit knowledge which connects an answer to a question can be estimated by exploiting the redundancy of web information .
+our hypothesis is that a web search of documents in which the question and the answer co-occur can provide all the information needed to accomplish the answer validation task .
+documents are searched in the web by means of validation patterns , which are derived from a linguistic processing of the question and the answer .
+the retrieved documents are then used for determine an answer validation score as the composition of two alternative answer validation techniques , namely a statistical approach and a content-based approach .
+the statistical approach relies on the hypothesis that the number of documents retrieved from the web in which the question and the answer co-occur can be considered a significant clue to the validity of the answer .
+this approach has been addressed in [ 5 ] .
+the content-based approach takes advantage of text passages ( i.e. snippets ) returned by some search engines and exploit the presence of relevant keywords within such passages .
+in both cases the web documents are not downloaded , which makes the algorithms fast .
+the two approaches has been integrated in a composite algorithm and experimented on a data set derived from the trec-2001 conference .
+the paper is organized as follows .
+section 2 presents the main features of the approach .
+section 3 describes how validation patterns are extracted from a question-answer pair by means of specific question answering techniques .
+section 4 explains the statistical approach .
+section 5 give details about the content-based methodology .
+section 6 gives the results of a number of experiments and discusses them .
+finally , section 7 outlines the future directions .
+overall-methodology .
+given a question and a candidate answer the answer validation task is defined as the capability to assess the relevance of with respect to .
+we assume open domain questions and that both answers and questions are texts composed of few tokens ( usually less than 100 ) .
+this is compatible with the trec-2001 data , that will be used as examples throughout this paper .
+we also assume the availability of the web , considered to be the largest open domain text corpus containing information about almost all the different areas of the human knowledge .
+the intuition underlying our approach to answer validation is that , given a question- answer pair [ , ] , it is possible to formulate a set of validation statements whose truthfulness is equivalent to the degree of relevance of with respect to .
+for instance , given the question what is the capital of the usa ? , the problem of validating the answer washington is equivalent to estimating the truthfulness of the validation statement the capital of the usa is washington .
+therefore , the answer validation task could be reformulated as a problem of statement reliability .
+there are two issues to be addressed in order to make this intuition effective .
+first , the idea of a validation statement is still insufficient to catch the richness of implicit knowledge that may connect an answer to a question : we will attack this problem defining the more flexible idea of a validation pattern .
+second , we have to design an effective and efficient way to check the reliability of a validation pattern : we propose two solutions relying on a statistical count of web searches and on document content analysis respectively .
+answers may occur in text passages with low similarity with respect to the question .
+passages telling facts may use different syntactic constructions , sometimes are spread in more than one sentence , may reflect opinions and personal attitudes , and often use ellipsis and anaphora .
+for instance , if the validation statement is the capital of usa is washington , we have web documents containing passages like those reported in table 1 , which can not be found with a simple search of the statement , but that nevertheless contain a significant amount of knowledge about the relations between the question and the answer .
+we will refer to these text fragments as validation fragments .
+a common feature in the above examples is the co-occurrence of a certain subset of words ( i.e. capital , usa and washington ) .
+we will make use of validation patterns that cover a larger portion of text fragments , including those lexically similar to the question and the answer ( e.g. fragments 4 and 5 in table 1 ) and also those that are not similar ( e.g. fragment 2 in table 1 ) .
+in the case of our example a set of validation statements can be generalized by the validation pattern .
+general answer validation algorithm .
+starting from the above considerations and given a question-answer pair , we propose a generic scheme for answer validation .
+both the statistical and the content-based approach perform four basic steps .
+compute the set of representative keywords and both from and from , this step is carried out using linguistic techniques , such as answer type identification ( from the question ) and named entities recognition ( from the answer ) ; from the extracted keywords compute the validation pattern for the pair ; submit the validation pattern to a search engine ; estimate an answer relevance score ( ars ) considering the results returned by the search engine .
+the retrieval on the web is delegated to a public available search engine .
+the post- processing of the results is performed by html parsing procedures and simple functions which calculates the answer relevance score ( ars ) for every [ , ] pair by analysing the result page returned by the search engine .
+extracting validation patterns .
+in our approach a validation pattern consists of two components : a question sub-pattern ( qsp ) and an answer sub-pattern ( asp ) .
+this is discussed in more details in [ 5 ] .
+building the qsp .
+a qsp is derived from the input question cutting off non-content words with a stop-words filter .
+the remaining words are expanded with both synonyms and morphological forms in order to maximize the recall of retrieved documents .
+synonyms are automatically extracted from the most frequent sense of the word in wordnet [ 2 ] , which considerably reduces the risk of adding disturbing elements .
+as for morphology , verbs are expanded with all their tense forms ( i.e. present , present continuous , past tense and past participle ) .
+synonyms and morphological forms are added to the qsp and composed in an or clause .
+the following example illustrates how the qsp is constructed .
+given the trec-2001 question when did elvis presley die ? , the stop-words filter removes when and did from the input .
+then synonyms of the first sense of die ( i.e. decease , perish , etc . ) are extracted from wordnet .
+finally , morphological forms for all the corresponding verb tenses are added to the qsp .
+the resultant qsp will be the following : building the asp .
+an asp is constructed in two steps .
+first , the answer type of the question is identified considering both morpho-syntactic ( a part of speech tagger is used to process the question ) and semantic features ( by means of semantic predicates defined on the word- net taxonomy ; see [ 4 ] for details ) .
+in general possible answer types are : date , measure , person , location , organization , definition and generic .
+definition is the answer type peculiar to questions like what is an atom ? which represent a considerable part ( around 25 % ) of the trec-2001 corpus .
+the answer type generic is used for non definition questions asking for entities that can not be classified as named entities ( e.g. the questions : material called linen is made from what plant ? or what mineral helps prevent osteoporosis ? )
+in the second step , a rule-based named entities recognition module identifies in the answer string all the named entities matching the answer type category .
+we excluded categories generic and definition from our experiment because for these categories it is difficult to extract the exact answer from the answer string .
+an asp for each selected named entity is created .
+in addition , in order to maximize the recall of retrieved documents , the asp is expanded with verb tenses .
+the following example shows how the asp is created .
+given the trec question when did elvis presley die ? and the candidate answer though died in 1977 of course some fans maintain , since the answer type category is date the named entities recognition module will select [ 1977 ] as an answer sub-pattern .
+statistical approach .
+for the statistical approach we used altavista ( http : / / www.altavista.com ) , because this is one of the search engines with largest indices and provides advanced search through a set of boolean operators .
+the most interesting among them is the proximity operator near which plays an important role in our approach .
+mining the web for co-occurrences using the near operator .
+our statistical algorithm considers the number of pages where both the question keywords and the answer keywords are found in proximity to each other .
+we use the near logical operator to combine and into a validation pattern ' .
+such operator searches for pages where the keywords are found in a distance of no more than 10 tokens from each other .
+for every question-answer pair the answer validation module submits three searches to the search engine : the sub-patterns [ qsp ] and [ asp ] and the validation pattern [ qap ] built as the composition of the two sub-patterns using the altavista near operator .
+afterwards , a statistical algorithm considers the output of the web search for estimating the consistency of the patterns .
+several pattern relaxation heuristics have been defined in order to gradually increase the number of retrieved documents .
+if the question sub-pattern does not return any document or returns less than a certain threshold ( experimentally set to 7 ) the question pattern is relaxed by cutting one word ; in this way a new query is formulated and submitted to the search engine .
+this is repeated until no more words can be cut or the returned number of documents becomes higher than the threshold .
+computing answer relevance .
+as a result of the web search with patterns , the search engine returns three numbers.the probability of a pattern in the web is calculated by maximum number of pages that can be returned by the search engine .
+we set this constant experimentally .
+however , in the formula we use , ay be ignored .
+the joint probability p ( qsp , asp ) is calculated by means of the validation pattern probability : in order to estimate the degree of relevance of web searches we use a variant of conditional probability ( i.e.
+corrected conditional probability ) which considers the asymmetry of the question-answer relation .
+in contrast with other measures widely used to find co- occurrence in large corpora ( e.g.
+pointwise mutual information [ 7 ] ) , corrected conditional probability ( ccp ) is not symmetric ( e.g. generally ) .
+this is based on the fact that we search for the occurrence of the answer pattern asp only in the cases when qsp is present .
+the statistical evidence for this can be measured through , however this value is corrected with in the denominator , to avoid the cases when high-frequency words and patterns are taken as relevant answers .
+this measure provides an answer relevance score ( ars ) for any candidate answer : high values are interpreted as strong evidence that the validation pattern is consistent .
+this is a clue to the fact that the web pages where this pattern appears contain validation fragments , which imply answer accuracy .
+an example .
+consider an example taken from the question answer corpus of the main task of trec-2001 : which river in us is known as big muddy ? .
+the question keywords are : river , us , known , big , muddy .
+the search of the pattern [ river near us near ( known or know o r ...
+) near big near muddy ] returns 0 pages , so the algorithm relaxes the pattern by cutting the initial noun river , according to the heuristic for discarding a noun if it is the first keyword of the question .
+the second pattern [ us near ( known or know or ...
+) near big near muddy ] also returns 0 pages , so we apply the heuristic for ignoring verbs like know , call and abstract nouns like name .
+the third pattern [ us near big near muddy ] returns 28 pages , which is over the experimentally set threshold of seven pages .
+one of the 50 byte candidate answers from the trec-2001 answer collection is recover mississippi river .
+taking into account the answer type location , the algorithm considers only the named entity : mississippi river .
+to calculate answer validity score ( in this example pmi ) for [ mississippi river ] , the procedure constructs the validation pattern : [ us near big near muddy near mississippi river ] with the answer sub-pattern [ mississippi river ] .
+these two patterns are passed to the search engine , and the returned numbers of pages are substituted in the expression at the places of and respectively ; the previously obtained number ( i.e. 28 ) is substituted at the place of .
+in this way an answer validity score of 55.5 is calculated .
+it turns out that this value is the maximal validity score for all the answers of this question .
+other correct answers from the trec-2001 collection contain as name entity mississippi .
+their answer validity score is 11 . 8 , which is greater than 1.2 and also greater than .
+this score ( i.e. 11.8 ) classifies them as relevant answers .
+on the other hand , all the wrong answers has validity score below 1 and as a result all of them are classified as irrelevant answer candidates .
+content-based approach .
+we have chosen google ( http : / / www.google.com ) to back up our content based algorithm .
+it has the largest document index and , at the same time , it is very fast .
+moreover , it has a number of features , such as the support of boolean expressions and co-occurrence snippets extraction , which are a prerequisite for fast and successful retrieval of validation fragments .
+using text snippets for co-occurrence mining in the web .
+google gives highest ranking for documents where the query terms co-occur closely [ 1 ] , which allows to analyse only the first result page .
+when a query is submitted to google , in the returned pages the search engine provides surrounding context for the first occurrences of a query term .
+when two or more keywords co-occur near to each other , they are included in one co-occurrence fragment .
+our experiments with the search engine show that google prefers to extract the snippets where close co-occurrences take place ignoring the passages where only one keyword appears .
+the validation algorithm makes intensive use of these context snippets to identify co-occurrences between the answer and the question keywords .
+for every question-answer pair the answer validation module submits one query to the search engine , i.e. the validation pattern [ and ] built from the question and candidate answer keywords ( see section 3 ) .
+this query aims at the pages where keywords both from and appear .
+moreover , as google gives the highest ranks to the documents where the keywords appear close to each other ( see [ 1 ] ) , if there is co-occurrence tendency of and , it will be shown in the top ranked hits .
+during query submission we set the number of results per page to 100 , i.e. we consider the top one hundred documents .
+each document is provided with list of document snippets where query terms appear .
+an example of text snippets is presented in table 2 all the snippets are separated by an ellipsis symbol ... and each snippet contains at least one query term .
+how it was stated before , if the keywords are found in proximity to each other , they are provided with common context .
+this way we obtain a list of contexts where the answer and question keywords appear together .
+our hypothesis is that the closer the distance between the answer and the question keywords , the stronger their relation is .
+we consider strong relation between and the question keywords as a clue to the validation pattern consistency and answer relevance .
+for example , the first snippet in table 2 includes both the answer and the question keywords and the keyword density is very high .
+in fact , if we take out the stop words , the distance between the keywords will become zero .
+computing answer relevance .
+co-occurrence weight .
+the validation procedure identifies the context snippets and evaluates them to obtain an answer relevance score .
+every appearance of a candidate answer in a context snippet is evaluated by calculating the number of the question keywords and their distance from .
+we call this score co-occurrence weight ( cw ) .
+if we have co-occurrence of the answer and a set of question keywords , is calculated by means of the following formula : as many different question keywords occur in proximity to as higher their cw is .
+the cw also depends on the distance between and the question terms .
+if we denote with the set of text snippets where appears in the first one hundred documents , the answer relevance score is calculated in the following way : by using a sum of the [ , ] co-occurrence weights we stress on the number of co- occurrences .
+this way we consider more important the patterns which appear with higher frequency in the top 100 most relevant documents retrieved by google .
+answers which obtain ars lower than a certain threshold are discarded .
+the rest are sorted by ars and the answer with maximal score is judged correct along with all the answers which have similar score .
+an example .
+as an example of content based answer validation consider the question-answer pair : question : when did idaho become a state ?
+answer : 1890 first , the keywords are extracted from the question , which results in the keyword list .
+next , the past form of the verb is added to the keyword list and the question pattern is transformed into the google query : next we add the candidate answer 1890 and the query becomes : [ idaho ( become or became ) state 1890 ] this query is equivalent to the boolean expression [ idaho and ( become or became ) and state and 1890 ] .
+the search for this expression in the web catches all the pages where the words , and one of the forms of are present .
+for the above mentioned example google returns about 11,100 hits .
+the snippet lists for the first three hits are presented in table 2 .
+in the first text snippet the distance between the candidate answer 1890 and all the question keywords ( idaho , became and state ) is 0 , since only stop-words are present between the candidate answer and the question keywords .
+we set experimentally a constant weight of 2 for any question keyword .
+by substituting these values in the formula for co-occurrence weight , we obtain a weight of 8 for the first co- occurrence snippet .
+in this way we assign a weight to all the snippets in the top 100 hits .
+finally , we sum these weights and obtain the final ars .
+in case there are other candidate answers for the question an ars is calculated for each of them and the candidate with the higher value is selected .
+experiments and discussion .
+a number of experiments have been carried out in order to check the validity of the proposed answer validation techniques .
+as a main data set , the 249 factoid questions2 of the trec2001 database have been used .
+for each question , at most three correct answers and three wrong answers have been randomly selected from the trec-2001 participants submissions , resulting in a corpus of 1351 question-answer pairs ( some question have less than three positive answers in the corpus ) .
+additionally , we tested the statistical approach on the full set of the 492 trec-2001 questions .
+we wanted to check performance variation based on different types of trec-2001 questions .
+we carried out five evaluations : for questions which ask for date , measure , person , or location and the total performance on the full set of named entity questions .
+the number of questions for each type is reported in table 3 .
+the baseline model .
+a baseline for the answer validation experiment was defined by judging correct all the answer strings which include at least one named entity belonging to the type of the question .
+baseline results are also reported in table 3 .
+results .
+for each question type we report in table 3 precision ( p ) , recall ( r ) and success rate ( sr ) for both the content-based and the statistical approach .
+success rate best represents the performance of the system , being the percent of [ ] pairs where the result given by the system is the same as the trec judges opinion .
+precision is the percent of pairs estimated by the algorithm as relevant , for which the opinion of trec judges was the same .
+recall shows the percent of the relevant answers which the system also evaluates as relevant .
+the recall of the baseline is 100 % because all the correct answers contain at least one named entity of the question type .
+therefore in table 3 for the baseline algorithm we report only precision and success rate .
+the overall results in the last row of table 3 show a success rate of 86 % for the content- based approach and 86.4 % for the statistical .
+both these results are about 22 % over the baseline overall success rate .
+the highest performances we obtain for the category date - 92.6 % for the content-based and 93.3 % for the statistical approach .
+however the baseline success rate is also high - 70.2 % , therefore the improvement with respect to the baseline is 22 % and 23 % respectively .
+for person and location the system demonstrates good performances ( 87 % and 86.4 % for content-based approach and 88.2 % , 85.9 % for statistical ) .
+even more , the performance of both validation algorithms for these named entities exceed the baseline by about 28-30 % .
+this is the highest increase from the baseline , therefore we may conclude that both algorithms validate best answers which belong to category person or location .
+the measure category shows the lowest success rate for both methodologies ( 78.3 % for content-based and 78.6 % for the statistical ) .
+besides , these numbers are is only 2.2-2.5 % above the baseline corresponding success rate .
+there are different hindrances in this kind of answers .
+often measures are given in different units , to make the things more difficult , the different texts treat the numbers with different precision .
+these obstacles can be solved by comparing numbers and measure units with more intelligent algorithms than the simple string match .
+we also carried out an experiment checking the validity of the statistical approach over the full set of 492 trec-2001 questions .
+such an experiment resulted in 81.25 % success rate .
+both algorithms show similar performances .
+not only the overall results are similar but also the results for the specific named entity types .
+we calculated that for 1164 ( 86.2 % ) [ , ] pairs both algorithms vote equally ( both algorithms accept or reject the candidate answer ) .
+moreover , for these 1164 pairs the common success rate is 92 % .
+considering these figures and the negligible distance in the success rates of the two approaches ( statistical prevails with only 0.4 % ) we may suppose that in the data-driven approaches for answer validation the data is more significant than the methodology .
+although the two algorithms used two different search engines and the overlap between search engine indices is generally considered to be relatively small 3 , we think that the answers of general questions can be found on the most important internet sites , such as government or educational institution sites , internet portals and directories , home pages of famous people , etc .
+those pages should be indexed both by google and altavista .
+combining approaches .
+the combination of the two approaches is an interesting issue .
+how it was stated before when both algorithms judge equally a [ , ] pair , in 92 % of the cases these judgments are correct .
+therefore , we created a combined approach which accepts the common judgment when the two approaches vote equally for a [ , ] pair .
+when the two approaches diverge in their judgment we combine their score .
+in this way , a small improvement of the success rate ( 1.4 % with respect to the statistical approach ) was achieved , i.e. 87.8 % .
+we made another experiment by judging correct all the [ , ] pairs which are judged correct by one of the search engines .
+this algorithm obtained nearly the same success rate of 87.3 % .
+although we did not perform a thoroughfully result analysis , we suppose that the two approaches diverge in their judgment when the data about [ , ] relation is is insufficient or ambiguous .
+for example , the question what hemisphere is the philippines in ? requires the answer eastern and one of the wrong candidates is central .
+altavista obtains many pages where hemisphere , philippines and central are in proximity to each other because these words often appear together in geographic texts .
+however by exploring google snippets it becomes evident that central appears in a great distance from hemisphere .
+whereupon , the content-based approach discards the wrong answer central and the statistical approach accepts it .
+conclusion and future work .
+we have presented approaches to answer validation based on the intuition that the amount of implicit knowledge which connects an answer to a question can be estimated by exploiting the redundancy of web information .
+results obtained on the trec-2001 qa corpus correlate well with the human assessment of answers correctness and confirm that a web-based algorithm provides a workable solution for answer validation .
+several activities are planned in the near future .
+first , a generate and test module based on the validation algorithm presented in this paper will be integrated in the architecture of the diogene qa system under development at irst .
+in order to exploit the efficiency and the reliability of the algorithm , such system will be designed trying to maximize the recall of retrieved candidate answers .
+instead of performing a deep linguistic analysis of these passages , the system will delegate to the evaluation component the selection of the right answer .
+we also consider the possibility combine the two approaches in more effective way .

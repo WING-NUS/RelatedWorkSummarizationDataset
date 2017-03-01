@@ -1,0 +1,297 @@
+measuring semantic similarity between words using web search engines .
+abstract .
+semantic similarity measures play important roles in information retrieval and natural language processing .
+previous work in semantic web-related applications such as community mining , relation extraction , automatic meta data extraction have used various semantic similarity measures .
+despite the usefulness of semantic similarity measures in these applications , robustly measuring semantic similarity between two words ( or entities ) remains a challenging task .
+we propose a robust semantic similarity measure that uses the information available on the web to measure similarity between words or entities .
+the proposed method exploits page counts and text snippets returned by a web search engine .
+we define various similarity scores for two given words p and q , using the page counts for the queries p , q and p and q. moreover , we propose a novel approach to compute semantic similarity using automatically extracted lexico-syntactic patterns from text snippets .
+these different similarity scores are integrated using support vector machines , to leverage a robust semantic similarity measure .
+experimental results on miller-charles benchmark dataset show that the proposed measure outperforms all the existing web-based semantic similarity measures by a wide margin , achieving a correlation coefficient of 0.834 .
+moreover , the proposed semantic similarity measure significantly improves the accuracy ( f-measure of 0.78 ) in a community mining task , and in an entity disambiguation task , thereby verifying the capability of the proposed measure to capture semantic similarity using web content .
+introduction .
+the study of semantic similarity between words has long been an integral part of information retrieval and natural language processing .
+semantic similarity between entities changes over time and across domains .
+for example , apple is frequently associated with computers on the web .
+however , this sense of apple is not listed in most general-purpose thesauri or dictionaries .
+a user who searches for apple on the web , may be interested in this sense of apple and not apple as a fruit .
+new words are constantly being created as well as new senses are assigned to existing words .
+manually maintaining thesauri to capture these new words and senses is costly if not impossible .
+we propose an automatic method to measure semantic similarity between words or entities using web search engines .
+because of the vastly numerous documents and the high growth rate of the web , it is difficult to analyze each document separately and directly .
+web search engines provide an efficient interface to this vast information .
+page counts and snippets are two useful information sources provided by most web search engines .
+page count of a query is the number of pages that contain the query words 1 .
+page count for the query p and q can be considered as a global measure of co-occurrence of words p and q. despite its simplicity , using page counts alone as a measure of co-occurrence of two words presents several drawbacks .
+first , page count analyses ignore the position of a word in a page .
+therefore , even though two words appear in a page , they might not be related .
+secondly , page count of a polysemous word ( a word with multiple senses ) might contain a combination of all its senses .
+for an example , page counts for apple contains page counts for apple as a fruit and apple as a company .
+moreover , given the scale and noise in the web , some words might occur arbitrarily , i.e. by random chance , on some pages .
+for those reasons , page counts alone are unreliable when measuring semantic similarity . 1page count may not necessarily be equal to the word frequency because the queried word might appear many times on one page snippets , a brief window of text extracted by a search engine around the query term in a document , provide useful information regarding the local context of the query term .
+semantic similarity measures defined over snippets , have been used in query expansion [ 36 ] , personal name disambiguation [ 4 ] and community mining [ 6 ] .
+processing snippets is also efficient as it obviates the trouble of downloading web pages , which might be time consuming depending on the size of the pages .
+however , a widely acknowledged drawback of using snippets is that , because of the huge scale of the web and the large number of documents in the result set , only those snippets for the top-ranking results for a query can be processed efficiently .
+ranking of search results , hence snippets , is determined by a complex combination of various factors unique to the underlying search engine .
+therefore , no guarantee exists that all the information we need to measure semantic similarity between a given pair of words is contained in the top-ranking snippets .
+this paper proposes a method that considers both page counts and lexico-syntactic patterns extracted from snippets , thereby overcoming the problems described above .
+for example , let us consider the following snippet from google for the query jaguar and cat .
+the jaguar is the largest cat in western hemisphere and can subdue larger prey than can the puma here , the phrase is the largest indicates a hypernymic relationship between the jaguar and the cat .
+phrases such as also known as , is a , part of , is an example of all indicate various semantic relations .
+such indicative phrases have been applied to numerous tasks with good results , such as hyponym extraction [ 12 ] and fact extraction [ 27 ] .
+from the previous example , we form the pattern x is the largest y , where we replace the two words jaguar and cat by two wildcards x and y. our contributions in this paper are two fold : we propose an automatically extracted lexico-syntactic patterns-based approach to compute semantic similarity using text snippets obtained from a web search engine .
+we integrate different web-based similarity measures using wordnet synsets and support vector machines to create a robust semantic similarity measure .
+the integrated measure outperforms all existing web-based semantic similarity measures in a benchmark dataset .
+to the best of our knowledge , this is the first attempt to combine both wordnet synsets and web content to leverage a robust semantic similarity measure .
+the remainder of the paper is organized as follows .
+in section 2 we discuss previous works related to semantic similarity measures .
+we then describe the proposed method in section 3 .
+section 4 compares the proposed method against previous web-based semantic similarity measures and several baselines on a benchmark data set .
+in order to evaluate the ability of the proposed method in capturing semantic similarity between real-world entities , we apply it in a community mining task .
+finally , we show that the proposed method is useful for disambiguating senses in ambiguous named-entities and conclude this paper .
+related work .
+semantic similarity measures are important in many web- related tasks .
+in query expansion [ 5 , 25 , 40 ] a user query is modified using synonymous words to improve the relevancy of the search .
+one method to find appropriate words to include in a query is to compare the previous user queries using semantic similarity measures .
+if there exist a previous query that is semantically related to the current query , then it can be suggested either to the user or internally used by the search engine to modify the original query .
+semantic similarity measures have been used in semantic web related applications such as automatic annotation of web pages [ 7 ] , community mining [ 23 , 19 ] , and keyword extraction for inter-entity relation representation [ 26 ] .
+semantic similarity measures are necessary for various applications in natural language processing such as word-sense disambiguation [ 32 ] , language modeling [ 34 ] , synonym extraction [ 16 ] , and automatic thesauri extraction [ 8 ] .
+manually compiled taxonomies such as wordnet3 and large text corpora have been used in previous works on semantic similarity [ 16 , 31 , 13 , 17 ] .
+regarding the web as a live corpus has become an active research topic recently .
+simple , unsupervised models demonstrably perform better when n- gram counts are obtained from the web rather than from a large corpus [ 14 , 15 ] .
+resnik and smith [ 33 ] extracted bilingual sentences from the web to create a parallel corpora for machine translation .
+turney [ 38 ] defined a point-wise mutual information ( pmi-ir ) measure using the number of hits returned by a web search engine to recognize synonyms .
+matsuo et. al , [ 20 ] used a similar approach to measure the similarity between words and apply their method in a graph- based word clustering algorithm .
+given a taxonomy of concepts , a straightforward method to calculate similarity between two words ( concepts ) is to find the length of the shortest path connecting the two words in the taxonomy [ 30 ] .
+if a word is polysemous then multiple paths might exist between the two words .
+in such cases , only the shortest path between any two senses of the words is considered for calculating similarity .
+a problem that is frequently acknowledged with this approach is that it relies on the notion that all links in the taxonomy represent a uniform distance .
+resnik [ 31 ] proposed a similarity measure using information content .
+he defined the similarity between two concepts c1 and c2 in the taxonomy as the maximum of the information content of all concepts c that subsume both c1 and c2 .
+then the similarity between two words is defined as the maximum of the similarity between any concepts that the words belong to .
+he used wordnet as the taxonomy ; information content is calculated using the brown corpus .
+li et al. , [ 41 ] combined structural semantic information from a lexical taxonomy and information content from a corpus in a nonlinear model .
+they proposed a similarity measure that uses shortest path length , depth and local density in a taxonomy .
+their experiments reported a pearson correlation coefficient of 0.8914 on the miller and charles [ 24 ] benchmark dataset .
+they did not evaluate their method in terms of similarities among named entities .
+lin [ 17 ] defined the similarity between two concepts as the information that is in common to both concepts and the information contained in each individual concept .
+recently , some work has been carried out on measuring semantic similarity using web content .
+matsuo et al. , [ 19 ] proposed the use of web hits for extracting communities on the web .
+they measured the association between two personal names using the overlap ( simpson ) coefficient , which is calculated based on the number of web hits for each individual name and their conjunction ( i.e. , and query of the two names ) .
+sahami et al. , [ 36 ] measured semantic similarity between two queries using snippets returned for those queries by a search engine .
+for each query , they collect snippets from a search engine and represent each snippet as a tf-idfweighted term vector .
+each vector is l2 normalized and the centroid of the set of vectors is computed .
+semantic similarity between two queries is then defined as the inner product between the corresponding centroid vectors .
+they did not compare their similarity measure with taxonomy- based similarity measures .
+chen et al. , [ 6 ] proposed a double-checking model using text snippets returned by a web search engine to compute semantic similarity between words .
+for two words p and q , they collect snippets for each word from a web search engine .
+then they count the occurrences of word p in the snippets for word q and the occurrences of word q in the snippets for word p. these values are combined nonlinearly to compute the similarity between p and q. this method depends heavily on the search engines ranking algorithm .
+although two words p and q might be very similar , there is no reason to believe that one can find q in the snippets for p , or vice versa .
+this observation is confirmed by the experimental results in their paper which reports zero similarity scores for many pairs of words in the miller and charles [ 24 ] dataset .
+method .
+outline .
+we propose a method which integrates both page counts and snippets to measure semantic similarity between a given pair of words .
+in section 3.2 , we define four similarity scores using page counts .
+we then describe an automatic lexicosyntactic pattern extraction algorithm in section 3.3 .
+we rank the patterns extracted by our algorithm according to their ability to express semantic similarity .
+we use two- class support vector machines ( svms ) to find the optimal combination of page counts-based similarity scores and top- ranking patterns .
+the svm is trained to classify synonymous word-pairs and non-synonymous word-pairs .
+we select synonymous word-pairs ( positive training examples ) from wordnet synsets4 .
+non-synonymous word-pairs ( negative training examples ) are automatically created using a random shuffling technique .
+we convert the output of svm into a posterior probability .
+we define the semantic similarity between two words as the posterior probability that they belong to the synonymous-words ( positive ) class .
+page-count-based similarity scores .
+page counts for the query p and q , can be considered as an approximation of co-occurrence of two words ( or multi- word phrases ) p and q on the web .
+however , page counts for the query p and q alone do not accurately express semantic similarity .
+for example , google returns 11 , 300 , 000 as the page count for car and automobile , whereas the same is 49 , 000 , 000 for car and apple .
+although , automobile is more semantically similar to car than apple is , page counts for query car and apple are more than four times greater than those for the query car and automobile .
+one must consider the page counts not just for the query p and q , but also for the individual words p and q to assess semantic similarity between p and q. we modify four popular co-occurrence measures ; jaccard , overlap ( simpson ) , dice , and pmi ( point-wise mutual information ) , to compute semantic similarity using page counts .
+for the remainder of this paper we use the notation h ( p ) to denote the page counts for the query p in a search engine .
+the webjaccard coefficient between words ( or multi-word phrases ) p and q , webjaccard ( p , q ) , is defined as , therein , p fn q denotes the conjunction query p and q. given the scale and noise in web data , it is possible that two words may appear on some pages purely accidentally .
+in order to reduce the adverse effects attributable to random co-occurrences , we set the webjaccard coefficient to zero if the page count for the query p fn q is less than a threshold c5 .
+here , n is the number of documents indexed by the search engine .
+probabilities in eq . 4 are estimated according to the maximum likelihood principle .
+to calculate pmi accurately using eq . 4 , we must know n , the number of documents indexed by the search engine .
+although estimating the number of documents indexed by a search engine [ 2 ] is an interesting task itself , it is beyond the scope of this work .
+in the present work , we set n = 1010 according to the number of indexed pages reported by google .
+extracting lexico-syntactic patterns from snippets .
+text snippets are returned by search engines alongside with the search results .
+they provide valuable information regarding the local context of a word .
+we extract lexicosyntactic patterns that indicate various aspects of semantic similarity .
+for example , consider the following text snippet returned by google for the query cricket and sport .
+here , the phrase is a indicates a semantic relationship between cricket and sport .
+many such phrases indicate semantic relationships .
+for example , also known as , is a , part of , is an example of all indicate semantic relations of different types .
+in the example given above , words indicating the semantic relation between cricket and sport appear between the query words .
+replacing the query words by wildcards x and y we can form the pattern x is a y from the example given above .
+however , in some cases the words that indicate the semantic relationship do not fall between the query words .
+for example , consider the following example .
+here , the relationship between toyota and nissan is that they are both car manufacturers .
+identifying the exact set of words that convey the semantic relationship between two entities is a difficult problem which requires deeper semantic analysis .
+however , such an analysis is not feasible considering the numerous ill-formed sentences we need to process on the web .
+in this paper , we propose a shallow pattern extraction method to capture the semantic relationship between words in text snippets .
+our pattern extraction algorithm is illustrated in figure 3 .
+given a set s of synonymous word-pairs , getsnippets function returns a list of text snippets for the query a and b for each word-pair a , b in s. for each snippet found , we replace the two words in the query by two wildcards .
+let us assume these wildcards to be x and y. for each snippet d in the set of snippets d returned by getsnippets , function getngrams extract word n-grams for n = 2 , 3 , 4 and 5 .
+we select n-grams which contain exactly one x and one y. finally , function countfreq counts the frequency of each pattern we extracted .
+the procedure described above yields a set of patterns with their frequencies in text snippets obtained from a search engine .
+it considers the words that fall between x and y as well as words that precede x and succeeds y. to leverage the pattern extraction process , we select 5000 pairs of synonymous nouns from wordnet synsets .
+for polysemous nouns we selected the synonyms for the dominant sense .
+the pattern extraction algorithm described in figure 3 yields 4,562,471 unique patterns .
+of those patterns , 80 % occur less than 10 times .
+it is impossible to train a classifier with such numerous sparse patterns .
+we must measure the confidence of each pattern as an indicator of synonymy .
+for that purpose , we employ the following procedure .
+first , we run the pattern extraction algorithm described in figure 3 with a non-synonymous set of word-pairs and count the frequency of the extracted patterns .
+we then use a test of statistical significance to evaluate the probable applicability of a pattern as an indicator of synonymy .
+the fundamental idea of this analysis is that , if a pattern appears a statistically significant number of times in snippets for synonymous words than in snippets for non-synonymous words , then it is a reliable indicator of synonymy .
+to create a set of non-synonymous word-pairs , we select two nouns from wordnet arbitrarily .
+if the selected two nouns do not appear in any wordnet synset then we select them as a non-synonymous word-pair .
+we repeat this procedure until we obtain 5000 pairs of non-synonymous words .
+for each extracted pattern v , we create a contingency table , as shown in table 1 using its frequency pv in snippets for synonymous word pairs and nv in snippets for non- synonymous word pairs .
+in table 1 , p denotes the total frequency of all patterns in snippets for synonymous word pairs ( p = t , vpv ) and n is the same in snippets for non- synonymous word pairs ( n = t , v nv ) .
+we selected the top ranking 200 patterns experimentally as described in section 4.2 , according to their x2 values .
+some selected patterns are shown in table 2 .
+before we proceed to the integration of patterns and pagecounts-based similarity scores , it is necessary to introduce some constraints to the development of semantic similarity measures .
+evidence from psychological experiments suggest that semantic similarity can be context-dependent and even asymmetric [ 39 , 22 ] .
+human subjects have reportedly assigned different similarity ratings to word-pairs when the two words were presented in the reverse order .
+however , experimental results investigating the effects of asymmetry reports that the average difference in ratings for a word pair is less than 5 percent [ 22 ] .
+in this work , we assume semantic similarity to be symmetric .
+this is in line with previous work on semantic similarity described in section 2 .
+under this assumption , we can interchange the query word markers x and y in the extracted patterns .
+integrating patterns and page counts .
+in section 3.2 we defined four similarity scores using page counts .
+section 3.3 described a lexico-syntactic pattern extraction algorithm and ranked the patterns according to their ability to express synonymy .
+in this section we describe leverage of a robust semantic similarity measure through integration of all the similarity scores and patterns described in previous sections .
+for each pair of words ( a , b ) , we create a feature vector f as shown in figure 4 .
+first , we query google for \ a and \ b and collect snippets .
+then we replace the query words a and b with two wildcards x and y , respectively in each snippet .
+function getngrams extracts n-grams for n = 2 , 3 , 4 and 5 from the snippets .
+we select n-grams having exactly one x and one y as we did in the pattern extraction algorithm in figure 3 .
+let us assume the set of patterns selected based on their x2 values in section 3.3 to be goodpats .
+then , the function selectpatterns selects the n-grams from n which appear in goodpats .
+in normalize ( selpats ) , we normalize the count of each pattern by diving it from the total number of counts of the observed patterns .
+this function returns a vector of patterns where each element is the normalized frequency of the corresponding pattern in the snippets for the query a b. we append similarity scores calculated using page counts in section 3.2 to create the final feature vector f for the word- pair ( a , b ) .
+this procedure yields a 204 dimensional ( 4 page-counts based similarity scores and 200 lexico-syntactic patterns ) feature vector f. we form such feature vectors for all synonymous word-pairs ( positive training examples ) as well as for non-synonymous word-pairs ( negative training examples ) .
+we then train a two-class support vector machine with the labelled feature vectors .
+once we have trained an svm using synonymous and non- synonymous word pairs , we can use it to compute the semantic similarity between two given words .
+following the same method we used to generate feature vectors for training , we create a feature vector f ' for the given pair of words ( a ' , b ' ) , between which we need to measure the semantic similarity .
+being a large-margin classifier , the output of an svm is the distance from the decision hyper-plane .
+however , this is not a calibrated posterior probability .
+we use sigmoid functions to convert this uncalibrated distance into a calibrated posterior probability ( see [ 29 ] for a detailed discussion on this topic ) .
+experiments .
+we conduct two sets of experiments to evaluate the proposed semantic similarity measure .
+first we compare the similarity scores produced by the proposed measure against miller-charles benchmark dataset .
+we analyze the behavior of the proposed measure with the number of patterns used as features , the number of snippets used to extract the patterns , and the size of the training dataset .
+secondly , we apply the proposed measure in two real-world applications : community mining and entity disambiguation .
+the benchmark dataset .
+we evaluate the proposed method against miller-charles [ 24 ] dataset , a dataset of 30 word-pairs6 rated by a group of 38 human subjects .
+the word pairs are rated on a scale from 0 ( no similarity ) to 4 ( perfect synonymy ) .
+miller-charles data set is a subset of rubenstein-goodenoughs [ 35 ] original data set of 65 word pairs .
+although miller-charles experiment was carried out 25 years later than rubensteingoodenoughs , two sets of ratings are highly correlated ( pear- son correlation coefficient = 0.97 ) .
+therefore , miller-charles ratings can be considered as a reliable benchmark for evaluating semantic similarity measures .
+pattern selection .
+we trained a linear kernel svm with top n pattern features ( ranked according to their x2 values ) and calculated the correlation coefficient against the miller-charles benchmark dataset .
+results of the experiment are shown in figure 5 .
+in figure 5 a steep improvement of correlation with the number of top-ranking patterns is appearent ; it reaches a maximum at 200 features .
+with more than 200 patterns correlation drops below this maximum .
+considering that the patterns are ranked according to their ability to express semantic similarity and the majority of patterns are sparse , we selected only the top ranking 200 patterns for the remaining experiments .
+features with the highest linear kernel weights are shown in table 2 alongside their x2 values .
+the weight of a feature in the linear kernel can be considered as a rough estimate of the influence it imparts on the final svm output .
+webdice has the highest kernel weight followed by a series of pattern- based features .
+weboverlap ( rank = 18 , weight = 2.45 ) , webjaccard ( rank = 66 , weight = 0.618 ) and webpmi ( rank = 138 , weight = 0.0001 ) are not shown in table 2 because of space limitations .
+it is noteworthy that the pattern features in table 2 agree with intuition .
+lexical patterns ( e.g. , x or y , x and y are , x of y ) as well as syntax patterns ( e.g. , bracketing , comma usage ) are extracted by our method .
+we experimented with different kernel types as shown in table 3 .
+best performance is achieved with the linear kernel .
+when higher degree kernels such as quadratic ( polynomial degree = 2 ) and cubic ( polynomial degree = 3 ) are used , correlation with the human ratings decreases rapidly .
+second best is the radial basis functions ( rbfs ) , which reports a correlation coefficient of 0.6632 .
+for the rest of the experiments in this paper we use the linear kernel .
+semantic similarity .
+we score the word pairs in miller-charles dataset using the page-count-based similarity scores defined in section 3.2 , web-based semantic similarity measures proposed in previous work ( sahami [ 36 ] , chen [ 6 ] ) and the proposed method ( semsim ) .
+results are shown in table 4 .
+all figures , except those for the miller-charles ratings , are normalized into values in [ 0 , 1 ] range for ease of comparison .
+pearsons correlation coefficient is invariant against a linear transformation .
+proposed method earns the highest correlation of 0.834 in our experiments .
+it shows the highest similarity score for the word-pair magician and wizard .
+lowest similarity is reported for cord and smile 7 .
+our reimplementation of co- occurrence double checking ( codc ) measure [ 6 ] indicates the second-best correlation of 0.6936 .
+therein , f ( p @ q ) denotes the number of occurrences of p in the top-ranking snippets for the query q in google .
+h ( p ) is the page count for query p. a is a constant in codc model and it is set to 0.15 according to chen et al. , [ 6 ] .
+codc measure reports zero similarity scores for many word-pairs in the benchmark .
+one reason for this sparsity in codc measure is that even though two words in a pair ( p , q ) are semantically similar , we might not always find q among the top snippets for p ( and vice versa ) .
+as might be appearent from the definition of the codc measure in eq . 7 , it returns zero under these conditions .
+ranking of snippets , ( hence the value of f ( p @ q ) ) , depends directly upon the search engines specifications .
+a search engine considers various factors such as novelty , authority , link structure , user preferences when ranking search results .
+consequently , codc measure is influenced by these factors .
+similarity measure proposed by sahami et al. [ 36 ] is placed third , reflecting a correlation of 0.5797 .
+this method use only those snippets when calculating semantic similarity .
+among the four page-counts-based measures , webpmi garners the highest correlation ( r = 0.5489 ) .
+overall , the results in table 4 suggest that similarity measures based on snippets are more accurate than the ones based on page counts in capturing semantic similarity .
+taxonomy-based methods .
+table 5 presents a comparison of the proposed method to the wordnet-based methods .
+the proposed method outperforms simple wordnet-based approaches such as edge- counting and information content measures .
+it is comparable with lin ( 1998 ) [ 17 ] jiang & conrath ( 1998 ) [ 13 ] and li ( 2003 ) [ 41 ] methods .
+unlike the wordnet based methods , proposed method requires no a hierarchical taxonomy of concepts or sense-tagged definitions of words .
+therefore , in principle the proposed method could be used to calculate semantic similarity between named entities , etc , which are not listed in wordnet or other manually compiled thesauri .
+however , considering the high correlation between human subjects ( 0.9 ) , there is still room for improvement .
+accuracy vs. number of snippets .
+we computed the correlation with the miller-charles ratings for different numbers of snippets to investigate the effect of the number of snippets used to extract patterns upon the semantic similarity measure .
+the experimental results are presented in figure 6 .
+from figure 6 it is appearent that overall the correlation coefficient improves with the number of snippets used for extracting patterns .
+the probability of finding better patterns increases with the number of processed snippets .
+that fact enables us to represent each pair of words with a rich feature vector , resulting in better performance .
+training data .
+we used synonymous word pairs extracted from word- net synsets as positive training examples and automatically generated non-synonymous word pairs as negative training examples to train a two-class support vector machine in section 3.4 .
+to determine the optimum combination of positive and negative training examples , we trained a linear kernel svm with different combinations of positive and negative training examples and evaluated accuracy against the human ratings in the miller-charles benchmark dataset .
+experimental results are summarized in figure 7 .
+maximum correlation coefficient of 0.8345 is achieved with 1900 positive training examples and 2400 negative training examples .
+moreover , figure 7 reveals that correlation does not improve beyond 2500 positive and negative training examples .
+therefore , we can conclude that 2500 examples are sufficient to leverage the proposed semantic similarity measure .
+community mining .
+measuring semantic similarity between named entities is vital in many applications such as query expansion [ 36 ] , entity disambiguation ( e.g. namesake disambiguation ) and community mining [ 19 ] .
+because most named entities are not covered by wordnet , similarity measures that are based on wordnet cannot be used directly in these tasks .
+unlike common english words , named entities are being created constantly .
+manually maintaining an up-to-date taxonomy of named entities is costly , if not impossible .
+the proposed semantic similarity measure is appealing for these applications because it does not require pre-compiled taxonomies .
+in order to evaluate the performance of the proposed measure in capturing the semantic similarity between named- entities , we set up a community mining task .
+we select 50 personal names from 5 communities : tennis players , golfers , actors , politicians and scientists , ( 10 names from each community ) from the open directory project ( dmoz ) a .
+for each pair of names in our data set , we measure their similarity using the proposed method and baselines .
+we use group- average agglomerative hierarchical clustering ( gaac ) to cluster the names in our dataset into five clusters .
+initially , each name is assigned to a separate cluster .
+in subsequent iterations , group average agglomerative clustering process , merges the two clusters with highest correlation .
+here , r is the merger of the two clusters a and b. ii denotes the number of elements ( persons ) in r and sim ( u , v ) is the semantic similarity between two persons u and v in r .
+we terminate gaac process when exactly five clusters are formed .
+we adopt this clustering method with different semantic similarity measures sim ( u , v ) to compare their accuracy in clustering people who belong to the same community .
+we employed the b-cubed metric [ 1 ] to evaluate the clustering results .
+the b-cubed evaluation metric was originally proposed for evaluating cross-document co-reference chains .
+we compute precision , recall and f-score for each name in the data set and average the results over the dataset .
+for each person p in our data set , let us denote the cluster that p belongs to by c ( p ) .
+entity disambiguation .
+disambiguating named entities is important in various applications such as information retrieval [ 9 ] , social network extraction [ 19 , 3 , 4 ] , word sense disambiguation ( wsd ) [ 21 ] , citation matching [ 11 ] and cross-document co-reference resolution [ 28 , 10 ] .
+for example , jaguar is a cat , a car brand and also an operating system for computers .
+a user who searches for jaguar on the web , may be interested in either one of these different senses of jaguar .
+however , only the first sense ( jaguar as a cat ) is listed in wordnet .
+considering the number of new senses constantly being associated to the existing words on the web , it is costly , if not impossible to maintain sense tagged dictionaries to cover all senses .
+contextual hypothesis for sense [ 37 ] states that the context in which a word appears can be used to determine its sense .
+for example , a web page discussing jaguar as a car , is likely to talk about other types of cars , parts of cars etc .
+whereas , a web page on jaguar the cat , is likely to contain information about other types of cats and animals .
+in this section , we utilize the clustering algorithm described in section 4.7 to cluster the top 1000 snippets returned by google for two ambiguous entities jaguar and java .
+we represent each snippet as a bag-of-words and calculate the similarity sim ( sa , sb ) between two snippets sa , sbas follows , in formula 15 isi denotes the number of words in snippet s. we used different semantic similarity measures for sim in formula 15 and employed the group average agglomerative clustering explained in section 4.7 .
+we manually analyzed the snippets for queries java ( 3 senses : programming language , island , coffee ) and jaguar ( 3 senses : cat , car , operating system ) and computed precision , recall and f-score for the clusters created by the algorithm .
+our experimental results are summarized in table 7 .
+proposed method reports the best results among all the baselines compared in table 7 .
+however , the experiment needs to be carried out on a much larger data set of ambiguous entities in order to obtain any statistical guarantees .
+conclusion .
+in this paper , we proposed a measure that uses both page counts and snippets to robustly calculate semantic similarity between two given words or named entities .
+the method consists of four page-count-based similarity scores and automatically extracted lexico-syntactic patterns .
+we integrated page-counts-based similarity scores with lexico syntactic patterns using support vector machines .
+training data were automatically generated using wordnet synsets .
+proposed method outperformed all the baselines including previously proposed web-based semantic similarity measures on a benchmark dataset .
+a high correlation ( correlation coefficient of 0.834 ) with human ratings was found for semantic similarity on this benchmark dataset .
+only 1900 positive examples and 2400 negative examples are necessary to leverage the proposed method , which is efficient and scalable because it only processes the snippets ( no downloading of web pages is necessary ) for the top ranking results by google .
+a contrasting feature of our method compared to the wordnet based semantic similarity measures is that our method requires no taxonomies , such as wordnet , for calculation of similarity .
+therefore , the proposed method can be applied in many tasks where such taxonomies do not exist or are not up-to-date .
+we employed the proposed method in community mining and entity disambiguation experiments .
+results of our experiments indicate that the proposed method can robustly capture semantic similarity between named entities .
+in future research , we intend to apply the proposed semantic similarity measure in automatic synonym extraction , query suggestion and name alias recognition .

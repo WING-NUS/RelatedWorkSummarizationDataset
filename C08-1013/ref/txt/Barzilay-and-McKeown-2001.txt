@@ -1,0 +1,199 @@
+extracting paraphrases from a parallel corpus .
+abstract .
+while paraphrasing is critical both for interpretation and generation of natural language , current systems use manual or semi-automatic methods to collect paraphrases .
+we present an unsupervised learning algorithm for identification of paraphrases from a corpus of multiple english translations of the same source text .
+our approach yields phrasal and single word lexical paraphrases as well as syntactic paraphrases .
+introduction .
+paraphrases are alternative ways to convey the same information .
+a method for the automatic acquisition of paraphrases has both practical and linguistic interest .
+from a practical point of view , diversity in expression presents a major challenge for many nlp applications .
+in multidocument summarization , identification of paraphrasing is required to find repetitive information in the input documents .
+in generation , paraphrasing is employed to create more varied and fluent text .
+most current applications use manually collected paraphrases tailored to a specific application , or utilize existing lexical resources such as word- net ( miller et al. , 1990 ) to identify paraphrases .
+however , the process of manually collecting paraphrases is time consuming , and moreover , the collection is not reusable in other applications .
+existing resources only include lexical paraphrases ; they do not include phrasal or syntactically based paraphrases .
+from a linguistic point of view , questions concern the operative definition of paraphrases : what types of lexical relations and syntactic mechanisms can produce paraphrases ?
+many linguists ( halliday , 1985 ; de beaugrande and dressler , 1981 ) agree that paraphrases retain approximate conceptual equivalence , and are not limited only to synonymy relations .
+but the extent of interchangeability between phrases which form paraphrases is an open question ( dras , 1999 ) .
+a corpus-based approach can provide insights on this question by revealing paraphrases that people use .
+this paper presents a corpus-based method for automatic extraction of paraphrases .
+we use a large collection of multiple parallel english translations of novels1 .
+this corpus provides many instances of paraphrasing , because translations preserve the meaning of the original source , but may use different words to convey the meaning .
+an example of parallel translations is shown in figure 1 .
+it contains two pairs of paraphrases .
+our method for paraphrase extraction builds upon methodology developed in machine translation ( mt ) .
+in mt , pairs of translated sentences from a bilingual corpus are aligned , and occurrence patterns of words in two languages in the text are extracted and matched using correlation measures .
+however , our parallel corpus is far from the clean parallel corpora used in mt .
+the rendition of a literary text into another language not only includes the translation , but also restructuring of the translation to fit the appropriate literary style .
+this process introduces differences in the translations which are an intrinsic part of the creative process .
+this results in greater differences across translations than the differences in typical mt parallel corpora , such as the canadian hansards .
+we will return to this point later in section 3 .
+based on the specifics of our corpus , we developed an unsupervised learning algorithm for paraphrase extraction .
+during the preprocessing stage , the corresponding sentences are aligned .
+we base our method for paraphrasing extraction on the assumption that phrases in aligned sentences which appear in similar contexts are paraphrases .
+to automatically infer which contexts are good predictors of paraphrases , contexts surrounding identical words in aligned sentences are extracted and filtered according to their predictive power .
+then , these contexts are used to extract new paraphrases .
+in addition to learning lexical paraphrases , the method also learns syntactic paraphrases , by generalizing syntactic patterns of the extracted paraphrases .
+extracted paraphrases are then applied to the corpus , and used to learn new context rules .
+this iterative algorithm continues until no new paraphrases are discovered .
+a novel feature of our approach is the ability to extract multiple kinds of paraphrases : identification of lexical paraphrases .
+in contrast to earlier work on similarity , our approach allows identification of multi-word paraphrases , in addition to single words , a challenging issue for corpus-based techniques .
+extraction of morpho-syntactic paraphrasing rules .
+our approach yields a set of paraphrasing patterns by extrapolating the syntactic and morphological structure of extracted paraphrases .
+this process relies on morphological information and a part-of-speech tagging .
+many of the rules identified by the algorithm match those that have been described as productive paraphrases in the linguistic literature .
+in the following sections , we provide an overview of existing work on paraphrasing , then we describe data used in this work , and detail our paraphrase extraction technique .
+we present re sults of our evaluation , and conclude with a discussion of our results .
+related work on paraphrasing .
+many nlp applications are required to deal with the unlimited variety of human language in expressing the same information .
+so far , three major approaches of collecting paraphrases have emerged : manual collection , utilization of existing lexical resources and corpus-based extraction of similar words .
+manual collection of paraphrases is usually used in generation ( iordanskaja et al. , 1991 ; robin , 1994 ) .
+paraphrasing is an inevitable part of any generation task , because a semantic concept can be realized in many different ways .
+knowledge of possible concept verbalizations can help to generate a text which best fits existing syntactic and pragmatic constraints .
+traditionally , alternative verbalizations are derived from a manual corpus analysis , and are , therefore , application specific .
+the second approach utilization of existing lexical resources , such as wordnet overcomes the scalability problem associated with an application specific collection of paraphrases .
+lexical resources are used in statistical generation , summarization and question-answering .
+the question here is what type of wordnet relations can be considered as paraphrases .
+in some applications , only synonyms are considered as paraphrases ( langkilde and knight , 1998 ) ; in others , looser definitions are used ( barzilay and elhadad , 1997 ) .
+these definitions are valid in the context of particular applications ; however , in general , the correspondence between paraphrasing and types of lexical relations is not clear .
+the same question arises with automatically constructed thesauri ( pereira et al. , 1993 ; lin , 1998 ) .
+while the extracted pairs are indeed similar , they are not paraphrases .
+for example , while dog and cat are recognized as the most similar concepts by the method described in ( lin , 1998 ) , it is hard to imagine a context in which these words would be interchangeable .
+the first attempt to derive paraphrasing rules from corpora was undertaken by ( jacquemin et al. , 1997 ) , who investigated morphological and syntactic variants of technical terms .
+while these rules achieve high accuracy in identifying term paraphrases , the techniques used have not been extended to other types of paraphrasing yet .
+statistical techniques were also successfully used by ( lapata , 2001 ) to identify paraphrases of adjective-noun phrases .
+in contrast , our method is not limited to a particular paraphrase type .
+the data .
+the corpus we use for identification of paraphrases is a collection of multiple english translations from a foreign source text .
+specifically , we use literary texts written by foreign authors .
+many classical texts have been translated more than once , and these translations are available on-line .
+in our experiments we used 5 books , among them , flauberts madame bovary , andersens fairy tales and vernes twenty thousand leagues under the sea .
+some of the translations were created during different time periods and in different countries .
+in total , our corpus contains 11 translations .
+at first glance , our corpus seems quite similar to parallel corpora used by researchers in mt , such as the canadian hansards .
+the major distinction lies in the degree of proximity between the translations .
+analyzing multiple translations of the literary texts , critics ( e.g. ( wechsler , 1998 ) ) have observed that translations are never identical , and each translator creates his own interpretations of the text .
+clauses such as adorning his words with puns and saying things to make her smile from the sentences in figure 1 are examples of distinct translations .
+therefore , a complete match between words of related sentences is impossible .
+this characteristic of our corpus is similar to problems with noisy and comparable corpora ( veronis , 2000 ) , and it prevents us from using methods developed in the mt community based on clean parallel corpora , such as ( brown et al. , 1993 ) .
+another distinction between our corpus and parallel mt corpora is the irregularity of word matchings : in mt , no words in the source language are kept as is in the target language translation ; for example , an english translation of a french source does not contain untranslated french fragments .
+in contrast , in our corpus the same word is usually used in both translations , and only sometimes its paraphrases are used , which means that wordparaphrase pairs will have lower co-occurrence rates than word translation pairs in mt .
+for example , consider occurrences of the word boy in two translations of madame bovary e. marx-avelings translation and etexts translation .
+the first text contains 55 occurrences of boy , which correspond to 38 occurrences of boy and 17 occurrences of its paraphrases .
+this rules out using word translation methods based only on word co-occurrence counts .
+on the other hand , the big advantage of our corpus comes from the fact that parallel translations share many words , which helps the matching process .
+we describe below a method of paraphrase extraction , exploiting these features of our corpus .
+preprocessing .
+during the preprocessing stage , we perform sentence alignment .
+sentences which are translations of the same source sentence contain a number of identical words , which serve as a strong clue to the matching process .
+alignment is performed using dynamic programming ( gale and church , 1991 ) with a weight function based on the number of common words in a sentence pair .
+this simple method achieves good results for our corpus , because 42 % of the words in corresponding sentences are identical words on average .
+alignment produces 44,562 pairs of sentences with 1,798,526 words .
+to evaluate the accuracy of the alignment process , we analyzed 127 sentence pairs from the algorithms output . 120 ( 94.5 % ) alignments were identified as correct alignments .
+we then use a part-of-speech tagger and chunker ( mikheev , 1997 ) to identify noun and verb phrases in the sentences .
+these phrases become the atomic units of the algorithm .
+we also record for each token its derivational root , using the celex ( baayen et al. , 1993 ) database .
+examples of such contexts are verb-object relations and noun-modifier relations , which were traditionally used in word similarity tasks from non-parallel corpora ( pereira et al. , 1993 ; hatzivassiloglou and mckeown , 1993 ) .
+however , in our case , more indirect relations can also be clues for paraphrasing , because we know a priori that input sentences convey the same information .
+for example , in sentences from figure 3 , the verbs ringing and sounding do not share identical subject nouns , but the modifier of both subjects evening is identical .
+can we conclude that identical modifiers of the subject imply verb similarity ?
+to address this question , we need a way to identify contexts that are good predictors for paraphrasing in a corpus .
+to find good contexts , we can analyze all contexts surrounding identical words in the pairs of aligned sentences , and use these contexts to learn new paraphrases .
+this provides a basis for a bootstrapping mechanism .
+starting with identical words in aligned sentences as a seed , we can incrementally learn the good contexts , and in turn use them to learn new paraphrases .
+identical words play two roles in this process : first , they are used to learn context rules ; second , identical words are used in application of these rules , because the rules contain information about the equality of words in context .
+this method of co-training has been previously applied to a variety of natural language tasks , such as word sense disambiguation ( yarowsky , 1995 ) , lexicon construction for information extraction ( riloff and jones , 1999 ) , and named entity classification ( collins and singer , 1999 ) .
+in our case , the co-training process creates a binary classifier , which predicts whether a given pair of phrases makes a paraphrase or not .
+our model is based on the dlcotrain algorithm proposed by ( collins and singer , 1999 ) , which applies a co-training procedure to decision list classifiers for two independent sets of features .
+in our case , one set of features describes the paraphrase pair itself , and another set of features corresponds to contexts in which paraphrases occur .
+these features and their computation are described below .
+feature extraction .
+our paraphrase features include lexical and syntactic descriptions of the paraphrase pair .
+the lexical feature set consists of the sequence of tokens for each phrase in the paraphrase pair ; the syntactic feature set consists of a sequence of part-of-speech tags where equal words and words with the same root are marked .
+for example , the value of the syntactic feature for the pair ( the vast chimney , the chimney ) is ( dt jj nn , dt nn ) , where indices indicate word equalities .
+we believe that this feature can be useful for two reasons : first , we expect that some syntactic categories can not be paraphrased in another syntactic category .
+for example , a determiner is unlikely to be a paraphrase of a verb .
+second , this description is able to capture regularities in phrase level paraphrasing .
+in fact , a similar representation was used by ( jacquemin et al. , 1997 ) to describe term variations .
+the co-training algorithm .
+our co-training algorithm has three stages : initialization , training of the contextual classifier and training of the paraphrasing classifiers .
+initialization words which appear in both sentences of an aligned pair are used to create the initial seed rules .
+using identical words , we create a set of positive paraphrasing examples , such as word = tried , word = tried .
+however , training of the classifier demands negative examples as well ; in our case it requires pairs of words in aligned sentences which are not paraphrases of each other .
+to find negative examples , we match identical words in the alignment against all different words in the aligned sentence , assuming that identical words can match only each other , and not any other word in the aligned sentences .
+training of the contextual classifier .
+using this initial seed , we record contexts around positive and negative paraphrasing examples .
+from all the extracted contexts we must identify the ones which are strong predictors of their category .
+following ( collins and singer , 1999 ) , filtering is based on the strength of the context and its frequency .
+the strength of positive context is defined as , where is the number of times context surrounds positive examples ( paraphrase pairs ) and is the frequency of the context .
+strength of the negative context is defined in a symmetrical manner .
+for the positive and the negative categories we select rules ( in our experiments ) with the highest frequency and strength higher than the predefined threshold of 95 % .
+examples of selected context rules are shown in figure 4 .
+the parameter of the contextual classifier is a context length .
+in our experiments we found that a maximal context length of three produces best results .
+we also observed that for some rules a shorter context works better .
+therefore , when recording contexts around positive and negative examples , we record all the contexts with length smaller or equal to the maximal length .
+because our corpus consists of translations of several books , created by different translators , we expect that the similarity between translations varies from one book to another .
+this implies that contextual rules should be specific to a particular pair of translations .
+therefore , we train the contextual classifier for each pair of translations separately .
+training of the paraphrasing classifier context rules extracted in the previous stage are then applied to the corpus to derive a new set of pairs of positive and negative paraphrasing examples .
+applications of the rule performed by searching sentence pairs for subsequences which match the left and right parts of the contextual rule , and are less than tokens apart .
+for example , applying the first rule from figure 4 to sentences from figure 1 yields the paraphrasing pair ( comfort , console ) .
+note that in the original seed set , the left and right contexts were separated by one token .
+this stretch in rule application allows us to extract multi-word paraphrases .
+for each extracted example , paraphrasing rules are recorded and filtered in a similar manner as contextual rules .
+examples of lexical and syntactic paraphrasing rules are shown in figure 5 and in figure 6 .
+after extracted lexical and syntactic paraphrases are applied to the corpus , the contextual classifier is retrained .
+new paraphrases not only add more positive and negative instances to the contextual classifier , but also revise contextual rules for known instances based on new paraphrase information .
+the results .
+our algorithm produced 9483 pairs of lexical paraphrases and 25 morpho-syntactic rules .
+to evaluate the quality of produced paraphrases , we picked at random 500 paraphrasing pairs from the lexical paraphrases produced by our algorithm .
+these pairs were used as test data and also to evaluate whether humans agree on paraphrasing judgments .
+the judges were given a page of guidelines , defining paraphrase as approximate conceptual equivalence .
+the main dilemma in designing the evaluation is whether to include the context : should the human judge see only a paraphrase pair or should a pair of sentences containing these paraphrases also be given ?
+in a similar mt task evaluation of word-to-word translation context is usually included ( melamed , 2001 ) .
+although paraphrasing is considered to be context dependent , there is no agreement on the extent .
+to evaluate the influence of context on paraphrasing judgments , we performed two experiments with and without context .
+first , the human judge is given a paraphrase pair without context , and after the judge entered his answer , he is given the same pair with its surrounding context .
+each context was evaluated by two judges ( other than the authors ) .
+the agreement was measured using the kappa coefficient ( siegel and castellan , 1988 ) .
+complete agreement between judges would correspond to k equals ; if there is no agreement among judges , then k equals .
+the judges agreement on the paraphrasing judgment without context was which is substantial agreement ( landis and koch , 1977 ) .
+the first judge found 439 ( 87.8 % ) pairs as correct paraphrases , and the second judge 426 ( 85.2 % ) .
+judgments with context have even higher agreement ( ) , and judges identified 459 ( 91.8 % ) and 457 ( 91.4 % ) pairs as correct paraphrases .
+the recall of our method is a more problematic issue .
+the algorithm can identify paraphrasing relations only between words which occurred in our corpus , which of course does not cover all english tokens .
+furthermore , direct comparison with an electronic thesaurus like wordnet is impossible , because it is not known a priori which lexical relations in wordnet can form paraphrases .
+thus , we can not evaluate recall .
+we hand-evaluated the coverage , by asking a human judges to extract paraphrases from 50 sentences , and then counted how many of these paraphrases where predicted by our algorithm .
+from 70 paraphrases extracted by humanjudge , 48 ( 69 % ) were identified as paraphrases by our algorithm .
+in addition to evaluating our system output through precision and recall , we also compared our results with two other methods .
+the first of these was a machine translation technique for deriving bilingual lexicons ( melamed , 2001 ) including detection of non-compositional compounds .
+we did this evaluation on 60 % of the full dataset ; this is the portion of the data which is publicly available .
+our system produced 6,826 word pairs from this data and melamed provided the top 6,826 word pairs resulting from his system on this data .
+we randomly extracted 500 pairs each from both sets of output .
+of the 500 pairs produced by our system , 354 ( 70.8 % ) were single word pairs and 146 ( 29.2 % ) were multi-word paraphrases , while the majority of pairs produced by melameds system were single word pairs ( 90 % ) .
+we mixed this output and gave the resulting , randomly ordered 1000 pairs to six evaluators , all of whom were native speakers .
+each evaluator provided judgments on 500 pairs without context .
+precision for our system was 71.6 % and for melameds was 52.7 % .
+this increased precision is a clear advantage of our approach and shows that machine translation techniques cannot be used without modification for this task , particularly for producing multi-word paraphrases .
+there are three caveats that should be noted ; melameds system was run without changes for this new task of paraphrase extraction and his system does not use chunk segmentation , he ran the system for three days of computation and the result may be improved with more running time since it makes incremental improvements on subsequent rounds , and finally , the agreement between human judges was lower than in our previous experiments .
+we are currently exploring whether the information produced by the two different systems may be combined to improve the performance of either system alone .
+another view on the extracted paraphrases can be derived by comparing them with the word- net thesaurus .
+this comparison provides us with 4the equivalences that were identical on both sides were removed from the output quantitative evidence on the types of lexical relations people use to create paraphrases .
+we selected 112 paraphrasing pairs which occurred at least 20 times in our corpus and such that the words comprising each pair appear in wordnet .
+the 20 times cutoff was chosen to ensure that the identified pairs are general enough and not idiosyncratic .
+we use the frequency threshold to select paraphrases which are not tailored to one context .
+examples of paraphrases and their wordnet relations are shown in figure 7 .
+only 40 ( 35 % ) paraphrases are synonyms , 36 ( 32 % ) are hyperonyms , 20 ( 18 % ) are siblings in the hyperonym tree , 11 ( 10 % ) are unrelated , and the remaining 5 % are covered by other relations .
+these figures quantitatively validate our intuition that synonymy is not the only source of paraphrasing .
+one of the practical implications is that using synonymy relations exclusively to recognize paraphrasing limits system performance .
+conclusions and future work .
+in this paper , we presented a method for corpus- based identification of paraphrases from multiple english translations of the same source text .
+we showed that a co-training algorithm based on contextual and lexico-syntactic features of paraphrases achieves high performance on our data .
+the wide range of paraphrases extracted by our algorithm sheds light on the paraphrasing phenomena , which has not been studied from an empirical perspective .
+future work will extend this approach to extract paraphrases from comparable corpora , such as multiple reports from different news agencies about the same event or different descriptions of a disease from the medical literature .
+this extension will require using a more selective alignment technique ( similar to that of ( hatzivassiloglou et al. , 1999 ) ) .
+we will also investigate a more powerful representation of contextual features .
+fortunately , statistical parsers produce reliable results on news texts , and therefore can be used to improve context representation .
+this will allow us to extract macro-syntactic paraphrases in addition to local paraphrases which are currently produced by the algorithm .

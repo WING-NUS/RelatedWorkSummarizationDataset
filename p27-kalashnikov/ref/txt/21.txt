@@ -1,0 +1,258 @@
+semantic integration in text : from ambiguous names to identifiable entities .
+abstract .
+intelligent access to information requires semantic integration of structured databases with unstructured textual resources .
+while the semantic integration problem has been widely studied in the database domain on structured data , it has not been fully recognized nor studied on unstructured or semi-structured textual resources .
+this paper presents a first step towards this goal by studying semantic integration in natural language texts identifying whether different mentions of real world entities , within and across documents , actually represent the same concept .
+we present a machine learning study of this problem .
+the first approach is a discriminative approach a pairwise local classifier is trained in a supervised way to determine whether two given mentions represent the same real world entity .
+this is followed , potentially , by a global clustering algorithm that uses the classifier as its similarity metric .
+our second approach is a global generative model , at the heart of which is a view on how documents are generated and how names ( of different entity types ) are sprinkled into them .
+in its most general form , our model assumes : ( 1 ) a joint distribution over entities ( e.g. , a document that mentions president kennedy is more likely to mention oswald or white house than roger clemens ) , ( 2 ) an author model , that assumes that at least one mention of an entity in a document is easily identifiable , and then generates other mentions via ( 3 ) an appearance model , governing how mentions are transformed from the representative mention .
+we show that both approaches perform very accurately , in the range of 90 % 95 % fl measure for different entity types , much better than previous approaches to ( some aspects of ) this problem .
+introduction .
+integration or sharing data across disparate information sources provides a foundation for intelligent and efficient access to heterogenous information .
+this problem has been coined the semantic integration problem and has been widely studied in the database domain on structured data [ rb01 , os99 ] .
+in the past few years , a number of rule- based and learning-based techniques have been developed for the schema matching problem [ mz98 , mbr01 , ddh01 , mmgr02 , dld + 04 , nht + 02 ] matching related schemas from different structured information sources , and for the tuple matching problem [ hs95a , tkm02 , amt04 , dllh03 ] matching individual , duplicated , data items in databases .
+although the same problem has not been fully recognized nor studied on unstructured or semi-structured textual resources , more attention has been diverted to some aspects of it , due to its promising applications [ pmm + 02 , crf03 , bm03 , my03 , mw03 , ga04 ] .
+one of the significant applications is the integration of structured information with unstructured information .
+relational databases are usually well structured and thus are able to provide users efficient and accurate access to a large collection of information .
+however , most available information resources are in textual form including news articles , books , and online web pages .
+lack of well-defined structure makes these resources much harder to access and exploit at the level of databases , both in terms of efficiency and accuracy .
+there is a need to access textual information efficiently and intelligently and a need to automatically build or augment databases from textual information .
+as more and more textual information becomes online , this need becomes more and more urgent .
+one possible solution to integration of structured and unstructured information is concept-based linkage and indexing .
+most current databases are relational databases whose organization is centered around entities and relations between them .
+in this sense , a database has a natural and well-defined mapping from its tuples to real-world entities , and this may lay the foundation for concept-based linkage between databases and text .
+at an abstract level , the problem of semantic integration for structured information sources , as defined in the database domain , can be phrased as follows : well defined concepts ( in the case of schema matching ) and entities ( in the case of tuple matching ) are manifested when put into databases in multiple , ambiguous occurrences .
+the matching approaches attempt to identify concepts or entities from these occurrences and allow for the integration of information based on this semantic connection .
+this abstract definition also captures the problem of semantic integration in texts , which we call here the problem of robust reading .
+our goal in this article is to describe a first step in the direction of semantic integration of semi-structured and unstructured information , a mechanism that can automatically identify concepts in text and link textual segments representing concepts ( mentions of concepts ) to real world objects .
+some details of the specific problem studied here are as follows : most names of people , locations , organizations , events and others entities , have multiple writings that are being used freely within and across documents .
+consider , for example , a user that attempts to acquire a concise answer on may 29 , 1917. to the questionwhen was president kennedy born ? by accessing a large collection of textual articles : the sentence , and even the document that contains the answer , may not contain the name president kennedy ; it may refer to this entity as kennedy , jfk or john fitzgerald kennedy .
+other documents may state that john f. kennedy , jr. was born on november 25 , 1960 , but this fact refers to our target entitys son .
+other mentions , such as senator kennedy or mrs. kennedy are even closer to the writing of the target entity , but clearly refer to different entities .
+even the statement john kennedy , born 5-29-1941 turns out to refer to a different entity , as one can tell observing that the document discusses kennedys batting statistics .
+a similar problem exists for other entity types , such as locations and organizations .
+as discussed above , this problem is related to tuple matching and schema matching as studied in the database domain , but is different from them in at least two important aspects : ( 1 ) the information that can be used to discriminate between two names in text is not well-defined .
+even when one can identify ( in principle ) the information , it is still hard to extract it accurately from a document and place it into a well-structured tuple .
+( 2 ) textual documents contain , in principle , more information that might influence the decision of whether to merge two mentions .
+for example , the notion of individual documents might be very significant here .
+while similar mentions that occur within and across different documents may refer to different entities , and very different ( surface level ) mentions could refer to the same entity , these variations are typically more restricted within one document .
+and , learning those variations within a document may contribute to better decisions across documents .
+moreover , there is more contextual information for a given mention than in a typical database tuple ; this information might include the syntactic structure of the sentence as well as entities that co-occur in the same document .
+this problem is related to the general coreference resolution problem in natural language process [ snl01 , keh02 ] , which attempts to determine whether two forms of reference in a text , typically a name ( more generally , a noun phrase ) and a pronoun , actually refer to the same thing .
+this is typically done among references that appear within a relatively short distance in one document .
+the problem we address here has a different goal and a much wider scope .
+we aim at the identification and disambiguation of real-world concepts from its multiple and ambiguous mentions both within and across documents .
+our problem has broader relevance to the problem of intelligent information access and semantic integration across resources .
+this paper presents the first attempt to apply a unified approach to all major aspects of the problem of robust reading .
+we present two conceptually different machine learning approaches [ lmr04a ] , compare them to existing approaches and show that an unsupervised learning approach can be applied very successfully to this problem , provided that it is used along with strong but realistic assumptions on the usage of names in documents .
+our first model is a discriminative approach that models the problem as that of deciding whether any two names mentioned in a collection of documents represent the same entity .
+this straightforward modelling of the problem results in a classification problem as has been done by several other authors [ crf03 , bm03 ] allowing us to compare our results with these .
+this is a standard pairwise classification task , and a classifier for it can be trained in a supervised manner ; our main contribution in this part is to show how relational ( string and token-level ) features and structural features , representing transformations between names , can improve the performance of this classifier .
+several attempts have been made in the literature to improve the results of a pairwise classifier of this sort by performing some global clustering , with the pairwise classifier as a similarity metric .
+the results of these attempts were not conclusive and we provide some explanation for it .
+first , we show that , in general , a clustering algorithm used in this situation may in fact hurt the results achieved by the pairwise classifier .
+then , we argue that attempting to use a locally trained pairwise classifier as a similarity metric might be the wrong choice for this problem .
+our experiments concur with this .
+however , as we show , splitting data in some coherent way e.g. , to groups of documents originated at about the same time period prevents some of these problems and aids clustering significantly .
+this observation motivates our second model , which better exploits structural and global assumptions .
+the global probabilistic model for robust reading is detailed in [ lmr04b ] .
+here we briefly illustrate one of its instantiations and concentrate on its basic assumptions , the experimental study and a comparison to the discriminative model .
+at the heart of our unsupervised approach is a view on how documents are generated and how names ( of different types ) are sprinkled into them .
+in its most general form , our model assumes : ( 1 ) a joint distribution over entities , so that a document that mentions president kennedy is more likely to mention oswald or white house than roger clemens ; ( 2 ) an author model , which makes sure that at least one mention of a name in a document is easily identifiable ( after all , that is the authors goal ) , and then generates other mentions via ( 3 ) an appearance model , governing how mentions are transformed from the representative mention .
+under these assumptions , the goal is to learn a model from a large corpus and use it to support robust reading .
+given a collection of documents , learning proceeds in an unsupervised way ; that is , the system is not told during training whether two mentions represent the same entity .
+both learning models assume the ability to recognize names and their type , using a named entity recognizer as a preprocessor .
+our experimental results are somewhat surprising ; we show that the unsupervised approach can solve the problem accurately , giving accuracies ( fl ) above 90 % , and better than our discriminative classifier ( obviously , with a lot more data ) .
+after discussing some related work , the rest of this article first presents the experimental methodology in our evaluation , in order to present a more concrete instantiation of the problem at hand .
+it then describes the design of our pairwise name classifier , a comparison to other classifiers in the literature , and a discussion of clustering on top of a pairwise classifier .
+finally , we present the generative model and compare the discriminative and generative approaches along several dimensions .
+previous work .
+there is little previous work we know of that directly addresses the problem of robust reading in a principled way , but some related problems have been studied .
+robust reading is , in principle , similar to tuple matching in databases the problem of deciding whether multiple relational tuples from heterogenous sources refer to the same real-world entity [ hs95a , tkm02 , amt04 , dllh03 ] .
+most works in this area focus on well-structured database records and the problem of identifying the format variations of corresponding fields in different tuples .
+however , at the same time , several works in this domain [ cr02 , hs95b , bm03 , dllh03 ] have started to look at this problem in semi-structured data sources . [ pmm + 02 ] considers the problem of identity uncertainty in the context of citation matching and suggests a relational probabilistic model , that is related to our relational appearance model .
+this work exhibits a need to perform tuple matching in a semi-structured data base with various textual fields .
+other machine learning techniques [ cr02 , bm03 , dllh03 ] to this problem usually consider a pair of records and extract from the pair features that capture their similarity .
+the classifier is thus a parameterized similarity function that is trained given a set of annotated examples .
+that is , the pairs are labelled as matching or non-matching tags , and training serves to choose the parameters that optimize some loss function .
+learning-based similarity metrics vary in their selection of features , hypotheses and learning algorithms .
+these approaches can be viewed as addressing some aspects of the appearance model a lower level processing step in our approach .
+from the natural language perspective , there has been a lot of work on the related problem of co-reference resolution ( e.g. , [ snl01 , nc02 , keh02 ] ) .
+the goal is to link occurrences of noun phrases and pronouns , typically occurring in a close proximity , within a few sentences or a paragraph , based on their appearance and local context .
+machine learning approaches to this problem first convert the local information into a set of features and then make use of a supervised learning approach to determine whether a given pronoun corresponds to a given noun phrase .
+approaches differ in the algorithm used and features extracted .
+a few works address some aspects of the robust reading problem with text data and study it in an across-document setting [ my03 , bb98 , mw03 , ga04 ] . [ my03 ] considers one aspect of the problem that of distinguishing occurrences of identical names in different documents , and only for one type of entity people .
+that is , they consider the question of whether occurrences of jim clark in different documents refer to the same person .
+their method makes use of people-specific information and may not be applied easily to other types of entities and other aspects of the robust reading problem . [ bb98 ] builds a cross-document system based on an existing co-reference resolution tool , camp .
+it extracts all the sentences containing an entity as a representation of the entity , and then applies a vector space model to compute the similarity between two such representations .
+clustering is used subsequently to group entities in different documents into global co-reference chains . [ mw03 ] uses a conditional model to address the problem of co-reference across documents .
+this work takes a more global view in that it defines a conditional probability distribution over partitions of mentions , give all observed mentions .
+the derived pairwise classification function that decides whether two names match is learned in a supervised manner , based on a maximum entropy model .
+however , this model does not incorporate contextual information and cannot resolve the ambiguity at the level we expect to .
+experimental methodology .
+in our experimental study we evaluated different models on the problem of robust reading for three entity types people ( peop ) , locations ( loc ) and organizations ( org ) .
+the document segments shown in figure 3 exemplify the preprocessed data given as input to the evaluation .
+the learning approaches were evaluated on their ability to determine whether a pair of entities ( within or across documents ) actually correspond to the same real-world entity .
+we collected 8 , 000 names from randomly sampled 1998-2000 new york times articles in the trec corpus [ voo02 ] .
+these include about 4 , 000 personal names1 , 2 , 000 locations and 2 , 000 organizations .
+the documents were annotated by a named entity tagger 2 .
+the annotation was verified and manually corrected if needed and each name mention was labelled with its corresponding entity by two annotators .
+tests were done by averaging over five pairs of sets , each containing 600 names , that were randomly chosen from the 8 , 000 names .
+for the discriminative approach , given a document 1 : the justice department has officially ended its inquiry into the assassinations of president john f. kennedy and martin luther king jr . , finding no persuasive evidence to support conspiracy theories , according to department documents .
+the house assassinations committee concluded in 1978 that kennedy was probably assassinated as the result of a conspiracy involving a second gunman , a finding that broke from the warren commissions belief that lee harvey oswald acted alone in dallas on nov . 22 , 1963 .
+document 2 : david kennedy was born in leicester , england in 1959 . ?
+kennedy co-edited the new poetry ( bloodaxe books 1993 ) , and is the author ofnew relations : the refashioning ofbritish poetry 1980-1994 ( seren 1996 ) . ?
+figure 1 : segments from two documents preprocessed by our named entity tagger as input to the robust reading classifiers .
+different types of entities are annotated with different colors .
+as shown , similar mentions within and across documents may sometimes correspond to the same entities and sometimes to different entities. training set of 600 names ( each of the 5 test sets corresponds to a different training set ) , we generated positive training examples using all co-referring pairs of names , and negative examples by randomly selecting pairs of names that do not refer to the same entity .
+since most pairs of names do not co-refer , to avoid excessive negative examples in training sets , we use a ratio of 10 : 1 between negative examples and positive examples .
+the probabilistic model is trained using a larger corpus .
+the results in all the experiments in this paper are evaluated using the same test sets , except when comparing the clustering schemes .
+for a comparative evaluation , the outcomes of each approach on a test set of names are converted to a classification over all possible pairs of names ( including non-matching pairs ) .
+since most pairs are trivial negative examples , and the classification accuracy can always reach nearly 100 % , the evaluation is done as follows .
+only examples in the set mp , those that are predicated to belong to the same entity ( positive predictions ) are used in the evaluation , and are compared with the set ma of examples annotated as positive .
+the performance of an approach is then evaluated by precision and recall .
+a discriminative model .
+a natural way to formalize the robust reading is as a pairwise classification problem : find a function f : n x n > 10 , 11 which classifies two strings ( representing entity mentions ) in the name space n , as to whether they represent the same entity ( 1 ) or not ( 0 ) .
+most prior work in this line adopted fixed string similarity metrics and created the desired function by simply thresholding the similarity between two names . [ crf03 ] compared experimentally a variety of string similarity metrics on the task of matching entity names and found that , overall , the best-performing method is a hybrid scheme ( softtfidf ) combining a tfidf weighting scheme of tokens with the jaro-winkler string-distance scheme .
+although this is a fixed scheme , the threshold used by the softtfidf classifier is trained . [ bm03 ] proposed a learning framework ( marlin ) for improving entity matching using trainable measures of textual similarity .
+they compared a learned edit distance measure and a learned vector space based measure that employs a classifier ( svm ) against fixed distance measures ( but not the one mentioned above ) and showed some improvements in performance .
+we propose a learning approach , lmr 3 , that focuses on representing a given pair of names using a collection of relational ( string and token-level ) and structural features .
+over these we learn a linear classifier for each entity type using the snow ( sparse network of winnows [ ccrr99 ] ) learning architecture .
+each name is modelled as a partition in a bipartite graph , with each token in that name as a vertex ( see figure 2 ) and there is a solid directed edge between two tokens ( from the vertex in the smaller partition to the vertex in the larger one ) which activates a token-based feature for the two names .
+at most one token-based relational feature is extracted for each edge in the graph , by traversing a prioritized list of feature types until a feature is activated ; if no active features are found , it goes to the next pair of tokens .
+this scheme guarantees that only the most important ( expressive ) feature is activated for each pair of tokens .
+an additional constraint is that each token in the smaller partition can only activate one feature .
+relational features are not sufficient , since a non-matching pair of names could activate exactly the same set of features as a matching pair .
+consider , for example , two names that are all the same except that one has an additional token .
+our structural features were designed to distinguish between these cases .
+these features encode information on the relative order of tokens between the two names , by recording the location of the participating tokens in the partition .
+e.g. , for the pairs ( john kennedy , john kennedy ) and ( john kennedy , john kennedy davis ) , the active relational features are identical ; but , the first pair activates the structural features ( 1 , 2 ) and ( 1 , 2 ) , while the second pair activates ( 1 , 3 ) and ( 1 , 2 , ^ ) .
+experimental comparison .
+figure 3 presents the average fl for three different pairwise classifiers on the five test sets described in sec.3.
+the lmr classifier outperforms the softtfidf classifier and the marlin classifier when trained and tested on the same data sets .
+figure 4 shows the contribution of different feature types to the performance of the lmr classifier .
+the baseline classifier in this experiment only makes use of string-editdistance features and equality features .
+the token-based classifier uses all relational token-based features while the structural classifier uses , in addition , the structural features .
+adding relational and structural features types is very significant , and more so to people due to a larger amount of overlapping tokens between entities .
+does clustering help ?
+there is a long-held intuition that the performance of a pairwise classifier can be improved if it is used as a similarity metric and a global clustering is performed on top of it .
+several works [ crf03 , cr02 , mw03 ] have thus applied clustering in similar tasks , using their pairwise classifiers as the metric .
+however , we show here that this may not be the case ; we provide theoretical arguments as well as experimental evidence that show that global clustering applied on the pairwise classifier might in fact degrade its performance .
+specifically , we show that while optimal clustering always helps to reduce the error of a pairwise classifier when there are two clusters ( corresponding to two entities ) , in general , for k > 2 classes , this is not the case .
+we sketch these arguments below .
+a typical clustering algorithm views data points n ^ n to be clustered as feature vectors n = ( f1 , f2 , . .. , fd ) in a d-dimensional feature space .
+a data point n is in one of k classes c = { c1 , c2 , .
+. . , ck } .
+from a generative perspective , the observed data points d = { n1 , n2 , ... , nt } are sampled i.i.d. from a joint probability distribution p defined over tuples ( n , c ) ^ n c ( p is a mixture of k models ) .
+a distance metric dist ( n1 , n2 ) is used to quantify the distance between two points .
+clustering algorithms differ in how they approximate the hidden generative models given d. in the following definitions we assume that p = pn c is a distribution over n c and that ( n1 , c1 ) , ( n2 , c2 ) ^ n c are sampled i.i.d according to it , with n1 , n2 observed and c1 , c2 hidden .
+theorem 1 ( proof omitted ) assume data is generated according to a uniform mixture of k gaussians g = { g1 , g2 , ... , gk } with the same covariance matrix .
+namely , a data point is generated by first choosing one of k models with probability pk = 1 / k , and then sampling according to the i-th gaussian chosen .
+to study this issue experimentally , we designed and compared several clustering schemes for the robust reading task .
+these clustering approaches are designed based on the learned pairwise classifier lmr .
+given the activation values of the classifier the values output by the linear functions for the classes , we define a similarity metric ( instead of a distance metric ) as follows : let p , n be the activation values for class 1 and class 0 , respectively , for two names n1 and n2 ; then , sim ( n1 , n2 ) = epep + en .
+in our direct clustering approach , we cluster names from a collection of documents with regard to the entities they refer to .
+that is , entities are viewed as the hidden classes that generate the observed named entities in text .
+we have experimented with several clustering algorithms and show here the best performing one , a standard agglomerative clustering algorithm based on complete-link .
+the basic idea of this algorithm is as follows : it first constructs a cluster for each name in the initial step .
+in the following iterations , these small clusters are merged together step by step until some condition is satisfied ( for example , if there are only k clusters left ) .
+the two clusters with the maximum average similarity between their elements are merged in each step .
+the evaluation , presented in figure 5 , shows a degradation in the results relative to pairwise classification .
+although , as we show , clustering does not help when applied directly , we attempted to see if clustering can be helped by exploiting some structural properties of the domain .
+we split the set of documents into three groups , each containing documents from the same time period .
+we then cluster first names belonging to each group , then choose a representative for the names in each cluster and , hierarchically , cluster these representatives across groups into final clusters .
+the complete-link algorithm is applied again in each of the clustering stages .
+in this case ( hier ( date ) hierarchically clustering according to dates ) , the results are better than in direct clustering .
+we also performed a control experiment ( hier ( random ) ) , in which we split the document set randomly into three sets of the same size ; the deterioration in the results in this case indicates that the gain was due to exploiting the structure .
+the data set used here was slightly different from the one used in other experiments .
+it was created by randomly selecting names from documents of the years 1998 ^ 2000 , 600 names from each year and for each entity type .
+the 1 , 800 names for each entity type were randomly split into equal training and test set .
+we trained the lmr pairwise classifier for each entity type using the corresponding labeled training set and clustered the test set with lmr as a similarity metric .
+one reason for the lack of gain from clustering is the fact that the pairwise classification function learned here is local without using any information except for the names themselves and thus suffers from noise .
+this is because , in training , each pair of names is annotated with regard to the entities they refer to rather than their similarity in writing .
+specifically , identical names might be labeled as negative examples , since they correspond to different entities , and vice versa .
+our conclusion , reinforced by the slight improvement we got when we started to exploit structure in the hierarchical clustering experiment , is that the robust reading problem necessitates better exploitation of global and structural aspects of data .
+our next model was design to address this issue .
+a generative model for robust reading .
+motivated by the above observation , we describe next a generative model for robust reading , designed to exploit documents structure and assumptions on how they are generated .
+the details of this model are described in [ lmr04b ] .
+here we briefly describe one instantiation of the model ( model ii there ) , focusing on discussing the key assumptions and their advantages , and on its experimental study and a comparison to the discriminative model .
+we define a probability distribution over documents d = { ed , rd , md } , by describing how documents are being generated .
+in its most general form the model has the following three components : ( 1 ) a joint probability distribution p ( ed ) that governs how entities ( of different types ) are distributed into a document and reflects their co-occurrence dependencies . ( when initializing the model described here , we assume that entities are chosen independently of each other . )
+( 2 ) an author model , that makes sure that at least one mention of an entity in a document a representative rd , is easily identifiable and other mentions are generated from it .
+the number of entities in a document , size ( ed ) , and the number of mentions of each entity , size ( mdi ) , are assumed in the current evaluation to be distributed uniformly over a small plausible range so that they can be ignored in later inference .
+( 3 ) the appearance probability of a name generated ( transformed ) from its representative is modelled as a product distribution over relational transformations of attribute values .
+this model captures the similarity between appearances of two names .
+in the current evaluation the same appearance model is used to calculate both the probability p ( rie ) that generates a representative r given an entity e and the probability p ( mlr ) that generates a mention m given a representative r .
+attribute transformations are relational , in the sense that the distribution is over transformation types and independent of the specific names .
+figure 6 depicts the generation process of a document d .
+thus , in order to generate a document d , after picking size ( ed ) and ~ size ( md1 ) , size ( md2 ) , ... 1 , each entity edi is selected into d independently of others , according to p ( edi ) .
+next , the representative rdi for each entity edi is selected according to p ( rdi ~ edi ) and for each representative the actual mentions are selected independently according to p ( mdj ~ rdj ) .
+assuming independence between md and ed given rd , the probability distribution over documents is therefore after we ignore the size components .
+given a mention m in a document d ( md is the set of observed mentions in d ) , the key inference problem is to determine the most likely entity e ; * m that corresponds to it .
+learning the models .
+confined by the labor of annotating data , we learn the probabilistic models in an unsupervised way given a collection of documents ; that is , the system is not told during training whether two mentions represent the same entity .
+a greedy search algorithm modified from the standard em algorithm ( we call it truncated em algorithm ) is adopted here to avoid complex computation .
+given a set of documents d to be studied and the observed mentions md in each document , this algorithm iteratively updates the model parameter ^ ( several underlying probabilistic distributions described before ) and the structure ( that is , ed and rd ) of each document d .
+different from the standard em algorithm , in the e-step , it seeks the most likely ed and rd for each document rather than the expected assignment .
+truncated em algorithm .
+the basic framework of the truncated em algorithm is as follows : in the initial ( i- ) step , an initial ( ed0 , rd0 ) is assigned to each document d by an initialization algorithm .
+after this step , we can assume that the documents are annotated with d0 = { ( ed0 , rd0 , md ) } .
+in the m-step , we seek the model parameter ^ t + 1 that maximizes p ( dt | ^ ) .
+given the labels supplied in the previous i- or e-step , this amounts to the maximum likelihood estimation ( to be described later in this section ) .
+in the e-step , we seek ( edt + 1 , rdt + 1 ) for each document d that maximizes p ( dt + 1 | ^ t + 1 ) where dt + 1 = { ( edt + 1 , rd t + 1 , md ) } .
+its the same inference problem as in equation 7 .
+stoping criterion : if no increase is achieved over p ( dt | ^ t ) , the algorithm exits .
+otherwise the algorithm will iterate over the m-step and e-step .
+it usually takes 3-10 iterations before the algorithms stop in our experiments .
+initialization .
+the purpose of the initial step is to acquire an initial guess of document structures and the set of entities e in a closed collection of documents d. the hope is to find all entities without loss so duplicate entities are allowed .
+for all the models , we use the same algorithm .
+a local clustering is performed to group mentions inside each document : simple heuristics are applied to calculating the initial similarity between mentions5 , and pairs of mentions with similarity above a threshold are then clustered together .
+the first mention in each group is chosen as the representative and an entity having the same writing with the representative is created for each cluster .
+to goal we try to achieve with this simple initialization is high precision , even if the recall is low 6 .
+for all the models , the set of entities created in different documents become the global entity set e in the following m- and e-steps .
+estimating the model parameters .
+in the learning process , assuming documents have already been annotated d = { ( e , r , m ) } n 1 from previous i- or e-step , several underlying probability distributions of the relaxed models are estimated by maximum likelihood estimation in each m-step .
+the model parameters include a set of prior probabilities for entities pe and the appearance probabilities pw w of each name in the name space w being transformed from another .
+appearance probability , the probability of one name being transformed from another , denoted as p ( n2 | n1 ) ( n1 , n2 ^ w ) , is modelled as a product of the transformation probabilities over attribute values .
+the transformation probability for each attribute is further modelled as a multi-nomial distribution over a set of predetermined transformation types : tt = { copy , missing , typical , non ^ typical } .
+we manually collected typical and non-typical transformations for attributes such as titles , first names , last names , organizations and locations from multiple sources such as u.s. government census and online dictionaries .
+for other attributes like gender , only copy transformation is allowed .
+a comparison between the models .
+we trained the generative model in an unsupervised way with all 8 , 000 names .
+the somewhat surprising results are shown in figure 7 .
+the generative model outperformed the supervised classifier for people and organizations .
+that is , by incorporating a lot of unannotated data , the unsupervised learning could do better .
+to understand this better , and to compare our discriminative and generative approaches further , we addressed the following two issues : learning protocol - a supervised learning approach is trained on a training corpus , and tested on a different one resulting , necessarily , in some degradation in performance .
+an unsupervised method learns directly on the target corpus .
+this , as we show , can be significant .
+in a second experiment , in which we do not train the generative model on names it will see in the test set , results clearly degrade ( table 1 ) .
+structural assumptions : our generative model benefits from the structural assumptions made in designing the model .
+for instance , the document structural information prevents the model from disambiguating mentions from different documents directly .
+this is done via the representatives yielding a more robust comparison , since representatives are typically the full names of the entities .
+we exhibit this by evaluating a fairly weak initialization of the model , and showing that , nevertheless , this results in a robust reading model with respectable results .
+table 2 shows that after initializing the model parameters with the heuristics used in the em-like algorithm , and without further training ( but with the inference of the probabilistic model ) , the generative model can perform reasonably well .
+note , however , that the structural assumptions in the generative model did not help locations very much as shown in figure 7 .
+the reason is that entities of this type are relatively easy to disambiguate even without structural information , since those that correspond to the same entity typically have similar writings .
+table 1 : results of different learning protocols for the generative model .
+the table shows the results of our supervised classifier ( lmr ) trained with 600 names , the generative model trained with all the 8 , 000 names and the generative model trained with the part of 8 , 000 names not used in the corresponding test set .
+results are evaluated and averaged over five test sets for each entity type .
+table 2 : performance of simple initialization .
+generative the generative model learned in a normal way .
+initial the parameters of the generative model initialized using some simple heuristics and used to cluster names .
+results are evaluated by the average f1 values over the five test sets for each entity type .
+conclusion .
+while semantic integration of structured information has been widely studied , little attention has been paid to a similar problem in unstructured and semi-structured data .
+this paper describes one of the first efforts towards sematic integration in unstructured textual data , providing a promising perspective on the integration of structured databases with unstructured or semi-structured information .
+this paper presents two learning approaches to the robust reading problem the problem of cross-document identification and tracing of names of different types , overcoming their ambiguous appearance in the text .
+in addition to a standard modelling of the problem as a classification task , we developed a model that aims at better exploiting the natural generation process of documents and the process of how names are sprinkled into them , taking into account dependencies among entities across types and an author model .
+we have shown that both models gain significantly from incorporating structural and relational information features in the classification model ; coherent data splits for clustering and the natural generation process in the the probabilistic model .
+the robust reading problem is a very significant barrier in any effort towards supporting intelligent information access to texts and , specifically , on our way toward supporting semantic integration of structured information with unstructured information .
+the reliable and accurate results we show are thus very encouraging .
+also important is the fact that our unsupervised model performs so well , since the availability of annotated data is , in many cases , a significant obstacle to good performance in semantic integration .
+in addition to further studies of the discriminative model , including going beyond the current noisy supervision ( given at a global annotation level , although learning is done locally ) , exploring how much data is needed for a supervised model to perform as well as the unsupervised model , and whether the initialization of the unsupervised model can gain from supervision , there are several other critical issues we would like to address from the robust reading perspective .
+these include ( 1 ) incorporating more contextual information ( like time and place ) related to the target entities , both to support a better model and to allow temporal tracing of entities ; ( 2 ) studying an incremental approach to learning the model and ( 3 ) developing a unified technique based on this work , that can address the semantic integration problem of both databases and texts and can integrate structured and unstructured information .

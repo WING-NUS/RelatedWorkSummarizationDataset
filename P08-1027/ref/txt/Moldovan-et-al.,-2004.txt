@@ -1,0 +1,174 @@
+models for the semantic classification of noun phrases .
+abstract .
+this paper presents an approach for detecting semantic relations in noun phrases .
+a learning algorithm , called semantic scattering , is used to automatically label complex nominals , genitives and adjectival noun phrases with the corresponding semantic relation .
+problem description .
+this paper is about the automatic labeling of semantic relations in noun phrases ( nps ) .
+the semantic relations are the underlying relations between two concepts expressed by words or phrases .
+we distinguish here between semantic relations and semantic roles .
+semantic roles are always between verbs ( or nouns derived from verbs ) and other constituents ( run quickly , went to the store , computer maker ) , whereas semantic relations can occur between any constituents , for example in complex nominals ( malaria mosquito ( cause ) ) , genitives ( girls mouth ( part-whole ) ) , prepositional phrases attached to nouns ( man at the store ( locative ) ) , or discourse level ( the bus was late .
+as a result , i missed my appointment ( cause ) ) .
+thus , in a sense , semantic relations are more general than semantic roles and many semantic role types will appear on our list of semantic relations .
+the following np level constructions are considered here ( cf. the classifications provided by ( quirk et al.1985 ) and ( semmelmeyer and bolander 1992 ) ) : ( 1 ) compound nominals consisting of two consecutive nouns ( eg night club - a temporal relation - indicating that club functions at night ) , ( 2 ) adjective noun constructions where the adjectival modifier is derived from a noun ( eg musical clock - a make / produce relation ) , ( 3 ) genitives ( eg the door of the car - a part-whole relation ) , and ( 4 ) adjective phrases ( cf . ( semmelmeyer and bolander 1992 ) ) in which the modifier noun is expressed by a prepositional phrase which functions as an adjective ( eg toy in the box - a location relation ) .
+there are several semantic relations at the noun phrase level : ( 1 ) saturdays snowfall is a genitive encoding a temporal relation , ( 2 ) one-day record is a topic noun compound indicating that record is about one-day snowing - an ellipsis here , ( 3 ) record in hartford is an adjective phrase in a location relation , ( 4 ) total of 12.5 inches is an of-genitive that expresses measure , ( 5 ) weather service is a noun compound in a topic relation , ( 6 ) car which was driven by a college student encodes a theme semantic role in an adjectival clause , ( 7 ) college student is a compound nominal in a part-whole / member-of relation , ( 8 ) interstate overpass is a location noun compound , ( 9 ) mountains of virginia is an of-genitive showing a part-whole / place-area and location relation , ( 10 ) concrete barrier is a noun compound encoding part-whole / stuff-of .
+list of semantic relations .
+after many iterations over a period of time we identified a set of semantic relations that cover a large majority of text semantics .
+table 1 lists these relations , their definitions , examples , and some references .
+most of the time , the semantic relations are encoded by lexico-syntactic patterns that are highly ambiguous .
+one pattern can express a number of semantic relations , its disambiguation being provided by the context or world knowledge .
+often semantic relations are not disjoint or mutually exclusive , two or more appearing in the same lexical construct .
+this is called semantic blend ( quirk et al. 1985 ) .
+for example , the expression texas city contains both a location as well as a part-whole relation .
+other researchers have identified other sets of semantic relations ( levi 1979 ) , ( vanderwende 1994 ) , ( sowa 1994 ) , ( baker , fillmore , and lowe 1998 ) , ( rosario and hearst 2001 ) , ( kingsbury , et al. 2002 ) , ( blaheta and charniak 2000 ) , ( gildea and jurafsky 2002 ) , ( gildea and palmer 2002 ) .
+our list contains the most frequently used semantic relations we have observed on a large corpus .
+besides the work on semantic roles , considerable interest has been shown in the automatic interpretation of complex nominals , and especially of compound nominals .
+the focus here is to determine the semantic relations that hold between different concepts within the same phrase , and to analyze the meaning of these compounds .
+several approaches have been proposed for empirical noun-compound interpretation , such as syntactic analysis based on statistical techniques ( lauer and dras 1994 ) , ( pustejovsky et al. 1993 ) .
+another popular approach focuses on the interpretation of the underlying semantics .
+many researchers that followed this approach relied mostly on hand-coded rules ( finin 1980 ) , ( vanderwende 1994 ) .
+more recently , ( rosario and hearst 2001 ) , ( rosario , hearst , and fillmore 2002 ) , ( lapata 2002 ) have proposed automatic methods that analyze and detect noun compounds relations from text . ( rosario and hearst 2001 ) focused on the medical domain making use of a lexical ontology and standard machine learning techniques .
+approach .
+basic approach .
+we approach the problem top-down , namely identify and study first the characteristics or feature vectors of each noun phrase linguistic pattern , then develop models for their semantic classification .
+this is in contrast to our prior approach ( ( girju , badulescu , and moldovan 2003a ) ) when we studied one relation at a time , and learned constraints to identify only that relation .
+we study the distribution of the semantic relations across different np patterns and analyze the similarities and differences among resulting semantic spaces .
+we define a semantic space as the set of semantic relations an np construction can encode .
+we aim at uncovering the general aspects that govern the np semantics , and thus delineate the semantic space within clusters of semantic relations .
+this process has the advantage of reducing the annotation effort , a time consuming activity .
+instead of manually annotating a corpus for each semantic relation , we do it only for each syntactic pattern and get a clear view of its semantic space .
+this syntactico-semantic approach allows us to explore various np semantic classification models in a unified way .
+this approach stemmed from our desire to answer questions such as : what influences the semantic interpretation of various linguistic constructions ?
+is there only one interpretation system / model that works best for all types of expressions at all syntactic levels ? and what parameters govern the models capable of semantic interpretation of various syntactic constructions ?
+semantic relations at np level .
+it is well understood and agreed in linguistics that concepts can be represented in many ways using various constructions at different syntactic levels .
+this is in part why we decided to take the syntactico-semantic approach that analyzes semantic relations at different syntactic levels of representation .
+in this paper we focus only on the behavior of semantic relations at np level .
+a thorough understanding of the syntactic and semantic characteristics of nps provides valuable insights into defining the most representative feature vectors that ultimately drive the discriminating learning models .
+complex nominals .
+levi ( levi 1979 ) defines complex nominals ( cns ) as expressions that have a head noun preceded by one or more modifying nouns , or by adjectives derived from nouns ( usually called denominal adjectives ) .
+most importantly for us , each sequence of nouns , or possibly adjectives and nouns , has a particular meaning as a whole carrying an implicit semantic relation ; cns have been studied intensively in linguistics , psycho-linguistics , philosophy , and computational linguistics for a long time .
+the semantic interpretation of cns proves to be very difficult for a number of reasons .
+( 1 ) sometimes the meaning changes with the head ( eg musical clock make / produce , musical creation theme ) , other times with the modifier ( eg gm car make / produce , family car possession ) .
+( 2 ) cns interpretation is knowledge intensive and can be idiosyncratic .
+for example , in order to interpret correctly gm car we have to know that gm is a car-producing company .
+( 3 ) there can be many possible semantic relations between a given pair of word constituents .
+for example , usa city can be regarded as a location as well as a part-whole relation .
+( 4 ) interpretation of cns can be highly context-dependent .
+for example , apple juice seat can be defined as seat with apple juice on the table in front of it ( cf . ( downing 1977 ) ) .
+genitives .
+the semantic interpretation of genitive constructions is considered problematic by linguists because they involve an implicit relation that seems to allow for a large variety of relational interpretations ; for example : johns car-possessor-posses see , marys brother-kinship , last years exhibition-temporal , a picture of my nice-depiction-depicted , and the deserts oasis-part-whole / place-area .
+a characteristic of these constructions is that they are very productive , as the construction can be given various interpretations depending on the context .
+one such example is kates book that can mean the book kate owns , the book kate wrote , or the book kate is very fond of .
+thus , the features that contribute to the semantic interpretation of genitives are : the nouns semantic classes , the type of genitives , discourse and pragmatic information .
+adjective phrases are prepositional phrases attached to nouns acting as adjectives ( cf . ( semmelmeyer and bolander 1992 ) ) .
+prepositions play an important role both syntactically and semantically .
+semantically speaking , prepositional constructions can encode various semantic relations , their interpretations being provided most of the time by the underlying context .
+for instance , the preposition with can encode different semantic relations : ( 1 ) it was the girl with blue eyes ( meronymy ) , the conclusion for us is that in addition to the nouns semantic classes , the preposition and the context play important roles here .
+in order to focus our research , we will concentrate for now only on noun - noun or adjective - noun compositional constructions at np level , ie those whose meaning can be derived from the meaning of the constituent nouns ( door knob , cup of wine ) .
+we dont consider metaphorical names ( eg , ladyfinger ) , metonymies ( eg , vietnam veteran ) , proper names ( eg , john doe ) , and nps with coordinate structures in which neither noun is the head ( eg , player-coach ) .
+however , we check if the constructions are non-compositional ( lexicalized ) ( the meaning is a matter of convention ; e.g. , soap opera , sea lion ) , but only for statistical purposes .
+fortunately , some of these can be identified with the help of lexicons .
+corpus analysis at np level .
+in order to provide a unified approach for the detection of semantic relations at different np levels , we analyzed the syntactic and semantic behavior of these constructions on a large open-domain corpora of examples .
+our intention is to answer questions like : ( 1 ) what are the semantic relations encoded by the np-level constructions ? , ( 2 ) what is their distribution on a large corpus ? , ( 3 ) is there a common subset of semantic relations that can be fully paraphrased by all types ofnp constructions ? , ( 4 ) how many nps are lexicalized ?
+the data .
+we have assembled a corpus from two sources : wall street journal articles from trec-9 , and extended wordnet glosses ( xwn ) ( http : / / xwn.hlt.utdallas.edu ) .
+we used xwn 2.0 since all its glosses are syntactically parsed and their words semantically disambiguated which saved us considerable amount of time .
+table 2 shows for each syntactic category the number of randomly selected sentences from each corpus , the number of instances found in these sentences , and finally the number of instances that our group managed to annotate by hand .
+the annotation of each example consisted of specifying its feature vector and the most appropriate semantic relation from those listed in table 1 .
+inter-annotator agreement .
+the annotators , four phd students in computational semantics worked in groups of two , each group focusing on one half of the corpora to annotate .
+noun - noun ( adjective - noun , respectively ) sequences of words were extracted using the lauer heuristic ( lauer 1995 ) which looks for consecutive pairs of nouns that are neither preceded nor succeeded by a noun after each sentence was syntactically parsed with charniak parser ( charniak 2001 ) ( for xwn we used the gold parse trees ) .
+moreover , they were provided with the sentence in which the pairs occurred along with their corresponding wordnet senses .
+whenever the annotators found an example encoding a semantic relation other than those provided or they didnt know what interpretation to give , they had to tag it as others .
+besides the type of relation , the annotators were asked to provide information about the order of the modifier and the head nouns in the syntactic constructions if applicable .
+for instance , in owner of car-possession the possessor owner is followed by the possessee car , while in car ofjohn-possession / r the order is reversed .
+on average , 30 % of the training examples had the nouns in reverse order .
+most of the time , one instance was tagged with one semantic relation , but there were also situations in which an example could belong to more than one relation in the same context .
+for example , the genitive city of usa was tagged as a part-whole / place-area relation and as a location relation .
+overall , there were 608 such cases in the training corpora .
+moreover , the annotators were asked to indicate if the instance was lexicalized or not .
+also , the judges tagged the np nouns in the training corpus with their corresponding wordnet senses .
+the annotators agreement was measured using the kappa statistics , one of the most frequently used measure of inter-annotator agreement for classification tasks , where is the proportion of times the raters agree and is the probability of agreement by chance .
+the k coefficient is 1 if there is a total agreement among the annotators , and 0 if there is no agreement other than that expected to occur by chance .
+table 3 shows the semantic relations inter-annotator agreement on both training and test corpora for each np construction .
+for each construction , the corpus was splint into 80 / 20 training / testing ratio after agreement .
+we computed the k coefficient only for those instances tagged with one of the 35 semantic relations .
+for each pattern , we also computed the number of pairs that were tagged with others by both annotators , over the number of examples classified in this category by at least one of the judges , averaged by the number of patterns considered .
+the k coefficient shows a fair to good level of agreement for the training and testing data on the set of 35 relations , taking into consideration the task difficulty .
+this can be explained by the instructions the annotators received prior to annotation and by their expertise in lexical semantics .
+there were many heated discussions as well .
+distribution of semantic relations .
+even noun phrase constructions are very productive allowing for a large number of possible interpretations , table 4 shows that a relatively small set of 35 semantic relations covers a significant part of the semantic distribution of these constructions on a large open-domain corpus .
+moreover , the distribution of these relations is dependent on the type of np construction , each type encoding a particular subset .
+for example , in the case of of-genitives , there were 21 relations found from the total of 35 relations considered .
+the most frequently occurring relations were part-whole , attribute-holder , possession , location , source , topic , and theme .
+by comparing the subsets of semantic relations in each column we can notice that these semantic spaces are not identical , proving our initial intuition that the np constructions cannot be alternative ways of packing the same information .
+table 4 also shows that there is a subset of semantic relations that can be fully encoded by all types of np constructions .
+the statistics about the lexicalized examples are as follows : n-n ( 30.01 % ) , adj-n ( 0 % ) , s-genitive ( 0 % ) , of-genitive ( 0 % ) , adjective phrase ( 1 % ) .
+from the 30.01 % lexicalized noun compounds , 18 % were proper names .
+this simple analysis leads to the important conclusion that the np constructions must be treated separately as their semantic content is different .
+this observation is also partially consistent with other recent work in linguistics and computational linguistics on the grammatical variation of the english genitives , noun compounds , and adjective phrases .
+we can draw from here the following conclusions : not all semantic relations can be encoded by all np syntactic constructions .
+there are semantic relations that have preferences over particular syntactic constructions .
+models .
+mathematical formulation .
+given each np syntactic construction considered , the goal is to develop a procedure for the automatic labeling of the semantic relations they encode .
+the semantic relation derives from the lexical , syntactic , semantic and contextual features of each np construction .
+semantic classification of syntactic patterns in general can be formulated as a learning problem , and thus benefit from the theoretical foundation and experience gained with various learning paradigms .
+this is a multi-class classification problem since the output can be one of the semantic relations in the set .
+we cast this as a supervised learning problem where input / output pairs are available as training data .
+an important first step is to map the characteristics of each np construction ( usually not numerical ) into feature vectors .
+lets define with the feature vector of an instance and let be the space of all instances ; ie .
+the multi-class classification is performed by a function that maps the feature space into a semantic space , where is the set of semantic relations from table 1 , ie .
+let be the training set of examples or instances. where is the number of examples each accompanied by its semantic relation label .
+the problem is to decide which semantic relation to assign to a new , unseen example .
+in order to classify a given set of examples ( members of ) , one needs some kind of measure of the similarity ( or the difference ) between any two given members of .
+most of the times it is difficult to explicitly define this function , since can contain features with numerical as well as non-numerical values .
+note that the features , thus space , vary from an np pattern to another and the classification function will be pattern dependent .
+the novelty of this learning problem is the feature space and the nature of the discriminating function f derived for each syntactic pattern .
+feature space .
+an essential aspect of our approach below is the word sense disambiguation ( wsd ) of the content words ( nouns , verbs , adjectives and adverbs ) .
+using a state- of-the-art open-text wsd system , each word is mapped into its corresponding wordnet 2.0 sense .
+when disambiguating each word , the wsd algorithm takes into account the surrounding words , and this is one important way through which context gets to play a role in the semantic classification of nps .
+so far , we have identified and experimented with the following np features : semantic class of head noun specifies the wordnet sense ( synset ) of the head noun and implicitly points to all its hypernyms .
+it is extracted automatically via a word sense disambiguation module .
+the np semantics is influenced heavily by the meaning of the noun constituents .
+semantic class of modifier noun specifies the wordnet synset of the modifier noun .
+in case the modifier is a denominal adjective , we take the synset of the noun from which the adjective is derived .
+learning models .
+several learning models can be used to provide the discriminating function .
+so far we have experimented with three models : ( 1 ) semantic scattering , ( 2 ) decision trees , and ( 3 ) naive bayes .
+the first is described below , the other two are fairly well known from the machine learning literature .
+semantic scattering .
+this is a new model developed by us particularly useful for the classification of compound nominals without nominalization .
+the semantic relation in this case derives from the semantics of the two noun concepts participating in these constructions as well as the surrounding context .
+model formulation .
+one way of approximating the feature vector is to perform a semantic generalization , by replacing the synsets with their most general hypernyms , followed by a series of specializations for the purpose of eliminating ambiguities in the training data .
+there are 9 noun hierarchies , thus only 81 possible combinations at the most general level .
+table 5 shows a row of the probability matrix for .
+each entry , for which there is more than one relation , is scattered into other subclasses through an iterative process till there is only one semantic relation per line .
+this can be achieved by specializing the feature pairs semantic classes with their immediate wordnet hyponyms .
+the iterative process stops when new training data does not bring any improvements ( see table 6 ) .
+overview of the preliminary results .
+the f-measure results obtained so far are summarized in table 7 .
+overall , these results are very encouraging given the complexity of the problem .
+error analysis .
+an important way of improving the performance of a system is to do a detailed error analysis of the results .
+we have analyzed the sources of errors in each case and found out that most of them are due to ( in decreasing order of importance ) : ( 1 ) errors in automatic sense disambiguation , ( 2 ) missing combinations of features that occur in testing but not in the training data , ( 3 ) levels of specialization are too high , ( 4 ) errors caused by metonymy , ( 6 ) errors in the modifier-head order , and others .
+these errors could be substantially decreased with more research effort .
+a further analysis of the data led us to consider a different criterion of classification that splits the examples into nominalizations and non-nominalizations .
+the reason is that nominalization noun phrases seem to call for a different set of learning features than the non-nominalization noun phrases , taking advantage of the underlying verb-argument structure .
+details about this approach are provided in ( girju et al. 2004 ) ) .
+applications .
+semantic relations occur with high frequency in open text , and thus , their discovery is paramount for many applications .
+one important application is question answering .
+a powerful method of answering more difficult questions is to associate to each question the semantic relation that reflects the meaning of that question and then search for that semantic relation over the candidates of semantically tagged paragraphs .
+here is an example .
+q. where have nuclear incidents occurred ?
+from the question stem word where , we know the question asks for a location which is found in the complex nominal three mile island-location of the sentence the three mile island nuclear incident caused a doe policy crisis , leading to the correct answer three mile island .
+what did the factory in howell michigan make ?
+the verb make tells us to look for a make / produce relation which is found in the complex nominal car factory-make / produce of the text : the car factory in howell michigan closed on dec 22,199 1 which leads to answer car .
+another important application is building semantically rich ontologies .
+last but not least , the discovery of text semantic relations can improve syntactic parsing and even wsd which in turn affects directly the accuracy of other nlp modules and applications .
+we consider these applications for future work .

@@ -1,0 +1,182 @@
+computer estimation of vocabulary in a protolanguage from word lists in four daughter languages .
+abstract .
+even if no written records of a protolanguage remain , it is possible to estimate what some of the words in that language might have been , by comparison of its reflexes in the more recent daughter languages .
+this method of protolanguage reconstruction is called the comparative method , and is described by crowley ( 1992 , chapter 5 ) .
+although long practiced by human linguists , the comparative method is extremely time consuming , and only a few parts of the process have previously been automated .
+this paper describes a program which attempts to replicate the methodology described by crowley almost in its entirety .
+introduction .
+words in genetically related languages which appear to be derived from a common original form are said to be cognate with each other , and both are reflexes of the same form in the protolanguage or common ancestor language .
+cognate words are vocabulary items which occur in two or more historically related languages , such that they have similar meanings , and one can be transformed into the other by a predictable series of phonological changes .
+nothofer ( 1975 ) has manually produced tables showing the sound equivalences which occur in four languages spoken in or near the indonesian island of java , namely javanese , madurese , malay and sundanese , all of which originate from the ancestor language proto-malayo-javanic ( pmj ) .
+one example of such an equivalence is javanese d = madurese jh = malay j = sundanese j = pmj * z , as in the words for road , dalan , jhalan , jalan , jalan and * zalan respectively .
+the asterisk before * zalan shows that this word is a hypothetical reconstruction , no longer heard today .
+the protophoneme * z may not have actually been pronounced z , but is the symbol used to denote the phoneme which gave rise to d , jh , j and j in the four modern languages .
+a system of sound correspondences was first described for indo-european languages ( grimms law ) , and later shown to be found in all language families by bloomfield ( 1925 ) .
+the task of identifying regular sound changes in bilingual wordlists has been described by guy ( 1994 ) as follows : given a sample word list from two related languages , extract the probable rules for predicting any word of one language from that of the other .
+this task is a necessary precursor of protolanguage reconstruction .
+it also has applications in cognate identification for automatic text alignment in machine translation ( simard et al. , 1992 ) , and in the process of glottochronology , which is the use of statistical techniques to measure the degree of relatedness among cognate dialects ( lees , 1953 ) .
+the word lists used in this study are the javanese , madurese , malay and sundanese words compiled by nothofer ( 1975 ) for 195 meanings taken from swadeshs ( 1964 ) list of 200 basic meanings .
+a number of previous authors have tackled the problem of identifying regular sound changes in bilingual wordlists using the computer , but each of their methods solve only parts of the problem .
+frantzs method ( 1970 ) requires the user to align the input word pairs , i.e. , specify beforehand which characters correspond .
+damerau ( 1975 ) considers only substitutions involving consonants .
+dameraus method also depends on the assignment of a priori plausibility weightings for phonemic changes which typically occur within the language family of interest , and thus ( a ) is not fully automatic and ( b ) is specific to a given language family rather than universally applicable .
+lowe and mazaudons ( 1994 ) method does not discover new sound laws , but evaluates known or postulated ones .
+guys ( 1994 ) method works only for 1 : 1 character correspondences , where a single character in one language is replaced by a single character in the other .
+this means that the contexts in which character correspondences may occur are not discovered .
+in summary , the parts of the task of automatic vocabulary reconstruction appear to be as follows : record regular sound changes found in a given word list .
+a subtask of this is alignment at the character level .
+for example , if we are comparing the english four with the german vier , we need to know that the f corresponds to the v and not to any other character .
+in this paper , a process called dynamic programming is used for character level alignment , but guy initially considers all possible phoneme matches within a word pair , later using a variant of the chi square test to work out which sound matches are significant .
+collate and statistically evaluate the discovered sound changes .
+use the discovered rules to verify word pairs in real lists or assume that the given cognate pairs are true and use these to evaluate the rules .
+previous authors , given a modern language form and the transformation rules , have been able to reconstruct the vocabulary of sister or ancestor languages .
+in this paper we go one step further by automating the comparative method , from two or more modern word lists , it is possible to calculate rules for transformation of the modern forms into the ancestor language .
+in this paper we describe one computer program called jakarta , which performs steps ( 1 ) to ( 3 ) above , and a second program called prague which performs step ( 4 ) .
+dynamic programming .
+dynamic programming is a mathematical technique originally developed for solving optimisation problems in operational research ( norman , 1975 ) .
+the technique has for some time been used for automatic spelling correction ( wagner & fischer , 1974 ) .
+the difference between two word forms ( called the cost , or edit distance ) is taken to be the smallest number of operations required to transform one word into the other .
+the allowable operations are substitution ( a single character in one word is replaced by a single character in the other ) , deletion of a single character from the first word , and insertion of a single character into the second word .
+for example , in order to transform the malay telur into the tagalog itlog ( both meaning egg ) , it is necessary to align the two words as follows : null = i ( insertion ) , t = t , e = null ( deletion ) , l = l , u = o ( substitution ) , r = g ( substitution ) .
+thus four operations are required to transform telur into itlog .
+other alignments are disregarded by dynamic programming because they involve a greater number of operations .
+use of dynamic programming to estimate which word pairs are cognate .
+the first task for the computer in identifying regular sound changes is to select which words are cognate for a given language pair .
+the method used is that of mcenery & oakes ( 1996 ) , where empirical data is used to determine the number of operations ( insertions , deletions or substitutions ) required to transform one of a pair of words into the other , above which the word pair is probably not cognate .
+word lists of the swadesh meanings for each of the four daughter languages of pmj were obtained , being those given by nothofer ( 1975 , p . 226 ) , the first ten words of which are shown in table 1 .
+in one experiment , every word in the malay list of 195 words was compared with every word in the javanese list , whether or not they had the same meaning .
+a list was maintained of all word pairs where the number of operations required to transform one into the other was 0 ( i.e. , the two words were identical in appearance ) .
+in 81.5 % of cases both members of the word pair had the same meaning in swadeshs list .
+the remaining pairs where the two words had different meanings were mainly due to semantic drift , an example of which is the word kulit , which can mean either skin or bark in both malay and javanese .
+similarly , a list was kept of all word pairs which differed by a single operation , and whether both words had the same meaning .
+lists were also kept of those word pairs differing by each number of operations from two to six .
+the experiment was repeated for the language pairs malay-madurese and malay-sundanese , and the results are shown in table 2 .
+it was found that if a word pair differed by more than two operations , the chance of that word pair being cognate was virtually random .
+this suggests that a simple approximate method of selecting cognate pairs is to accept only those word pairs which differ by two or fewer operations , and this is the technique employed by program jakarta .
+extensions to dynamic programming .
+a number of authors have suggested extensions to the basic dynamic programming procedure which were employed in the programs described in this paper .
+in their work on bilingual sentence alignment , gale and church ( 1993 ) introduced additional operations into the dynamic programming algorithm .
+while the original algorithm allowed only for single character insertions , deletions and substitutions , gale and church also considered for example 2 : 1 correspondence , denoting that two sentences of one language correspond with just one sentence of the other .
+the six operations they used were 1 : 0 , 0 : 1 , 1 : 1 , 2 : 1 , 1 : 2 and 2 : 2 .
+they also allowed for the fact that some operations are more commonly encountered in real data than others , by assigning higher costs to less frequently encountered operations .
+these ideas have be incorporated into both programs jakarta and prague .
+covington ( 1998 ) reports an example given originally by mary haas , using the languages choctaw , koasati and cree , which shows that true alignments are best observed when families of languages rather than merely language pairs are considered , since the best trilingual alignment does not necessarily contain any of the best bilingual alignments .
+covington used a tree search rather than dynamic programming to find the best trilingual alignment , but a description of dynamic programming for words in three languages at once is given by kruskal ( 1983 , p . 33 ) .
+extending these ideas , program prague aligns words in all four daughter languages simultaneously .
+the first program described here , jakarta , uses the dynamic programming technique to compare the pairs of words found in a bilingual wordlist and keep a tally of the types of sound changes required to transform the vocabulary of one language into that of the other .
+apart from simple insertion , deletion and substitution , the allowed operations correspond to the list of the types of sound change which typically occur between related languages throughout the world given by crowley ( 1992 , chapter 2 ) .
+in this way the identification of regular sound changes in the bilingual word list is linguistically motivated , but not restricted to a single language family .
+the types of sound change given by crowley are as follows : metathesis and hapology , although listed by crowley , are not considered in this paper , both because they are relatively rare and are difficult to simulate using dynamic programming .
+metathesis is the transposition of characters in a word , such as the t and s in tangis and sangit ( tagalog and ilocano for cry ) .
+hapology is the loss of a syllable followed or preceded by a similar sounding syllable .
+some of these operations can only take place if certain conditions hold true .
+the types of conditions imposed are : positional : e.g. , prothesis must occur at the start of a word ; certain characters must be vowels or consonants , e.g. , vowel breaking can only involve vowels ; certain corresponding characters involved in an operation must be identical , e.g. , in transforming keldai into keledai ( malay and indonesian for donkey ) , the epenthesis ld > led is allowed , since the initial and final characters are identical ; adjacent characters must have at least one phonetic feature ( such as place of articulation ) in common , e.g. , in assimilation ; in the cases of lenition and fortition , corresponding characters must be the stronger and weaker equivalents of each other , as tabulated by crowley ( 1992 , p . 37 ) .
+a description of how the conditions for each type of sound change are programmed and the data which must be stored to ensure that the conditions hold true is given in the next section .
+in order that any word string can still be transformed into any other word string , the standard dynamic programming operations of insertion , deletion and substitution are still allowed .
+for example , any 1 : 1 correspondence which cannot be accounted for by lenition or fortition is regarded as a substitution .
+since the operations listed by crowley are more likely to be found in real language pairs than the standard operations , the operations listed by crowley are given a cost of just 1 , while the standard operations are assigned a cost of 2 .
+as with the basic dynamic programming algorithm , if a character is found to be identical in both words , the cost of aligning that character with itself is 0 .
+as program jakarta is run , the pairs of words in the bilingual word list are aligned in turn , to see which operations are required to transform each member of a cognate pair into the other .
+a tally is kept of each type of operation encountered , and the characters involved .
+if the cost of transforming one word of a pair into the other is more than a set threshold ( 4 ) , the word pair is considered not cognate and disregarded .
+after all word pairs in the data set have been considered , all sound changes which have been encountered a set number of times are deemed to be regular sound changes for that language pair .
+the data which is stored by program jakarta in order to recognise sound changes of the types described by crowley are as follows : a record is kept of which characters are consonants and which are vowels .
+a record is kept of the phonetic features possessed by each character , using the data on p . 15 of crowleys book , where the phonetic alphabet is characterised by vocalisation or otherwise , place of articulation and manner of articulation , as follows : data for the phoneme k is stored as follows : vowel [ k ] = no ; vocalised [ k ] = no ; place [ k ] = velar ; manner [ k ] = plosive .
+the category values for place and manner form an unordered set .
+when comparing the attributes of phonemes , no account is taken of the fact that the bilabial and labiodental positions are close together , while the glottal position is distant .
+two bilablial phonemes are deemed to match with respect to that feature , while a bilabial and a labiodental are deemed not to match at all , just as a bilabial and a glottal do not match at all .
+by contrast , in kesslers ( 1995 ) study of dialects of gaelic , a measure called the phone-string comparison was introduced .
+using this graded measure , characters with a reasonable degree of phonetic similarity we considered more likely to be substituted for each other in related dialects .
+however , kessler found that the use of a simple binary ( yes / no ) measure for matching phoneme features gave a more reliable estimation of the relative distances between dialects .
+a record is kept of corresponding weaker and stronger sounds which are encountered in lenition and fortition , using the data on p . 37 of crowley .
+for example , the data item fortition _ lentition [ b ] [ p ] _ -1 denotes that b is stronger than p .
+the types of sound change listed by crowley , and the conditions required for their identification , are as follows : forms of deletion and insertion : aphaeresis : deletion of the initial character from word 1 ; prothesis : insertion of the initial character into word 1 ; apocope : deletion of the final character from word 1 ; apocope2 : insertion of the final character into word 1 .
+some operations , such as this one , are the reverse of an operation given by crowley .
+these reverse operations were incorporated so that all regular sound changes can be identified , irrespective of which word list is presented first .
+forms of substitution : vowel similarity : if both character 1 and character 2 are vowels , and the number of phonetic features ( vocalisation , place and manner ) in common is greater than a predetermined threshold ( 2 ) .
+fusion : characters 1a and 1b ( adjacent characters in word 1 ) fuse to become the single character 2 in the word of the other language if the number of phonetic features common to both ( 1a and 2 ) and ( 1b and 2 ) is greater than a predetermined threshold ( 1 ) .
+vowel breaking2 : the reverse of vowel breaking , i.e. two adjacent vowels in word 1 become just one in word 2 the vowel in word 2 must be the same as one of the vowels in word 1 .
+unpacking : character 1 in word 1 unpacks to become adjacent characters 2a and 2b in word 2 , if the number of phonetic features common to both ( 1 and 2a ) and ( 1 and 2b ) is greater than a predetermined threshold ( 1 ) .
+vowel breaking : a single vowel in word 1 becomes two adjacent vowels in word 2 .
+the vowel in word 1 must be the same as one of the vowels in word 2 .
+assimilation : the two adjacent characters in word 1 have more than a threshold ( 0 ) number of phonetic features in common , but the two corresponding adjacent characters in word 2 have more than a higher threshold ( 1 ) of features in common .
+thus the two characters in word 2 have more phonetic features in common than those in word 1 .
+dissimilation : the two adjacent characters in word 2 have more than a threshold ( 0 ) number of phonetic features in common , but the two corresponding adjacent characters in word 1 have more than a higher threshold ( 1 ) of features in common .
+thus the two characters in word 1 have more phonetic features in common than those in word 2 .
+syncope : deletion of a vowel from between two consonants .
+thus characters ( 1a and 2a ) and ( 1c and 2b ) must be identical consonants , and character 1b must be a vowel .
+cluster reduction : deletion of a consonant from between two consonants .
+thus characters ( 1a and 2a ) and ( 1c and 2b ) must be identical consonants , and character 1b must be a consonant .
+the types of sound change described in this section are those which typically take place between a protolanguage and one of its daughter languages .
+such changes will only be found between two daughter languages if the change has occurred in one of them ( with respect to the protolanguage ) but not the other .
+jakarta was used to align all pairs of cognate words at the character level in each of the four daughter language word lists .
+examples of individual sound changes found can be seen in table 3 .
+in comaparing the javanese awu with the malay abu ( meaning ash , as in the remains of fire ) , the a and the u of the awu matched the a and u of abu exactly .
+the replacement of w by b is an example of fortition .
+since the total cost of this alignment is not more than 4 , the word pair is assumed to be cognate , and the tally of occurrences of the sound changes a -4 a , w -4 b , and u -4 u are all incremented by 1 .
+the word pair watan and perut is deemed not to be cognate because the total cost of the alignment is over 4 , so none of the operations required to transform one word into the other are counted towards the tally of sound changes found so far .
+the sound changes discovered in this way are collated , and each sound change occurring a threshold number of times ( 2 ) is deemed to be regular .
+the regular sound changes found for the javanese-malay comparison are shown in table 4 .
+program jakarta is used to identify the regular sound changes occurring for each language pair , i.e. , javanese-madurese , javanese-malay , javanese-sundanese , madurese-malay , madurese-sundanese and malay-sundanese .
+the first task of program prague is then to read in these six tables of bilingual sound changes , and from these build up a table of regular four way sound correspondences .
+if the four daughter languages under study are referred to as l0 , l1 , l2 and l3 , the technique is to look for instances where l0 and l1 have a regular change a > b , l0 and l2 have a regular change a > c , l0 and l3 have a regular change a > d , l1 and l2 have a regular change b > c , l1 and l3 have a regular change b > d and l2 and l3 have a regular change c > d .
+if all six conditions hold true , then l0 , l1 , l2 and l3 exhibit the regular sound change a > b > c > d .
+the trivial 0 > 0 ( where 0 denotes the null symbol ) change is routinely added to each list of bilingual sound correspondences , as it may be necessary to build up a four-way correspondence where a phoneme appears in only some of the four languages , and has no non-null equivalent in the others , as in the correspondence 0 = h = 0 = 0 .
+the lists of sound correspondences which hold true across all four languages are then used to derive the corresponding sounds in the protolanguage using four principles given by crowley ( 1992 , chapter 5 ) , as follows : proposed reconstructions must involve sound changes that are plausible .
+lenition is typically more plausible than fortition .
+thus given the modern forms batu and vatu ( malay and fijian for stone ) , it is more likely that the word in the protolanguage was batu , since this would mean that lenition had occurred in fijian .
+if the protoform had been vatu , that would mean that the less likely process of fortition had occurred in malay .
+since the null phoneme is the weakest sound of all , the proposed protophoneme cannot be null .
+look for sound correspondences that involve phonetically similar sounds .
+reconstructions should involve as few changes as possible between the protolanguage and the daughter languages .
+if the corresponding sounds in four daughter languages are t , t , t and k , the corresponding sound in the protolanguage would probably be t , since that would only involve one change with respect to the daughter language .
+a phoneme should not be proposed for the protolanguage if it is not found in any of the daughter languages .
+these four principles are incorporated in a module which estimates the total degree of difference ( cost ) between each proposed phoneme ( each phoneme in the alphabet is tried in turn ) for the protolanguage with each of the corresponding phonemes in the daughter languages .
+a cost of 0 is given if the proposed protolanguage phoneme is identical with a daughter language phoneme , a cost of 1 is given if the protophoneme and the daughter phoneme differ in a manner favoured by principles ( 1 ) or ( 2 ) , and a cost of 2 otherwise .
+for example , if we have the modern four-way sound correspondence t = t = t = k , and try k as the protophoneme , the total cost will be 6 .
+if we try t , the cost will be 2 , and if we try z , the cost will be 8 .
+thus t will be chosen as the most likely protophoneme .
+a fifth principle regards conditioned ( such as position dependent ) sound changes , and this has been only partly implemented .
+table 5 shows the protophonemes proposed by program prague for each four-way sound correspondence found for the set of daughter languages .
+sometimes more than one of these four-way correspondences results in the same protophoneme being proposed , and these are distinguished by different numerals after each instance of the protophoneme .
+for example , the four-way comparison b = b = b = b suggests the protophoneme b1 , while the comaparison w = b = b = b suggests the protophoneme b2. b1 and b2 may have differed in the protolanguage in one of two respects : they may have had similar , but not identical pronunciations ( e.g. , one was the phoneme b while the other was a similar but distinct phoneme ) , or they may have been the same phoneme occurring in different positions .
+it is left to the intuition of the human linguist to decide which of these was the case .
+it is difficult to incorporate all possible contexts in which a phoneme might occur into a computer program because there are so many .
+the contexts considered by crowley are listed above , while another , almost entirely different set is considered by nothofer : initial , intervocalic , final , in the final closed syllable , before pause , when followed by u , before h , in the final syllable , before q , before i , between identical vowels , after u or o ; after i or e ; after u , and after i .
+one other principle given by crowley has not been implemented at all , namely that regarding the maintenance of balanced phonological systems .
+in the final part of program prague , the vocabulary lists for each daughter language are read in again , and each set of four words is aligned at the character level .
+each phoneme in each daughter language word is then substituted for the corresponding phoneme in the protolanguage , if this is known .
+if these substitutions generate the same sequence of protolanguage phonemes for all four daughter languages , it can be assumed that the original word in the protolanguage has been plausibly reconstructed .
+if it is not possible to generate an identical sequence of protophonemes for all four languages , program prague tries to generate a sequence for just three of the languages , and failing that , just two .
+if it is not possible to generate an identical sequence of protophonemes for even two languages , the program reports that the word in the protolanguage could not be reconstructed for that meaning .
+examples illustrating this process are shown in table 6 .
+in comparing the daughter language words wulu ( javanese ) , bulu ( madurese ) , bulu ( malay ) and buluq ( sundanese ) , all meaning feather , we see that the resulting character level alignment w = b = b = b is found in table 5 , and suggests the protophoneme b2. u = u = u = u yields u2 , l = l = l = l yields l , u = u = u = u again yields u2 and 0 = 0 = 0 = q yields q .
+thus the words in all four languages contribute to the word for feather in the protolanguage being reconstructed as b2 u2 l u2 q .
+in comparing the words mati , mate , mati and maot ( all meaning die ) , the sequences m = m = m = m and a = a = a = a yield the protophonemes m and a respectively , but 0 = 0 = 0 = o is not found in table 5 .
+this means that these four characters cannot be substituted by an identical protophoneme , so it is not possible to reconstruct the word meaning die using all four languages .
+however , using only the first three languages gives the following reconstruction .
+there is only one entry in table 5 where the first three columns are m = m = m , and that has the corresponding protophoneme m. a = a = a for the first three columns unambiguously yields the protophoneme a , while 0 = 0 = 0 yields 0 ( the null character , which may be ignored ) and t = t = t must yield t .
+however , the sequence i = e = i for the first three columns is found in two different rows , one giving the protophoneme i1 and one giving the protophoneme i2 .
+this means that using just the first three languages , the protolanguage word for die is ambiguously reconstructed m a t i1 or m a t i2 .
+in the example of kabeh , kabbhi , semua and kabeh ( all ) , only the words in l0 and l3 were found to be cognate , although according to nothofers rules , the word in l1 would also be cognate .
+the example geteh , dara , darah , getih ( blood ) yields two possible reconstructions , one cognate with geteh and one with dara .
+in such situations , linguists will look at languages closely related to , but outside the group of daughter languages under study .
+the tagalog word for blood is dagat , suggesting that the earlier form should be cognate with dara , but this is not built into the program .
+no reconstruction was possible for lan , ban , dan and jin ( and ) .
+results : analysis of errors .
+the output of program prague for each of the 195 sets of words in the word list was compared with the set of reconstructions given by nothofer .
+in 55 cases , a pmj form was reconstructed by both nothofer and prague , but in only 13 cases were these reconstructions identical , such as mataq ( nothofer ) and mataq ( prague ) .
+of the 42 non identical reflexes , 36 produced the same morpheme but differing pronunciations , as follows : in 9 cases there were differences in reconstructing the phonemes q , h and k , which have null equivalents in some of the daughter languages , e.g. , qanak ( nothofer ) , anaq ( prague ) .
+in 9 cases the similar vowels e / i and o / u were reconstructed differently , e.g. , kulit and kulet .
+in 4 cases jakarta failed to recognise that the madurese compound sounds bh and jh should form 2 : 1 alignments with single consonants in the other languages , such regions being interpreted as separate 1 : 1 and 1 : 0 regions .
+this resulted in such differences in reconstruction as zauh and jhauh .
+in nothofers reconstructions , if madurese has a double consonant where the other three languages have single consonants , the pmj form is reconstructed with a double consonant ( 5 cases ) .
+however , using crowleys third principle , prague assigns a single consonant in such cases .
+for example , nothofer gives bellah , while prague gives belah .
+more complex phonemic differences in the reconstructions were found in 9 cases , e.g. , tuhaq ( nothofer ) and tuwa ( prague ) .
+in 6 cases , the two methods produced a different morpheme altogether , such as qasuk and qanj [ e | i ] n.
+in 32 cases nothofer was able to produce a reconstruction but prague was not , while in 35 cases prague produced a reconstruction but nothofer did not .
+for 74 word sets , neither nothofer nor prague produced a reconstruction .
+in this study , all four parts of the process of discovering the regular sound changes found between historically related languages described by previous authors have been implemented .
+in addition , program jakarta incorporates linguistically-motivated but language family independent preferences for sound substitution rules , and program prague enables the reconstruction of ancestor language ( such as proto-malayo-javanic ) from its daughter languages alone .
+although it was not possible to reproduce the results of a human linguist exactly , programs jakarta and prague can quickly produce outputs which will serve as a first estimate for the human historical linguist .

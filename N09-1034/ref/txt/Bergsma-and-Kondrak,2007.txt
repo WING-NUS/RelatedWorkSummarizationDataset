@@ -1,0 +1,177 @@
+alignment-based discriminative string similarity .
+abstract .
+a character-based measure of similarity is an important component of many natural language processing systems , including approaches to transliteration , coreference , word alignment , spelling correction , and the identification of cognates in related vocabularies .
+we propose an alignment-based discriminative framework for string similarity .
+we gather features from substring pairs consistent with a character-based alignment of the two strings .
+this approach achieves exceptional performance ; on nine separate cognate identification experiments using six language pairs , we more than double the precision of traditional orthographic measures like longest common subsequence ratio and dices coefficient .
+we also show strong improvements over other recent discriminative and heuristic similarity functions .
+introduction .
+string similarity is often used as a means of quantifying the likelihood that two pairs of strings have the same underlying meaning , based purely on the character composition of the two words .
+strube et al. ( 2002 ) use edit distance as a feature for determining if two words are coreferent .
+taskar et al. ( 2005 ) use french-english common letter sequences as a feature for discriminative word alignment in bilingual texts .
+brill and moore ( 2000 ) learn misspelled-word to correctly-spelled-word similarities for spelling correction .
+in each of these examples , a similarity measure can make use of the recurrent substring pairings that reliably occur between words having the same meaning .
+across natural languages , these recurrent sub-string correspondences are found in word pairs known as cognates : words with a common form and meaning across languages .
+cognates arise either from words in a common ancestor language ( e.g. light / licht , night / nacht in english / german ) or from foreign word borrowings ( e.g. trampoline / toranporin in english / japanese ) .
+knowledge of cognates is useful for a number of applications , including sentence alignment ( melamed , 1999 ) and learning translation lexicons ( mann and yarowsky , 2001 ; koehn and knight , 2002 ) .
+we propose an alignment-based , discriminative approach to string similarity and evaluate this approach on cognate identification .
+section 2 describes previous approaches and their limitations .
+in section 3 , we explain our technique for automatically creating a cognate-identification training set .
+a novel aspect of this set is the inclusion of competitive counter-examples for learning .
+section 4 shows how discriminative features are created from a character-based , minimum-edit-distance alignment of a pair of strings .
+in section 5 , we describe our bitext and dictionary-based experiments on six language pairs , including three based on non-roman alphabets .
+in section 6 , we show significant improvements over traditional approaches , as well as significant gains over more recent techniques by ristad and yianilos ( 1998 ) , tiedemann ( 1999 ) , kondrak ( 2005 ) , and klementiev and roth ( 2006 ) .
+related work .
+string similarity is a fundamental concept in a variety of fields and hence a range of techniques have been developed .
+we focus on approaches that have been applied to words , i.e. , uninterrupted sequences of characters found in natural language text .
+the most well-known measure of the similarity of two strings is the edit distance or levenshtein distance ( levenshtein , 1966 ) : the number of insertions , deletions and substitutions required to transform one string into another .
+in our experiments , we use normalized edit distance ( ned ) : edit distance divided by the length of the longer word .
+other popular measures include dices coefficient ( dice ) ( adamson and boreham , 1974 ) , and the length-normalized measures longest common subsequence ratio ( lcsr ) ( melamed , 1999 ) , and longest common prefix ratio ( prefix ) ( kondrak , 2005 ) .
+these baseline approaches have the important advantage of not requiring training data .
+we can also include in the non-learning category kondrak ( 2005 ) s longest common subsequence formula ( lcsf ) , a probabilistic measure designed to mitigate lcsrs preference for shorter words .
+although simple to use , the untrained measures cannot adapt to the specific spelling differences between a pair of languages .
+researchers have therefore investigated adaptive measures that are learned from a set of known cognate pairs .
+ristad and yianilos ( 1998 ) developed a stochastic transducer version of edit distance learned from unaligned string pairs .
+mann and yarowsky ( 2001 ) saw little improvement over edit distance when applying this transducer to cognates , even when filtering the transducers probabilities into different weight classes to better approximate edit distance .
+tiedemann ( 1999 ) used various measures to learn the recurrent spelling changes between english and swedish , and used these changes to re-weight lcsr to identify more cognates , with modest performance improvements .
+mulloni and pekar ( 2006 ) developed a similar technique to improve ned for english / german .
+essentially , all these techniques improve on the baseline approaches by using a set of positive ( true ) cognate pairs to re-weight the costs of edit operations or the score of sequence matches .
+ideally , we would prefer a more flexible approach that can learn positive or negative weights on substring pairings in order to better identify related strings .
+one system that can potentially provide this flexibility is a discriminative string-similarity approach to named-entity transliteration by klementiev and roth ( 2006 ) .
+although not compared to other similarity measures in the original paper , we show that this discriminative technique can strongly outperform traditional methods on cognate identification .
+unlike many recent generative systems , the klementiev and roth approach does not exploit the known positions in the strings where the characters match .
+for example , brill and moore ( 2000 ) combine a character-based alignment with the expectation maximization ( em ) algorithm to develop an improved probabilistic error model for spelling correction .
+rappoport and levent-levi ( 2006 ) apply this approach to learn substring correspondences for cognates .
+zelenko and aone ( 2006 ) recently showed a klementiev and roth ( 2006 ) -style discriminative approach to be superior to alignment-based generative techniques for name transliteration .
+our work successfully uses the alignment-based methodology of the generative approaches to enhance the feature set for discriminative string similarity .
+the cognate identification task .
+given two string lists , e and f , the task of cognate identification is to find all pairs of strings ( e , f ) that are cognate .
+in other similarity-driven applications , e and f could be misspelled and correctly spelled words , or the orthographic and the phonetic representation of words , etc .
+the task remains to link strings with common meaning in e and f using only the string similarity measure .
+we can facilitate the application of string similarity to cognates by using a definition of cognation not dependent on etymological analysis .
+for example , mann and yarowsky ( 2001 ) define a word pair ( e , f ) to be cognate if they are a translation pair ( same meaning ) and their edit distance is less than three ( same form ) .
+we adopt an improved definition ( suggested by melamed ( 1999 ) for the french-english canadian hansards ) that does not over-propose shorter word pairs : ( e , f ) are cognate if they are translations and their lcsr > 0.58 .
+note that this cutoff is somewhat conservative : the english / german cognates light / licht ( lcsr = 0.8 ) are included , but not the cognates eight / acht ( lcsr = 0.4 ) .
+if two words must have lcsr > 0.58 to be cognate , then for a given word f e f , we need only consider as possible cognates the subset of words in e having an lcsr with f larger than 0.58 , a set we call ef .
+the portion of e f with the same meaning as f , ef + , are cognates , while the part with different meanings , ef _ , are not cognates .
+the words ef _ with similar spelling but different meaning are sometimes called false friends .
+the cognate identification task is , for every word f e f , and a list of similarly spelled words ef , to distinguish the cognate subset ef + from the false friend set ef .
+to create training data for our learning approaches , and to generate a high-quality labelled test set , we need to annotate some of the ( f , e f e ef ) word pairs for whether or not the words share a common meaning .
+in section 5 , we explain our two high-precision automatic annotation methods : checking if each pair of words ( a ) were aligned in a word-aligned bitext , or ( b ) were listed as translation pairs in a bilingual dictionary .
+table 1 provides some labelled examples with non-empty cognate and false friend lists .
+note that despite these examples , this is not a ranking task : even in highly related languages , most words in f have empty ef + lists , and many have empty e f _ as well .
+thus one natural formulation for cognate identification is a pairwise ( and symmetric ) cognation classification that looks at each pair ( f , e f ) separately and individually makes a decision : in this formulation , the benefits of a discriminative approach are clear : it must find substrings that distinguish cognate pairs from word pairs with otherwise similar form .
+klementiev and roth ( 2006 ) , although using a discriminative approach , do not provide their infinite-attribute perceptron with competitive counter-examples .
+they instead use transliterations as positives and randomly-paired english and russian words as negative examples .
+in the fol lowing section , we also improve on klementiev and roth ( 2006 ) by using a character-based string alignment to focus the features for discrimination .
+features for discriminative similarity .
+discriminative learning works by providing a training set of labelled examples , each represented as a set of features , to a module that learns a classifier .
+in the previous section we showed how labelled word pairs can be collected .
+we now address methods of representing these word pairs as sets of features useful for determining cognation .
+consider the romaji japanese / english cognates : ( sutoresu , stress ) .
+the lcsr is 0.625 .
+note that the lcsr of sutoresu with the english false friend stories is higher : 0.75 .
+lcsr alone is too weak a feature to pick out cognates .
+we need to look at the actual character substrings .
+klementiev and roth ( 2006 ) generate features for a pair of words by splitting both words into all possible substrings of up to size two .
+then , a feature vector is built from all substring pairs from the two words such that the difference in positions of the substrings is within one .
+this feature vector provides the feature representation used in supervised machine learning .
+this example also highlights the limitations of the klementiev and roth approach .
+the learner can provide weight to features like s-s or s-st at the beginning of the word , but because of the gradual accumulation of positional differences , the learner never sees the tor-tr and es-es correspondences that really help indicate the words are cognate .
+our solution is to use the minimum-edit-distance alignment of the two strings as the basis for feature extraction , rather than the positional correspondences .
+we also include beginning-of-word and end-of-word markers ( referred to as boundary markers ) to highlight correspondences at those positions .
+for the feature representation , we only extract substring pairs that are consistent with this alignment .
+we define phrase pairs to be the pairs of substrings consistent with the alignment .
+a similar use of the term phrase exists in machine translation , where phrases are often pairs of word sequences consistent with word-based alignments ( koehn et al. , 2003 ) .
+by limiting the substrings to only those pairs that are consistent with the alignment , we generate fewer , more-informative features .
+using more precise features allows a larger maximum substring size l than is feasible with the positional approach .
+larger substrings allow us to capture important recurring deletions like the u in sut-st .
+tiedemann ( 1999 ) and others have shown the importance of using the mismatching portions of cognate pairs to learn the recurrent spelling changes between two languages .
+in order to capture mismatching segments longer than our maximum substring size will allow , we include special features in our representation called mismatches .
+mismatches are phrases that span the entire sequence of unaligned characters between two pairs of aligned end characters ( similar to the rules extracted by mulloni and pekar ( 2006 ) ) .
+in the above example , su $ -ss $ is a mismatch with s and $ as the aligned end characters .
+two sets of features are taken from each mismatch , one that includes the beginning / ending aligned characters as context and one that does not .
+for example , for the endings of the french / english pair ( economique , economic ) , we include both the substring pairs ique $ : ic $ and que : c as features .
+one consideration is whether substring features should be binary presence / absence , or the count of the feature in the pair normalized by the length of the longer word .
+we investigate both of these approaches in our experiments .
+also , there is no reason not to include the scores of baseline approaches like ned , lcsr , prefix or dice as features in the representation as well .
+features like the lengths of the two words and the difference in lengths of the words have also proved to be useful in preliminary experiments .
+semantic features like frequency similarity or contextual similarity might also be included to help determine cognation between words that are not present in a translation lexicon or bitext .
+experiments .
+section 3 introduced two high-precision methods for generating labelled cognate pairs : using the word alignments from a bilingual corpus or using the entries in a translation lexicon .
+we investigate both of these methods in our experiments .
+in each case , we generate sets of labelled word pairs for training , testing , and development .
+the proportion of positive examples in the bitext-labelled test sets range between 1.4 % and 1.8 % , while ranging between 1.0 % and 1.6 % for the dictionary data .
+for the discriminative methods , we use a popular support vector machine ( svm ) learning package called svmlight ( joachims , 1999 ) .
+svms are maximum-margin classifiers that achieve good performance on a range of tasks .
+in each case , we learn a linear kernel on the training set pairs and tune the parameter that trades-off training error and margin on the development set .
+we apply our classifier to the test set and score the pairs by their positive distance from the svm classification hyper- plane ( also done by bilenko and mooney ( 2003 ) with their token-based svm similarity measure ) .
+we also score the test sets using traditional orthographic similarity measures prefix , dice , lcsr , and ned , an average of these four , and kondrak ( 2005 ) s lcsf .
+we also use the log of the edit probability from the stochastic decoder of ristad and yianilos ( 1998 ) ( normalized by the length of the longer word ) and tiedemann ( 1999 ) s highest performing system ( approach # 3 ) .
+both use only the positive examples in our training set .
+our evaluation metric is 11-pt average precision on the score-sorted pair lists ( also used by kondrak and sherif ( 2006 ) ) .
+bitext experiments .
+for the bitext-based annotation , we use publicly- available word alignments from the europarl corpus , automatically generated by giza + + for french- english ( fr ) , spanish-english ( es ) and german- english ( de ) ( koehn and monz , 2006 ) .
+initial cleaning of these noisy word pairs is necessary .
+we thus remove all pairs with numbers , punctuation , a capitalized english word , and all words that occur fewer than ten times .
+we also remove many incorrectly aligned words by filtering pairs where the pairwise mutual information between the words is less than 7.5 .
+this processing leaves vocabulary sizes of 39k for french , 31k for spanish , and 60k for german .
+our labelled set is then generated from pairs with lcsr > 0.58 ( using the cutoff from melamed ( 1999 ) ) .
+each labelled set entry is a triple of a ) the foreign word f , b ) the cognates e f + and c ) the false friends ef _ .
+for each language pair , we randomly take 20k triples for training , 5k for development and 5k for testing .
+each triple is converted to a set of pairwise examples for learning and classification .
+dictionary experiments .
+for the dictionary-based cognate identification , we use french , spanish , german , greek ( gr ) , japanese ( jp ) , and russian ( rs ) to english translation pairs from the freelang program.3 the latter three pairs were chosen so that we can evaluate on more distant languages that use non-roman alphabets ( although the r ^ omaji japanese is romanized by definition ) .
+we take 10k labelled-set triples for training , 2k for testing and 2k for development .
+the baseline approaches and our definition of cognation require comparison in a common alphabet .
+thus we use a simple context-free mapping to convert every russian and greek character in the word pairs to their nearest roman equivalent .
+we then label a translation pair as cognate if the lcsr between the words romanized representations is greater than 0.58 .
+we also operate all of our comparison systems on these romanized pairs .
+results .
+we were interested in whether our working definition of cognation ( translations and lcsr > 0.58 ) reflects true etymological relatedness .
+we looked at the lcsr histogram for translation pairs in one of our translation dictionaries ( figure 1 ) .
+the trendline suggests a bimodal distribution , with two distinct distributions of translation pairs making up the dictionary : incidental letter agreement gives low lcsr for the larger , non-cognate portion and high lcsr characterizes the likely cognates .
+a threshold of 0.58 captures most of the cognate distribution while excluding non-cognate pairs .
+this hypothesis was confirmed by checking the lcsr values of a list of known french-english cognates ( randomly collected from a dictionary for another project ) : 87.4 % were above 0.58 .
+we also checked cognation on 100 randomly-sampled , positively-labelled french- english pairs ( i.e. translated or aligned and having lcsr > 0.58 ) from both the dictionary and bitext data . 100 % of the dictionary pairs and 93 % of the bitext pairs were cognate .
+next , we investigate various configurations of the discriminative systems on one of our cognate identification development sets ( table 2 ) .
+the original klementiev and roth ( 2006 ) ( kr ) system can be improved by normalizing the feature count by the longer string length and including the boundary markers .
+this is therefore done with all the alignment-based approaches .
+also , because of the way its features are constructed , the kr system is limited to a maximum substring length of two ( l < 2 ) .
+a maximum length of three ( l < 3 ) in the kr framework produces millions of features and prohibitive training times , while l < _ 3 is computationally feasible in the phrasal case , and increases precision by 4.1 % over the phrases l < _ 2 system .
+including mismatches results in another small boost in performance ( 0.5 % ) , while using an edit distance feature again increases performance by a slight margin ( 0.2 % ) .
+this ranking of configurations is consistent across all the bitext-based development sets ; we therefore take the configuration of the highest scoring system as our alignment-based discriminative system for the remainder of this paper .
+we next compare the alignment-based discriminative scorer to the various other implemented approaches across the three bitext and six dictionary- based cognate identification test sets ( table 3 ) .
+the table highlights the top system among both the non-adaptive and adaptive similarity scorers .
+in preliminary experiments using even longer phrases ( beyond l < _ 3 ) currently produce a computationally prohibitive number of features for svm learning .
+deploying current feature selection techniques might enable the use of even more expressive and powerful feature sets with longer phrase lengths .
+using the training data and the svm to weight the components of the prefix + dice + lcsr + ned scorer resulted in negligible improvements over the simple average on our development data. each language pair , the alignment-based discriminative approach outperforms all other approaches , but the kr system also shows strong gains over non-adaptive techniques and their re-weighted extensions .
+this is in contrast to previous comparisons which have only demonstrated minor improvements with adaptive over traditional similarity measures ( kondrak and sherif , 2006 ) .
+we consistently found that the original kr performance could be surpassed by a system that normalizes the kr feature count and adds boundary markers .
+across all the test sets , this modification results in a 6 % average gain in performance over baseline kr , but is still on average 5 % below the alignment- based discriminative technique , with a statistically significantly difference on each of the nine sets.6 figure 2 shows the relationship between training data size and performance in our bitext-based french-english data .
+note again that the tiedemann and ristad & yanilos systems only use the positive examples in the training data .
+our alignment-based similarity function outperforms all the other systems across nearly the entire range of training data .
+note also that the discriminative learning curves show no signs of slowing down : performance grows logarithmically from 1k to 846k word pairs .
+for insight into the power of our discriminative approach , we provide some of our classifiers highest and lowest-weighted features ( table 4 ) .
+note the expected correspondences between foreign spellings and english ( k-c , f-ph ) , but also features that leverage derivational and inflectional morphology .
+for example , greek-english pairs with the adjective-ending correspondence kos-c , e.g. anarchikos : anarchic , are favoured , but pairs with the adjective ending in greek and noun ending in english , os $ -y $ , are penalized ; indeed , by our definition , anarchikos : anarchy is not cognate .
+in a bitext , the feature ees-ed captures that feminine-plural inflection of past tense verbs in french corresponds to regular past tense in english .
+on the other hand , words ending in the spanish first person plural verb suffix -amos are rarely translated to english words ending with the suffix -s , causing mos-s to be penalized .
+the ability to leverage negative features , learned from appropriate counter examples , is a key innovation of our discriminative framework .
+table 5 gives the top pairs scored by our system on two of the sets .
+notice that unlike traditional similarity measures that always score identical words higher than all other pairs , by virtue of our feature weighting , our discriminative classifier prefers some pairs with very characteristic spelling changes .
+we performed error analysis by looking at all the pairs our system scored quite confidently ( highly positive or highly negative similarity ) , but which were labelled oppositely .
+highly-scored false positives arose equally from 1 ) actual cognates not linked as translations in the data , 2 ) related words with diverged meanings , e.g. the error in table 5 : makaroni in greek actually means spaghetti in english , and 3 ) the same word stem , a different part of speech ( e.g. the greek / english adjective / noun synonymos : synonym ) .
+meanwhile , inspection of the highly-confident false negatives revealed some ( often erroneously-aligned in the bitext ) positive pairs with incidental letter match ( e.g. the french / english recettes : proceeds ) that we would not actually deem to be cognate .
+thus the errors that our system makes are often either linguistically interesting or point out mistakes in our automatically-labelled bitext and ( to a lesser extent ) dictionary data .
+conclusion .
+this is the first research to apply discriminative string similarity to the task of cognate identification .
+we have introduced and successfully applied an alignment-based framework for discriminative similarity that consistently demonstrates improved performance in both bitext and dictionary-based cognate identification on six language pairs .
+our improved approach can be applied in any of the diverse applications where traditional similarity measures like edit distance and lcsr are prevalent .
+we have also made available our cognate identification data sets , which will be of interest to general string similarity researchers .
+furthermore , we have provided a natural framework for future cognate identification research .
+phonetic , semantic , or syntactic features could be included within our discriminative infrastructure to aid in the identification of cognates in text .
+in particular , we plan to investigate approaches that do not require the bilingual dictionaries or bitexts to generate training data .
+for example , researchers have automatically developed translation lexicons by seeing if words from each language have similar frequencies , contexts ( koehn and knight , 2002 ) , burstiness , inverse document frequencies , and date distributions ( schafer and yarowsky , 2002 ) .
+semantic and string similarity might be learned jointly with a co-training or bootstrapping approach ( klementiev and roth , 2006 ) .
+we may also compare alignment-based discriminative string similarity with a more complex discriminative model that learns the alignments as latent structure ( mccallum et al. , 2005 ) .

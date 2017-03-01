@@ -1,0 +1,92 @@
+mining knowledge from wikipedia for the question answering task .
+abstract .
+although significant advances have been made recently in the question answering technology , more steps have to be undertaken in order to obtain better results .
+moreover , the best systems at the clef and trec evaluation exercises are very complex systems based on custom-built , expensive ontologies whose aim is to provide the systems with encyclopedic knowledge .
+in this paper we investigated the use of wikipedia , the open domain encyclopedia , for the question answering task .
+previous works considered wikipedia as a resource where to look for the answers to the questions .
+we focused on some different aspects of the problem , such as the validation of the answers as returned by our question answering system and on the use of wikipedia categories in order to determine a set of patterns that should fit with the expected answer .
+validation consists in , given a possible answer , saying wether it is the right one or not .
+the possibility to exploit the categories of wikipedia was not considered until now .
+we performed our experiments using the spanish version of wikipedia , with the set of questions of the last clef spanish monolingual exercise .
+results show that wikipedia is a potentially useful resource for the question answering task .
+introduction .
+encyclopedic knowledge is valuable for many natural language processing ( nlp ) applications , and in particular for the question answering ( qa ) task .
+recently , the availability of a large , open domain encyclopedia , such as the wikipedia , has captured the attention of some researchers ( lita et al. , 2004 ; ahn et al. , 2004 ) in the question answering field .
+until now , the focus of these works was on the use of the encyclopedia in order to look for the answer to the questions .
+however , the results did not fulfill the expectations .
+we investigated the use of wikipedia in some slightly different aspects of the question answering task : answer validation and generation of answer patterns .
+in the first case , the problem consists in , given a possible answer , saying wether it is the right one or not .
+previous work on answer validation has been carried out by exploiting the redundancy of the web ( magnini et al. , 2002 ) , giving good results .
+in the case of encyclopedias , redundancy is not an option , because usually each topic is covered by no more than one article .
+therefore , the quality of the information extracted from the question is crucial to find the related article .
+in the second case , the problem consists in building a regular expression pattern that ( possibly ) match the right answer .
+when a question pertains to a specific class , usually deduced by the structure of the question ( for instance , the right answer for a question starting with the word where will be at least some kind of location ) patterns can be built by hand , usually together with a custom-built ontology ( laurent et al. , 2005 ; amaral et al. , 2005 ) .
+however , when the question cannot be classified using a given taxonomy , the semantic class can be deduced by the question itself , such as in which fruit contains vitamine c ? : in this case , the class is fruit , and we want to find a suitable answer string for that class .
+in order to do that , we exploited the categorization of articles in wikipedia .
+it can be observed that the category entries constitute a sort of wikipedia ontology , since some categories contain also subcategories .
+goal of the paper .
+the goal of this paper is to show some simple techniques to exploit the knowledge from wikipedia .
+no in-depth analysis of the articles is needed , because we rely on the categorization of the articles that comes with wikipedia and on simple rules in order to extract the useful information .
+the use of wikipedia can overcome the issue of building a custom ontology , a task that is usually expensive both in time and money .
+moreover , an additional goal of the paper is to present some preliminary results obtained over the clef2005 spanish monolingual test set which demonstrates that these techniques can be effectively used to improve the performance of our question answering system ( named quasar ) , that already obtained good results in our last participation at the clef qa task ( g omez et al. , 2005 ; vallin et al. , 2005 ) .
+using wikipedia for validation .
+first of all , we need to briefly introduce the three-level question type taxonomy used by our question answering system .
+one or more classification patterns have been defined for each of the question types in table 1 .
+any question that does not match any of the defined patterns is considered as a generic question .
+usually these questions start with the word which or what ( cu al , qu e in spanish ) .
+we applied the wikipedia-based answer validation technique to the following question types : name ( including all subtypes but the country one ) and definition .
+a spanish snapshot of the wikipedia ( consisting of a single xml file containing about 75 , 000 articles ) was indexed using the well-known lucene2 search engine , splitting the data of each article into the following indices : title , text , definition and category .
+while title and text fields are obtained simply by picking the tagged data from the xml file ( specific wikipedia characters such as the double parenthesis are removed , too ) , for definition and category fields the data are obtained by means of simple patterns based on the analysis of the typical structure of the pages .
+articles regarding discussions , user pages , pictures , metadata and , in general , unnecessary information were skipped .
+the redirect pages ( i.e. , pages that contain only a link to the page with the article ) were filled with the text of the target page before indexing .
+all the text was indexed using the snowball stemmer3 .
+validation of definition answers .
+the + operator is a lucene operator used to force the returned page to contain that element .
+this guarantees that , if a page is retrieved , then it will contain the article about the person or organization we are looking for and that in its definition the same words which constitute the candidate answer will appear .
+otherwise , if no page is retrieved , there may be two reasons for this : an article about the entity to be defined does not exist , or the definition we are searching is not correct .
+in the first case , we cannot perform the validation , while in the second one the result is that the returned definition should be labeled as a wrong answer .
+therefore , a preliminary search is done in order to check wether an article about the named entity is present in wikipedia or not .
+for instance , consider the following question : validation of name answers .
+in this case , a question can assume different forms .
+it can depend on what kind of name is being asked for , although there are many ways to formulate a name question .
+however , the strategy can be considered as opposite to the one adopted for definition questions .
+in fact , the question contains a possible definition for a named entity we need to discover .
+the validation of the answers of this kind is performed in the following way : obtain the candidate answers from quasar ; for each candidate answer , perform the following search in wikipedia : if at least a page is returned , then confirm the answer , else reject it .
+the question constraints are selected by the quasar question analysis module , which uses some rules based on pos ( part-of-speech ) labels , capitalization of words and their lemmas .
+in most cases the question constraints are represented by noun sequences , named entities , numbers , dates or quotations .
+therefore , the queries submitted for the validation , are : [ + title : kofi annan + definition : secretario + definition : naciones unidas ] , [ + title : bill clinton + definition : secretario + definition : naciones unidas ] .
+the second query returns no pages , while the first one returns the page corresponding to the kofi annan article .
+therefore , kofi annan is validated as the correct answer .
+exploiting wikipedia s categories .
+a generic question is a question that cannot be classified using the proposed taxonomy .
+this is usually due to the fact that the answer belongs to a category specified in the question itself .
+the major consequence of the impossibility to properly classify the question is that the system is not able to identify a candidate answer , due to the lack of a suitable pattern .
+the resulting algorithm adopted to generate patterns using the wikipedia categories is the following : extract the category from the question ; this is done using the same algorithm used in order to identify the question constraints , but picking only the first of them .
+from the best ranked page select the names of the listed articles and arrange them in a regular expression pattern ; hand it over to quasar .
+if no page is returned , order quasar to generate a nil answer .
+please note that a nil answer corresponds to the situation in which the system is not able to find an answer to the question .
+thanks to the fact that the pages have been indexed using a stemmer , the page corresponding to the category frutas is returned .
+experiments .
+the set of questions used to test our approaches was the set of 200 spanish monolingual questions from the clef 2005 question answering track ( vallin et al. , 2005 ) .
+out of these 200 questions , definition ones are 50 , 25 related to organizations and 25 to persons .
+the name questions are 42 ( excluding the location questions ) , and generic questions are 25 .
+the results show that the use of wikipedia allowed to obtain 9 right answers more with respect to the original results .
+this means a global improvement of 4,5 % in recall ( i.e. , number of right answers divided by the number of questions ) .
+results grouped by question type are displayed in table 2 .
+out of the 4 definition answers , 3 passed from being incorrect ( i.e. , containing not only the right answer but also pieces of text semantically unrelated to the answer - they are labeled with an x sign by clef evaluators ) to right .
+with the help of the error analysis , we found that in 15 questions of both definition and name types , the answer validation process failed due to the fact that quasar was not able to return good answer candidates , or did not return any at all .
+similarly , 5 generic answers were actually present in wikipedia but the passage retrieval module did not find passages where the answer was present .
+this means that with a perfect passage retrieval and answer extraction system , the potential improvement with the help of wikipedia was of 29 questions ( the 9 actually retrieved plus the 20 that failed due to the qa system ) , corresponding to a 14,5 % gain in recall .
+see table 3 for details .
+another interesting feature discovered by error analysis is that when wikipedia proved to be useless , it is usually due to one of the following reasons : the question is about facts unrelated with the spanish world .
+that is , the answer could be present in another localization of wikipedia .
+for instance , the answer to the question who is giulio andreotti ? could be find in the italian or english versions of wikipedia .
+the question is about facts too specific to be taken into account into the wikipedia .
+for instance , who discovered the galleon san diego ? , or who is rolf ekeus ? .
+more less significative failure reasons were the ambiguity of some categories ( for instance , qu e plataforma estaba acampada en el paseo de la castellana de madrid ? - which platform was camped at paseo de la castellana in madrid ? ) , or the fact that the category was imaginary ( for instance , para qu e peri odico trabajaba clark kent ? , for which newspaper does clark kent work ? : the category newspapers ( peri odicos ) exists , but does not contain the daily planet ) .
+conclusions .
+we presented some methods to exploit the wikipedia open source encyclopedia for the question answering task .
+although the results obtained showed that wikipedia can be actually used to improve the performance of our question answering system , especially for generic questions , they are well below the potential .
+this is due mainly to the following three reasons : the performance of passage retrieval and answer extraction systems , the localization of wikipedia editions , and the fact that knowledge related to small-scale events or less known people usually is not included into the wikipedia .
+in this last case , no action can be taken , since it is a feature of a massive distributed project like wikipedia ; however , we can work to improve the passage retrieval system and answer extraction subsystem , obtaining better passages and candidate answers .
+another interesting work direction should be a multilingual approach that could take into account the various localizations of wikipedia in the other languages , preferably those containing many articles .

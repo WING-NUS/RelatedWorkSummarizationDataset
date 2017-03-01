@@ -1,0 +1,205 @@
+incremental integer linear programming for non-projective dependency parsing .
+abstract .
+integer linear programming has recently been used for decoding in a number of probabilistic models in order to enforce global constraints .
+however , in certain applications , such as non-projective dependency parsing and machine translation , the complete formulation of the decoding problem as an integer linear program renders solving intractable .
+we present an approach which solves the problem incrementally , thus we avoid creating intractable integer linear programs .
+this approach is applied to dutch dependency parsing and we show how the addition of linguistically motivated constraints can yield a significant improvement over state- of-the-art .
+introduction .
+many inference algorithms require models to make strong assumptions of conditional independence between variables .
+for example , the viterbi algorithm used for decoding in conditional random fields requires the model to be markovian .
+strong assumptions are also made in the case of mcdonald et al.s ( 2005b ) non-projective dependency parsing model .
+here attachment decisions are made independently of one another ' .
+however , often such assumptions can not be justified .
+for example in dependency parsing , if a subject has already been identified for a given verb , then the probability of attaching a second subject to the verb is zero .
+similarly , if we find that one coordination argument is a noun , then the other argument cannot be a verb .
+thus decisions are often co-dependent .
+integer linear programming ( ilp ) has recently been applied to inference in sequential conditional random fields ( roth and yih , 2004 ) , this has allowed the use of truly global constraints during inference .
+however , it is not possible to use this approach directly for a complex task like non-projective dependency parsing due to the exponential number of constraints required to prevent cycles occurring in the dependency graph .
+to model all these constraints explicitly would result in an ilp formulation too large to solve efficiently ( williams , 2002 ) .
+a similar problem also occurs in an ilp formulation for machine translation which treats decoding as the travelling salesman problem ( germann et al. , 2001 ) .
+in this paper we present a method which extends the applicability of ilp to a more complex set of problems .
+instead of adding all the constraints we wish to capture to the formulation , we first solve the program with a fraction of the constraints .
+the solution is then examined and , if required , additional constraints are added .
+this procedure is repeated until all constraints are satisfied .
+we apply this dependency parsing approach to dutch due to the languages non-projective nature , and take the parser of mcdonald et al. ( 2005b ) as a starting point for our model .
+in the following section we introduce dependency parsing and review previous work .
+in section 3 we present our model and formulate it as an ilp problem with a set of linguistically motivated constraints .
+we include details of an incremental algorithm used to solve this formulation .
+our experimental set-up is provided in section 4 and is followed by results in section 5 along with runtime experiments .
+we finally discuss future research and potential improvements to our approach .
+dependency parsing .
+dependency parsing is the task of attaching words to their arguments .
+figure 1 shows a dependency graph for the dutch sentence ill come at twelve and then youll get what you deserve ( taken from the alpino corpus ( van der beek et al. , 2002 ) ) .
+in this dependency graph the verb kom is attached to its subject ik. kom is referred to as the head of the dependency and ik as its child .
+in labelled dependency parsing edges between words are labelled with the relation captured .
+in the case of the dependency between kom and ik the label would be subject .
+in a dependency tree every token must be the child of exactly one other node , either another token or the dummy root node .
+by definition , a dependency tree is free of cycles .
+for example , it must not contain dependency chains such as en _ _ + kom _ _ + ik * en .
+for a more formal definition see previous work ( nivre et al. , 2004 ) .
+an important distinction between dependency trees is whether they are projective or non- projective .
+figure 1 is an example of a projective dependency tree , in such trees dependencies do not cross .
+in dutch and other flexible word order languages such as german and czech we also encounter non-projective trees , in these cases the trees contain crossing dependencies .
+dependency parsing is useful for applications such as relation extraction ( culotta and sorensen , 2004 ) and machine translation ( ding and palmer , 2005 ) .
+although less informative than lexicalised phrase structures , dependency structures still capture most of the predicate-argument information needed for applications .
+it has the advantage of being more efficient to learn and parse .
+mcdonald et al. ( 2005a ) introduce a dependency parsing framework which treats the task as searching for the projective tree that maximises the sum of local dependency scores .
+this framework is efficient and has also been extended to non-projective trees ( mcdonald et al. , 2005b ) .
+it provides a discriminative online learning algorithm which when combined with a rich feature set reaches state-of-the-art performance across multiple languages .
+however , within this framework one can only define features over single attachment decisions .
+this leads to cases where basic linguistic constraints are not satisfied ( e.g. verbs with two subjects or incompatible coordination arguments ) .
+an example of this for dutch is illustrated in figure 2 which was produced by the parser of mcdonald et al. ( 2005b ) .
+here the parse contains a coordination of incompatible word classes ( a preposition and a verb ) .
+our approach is able to include additional constraints which forbid configurations such as those in figure 2 .
+while mcdonald and pereira ( 2006 ) address the issue of local attachment decisions by defining scores over attachment pairs , our solution is more general .
+furthermore , it is complementary in the sense that we could formulate their model using ilp and then add constraints .
+the method we present is not the only one that can take global constraints into account .
+deterministic dependency parsing ( nivre et al. , 2004 ; yamada and matsumoto , 2003 ) can apply global constraints by conditioning attachment decisions on the intermediate parse built .
+however , for efficiency a greedy search is used which may produce sub-optimal solutions .
+this is not the case when using ilp .
+thus far , the formulation follows mcdonald et al. ( 2005b ) and corresponds to the maximum spanning tree ( mst ) problem .
+in addition to t1 and t2 , we include a set of linguistically motivated constraints : a1 covers constraints such as there can only be one subject if u contains subject ( see section 4.4 for more details of u ) .
+c1 applies to configurations which contain conjunctions such as en , of or maar ( and , or and but ) .
+c2 will rule-out settings where a conjunction such as zowel ( translates as both ) having arguments to its left .
+c3 forces coordination arguments to the left of a conjunction to have commas in between .
+c4 avoids parses in which incompatible word classes are coordinated , such as nouns and verbs .
+finally , p1 allows selective projective parsing : we can , for instance , forbid the crossing of noun-determiner dependencies if we add the corresponding label type to p ( see section 4.4 for more details of p ) .
+if we extend p to contain all labels we forbid any type of crossing dependencies .
+this corresponds to projective parsing .
+decoding .
+mcdonald et al. ( 2005b ) use the chu-liuedmonds ( cle ) algorithm to solve the maximum spanning tree problem .
+however , global constraints cannot be incorporated into the cle algorithm ( mcdonald et al. , 2005b ) .
+we alleviate this problem by presenting an equivalent integer linear programming formulation which allows us to incorporate global constraints naturally .
+before giving full details of our formulation we first introduce some of the concepts of linear and integer linear programming ( for a more thorough introduction see winston and venkataramanan ( 2003 ) ) .
+linear programming ( lp ) is a tool for solving optimisation problems in which the aim is to maximise ( or minimise ) a given linear function with respect to a set of linear constraints .
+the function to be maximised ( or minimised ) is referred to as the objective function .
+a number of decision variables are under our control which exert influence on the objective function .
+specifically , they have to be optimised in order to maximise ( or minimise ) the objective function .
+finally , a set of constraints restrict the values that the decision variables can take .
+integer linear programming is an extension of linear programming where all decision variables must take integer values .
+there are several explicit formulations of the mst problem as an integer linear program in the literature ( williams , 2002 ) .
+they are based on the concept of eliminating subtours ( cycles ) , cuts ( disconnections ) or requiring intervertex flows ( paths ) .
+however , in practice these formulations cause long solve times as the first two methods yield an exponential number of constraints .
+although the latter scales cubically , it produces non-fractional solutions in its relaxed version ; this causes long runtimes for the branch and bound algorithm ( williams , 2002 ) commonly used in integer linear programming .
+we found out experimentally that dependency parsing models of this form do not converge on a solution after multiple hours of solving , even for small sentences .
+as a workaround for this problem we follow an incremental approach akin to the work of warme ( 1998 ) .
+instead of adding constraints which forbid all possible cycles in advance ( this would result in an exponential number of constraints ) we first solve the problem without any cycle constraints .
+the solution is then examined for cycles , and if cycles are found we add constraints to forbid these cycles ; the solver is then run again .
+this process is repeated until no more violated constraints are found .
+the same procedure is used for other types of constraints which are too expensive to add in advance ( e.g. the constraints of p1 ) .
+algorithm 1 outlines our approach .
+for a sentence x , bx is the set of constraints that we add in advance and ix are the constraints we add incrementally .
+ox is the objective function and vx is a set of variables including integer declarations. solve ( c , o , v ) maximises the objective function o with respect to the set of constraints c and variables v. violated ( y , i ) inspects the proposed solution ( y ) and returns all constraints in i which are violated .
+the number of iterations required in this approach is at most polynomial with respect to the number of variables ( grotschel et al. , 1981 ) .
+in practice , this technique converges quickly ( less than 20 iterations in 99 % of approximately 12,000 sentences ) , yielding average solve times of less than 0.5 seconds .
+our approach converges quickly due to the quality of the scoring function .
+its weights have been trained on cycle free data , thus it is more likely to guide the search to a cycle free solution .
+in the following section we present the objective function ox , variables vx and linear constraints bx and ix needed for parsing x using algorithm 1 .
+variables .
+vx contains a set of binary variables to represent labelled edges : objective function .
+base constraints .
+we first introduce a set of base constraints bx which we add in advance .
+incremental constraints .
+now we present the set of constraints ix we add incrementally .
+the constraints are chosen based on the two criteria : ( 1 ) adding them to the base constraints ( those added in advance ) would result in an extremely large program , and ( 2 ) it must be efficient to detect whether the constraint is violated in y .
+compatible coordination arguments ( c4 ) for each conjunction token i and each set of tokens a in x with incompatible pos tags , we add a constraint to forbid configurations where i has the argument tokens a. for training we use single-best mira ( mcdonald et al. , 2005a ) .
+this is an online algorithm that learns by parsing each sentence and comparing the result with a gold standard .
+training is complete after multiple passes through the whole corpus .
+thus we decode using the chu-liu-edmonds ( cle ) algorithm due to its speed advantage over ilp ( see section 5.2 for a detailed comparison of runtimes ) .
+the fact that we decode differently during training ( using cle ) and testing ( using ilp ) may degrade performance .
+in the presence of additional constraints weights may be able to capture other aspects of the data .
+experimental set-up .
+our experiments were designed to answer the following questions : how much do our additional constraints help improve accuracy ?
+how fast is our generic inference method in comparison with the chu-liu-edmonds algorithm ?
+can approximations be used to increase the speed of our method while remaining accurate ?
+before we try to answer these questions we briefly describe our data , features used , settings for u and p in our parametric constraints , our working environment and our implementation .
+data .
+we use the alpino treebank ( van der beek et al. , 2002 ) , taken from the conll shared task of multilingual dependency parsing3 .
+the conll data differs slightly from the original alpino treebank as the corpus has been part-of-speech tagged using a memory-based-tagger ( daelemans et al. , 1996 ) .
+it consists of 13,300 sentences with an average length of 14.6 tokens .
+the data is non-projective , more specifically 5.4 % of all dependencies are crossed by at least one other dependency .
+it contains approximately 6000 sentences more than the alpino corpus used by malouf and van noord ( 2004 ) .
+the training set was divided into a 10 % development set ( dev ) while the remaining 90 % is used as a training and cross-validation set ( cross ) .
+feature sets , constraints and training parameters were selected through training on cross and optimising against dev .
+our final accuracy scores and runtime evaluations were acquired using a nine-fold cross- validation on cross environment and implementation .
+all our experiments were conducted on a intel xeon with 3.8 ghz and 4gb of ram .
+we used the open source mixed integer programming library lp solve4 to solve the integer linear programs .
+our code ran in java and called the jniwrapper around the lp solve library .
+feature sets .
+our feature set was determined through experimentation with the development set .
+the features are based upon the data provided within the alpino treebank .
+along with pos tags the corpus contains several additional attributes such as gender , number and case .
+our best results on the development set were achieved using the feature set of mcdonald et al. ( 2005a ) and a set of features based on the additional attributes .
+these features combine the attributes of the head with those of the child .
+for example , if token i has the attributes a1 and a2 , and token j has the attribute a3 then we created the features ( a1 a a3 ) and ( a2 a a3 ) .
+all the constraints presented in section 3 were used in our model .
+the set u of unique labels constraints contained su , obj1 , obj2 , sup , ld , vc , predc , predm , pc , pobj1 , obcomp and body .
+here su stands for subject and obj1 for direct object ( for full details see moortgat et al. ( 2000 ) ) .
+the set of projective labels p contained cnj , for coordination dependencies ; and det , for determiner dependencies .
+one exception was added for the coordination constraint : dependencies can cross when coordinated arguments are verbs .
+one drawback of hard deterministic constraints is the undesirable effect noisy data can cause .
+we see this most prominently with coordination argument compatibility .
+words ending in en are typically wrongly tagged and cause our coordination argument constraint to discard correct coordinations .
+as a workaround we assigned words ending in en a wildcard pos tag which is compatible with all pos tags .
+results .
+in this section we report our results .
+we not only present our accuracy but also provide an empirical evaluation of the runtime behaviour of this approach and show how parsing can be accelerated using a simple approximation .
+accuracy .
+an important question to answer when using global constraints is : how much of a performance boost is gained when using global constraints ?
+we ran the system without any linguistic constraints as a baseline ( bl ) and compared it to a system with the additional constraints ( cnstr ) .
+to evaluate our systems we use the accuracy over labelled attachment decisions : table 1 shows our results using nine-fold cross- validation on the cross set .
+the baseline system ( no additional constraints ) gives an unlabelled accuracy of 84.6 % and labelled accuracy of 88.9 % .
+when we add our linguistic constraints the performance increases by 0.5 % for both labelled and unlabelled accuracy .
+this increase is significant ( p < 0.001 ) according to dan bikels parse comparison script and using the sign test ( p < 0.001 ) .
+now we give a little insight into how our results compare with the rest of the community .
+the reported state-of-the-art parser of malouf and van noord ( 2004 ) achieves 84.4 % labelled accuracy which is very close numerically to our baseline .
+however , they use a subset of the conll alpino treebank with a higher average number of tokens per sentences and also evaluate control relations , thus results are not directly comparable .
+we have also run our parser on the relatively small ( approximately 400 sentences ) connl test data .
+the best performing system ( mcdonald et al. 2006 ; note : this system is different to our baseline ) achieves 79.2 % labelled accuracy while our baseline system achieves 78.6 % and our constrained version 79.8 % .
+however , a significant difference is only observed between our baseline and our constraint-based system .
+examining the errors produced using the dev set highlight two key reasons why we do not see a greater improvement using our constraint-based system .
+firstly , we cannot improve on coordinations that include words ending with en based on the workaround present in section 4.4 .
+this problem can only be solved by improving pos taggers for dutch or by performing pos tagging within the dependency parsing framework .
+secondly , our system suffers from poor next best solutions .
+that is , if the best solution violates some constraints , then we find the next best solution is typically worse than the best solution with violated constraints .
+this appears to be a consequence of inaccurate local score distributions ( as opposed to inaccurate best local scores ) .
+for example , suppose we attach two subjects , t1 and t2 , to a verb , where t1 is the actual subject while t2 is meant to be labelled as object .
+if we forbid this configuration ( two subjects ) and if the score of labelling t1 object is higher than that for t2 being labelled subject , then the next best solution will label t1 incorrectly as object and t2 incorrectly as subject .
+this is often the case , and thus results in a drop of accuracy .
+runtime evaluation .
+we now concentrate on the runtime of our method .
+while we expect a longer runtime than using the chu-liu-edmonds as in previous work ( mcdonald et al. , 2005b ) , we are interested in how large the increase is .
+table 2 shows the average solve time ( st ) for sentences with respect to the number of tokens in each sentence for our system with constraints ( cnstr ) and the chu-liu-edmonds ( cle ) algorithm .
+all solve times do not include feature extraction as this is identical for all systems .
+for cnstr we also show the number of sentences that could not be parsed after two minutes , the average number of iterations and the average duration of the first iteration .
+the results show that parsing using our generic approach is still reasonably fast although significantly slower than using the chu-liu-edmonds algorithm .
+also , only a small number of sentences take longer than two minutes to parse .
+thus , in practice we would not see a significant degradation in performance if we were to fall back on the cle algorithm after two minutes of solving .
+when we examine the average duration of the first iteration it appears that the majority of the solve time is spent within this iteration .
+this could be used to justify using the cle algorithm to find a initial solution as starting point for the ilp solver ( see section 6 ) .
+approximation .
+despite the fact that our parser can parse all sentences in a reasonable amount of time , it is still significantly slower than the cle algorithm .
+while this is not crucial during decoding , it does make discriminative online training difficult as training requires several iterations of parsing the whole corpus .
+discussion .
+while we have presented significant improvements using additional constraints , one may wonder whether the improvements are large enough to justify further research in this direction ; especially since mcdonald and pereira ( 2006 ) present an approximate algorithm which also makes more global decisions .
+however , we believe that our approach is complementary to their model .
+we can model higher order features by using an extended set of variables and a modified objective function .
+although this is likely to increase runtime , it may still be fast enough for real world applications .
+in addition , it will allow exact inference , even in the case of non-projective parsing .
+also , we argue that this approach has potential for interesting extensions and applications .
+for example , during our runtime evaluations we find that a large fraction of solve time is spent in the first iteration of our incremental algorithm .
+after the first iteration the solver uses its last state to efficiently search for solutions in the presence of new constraints .
+some solvers allow the specification of an initial solution as a starting point , thus it is expected that significant improvements in terms of speed can be made by using the cle algorithm to provide an initial solution .
+our approach uses a generic algorithm to solve a complex task .
+thus other applications may benefit from it .
+for instance , germann et al. ( 2001 ) present an ilp formulation of the machine translation ( mt ) decoding task in order to conduct exact inference .
+however , their model suffers from the same type of exponential blow-up we observe when we add all our cycle constraints in advance .
+in fact , the constraints which cause the exponential explosion in their graphically formulation are of the same nature as our cycle constraints .
+we hope that the incremental approach will allow exact mt decoding for longer sentences .
+conclusion .
+in this paper we have presented a novel approach for inference using ilp .
+while previous approaches which use ilp for decoding have solved each integer linear program in one run , we incrementally add constraints and solve the resulting program until no more constraints are violated .
+this allows us to efficiently use ilp for dependency parsing and add constraints which provide a significant improvement over the current state- of-the-art parser ( mcdonald et al. , 2005b ) on the dutch alpino corpus ( see bl row in table 1 ) .
+although slower than the baseline approach , our method can still parse large sentences ( more than 50 tokens ) in a reasonable amount of time ( less than a minute ) .
+we have shown that parsing time can be significantly reduced using a simple approximation which only marginally degrades performance .
+furthermore , we believe that the method has potential for further extensions and applications .

@@ -1,0 +1,157 @@
+word sense disambiguation improves statistical machine translation .
+abstract .
+recent research presents conflicting evidence on whether word sense disambiguation ( wsd ) systems can help to improve the performance of statistical machine translation ( mt ) systems .
+in this paper , we successfully integrate a state-of-the-art wsd system into a state-of-the-art hierarchical phrase-based mt system , hiero .
+we show for the first time that integrating a wsd system improves the performance of a state-of- the-art statistical mt system on an actual translation task .
+furthermore , the improvement is statistically significant .
+introduction .
+many words have multiple meanings , depending on the context in which they are used .
+word sense disambiguation ( wsd ) is the task of determining the correct meaning or sense of a word in context .
+wsd is regarded as an important research problem and is assumed to be helpful for applications such as machine translation ( mt ) and information retrieval .
+in translation , different senses of a word w in a source language may have different translations in a target language , depending on the particular meaning of w in context .
+hence , the assumption is that in resolving sense ambiguity , a wsd system will be able to help an mt system to determine the correct translation for an ambiguous word .
+to determine the correct sense of a word , wsd systems typically use a wide array of features that are not limited to the local context of w , and some of these features may not be used by state-of-the-art statistical mt systems .
+to perform translation , state-of-the-art mt systems use a statistical phrase-based approach ( marcu and wong , 2002 ; koehn et al. , 2003 ; och and ney , 2004 ) by treating phrases as the basic units of translation .
+in this approach , a phrase can be any sequence of consecutive words and is not necessarily linguistically meaningful .
+capitalizing on the strength of the phrase-based approach , chiang ( 2005 ) introduced a hierarchical phrase-based statistical mt system , hiero , which achieves significantly better translation performance than pharaoh ( koehn , 2004a ) , which is a state-of-the-art phrase- based statistical mt system .
+recently , some researchers investigated whether performing wsd will help to improve the performance of an mt system .
+carpuat and wu ( 2005 ) integrated the translation predictions from a chinese wsd system ( carpuat et al. , 2004 ) into a chinese- english word-based statistical mt system using the isi rewrite decoder ( germann , 2003 ) .
+though they acknowledged that directly using english translations as word senses would be ideal , they instead predicted the hownet sense of a word and then used the english gloss of the hownet sense as the wsd models predicted translation .
+they did not incorporate their wsd model or its predictions into their translation model ; rather , they used the wsd predictions either to constrain the options available to their decoder , or to postedit the output of their decoder .
+they reported the negative result that wsd decreased the performance of mt based on their experiments .
+in another work ( vickrey et al. , 2005 ) , the wsd problem was recast as a word translation task .
+the translation choices for a word w were defined as the set of words or phrases aligned to w , as gathered from a word-aligned parallel corpus .
+the authors showed that they were able to improve their models accuracy on two simplified translation tasks : word translation and blank-filling .
+recently , cabezas and resnik ( 2005 ) experimented with incorporating wsd translations into pharaoh , a state-of-the-art phrase-based mt system ( koehn et al. , 2003 ) .
+their wsd system provided additional translations to the phrase table of pharaoh , which fired a new model feature , so that the decoder could weigh the additional alternative translations against its own .
+however , they could not automatically tune the weight of this feature in the same way as the others .
+they obtained a relatively small improvement , and no statistical significance test was reported to determine if the improvement was statistically significant .
+note that the experiments in ( carpuat and wu , 2005 ) did not use a state-of-the-art mt system , while the experiments in ( vickrey et al. , 2005 ) were not done using a full-fledged mt system and the evaluation was not on how well each source sentence was translated as a whole .
+the relatively small improvement reported by cabezas and resnik ( 2005 ) without a statistical significance test appears to be inconclusive .
+considering the conflicting results reported by prior work , it is not clear whether a wsd system can help to improve the performance of a state-of-the-art statistical mt system .
+in this paper , we successfully integrate a state- of-the-art wsd system into the state-of-the-art hierarchical phrase-based mt system , hiero ( chiang , 2005 ) .
+the integration is accomplished by introducing two additional features into the mt model which operate on the existing rules of the grammar , without introducing competing rules .
+these features are treated , both in feature-weight tuning and in decoding , on the same footing as the rest of the model , allowing it to weigh the wsd model predictions against other pieces of evidence so as to optimize translation accuracy ( as measured by bleu ) .
+the contribution of our work lies in showing for the first time that integrating a wsd system significantly improves the performance of a state-of-the-art statistical mt system on an actual translation task .
+in the next section , we describe our wsd system .
+then , in section 3 , we describe the hiero mt system and introduce the two new features used to integrate the wsd system into hiero .
+in section 4 , we describe the training data used by the wsd system .
+in section 5 , we describe how the wsd translations provided are used by the decoder of the mt system .
+in section 6 and 7 , we present and analyze our experimental results , before concluding in section 8 .
+word sense disambiguation .
+prior research has shown that using support vector machines ( svm ) as the learning algorithm for wsd achieves good results ( lee and ng , 2002 ) .
+for our experiments , we use the svm implementation of ( chang and lin , 2001 ) as it is able to work on multi- class problems to output the classification probability for each class .
+our implemented wsd classifier uses the knowledge sources of local collocations , parts-of-speech ( pos ) , and surrounding words , following the successful approach of ( lee and ng , 2002 ) .
+for local collocations , we use 3 features , w _ 1w + 1 , w _ 1 , and w + 1 , where w _ 1 ( w + 1 ) is the token immediately to the left ( right ) of the current ambiguous word occurrence w .
+for parts-of-speech , we use 3 features , p _ 1 , p0 , and p + 1 , where p0 is the pos of w , and p _ 1 ( p + 1 ) is the pos of w _ 1 ( w + 1 ) .
+for surrounding words , we consider all unigrams ( single words ) in the surrounding context of w .
+these unigrams can be in a different sentence from w .
+we perform feature selection on surrounding words by including a unigram only if it occurs 3 or more times in some sense of w in the training data .
+to measure the accuracy of our wsd classifier , we evaluate it on the test data of senseval-3 chinese lexical-sample task .
+we obtain accuracy that compares favorably to the best participating system in the task ( carpuat et al. , 2004 ) .
+hiero .
+hiero ( chiang , 2005 ) is a hierarchical phrase-based model for statistical machine translation , based on weighted synchronous context-free grammar ( cfg ) ( lewis and stearns , 1968 ) .
+a synchronous cfg consists of rewrite rules such as the following : hiero extracts the synchronous cfg rules automatically from a word-aligned parallel corpus .
+to translate a source sentence , the goal is to find its most probable derivation using the extracted grammar rules .
+hiero uses a general log-linear model ( och and ney , 2002 ) where the weight of a derivation d for a particular source sentence .
+to ensure efficient decoding , the oz are subject to certain locality restrictions .
+essentially , they should be defined as products of functions defined on isolated synchronous cgf rules ; however , it is possible to extend the domain of locality of the features somewhat .
+a n-gram language model adds a dependence on ( n-1 ) neighboring target-side words ( wu , 1996 ; chiang , 2007 ) , making decoding much more difficult but still polynomial ; in this paper , we add features that depend on the neighboring source-side words , which does not affect decoding complexity at all because the source string is fixed .
+in principle we could add features that depend on arbitrary source-side context .
+new features in hiero for wsd .
+to incorporate wsd into hiero , we use the translations proposed by the wsd system to help hiero obtain a better or more probable derivation during the translation of each source sentence .
+to achieve this , when a grammar rule r is considered during decoding , and we recognize that some of the terminal symbols ( words ) in a are also chosen by the wsd system as translations for some terminal symbols ( words ) in -y , we compute the following features : note that we can take the negative logarithm of the rule / derivation weights and think of them as costs rather than probabilities .
+gathering training examples for wsd .
+our experiments were for chinese to english translation .
+hence , in the context of our work , a synchronous cfg grammar rule x ^ ( -y , a ) gathered by hiero consists of a chinese portion -y and a corresponding english portion a , where each portion is a sequence of words and non-terminal symbols .
+our wsd classifier suggests a list of english phrases ( where each phrase consists of one or more english words ) with associated contextual probabilities as possible translations for each particular chinese phrase .
+in general , the chinese phrase may consist of k chinese words , where k = 1 , 2 , 3 , ....
+however , we limit k to 1 or 2 for experiments reported in this paper .
+future work can explore enlarging k .
+whenever hiero is about to extract a grammar rule where its chinese portion is a phrase of one or two chinese words with no non-terminal symbols , we note the location ( sentence and token offset ) in the chinese half of the parallel corpus from which the chinese portion of the rule is extracted .
+the actual sentence in the corpus containing the chinese phrase , and the one sentence before and the one sentence after that actual sentence , will serve as the context for one training example for the chinese phrase , with the corresponding english phrase of the grammar rule as its translation .
+hence , unlike traditional wsd where the sense classes are tied to a specific sense inventory , our senses here consist of the english phrases extracted as translations for each chinese phrase .
+since the extracted training data may be noisy , for each chinese phrase , we remove english translations that occur only once .
+furthermore , we only attempt wsd classification for those chinese phrases with at least 10 training examples .
+using the wsd classifier described in section 2 , we classified the words in each chinese source sentence to be translated .
+we first performed wsd on all single chinese words which are either noun , verb , or adjective .
+next , we classified the chinese phrases consisting of 2 consecutive chinese words by simply treating the phrase as a single unit .
+when performing classification , we give as output the set of english translations with associated context-dependent probabilities , which are the probabilities of a chinese word ( phrase ) translating into each english phrase , depending on the context of the chinese word ( phrase ) .
+after wsd , the ith word ci in every chinese sentence may have up to 3 sets of associated translations provided by the wsd system : a set of translations for ci as a single word , a second set of translations for ci _ 1ci considered as a single unit , and a third set of translations for cici + 1 considered as a single unit .
+incorporating wsd during decoding .
+the wsd system is able to predict translations only for a subset of chinese words or phrases .
+hence , we must first identify which parts of the chinese side of the rule have suggested translations available .
+here , we consider substrings of length up to two , and we give priority to longer substrings .
+next , we want to know , for each chinese sub- string considered , whether the wsd system supports the chinese-english translation represented by the rule .
+if the rule is finally chosen as part of the best derivation for translating the chinese sentence , then all the words in the english side of the rule will appear in the translated english sentence .
+hence , we need to match the translations suggested by the wsd system against the english side of the rule .
+it is for these matching rules that the wsd features will apply .
+the translations proposed by the wsd system may be more than one word long .
+in order for a proposed translation to match the rule , we require two conditions .
+first , the proposed translation must be a substring of the english side of the rule .
+for example , the proposed translation every to would not match the chunk every month to .
+second , the match must contain at least one aligned chinese- english word pair , but we do not make any other requirements about the alignment of the other chinese or english words.1 if there are multiple possible matches , we choose the longest proposed translation ; in the case of a tie , we choose the proposed translation with the highest score according to the wsd model .
+define a chunk of a rule to be a maximal sub- string of terminal symbols on the english side of the rule .
+for example , in rule ( 2 ) , the chunks would be go to and every month to .
+whenever we find a matching wsd translation , we mark the whole chunk on the english side as consumed .
+finally , we compute the feature values for the rule .
+the feature p , sd ( t i s ) is the sum of the costs ( according to the wsd model ) of all the matched translations , and the feature pty , sd is the sum of the lengths of all the matched translations .
+figure 1 shows the pseudocode for the rule scoring algorithm in more detail , particularly with regards to resolving conflicts between overlapping matches .
+to illustrate the algorithm given in figure 1 , consider rule ( 2 ) .
+hereafter , we will use symbols to represent the chinese and english words in the rule : c1 , c2 , and c3 will represent the chinese words 4 , / jb , and ~ respectively .
+similarly , e1 , e2 , e3 , e4 , and e5 will represent the english words go , to , every , month , and to respectively .
+hence , rule ( 2 ) has two chunks : e1e2 and e3e4e5 .
+when the rule is extracted from the parallel corpus , it has these alignments between the words of its chinese and english portion : { c1e3 , c2e4 , c3e1 , c3e2 , c3e5 } , which means that c1 is aligned to e4 , and c3 is aligned to e1 , e2 , and e5 .
+although all words are aligned here , in general for a rule , some of its chinese or english words may not be associated with any alignments .
+in our experiment , c1 c2 as a phrase has a list of translations proposed by the wsd system , including the english phrase every month. match wsd will first be invoked for c1 , which is aligned to only one chunk e3e4e5 via its alignment with e3 .
+since every month is a sub-sequence of the chunk and also contains the word e3 ( every ) , it is noted as a candidate translation .
+later , it is determined that the most number of words any candidate translation has is two words .
+since among all the 2-word candidate translations , the translation every month has the highest translation probability as assigned by the wsd classifier , it is chosen as the best matching translation for the chunk. match wsd is then invoked for c2 , which is aligned to only one chunk e3e4e5 .
+however , since this chunk has already been examined by c1 with which it is considered as a phrase , no further matching is done for c2 .
+next , match wsd is invoked for c3 , which is aligned to both chunks of r. the english phrases go to and to are among the list of translations proposed by the wsd system for c3 , and they are eventually chosen as the best matching translations for the chunks e1e2 and e3e4e5 , respectively .
+experiments .
+as mentioned , our experiments were on chinese to english translation .
+similar to ( chiang , 2005 ) , we trained the hiero system on the fbis corpus , used the nist mt 2002 evaluation test set as our development set to tune the feature weights , and the nist mt 2003 evaluation test set as our test data .
+using the english portion of the fbis corpus and the xinhua portion of the gigaword corpus , we trained a trigram language model using the sri language modelling toolkit ( stolcke , 2002 ) .
+following ( chiang , 2005 ) , we used the version 1 1a nist bleu script with its default settings to calculate the bleu scores ( papineni et al. , 2002 ) based on case-insensitive n- gram matching , where n is up to 4 .
+first , we performed word alignment on the fbis parallel corpus using giza + + ( och and ney , 2000 ) in both directions .
+the word alignments of both directions are then combined into a single set of alignments using the diag-and method of koehn et al. ( 2003 ) .
+based on these alignments , synchronous cfg rules are then extracted from the corpus .
+while hiero is extracting grammar rules , we gathered wsd training data by following the procedure described in section 4 .
+hiero results .
+using the mt 2002 test set , we ran the minimum- error rate training ( mert ) ( och , 2003 ) with the decoder to tune the weights for each feature .
+the weights obtained are shown in the row hiero of table 2 .
+using these weights , we run hieros decoder to perform the actual translation of the mt 2003 test sentences and obtained a bleu score of 29.73 , as shown in the row hiero of table 1 .
+this is higher than the score of 28.77 reported in ( chiang , 2005 ) , perhaps due to differences in word segmentation , etc .
+note that comparing with the mt systems used in ( carpuat and wu , 2005 ) and ( cabezas and resnik , 2005 ) , the hiero system we are using represents a much stronger baseline mt system upon which the wsd system must improve .
+hiero + wsd results .
+we then added the wsd features of section 3.1 into hiero and reran the experiment .
+the weights obtained by mert are shown in the row hiero + wsd of table 2 .
+we note that a negative weight is learnt for ptywsd .
+this means that in general , the model prefers grammar rules having chunks that matches wsd translations .
+this matches our intuition .
+using the weights obtained , we translated the test sentences and obtained a bleu score of 30.30 , as shown in the row hiero + wsd of table 1 .
+the improvement of 0.57 is statistically significant at p < 0.05 using the sign-test as described by ( collins et al. ( 2005 ) ) , with 374 ( + 1 ) , 318 ( -1 ) and 227 ( 0 ) .
+using the bootstrap-sampling test described in ( koehn , 2004b ) , the improvement is statistically significant atp < 0.05 .
+though the improvement is modest , it is statistically significant and this positive result is important in view of the negative findings in ( carpuat and wu , 2005 ) that wsd does not help mt .
+furthermore , note that hiero + wsd has higher n-gram precisions than hiero .
+analysis .
+ideally , the wsd system should be suggesting high- quality translations which are frequently part of the reference sentences .
+to determine this , we note the set of grammar rules used in the best derivation for translating each test sentence .
+from the rules of each test sentence , we tabulated the set of translations proposed by the wsd system and check whether they are found in the associated reference sentences .
+on the entire set ofnist mt 2003 evaluation test sentences , an average of 10.36 translations proposed by the wsd system were used for each sentence .
+when limited to the set of 374 sentences which were judged by the collins sign-test to have better translations from hiero + wsd than from hiero , a higher number ( 11.14 ) of proposed translations were used on average .
+further , for the entire set of test sentences , 73.01 % of the proposed translations are found in the reference sentences .
+this increased to a proportion of 73.22 % when limited to the set of 374 sentences .
+these figures show that having more , and higher-quality proposed translations contributed to the set of 374 sentences being better translations than their respective original translations from hiero .
+table 3 gives a detailed breakdown of these figures according to the number of words in each proposed translation .
+for instance , over all the test sentences , the wsd module gave 7087 translations of single-word length , and 77.31 % of these translations match their respective reference sentences .
+we note that although the proportion of matching 2- word translations is slightly lower for the set of 374 sentences , the proportion increases for translations having more words .
+after the experiments in section 6 were completed , we visually inspected the translation output of hiero and hiero + wsd to categorize the ways in which integrating wsd contributes to better translations .
+the first way in which wsd helps is when it enables the integrated hiero + wsd system to output extra appropriate english words .
+conclusion .
+we have shown that wsd improves the translation performance of a state-of-the-art hierarchical phrase-based statistical mt system and this improvement is statistically significant .
+we have also demonstrated one way to integrate a wsd system into an mt system without introducing any rules that compete against existing rules , and where the feature-weight tuning and decoding place the wsd system on an equal footing with the other model components .
+for future work , an immediate step would be for the wsd classifier to provide translations for longer chinese phrases .
+also , different alternatives could be tried to match the translations provided by the wsd classifier against the chunks of rules .
+finally , besides our proposed approach of integrating wsd into statistical mt via the introduction of two new features , we could explore other alternative ways of integration .

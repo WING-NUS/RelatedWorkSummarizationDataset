@@ -1,0 +1,97 @@
+disambiguation algorithm for people search on the web .
+introduction .
+searching for entities , i.e. , webpages related to a person , location , organization or other types of entities is a common activity in internet search today .
+for instance people search i.e. , searching for webpages related to a person accounts for over 5 % of the current web searches [ 4 ] .
+entity search today is done using keywords where a search engine such as google or yahoo returns a set of web pages , in ranked order , that are deemed relevant to the search keyword entered ( the person name in this case ) .
+we envision a next generation search engine that can provide significantly more powerful models for entity search .
+assume ( for now ) that for each such web page the search- engine could determine which real entity ( i.e. , which andrew mccallum ) the page refers to .
+this information can be used to provide a capability of clustered entity search where instead of a list of web pages of ( possibly ) multiple persons with the same name , the results are clustered by association to real person .
+the clusters can be returned in a ranked order determined by aggregating the rank of the web pages that constitute the cluster .
+with each cluster we also provide a summary description that is representative of the real person associated with that cluster ( for instance in this example the summary description may be a list of words such as computer science , machine learning , professor ) .
+the user can hone in on the cluster of interest to her and get all pages in that cluster , i.e. , only the pages associated with that andrew mccallum .
+there is significant interest in the problem of entity search , with several research efforts addressing this and related challenges .
+the motivation for that is the fact that entity search can provide a way to browse and analyze the returned information in a more structured way , ultimately enhancing web search capabilities and the user experience .
+for instance , imagine searching for the webpages of a person who happened to have a famous namesake .
+this can be very tiring since the first several pages of the corresponding google search returns pages only about the famous person .
+in the clustered approach , all of the famous persons pages will be folded into a single cluster giving his namesakes a chance to be displayed in the first page of search results .
+while the example above shows the clustered approach in a positive light , in reality , it is not obvious that it indeed is a better option compared to searching for entities using keyword-based search supported by current search engines .
+the reason is that clustering algorithms can make mistakes and assign webpages to the wrong clusters .
+the key issue is the quality of clustering algorithms in disambiguating different web pages of the namesakes .
+in this paper we develop a disambiguation algorithm and then study its impact on people search .
+the proposed algorithm first uses extraction techniques to automatically extract significant entities such as the names of other persons , organizations , and locations on each webpage .
+in addition , it extracts and parses html and web related data on each webpage , such as hyperlinks and email addresses .
+the algorithm then views all this information in a unified way : as an entity-relationship graph where entities ( e.g. , people , organizations , locations , webpages ) are interconnected via relationships ( e.g. , webpage-mentions-person , relationships derived from hyperlinks , etc ) .
+the algorithm gains its power by being able to analyze several types of information : attributes associated with the entities ( e.g. , tf / idf for webpages ) and , most importantly , direct and indirect interconnections that exist among entities in the er graph .
+we next outline our approach in section 2 and then compare it with the state of the art solutions in section 3 .
+approach overview .
+architecture .
+there are several possible ways for implementing people search and we take the middleware based approach .
+given a query ( a person name ) the middleware submits the query to the standard search-engine and selects a fixed number ( top k ) of the results .
+a disambiguation algorithm is then applied to those pages .
+the result is a set of clusters of these pages with the aim being to cluster web pages based on association to real person .
+given these clusters the system returns clusters to the user in a ranked order with the rank based on some chosen criteria.2 if the user explores a particular cluster from the set , then she first sees the webpages returned by the clustering algorithm .
+they are followed by the rest of the webpages from the set , sorted based on their similarity to the cluster .
+that is , the search is forgiving , and the user has the chance to examine all of the k webpages .
+disambiguation algorithm .
+disambiguation approaches do of course exist for a variety of data management applications and the approaches themselves can be classified along a variety of facets .
+one of these facets , of interest in this context , is the type of information the approach is capable of analyzing in making its co-reference decisions .
+the proposed disambiguation algorithm is based on analyzing two types of information .
+first , it analyzes object features , like many other techniques .
+second , ( most important ) it also analyzes the entity-relationship graph ( er graph ) for the dataset .
+the idea behind analyzing features of objects u , v is based on the assumption that similarity of features of two objects defines certain affinity / attraction between those objects f ( u , v ) .
+if this attraction f ( u , v ) is sufficiently large , then the objects are likely to be the same ( co-refer ) .
+the intuition behind analyzing paths in the er graph is similar .
+the assumption is that each path / connection / link p between two objects u , v can serve as evidence that they co-refer .
+so if the combined evidence , stored in all the u-v paths , is sufficiently large , the objects are likely to be the same .
+an in-depth insight into the motivation for this methodology is elaborated in [ 5 ] .
+formally , the attraction between two nodes u and v via paths is measured using the connection strength measure c ( u , v ) which is defined as the sum of attractions contributed by each path : c ( u , v ) = pp .
+p. , c ( p ) .
+the proposed algorithm is capable of learning c ( p ) from ( past ) data , thus tuning itself to a given domain .
+that is , it employs an adaptive connection strength model , instead of a fixed one .
+it then applies correlation clustering techniques , which employ both f ( u , v ) and c ( u , v ) , in order to produce the final grouping of the webpages .
+due to space limit , we omit the details of that algorithm .
+er graph .
+an interesting peculiarity in applying the proposed disambiguation algorithm to web data is that entities and relationships , which the algorithm employs in its analysis , are not readily available in the dataset for use .
+rather such entities and relationships need to be first extracted off the web pages .
+we do that using information extraction ( ie ) software .
+in addition to named entities ( nes ) , we also extract hyperlinks and email addresses from the web pages , see figure 1 .
+a node is created for each extracted entity ( person , organization , location ) , each of the ( top k ) web pages , each extracted url / email and the derivatives of their decompositions ( domains , subdomains , etc ) .
+a relationship edge is created between a node representing a web page and each the nodes corresponding to each item extracted from that web page .
+edges are also created for the url decompositions , e.g. subdomain-of , see figure 1 .
+at the end of this process we have a complete graph representation of the information that a clustering or disambiguation algorithm can now work with .
+the algorithm is now abstracted from any of the extraction details and can in fact self-tune itself to optimize based on the nature of the graph .
+ontology-enhanced tf / idf .
+we use an ontology ( dmoz ) to enhance the f ( u , v ) part of the algorithm , which is computed using tf / idf .
+the ontology is applied to derive concepts ; e.g. machine learning is grouped into one concept machine learning .
+also , when a concept in a web- page is found in the ontology , the webpage is enriched with the corresponding classification terms , on some conditions .
+experimental results .
+bekkerman and andrew mccallum in www05 [ 2 ] ( table 2 ) .
+both datasets have been collected similarly and then hand labeled to distinguish among the namesakes .
+first , google is queried with a person name , e.g.
+andrew mccallum .
+then only the top 100 webpages are considered among the webpages returned by google .
+from table 1 we can see that 9 person names are queried in sigir05 dataset and 12 names in www05 dataset .
+the # field shows the number of namesakes for a particular name in the corresponding 100 webpages .
+the field k is the number of clusters the proposed disambiguation algorithm computes .
+ideally k should match the number of the namesakes .
+f0.5 is the harmonic mean of the purity and inverse purity measures .
+f0.2 is similar to f0.5 , but gives more preference to the inverse purity , see [ 1 ] for the motivation of these measures .
+the parameters of our disambiguation algorithm are set via leave one out cross validation .
+the values in the brackets in those tables show the improvement over the approaches in [ 1 , 2 ] .
+the improvement is achieved since the proposed approach is simply capable of analyzing more information , hidden in the datasets , and which [ 1 , 2 ] do not analyze .
+the proposed approach outperforms [ 1 ] by 8.2 % wrt f0.5 , and by 7.6 % wrt f0.2.
+in [ 2 ] , the authors solve a related-but-different problem , than the one studied in this paper .
+we modified our algorithm to apply it to that problem : the algorithm outperforms [ 2 ] by 9.5 % of f-measure , see table 2.3 the field # w in table 2 is the number of the to-be-found webpages related to the namesake of interest .
+impact on search .
+to assess the impact of disambiguation on search , we test the following scenario .
+a user queries the search engine with the name of the person of interest , e.g.
+andrew mccallum .
+the user then scans through top k pages in order to satisfy her objective of finding all the webpages of that person among the top k pages .
+the user can use the traditional or the new interface , where she first sees clusters and then can examine the web- pages inside each cluster , using the forgiving search .
+we measure how many steps the user needs to do to discover a certain fraction of the all webpages of a particular namesake of her interest .
+figure 2 ( a ) plots that measure for andrew mccallum the umass professor .
+his pages tend to appear first in google , they form the first group , which is also the largest one .
+figure 2 ( b ) plots the same measure for andrew mccallum the customer support person .
+his cluster consists of 3 pages that appear more toward the end in google search .
+his group is one of the last groups .
+both figures demonstrate that in these two scenarios the user can locate the desired webpages faster when using the new interface .

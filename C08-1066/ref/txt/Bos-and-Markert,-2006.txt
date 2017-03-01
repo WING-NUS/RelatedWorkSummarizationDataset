@@ -1,0 +1,108 @@
+when logical inference helps determining textual entailment ( and when it doesn 't ) .
+abstract .
+we compare and combine two methods to approach the second textual entailment challenge ( rte-2 ) : a shallow method based mainly on word-overlap and a method based on logical inference , using first-order theorem proving and model building techniques .
+we use a machine learning technique to combine features of both methods .
+we submitted two runs , one using only the shallow features , yielding an accuracy of 61.6 % , and one using features of both methods , performing with an accuracy score of 60.6 % .
+these figures suggest that logical inference didnt help much .
+closer inspection of the results revealed that only for some of the subtasks logical inference played a significant role in performance .
+we try to explain the reason for these results .
+introduction .
+in this paper we summarise the results of our efforts in the 2005 / 2006 recognising textual entailment ( rte-2 ) challenge ( the task of deciding , given two text fragments , whether the meaning of one text is entailed / inferred from another text ) .
+we experimented with shallow and deep semantic analysis methods .
+the shallow techniques were used to establish a baseline performance , but also to complement the deep semantic analysis .
+both methods extract features from the training data , which are then combined using an off-the-shelf machine learning classifier .
+we will introduce the shallow semantic analysis ( section 2 ) and the deep semantic analysis ( section 3 ) , present the results of our two runs ( section 4 ) , and discuss them ( section 5 ) .
+our work for rte-2 is essentially a further development of our approach to rte-1 ( b os and markert , 2005 ) .
+changes in the deep analysis ( see section 3 ) constitute a refinement of semantic analysis , the computation of background knowledge , and the use of more advanced model builders .
+in addition , we also refined the method for ranking the output , which is used for calculating average precision .
+shallow semantic analysis .
+as observed by several researchers , including ourselves , the rte-1 dataset ( ido dagan and magnini , 2005 ) showed a remarkably frequent dependency between surface string similarity of text and hypothesis and the existence of entailment .
+therefore , high word overlap is likely to be an important feature for determining textual entailment ( see , for example , t / h pair 217 in rte-2 ) whereas the occurrence of words in the hypothesis that are unrelated to any words in the text make entailment unlikely .
+we use a bag-of-words model to measure word overlap wnoverlap , where the weights of lemmas in the hypothesis that are related to lemmas in the text are added to the overlap measure and other , unrelated lemmas are ignored .
+weights correspond to inverse document frequency with the web as corpus and relatedness includes equality as well as synonymy and morphological derivations in wordnet .
+for a more detailed description we refer the reader to ( bos and markert , 2005 ) .
+in addition , we use four other shallow features : textlength measuring the length of t in words , hyplength measuring the length of the hypothesis and proplength measuring the difference between textlength and h len th as textlength the last shallow feature task simply uses the task variable ( one of sum , qa , ie , ir ) as our results in rte-1 ( bos and markert , 2005 ) showed that the different tasks can need different inference methods .
+deep semantic analysis .
+semantic representation .
+we use a robust wide-coverage ccg-parser ( bos , 2005 ) to generate fine-grained semantic representations for each t / h-pair .
+the semantic representation language is a first-order fragment of the drs- language used in discourse representation theory ( kamp and reyle , 1993 ) , conveying argument structure with a neo-davidsonian analysis and including the recursive drs structure to cover negation , disjunction , and implication .
+third-person personal pronouns are resolved to named entities , and proper names and definite descriptions are treated as anaphoric too .
+they are bound to previously introduced discourse referents if possible , otherwise accommodated .
+for more details of our approach the reader is kindly referred to ( bos and markert , 2005 ) .
+the appendix at the end of this paper contains some example representations .
+inference .
+to check whether an entailment holds or not , we used two kinds of automated reasoning tools : first-order theorem proving , and finite model building .
+we used the standard translation from drs to first-order logic ( kamp and reyle , 1993 ) to map the semantic representations onto the format required by the inference tools .
+we employed the theorem prover vampire 7 ( riazanov and voronkov , 2002 ) and two model builders , paradox 1.3 ( claessen and sorensson , 2003 ) and mace 2.0 ( mccune , 1998 ) .
+for each t-h pair we calculated possible relevant background knowledge ( bk ) ( see section 3.3 for a description of the background knowledge used ) .
+in 1 and 2 we are directly checking for a logical entailment between t and h ; in 1 we try so without , and in 2 with background knowledge . ( note that if there is a proof found for 1 , there will always be a proof for 2 ) .
+in 3 and 4 we check for consistency of the background knowledge with t or h. sometimes the combination of background knowledge with the text or hypothesis causes a logical inconsistency .
+this can be due to errors in the syntax-semantics interface , or to errors in the generation of relevant background knowledge .
+in both cases , if vampire is able to find a proof , we know that we are dealing with inconsistent background knowledge . ( note that if there is a proof for 3 , it logically follows that there is a proof for 4 as well . )
+in 5 and 6 we generate first-order models for t and h with supporting background knowledge .
+this is only possible if there are no proofs found for 3 and 4 .
+we perform model building using two different model builders : we use paradox to find the size of the domain , and then use mace to construct a minimal model giving that domain size . ( the reason for this is efficiency : paradox is generally faster than mace , but doesnt always produce minimal models .
+mace generally produces minimal models . )
+the results of 16 give us a set of features that can be used to determine whether it is likely that t entails h or not .
+if vampire finds a proof for 1 , it is very likely that t entails h. if vampire finds a proof for 3 or 4 , then we are ( unfortunately ) dealing with inconsistent background knowledge and there is nothing we can say about the relationship between t and h ( however , it could be the case that t + h is inconsistent , which would mean that t does not entail h ) .
+else , if there is no proof for 3 or 4 , but there is a proof for 2 , then again it is very likely that t entails h. finally , if the model size difference between the models generated for 5 and 6 is very small then it is likely that t entails h. background knowledge .
+we generate background knowledge ( bk ) using two kinds of sources : hyponymy relations from wordnet , and a set of manually coded inference rules expressing general knowledge ( see appendix for examples ) .
+lexical knowledge is created automatically from wordnet .
+a hyponymy relation between two synsets a and b is converted into vx ( a ( x ) * b ( x ) ) .
+two synset sisters a and b are translated into vx ( a ( x ) * - , b ( x ) ) .
+rules for generic knowledge cover the semantics of possessives , active-passive alternation , spatial knowledge , causes of death , winning prizes or awards , family relations , diseases , producers , employment , and ownership .
+some examples of such rules are given in the appendix .
+there are 115 of these rules , constructed manually based on the development data .
+although this way of manual construction is not easily scalable the extracted relations can be used for automatic bootstrapping of further relations in future work .
+model building .
+an attractive property of a model builder ( such as mace or paradox ) is that it outputs a model for its input formula ( only of course if the input is satisfiable ) .
+a model is here the logical notion of a model , describing a possible situation in which the input formula is true .
+formally , a model is a pair ( d , f ) where d is the set of entities in the domain , and f a function mapping predicate symbols to sets of domain members .
+model builders like paradox and mace generate finite models by iteration .
+they attempt to create a model for domain size 1 .
+if they fail , they increase the domain size and try again , until either they find a model or their resources run out .
+this way the models they output are generally minimal models ; in other words , the models do not contain entities that are not mentioned in the input ( see also ( blackburn and bos , 2005 ) ) .
+to introduce an element of robustness into our logical inference approach , we use the models as produced by the model builders to measure the distance from an entailment .
+the intuition behind it is as follows .
+if h is entailed by t , the model for t + h is not informative compared to the one for t , and hence does not introduce new entities .
+put differently , the domain size for t + h would equal the domain size of t. in contrast , if t does not entail h , h normally introduce some new information ( except when it contains negated information ) , and this will be reflected in the domain size of t + h , which then is larger than the domain size of t. it turns out that this difference between the domain sizes is a useful way of measuring the likelihood of entailment .
+large differences are mostly not entailments , small differences mostly are .
+consider the following example : although this example is judged as a true entailment , vampire doesnt find a proof because it lacks the background knowledge that capturing gold medals means that you must have won a race .
+vampire generated a model with domain size 15 for t , and a model with domain size 16 for t plus h. the absolute difference in domain sizes is small , and therefore likely to indicate an entailment .
+apart from the absolute difference we also compute the difference relative to the domain size .
+for the example above the relative domain size yields 1 / 16 = 0.0625 .
+the domain size only tells us something about the number of entities used in a modelnot about the number of established relations between the models entities .
+therefore , we also introduce the notion of model size .
+the model size is defined here by counting the number of all instances of relations in the model , and multiplying this with the domain size .
+deep semantic features .
+given our approach to deep semantic analysis , we identified eight features relevant for recognising textual entailment .
+the theorem prover provides us with four features : entailed and entailedbk determining whether t implies h ( without or with background knowledge ) , and i nc on s i s tent t and in cons is ten tth determining whether t or t / h are inconsistent with the background knowledge .
+the model builder gives us four features : the absolute and relative difference between the sizes of t and t + h , both for the size of the domains ( domains izeabsdif , domainsizereldif ) and the size of the models ( modelsizeabsdif , modelsizereldif ) .
+experiments and results .
+we used the confidence value as the primary ranking criterion for our decisions .
+as the confidence value is the same within an individual leaf we used features with numeric values for secondary ranking , prioritising features which were used for earlier splitting ; thus , we used wnoverlap for secondary sorting and textlength for tertiary sorting .
+thus , the most confident yes decisions are sum yes- decision with high overlap and low textlength .
+the model achieved 68 % precision on the whole development data , 64 % precision on the development set using ten-fold cross-validation and 61.6 % precision on the test set .
+the fall in precision can be explained by the fact that the average word overlap in the test set is higher ( overlap median in development set is 0.79 vs. 0.84 in the test set ) ; rescaling of the wnoverlap variable via linear functions might alleviate this problem .
+the method achieved good results in average precision ( 66.9 % over the whole test set ) , indicating that sorting by decreasing overlap is a useful ranking criterion .
+run 2 : combining shallow and deep .
+for a combination of deep and shallow features we took into account that ( a ) some example pairs could not be handled by the deep semantic analysis , and ( b ) that examples for which the theorem prover found a proof make an entailment highly likely . ( when using more features we found that the task feature led to overfitting on the development data ; therefore the task feature was left out of all run 2 experiments . )
+therefore , we split the test data into three subsets : testshallow contains examples which could not be handled via the deep analysis because the examples either could not be parsed or because the theorem prover discovered an inconsistency of t or t / h with the background knowledge .
+testentazled contains consistent and parsed examples where vampire found a proof , either with or without background knowledge and t estcombzned contains all remaining examples .
+the same subsets exist for the development data .
+for decisions on t estshallow , which contains 112 examples , a decision tree using the shallow features only was trained on devshallow ( containing 57 examples ) .
+the precision on this subset alone was only 56.5 % , possibly due to the small training set or to the fact that this subset contains some of the most complex examples .
+testentazled contains 29 examples , of which 19 proofs were found without background knowledge and 10 with background knowledge proofs were mostly correct , with 22 out of 29 proofs being correct ( precision of 76 % ) , being therefore the single most reliable piece of evidence in our system , but having low recall .
+phenomena that the deep semantic approach was able to handle include monotone inclusion appositions incorporation of world knowledge , conjunctions , pronoun resolution , active-passive conversion and relative clauses .
+all examples in test entailed were assigned a yes value , using the accuracy on the development set as confidence value .
+on t estcombined a decision tree using shallow and non-shallow features was trained on devcombined .
+the overall accuracy of the combined methods on the whole test set was 60.6 % .
+the overall combined ranking over the whole test set used the confidence values of all three subsets as primary sorting constraint with differences in domain size as secondary and word overlap as tertiary sorting criterium .
+discussion .
+the first and the second run perform with almost the same overall precision , which is disappointing as one would expect the deep analysis to enhance the shallow one .
+we found that there are the following main reasons for this lack of improvement : firstly , the recall of the best deep feature ( entailment ) is quite low and actually mostly finds proofs for examples that also have a high word overlap ( for example , most examples of monotone inclusion will also have a word overlap of 1 ) .
+similarly , small domain size differences correlate with high overlap , although domain size differences also handle multi-word entities and can draw on background knowledge .
+overall , this means that the two systems have a high degree of overlap in their decisions .
+the ranking of run 2 performs worse than the one for run 1 .
+this is mainly due to the combination of confidence values from different decision trees , which might not be straightforward to compare .
+however , run 2 is more robust across the different subtasks , achieving results that are better than the 50 % baseline on all subsets , whereas run 1 does not beat the baseline for the ie task .

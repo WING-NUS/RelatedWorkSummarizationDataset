@@ -1,0 +1,143 @@
+scaling phrase-based statistical machine translation abstract .
+in this paper we describe a novel data structure for phrase-based statistical machine translation which allows for the retrieval of arbitrarily long phrases while simultaneously using less memory than is required by current decoder implementations .
+we detail the computational complexity and average retrieval times for looking up phrase translations in our suffix array-based data structure .
+we show how sampling can be used to reduce the retrieval time by orders of magnitude with no loss in translation quality .
+introduction .
+statistical machine translation ( smt ) has an advantage over many other statistical natural language processing applications in that training data is regularly produced by other human activity .
+for some language pairs very large sets of training data are now available .
+the publications of the european union and united nations provide gigbytes of data between various language pairs which can be easily mined using a web crawler .
+the linguistics data consortium provides an excellent set of off the shelf arabic-english and chinese-english parallel corpora for the annual nist machine translation evaluation exercises .
+the size of the nist training data presents a problem for phrase-based statistical machine translation .
+decoders such as pharaoh ( koehn , 2004 ) primarily use lookup tables for the storage of phrases and their translations .
+since retrieving longer segments of hu man translated text generally leads to better translation quality , participants in the evaluation exercise try to maximize the length of phrases that are stored in lookup tables .
+the combination of large corpora and long phrases means that the table size can quickly become unwieldy .
+a number of groups in the 2004 evaluation exercise indicated problems dealing with the data .
+coping strategies included limiting the length of phrases to something small , not using the entire training data set , computing phrases probabilities on disk , and filtering the phrase table down to a manageable size after the testing set was distributed .
+we present a data structure that is easily capable of handling the largest data sets currently available , and show that it can be scaled to much larger data sets .
+in this paper we : motivate the problem with storing enumerated phrases in a table by examining the memory requirements of the method for the nist data set detail the advantages of using long phrases in smt , and examine their potential coverage describe a suffix array-based data structure which allows for the retrieval of translations of arbitrarily long phrases , and show that it requires far less memory than a table calculate the computational complexity and average time for retrieving phrases and show how this can be sped up by orders of magnitude with no loss in translation accuracy related work .
+koehn et al. ( 2003 ) compare a number of different approaches to phrase-based statistical machine translation including the joint probability phrase- based model ( marcu and wong , 2002 ) and a variant on the alignment template approach ( och and ney , 2004 ) , and contrast them to the performance of the word-based ibm model 4 ( brown et al. , 1993 ) .
+most relevant for the work presented in this paper , they compare the effect on translation quality of using various lengths of phrases , and the size of the resulting phrase probability tables .
+tillmann ( 2003 ) further examines the relationship between maximum phrase length , size of the translation table , and accuracy of translation when inducing block-based phrases from word-level alignments .
+venugopal et al. ( 2003 ) and vogel et al. ( 2003 ) present methods for achieving better translation quality by growing incrementally larger phrases by combining smaller phrases with overlapping segments .
+scaling to long phrases .
+table 1 gives statistics about the arabic-english parallel corpus used in the nist large data track .
+the corpus contains 3.75 million sentence pairs , and has 127 million words in english , and 106 million words in arabic .
+the table shows the number of unique arabic phrases , and gives the average number of translations into english and their average length .
+table 2 gives estimates of the size of the lookup tables needed to store phrases of various lengths , based on the statistics in table 1 .
+the number of unique entries is calculated as the number unique phrases times the average number of translations .
+the number of words in the table is calculated as the number of unique phrases times the phrase length plus the number of entries times the average translation length .
+the memory is calculated assuming that each word is represented with a 4 byte integer , that each entry stores its probability as an 8 byte double and that each word alignment is stored as a 2 byte short .
+note that the size of the table will vary depending on the phrase extraction technique .
+table 3 gives the percent of the 35,313 word long test set which can be covered using only phrases of the specified length or greater .
+the table shows the efficacy of using phrases of different lengths .
+the table shows that while the rate of falloff is rapid , there are still multiple matches of phrases of length 10 .
+the longest matching phrase was one of length 18 .
+there is little generalization in current smt implementations , and consequently longer phrases generally lead to better translation quality .
+why use phrases ? .
+statistical machine translation made considerable advances in translation quality with the introduction of phrase-based translation .
+by increasing the size of the basic unit of translation , phrase-based machine translation does away with many of the problems associated with the original word-based formulation of statistical machine translation ( brown et al. , 1993 ) , in particular : the brown et al. ( 1993 ) formulation doesnt have a direct way of translating phrases ; instead they specify a fertility parameter which is used to replicate words and translate them individually .
+with units as small as words , a lot of reordering has to happen between languages with different word orders .
+but the distortion parameter is a poor explanation of word order .
+phrase-based smt overcomes the first of these problems by eliminating the fertility parameter and directly handling word-to-phrase and phrase-tophrase mappings .
+the second problem is alleviated through the use of multi-word units which reduce the dependency on the distortion parameter .
+less word re-ordering need occur since local dependencies are frequently captured .
+for example , common adjective-noun alternations are memorized .
+however , since this linguistic information is not encoded in the model , unseen adjective noun pairs may still be handled incorrectly .
+by increasing the length of phrases beyond a few words , we might hope to capture additional non-local linguistic phenomena .
+for example , by memorizing longer phrases we may correctly learn case information for nouns commonly selected by frequently occurring verbs ; we may properly handle discontinuous phrases ( such as french negation , some german verb forms , and english verb particle constructions ) that are neglected by current phrase-based models ; and we may by chance capture some agreement information in coordinated structures .
+deciding what length of phrase to store there is a decreasing likelihood that they will be repeated .
+because of the amount of memory required to store a phrase table , in current implementations a choice is made as to the maximum length of phrase to store .
+based on their analysis of the relationship between translation quality and phrase length , koehn et al. ( 2003 ) suggest limiting phrase length to three words or less .
+this is entirely a practical suggestion for keeping the phrase table to a reasonable size , since they measure minor but incremental improvement in translation quality up to their maximum tested phrase length of seven words.1 table 4 gives statistics about phrases which occur more than once in the english section of the europarl corpus ( koehn , 2002 ) which was used in the koehn et al. ( 2003 ) experiments .
+it shows that the percentage of words in the corpus that can be covered by repeated phrases falls off rapidly at length 6 , but that even phrases up to length 10 are able to cover a non-trivial portion of the corpus .
+this draws into question the desirability of limiting phrase retrieval to length three .
+the decision concerning what length of phrases to store in the phrase table seems to boil down to a practical consideration : one must weigh the likelihood of retrieval against the memory needed to store longer phrases .
+we present a data structure where this is not a consideration .
+our suffix array- based data structure allows the retrieval of arbitrarily long phrases , while simultaneously requiring far less memory than the standard table-based representation .
+suffix arrays .
+the suffix array data structure ( manber and myers , 1990 ) was introduced as a space-economical way of creating an index for string searches .
+the suffix array data structure makes it convenient to compute the frequency and location of any substring or n- gram in a large corpus .
+abstractly , a suffix array is an alphabetically-sorted list of all suffixes in a corpus , where a suffix is a substring running from each position in the text to the end .
+however , rather than actually storing all suffixes , a suffix array can be constructed by creating a list of references to each of the suffixes in a corpus .
+figure 1 shows how a suffix array is initialized for a corpus with one sentence .
+each index of a word in the corpus has a corresponding place in the suffix array , which is identical in length to the corpus .
+figure 2 shows the final state of the suffix array , which is as a list of the indices of words in the corpus that corresponds to an alphabetically sorted list of the suffixes .
+the advantages of this representation are that it is compact and easily searchable .
+the total size of the suffix array is a constant amount of memory .
+typically it is stored as an array of integers where the array is the same length as the corpus .
+because it is organized alphabetically , any phrase can be quickly located within it using a binary search algorithm .
+yamamoto and church ( 2001 ) show how to use suffix arrays to calculate a number of statistics that are interesting in natural language processing applications .
+they demonstrate how to calculate term frequency / inverse document frequency ( tf / idf ) for all n-grams in very large corpora , as well as how to use these frequencies to calculate n-grams with high mutual information and residual inverse document frequency .
+here we show how to apply suffix arrays to parallel corpora to calculate phrase translation probabilities .
+applied to parallel corpora .
+in order to adapt suffix arrays to be useful for statistical machine translation we need a data structure with the following elements : a suffix array created from the source language portion of the corpus , and another created from the target language portion of the corpus , an index that tells us the correspondence between sentence numbers and positions in the source and target language corpora , an alignment a for each sentence pair in the parallel corpus , where a is defined as a subset of the cartesian product of the word positions in a sentence e of length i and a sentence f of length j : a method for extracting the translationally equivalent phrase for a subphrase given an aligned sentence pair containing that sub-phrase .
+the total memory usage of the data structure is thus the size of the source and target corpora , plus the size of the suffix arrays ( identical in length to corpora ) , plus the size of the two indexes that correlate sentence positions with word positions , plus the size of the alignments .
+assuming we use ints to represent words and indices , and shorts to represent word alignments , we get the following memory usage : calculating phrase translation probabilities .
+in order to produce a set of phrase translation probabilities , we need to examine the ways in which they are calculated .
+we consider two common ways of calculating the translation probability : using the maximum likelihood estimator ( mle ) and smoothing the mle using lexical weighting .
+the maximum likelihood estimator for the probability of a phrase is defined as where count ( f , e ) gives the total number of times the phrase f was aligned with the phrase e in the parallel corpus .
+we define phrase alignments as follows .
+a substring e consisting of the words at positions l ... m is aligned with the phrase f by way of the subalignment the aligned phrase f is the subphrase in f which spans from min ( j ) to max ( j ) for ji ( i , j ) e s .
+the procedure for generating the counts that are used to calculate the mle probability using our suffix array-based data structures is : locate all the suffixes in the english suffix array which begin with the phrase e .
+since the suffix array is sorted alphabetically we can easily find the first occurrence s [ k ] and the last occurrence s [ l ] .
+the length of the span in the suffix array l k + 1 indicates the number of occurrences of e in the corpus .
+thus the denominator e f count ( f , e ) can be calculated as l k + 1 .
+for each of the matching phrases s [ i ] in the span s [ k ] ... s [ l ] , look up the value of s [ i ] which is the word index w of the suffix in the english corpus .
+look up the sentence number that includes w , and retrieve the corresponding sentences e and f , and their alignment a .
+use a to extract the target phrase f that aligns with the phrase e that we are searching for .
+increment the count for < f , e > .
+calculate the probability for each unique matching phrase f using the formula in equation 1 .
+a common alternative formulation of the phrase translation probability is to lexically weight it as follows : in order to use lexical weighting we would need to repeat steps 1-4 above for each word ei in e .
+this would give us the values for p ( fj iei ) .
+we would further need to retain the subphrase alignment s in order to know the correspondence between the words ( i , j ) e s in the aligned phrases , and the total number of foreign words that each ei is aligned with ( i { i i ( i , j ) e s } i ) .
+since a phrase alignment < f , e > may have multiple possible word-level alignments , we retain a set of alignments s and take the maximum : thus our suffix array-based data structure can be used straightforwardly to look up all aligned translations for a given phrase and calculate the probabilities on-the-fly .
+in the next section we turn to the computational complexity of constructing phrase translation probabilities in this way .
+computational complexity .
+computational complexity is relevant because there is a speed-memory tradeoff when adopting our data structure .
+what we gained in memory efficiency may be rendered useless if the time it takes to calculate phrase translation probabilities is unreasonably long .
+the computational complexity of looking up items in a hash table , as is done in current table- based data structures , is extremely fast .
+looking up a single phrase can be done in unit time , o ( 1 ) .
+the computational complexity of our method has the following components : the complexity of finding all occurrences of the phrase in the suffix array that are associated with the position wz in the corpus of each phrase occurrence ez .
+the complexity is o ( k * 2log ( m ) ) where k is the number of occurrences of e and m is the number of sentence pairs in the parallel corpus .
+the complexity of extracting the aligned phrase for a single occurrence of ez is o ( 2 log ( 1a ; 1 ) to get the subphrase alignment s ; , since we store the alignments in a sorted array .
+the complexity of then getting fz from s ; is o ( length ( fz ) ) .
+the complexity of summing over all aligned phrases and simultaneously calculating their probabilities is o ( k ) .
+the complexity of calculating the probabilities given the aligned phrases the methods we use to execute each of these , and their complexities are as follow : since the array is sorted , finding all occurrences of the english phrase is extremely fast .
+we can do two binary searches : one to find the first occurrence of the phrase and a second to find the last .
+the computational complexity is therefore bounded by o ( 2 log ( n ) ) where n is the length of the corpus .
+we use a similar method to look up the sentences e ; and f ; and word-level alignment a ; for the mle estimation of the translation probabilities for a single phrase .
+the complexity is dominated by the k terms in the equation , when the number of occurrences of the phrase in the corpus is high .
+phrases with high frequency may cause excessively long retrieval time .
+this problem is exacerbated when we shift to a lexically weighted calculation of the phrase translation probability .
+the complexity will be multiplied across each of the component words in the phrase , and the component words themselves will be more frequent than the phrase .
+table 5 shows example times for calculating the translation probabilities for a number of phrases .
+for frequent phrases like of the these times get unacceptably long .
+while our data structure is perfect for overcoming the problems associated with storing the translations of long , infrequently occurring phrases , it in a way introduces the converse problem .
+it has a clear disadvantage in the amount of time it takes to retrieve commonly occurring phrases .
+in the next section we examine the use of sampling to speed up the calculation of translation probabilities for very frequent phrases .
+sampling .
+rather than compute the phrase translation probabilities by examining the hundreds of thousands of occurrences of common phrases , we instead sample from a small subset of the occurrences .
+it is unlikely that we need to extract the translations of all occurrences of a high frequency phrase in order to get a good approximation of their probabilities .
+we instead cap the number of occurrences that we consider , and thus give a maximum bound on k in equation 5 .
+in order to determine the effect of different levels of sampling , we compare the translation quality against cumulative retrieval time for calculating the phrase translation probabilities for all subphrases in an evaluation set .
+we translated a held out set of 430 german sentences with 50 words or less into english .
+the test sentences were drawn from the 01 / 17 / 00 proceedings of the europarl corpus .
+the remainder of the corpus ( 1 million sentences ) was used as training data to calculate the phrase translation probabilities .
+we calculated the translation quality using bleus modified n-gram precision metric ( papineni et al. , 2002 ) for n-grams of up to length four .
+the framework that we used to calculate the translation probabilities was similar to that detailed in koehn et al. ( 2003 ) .
+that is : curacy fluctuates very slightly it essentially remains uniformly high for all levels of sampling .
+there are a number of possible reasons for the fact that the quality does not decrease : the probability estimates under sampling are sufficiently good that the most probable translations remain unchanged , the interaction with the language model probability rules out the few misestimated probabilities , or the decoder tends to select longer or less frequent phrases which are not affected by the sampling .
+while the translation quality remains essentially unchanged , the cumulative time that it takes to calculate the translation probabilities for all subphrases in the 430 sentence test set decreases radically .
+the total time drops by orders of magnitude from an hour and a half without sampling down to a mere 10 seconds with a cavalier amount of sampling .
+this suggests that the data structure is suitable for deployed smt systems and that no additional caching need be done to compensate for the structures computational complexity .
+discussion .
+the paper has presented a super-efficient data structure for phrase-based statistical machine translation .
+we have shown that current table-based methods are unwieldily when used in conjunction with large data sets and long phrases .
+we have contrasted this with our suffix array-based data structure which provides a very compact way of storing large data sets while simultaneously allowing the retrieval of arbitrarily long phrases .
+for the nist-2004 arabic-english data set , which is among the largest currently assembled for statistical machine translation , our representation uses a very manageable 2 gigabytes of memory .
+this is less than is needed to store a table containing phrases with a maximum of three words , and is ten times less than the memory required to store a table with phrases of length eight .
+we have further demonstrated that while computational complexity can make the retrieval of translation of frequent phrases slow , the use of sampling is an extremely effective countermeasure to this .
+we demonstrated that calculating phrase translation probabilities from sets of 100 occurrences or less results in nearly no decrease in translation quality .
+the implications of the data structure presented in this paper are significant .
+the compact representation will allow us to easily scale to parallel corpora consisting of billions of words of text , and the retrieval of arbitrarily long phrases will allow experiments with alternative decoding strategies .
+these facts in combination allow for an even greater exploitation of training data in statistical machine translation .

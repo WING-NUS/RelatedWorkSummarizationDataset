@@ -1,0 +1,173 @@
+computing semantic relatedness using wikipedia-based explicit semantic analysis .
+abstract .
+computing semantic relatedness of natural language texts requires access to vast amounts of common-sense and domain-specific world knowledge .
+we propose explicit semantic analysis ( esa ) , a novel method that represents the meaning of texts in a high-dimensional space of concepts derived from wikipedia .
+we use machine learning techniques to explicitly represent the meaning of any text as a weighted vector of wikipedia-based concepts .
+assessing the relatedness of texts in this space amounts to comparing the corresponding vectors using conventional metrics ( e.g. , cosine ) .
+compared with the previous state of the art , using esa results in substantial improvements in correlation of computed relatedness scores with human judgments : from r = 0.56 to 0.75 for individual words and from r = 0.60 to 0.72 for texts .
+importantly , due to the use of natural concepts , the esa model is easy to explain to human users .
+introduction .
+how related are cat and mouse ?
+and what about preparing a manuscript and writing an article ?
+reasoning about semantic relatedness of natural language utterances is routinely performed by humans but remains an unsurmountable obstacle for computers .
+humans do not judge text relatedness merely at the level of text words .
+words trigger reasoning at a much deeper level that manipulates concepts the basic units of meaning that serve humans to organize and share their knowledge .
+thus , humans interpret the specific wording of a document in the much larger context of their background knowledge and experience .
+it has long been recognized that in order to process natural language , computers require access to vast amounts of common-sense and domain-specific world knowledge [ buchanan and feigenbaum , 1982 ; lenat and guha , 1990 ] .
+however , prior work on semantic relatedness was based on purely statistical techniques that did not make use of background knowledge [ baeza-yates and ribeiro-neto , 1999 ; deerwester et al. , 1990 ] , or on lexical resources that incorporate very limited knowledge about the world [ budanitsky and hirst , 2006 ; jarmasz , 2003 ] .
+we propose a novel method , called explicit semantic analysis ( esa ) , for fine-grained semantic representation of unrestricted natural language texts .
+our method represents meaning in a high-dimensional space of natural concepts derived from wikipedia ( http : / / en.wikipedia.org ) , the largest encyclopedia in existence .
+we employ text classification techniques that allow us to explicitly represent the meaning of any text in terms of wikipedia-based concepts .
+we evaluate the effectiveness of our method on automatically computing the degree of semantic relatedness between fragments of natural language text .
+the contributions of this paper are threefold .
+first , we present explicit semantic analysis , a new approach to representing semantics of natural language texts using natural concepts .
+second , we propose a uniform way for computing relatedness of both individual words and arbitrarily long text fragments .
+finally , the results of using esa for computing semantic relatedness of texts are superior to the existing state of the art .
+moreover , using wikipedia-based concepts makes our model easy to interpret , as we illustrate with a number of examples in what follows .
+explicit semantic analysis .
+our approach is inspired by the desire to augment text representation with massive amounts of world knowledge .
+we represent texts as a weighted mixture of a predetermined set of natural concepts , which are defined by humans themselves and can be easily explained .
+to achieve this aim , we use concepts defined by wikipedia articles , e.g. , computer science , india , or language .
+an important advantage of our approach is thus the use of vast amounts of highly organized human knowledge encoded in wikipedia .
+furthermore , wikipedia undergoes constant development so its breadth and depth steadily increase over time .
+we opted to use wikipedia because it is currently the largest knowledge repository on the web .
+wikipedia is available in dozens of languages , while its english version is the largest of all with 400 + million words in over one million articles ( compared to 44 million words in 65,000 articles in encyclopaedia britannica1 ) .
+interestingly , the open editing approach yields remarkable quality a recent study [ giles , 2005 ] found wikipedia accuracy to rival that of britannica .
+we use machine learning techniques to build a semantic interpreter that maps fragments of natural language text into a weighted sequence of wikipedia concepts ordered by their relevance to the input .
+this way , input texts are represented as weighted vectors of concepts , called interpretation vectors .
+the meaning of a text fragment is thus interpreted in terms of its affinity with a host of wikipedia concepts .
+computing semantic relatedness of texts then amounts to comparing their vectors in the space defined by the concepts , for example , using the cosine metric [ zobel and moffat , 1998 ] .
+our semantic analysis is explicit in the sense that we manipulate manifest concepts grounded in human cognition , rather than latent concepts used by latent semantic analysis .
+observe that input texts are given in the same form as wikipedia articles , that is , as plain text .
+therefore , we can use conventional text classification algorithms [ sebastiani , 2002 ] to rank the concepts represented by these articles according to their relevance to the given text fragment .
+it is this key observation that allows us to use encyclopedia directly , without the need for deep language understanding or pre-cataloged common-sense knowledge .
+the choice of encyclopedia articles as concepts is quite natural , as each article is focused on a single issue , which it discusses in detail .
+each wikipedia concept is represented as an attribute vector of words that occur in the corresponding article .
+entries of these vectors are assigned weights using tfidf scheme [ salton and mcgill , 1983 ] .
+these weights quantify the strength of association between words and concepts .
+to speed up semantic interpretation , we build an inverted index , which maps each word into a list of concepts in which it appears .
+we also use the inverted index to discard insignificant associations between words and concepts by removing those concepts whose weights for a given word are too low .
+we implemented the semantic interpreter as a centroidbased classifier [ han and karypis , 2000 ] , which , given a text fragment , ranks all the wikipedia concepts by their relevance to the fragment .
+given a text fragment , we first represent it as a vector using tfidf scheme .
+the semantic interpreter iterates over the text words , retrieves corresponding entries from the inverted index , and merges them into a weighted vector of concepts that represents the given text .
+let t = { wi } be input text , and let ( vi ) be its tfidf vector , where vi is the weight of word wi .
+let ( kj ) be an inverted index entry for word wi , where kj quantifies the strength of association of word wi with wikipedia concept cj , { cj ^ c1 , ... , cn } ( where n is the total number of wikipedia concepts ) .
+then , the semantic interpretation vector v for text t is a vector of length n , in which the weight of each concept cj is defined as ~ wi ^ t vi kj .
+entries of this vector reflect the relevance of the corresponding concepts to text t. to compute semantic relatedness of a pair of text fragments we compare their vectors using the cosine metric .
+figure 1 illustrates the process of wikipedia-based semantic interpretation .
+further implementation details are available in [ gabrilovich , in preparation ] .
+in our earlier work [ gabrilovich and markovitch , 2006 ] , we used a similar method for generating features for text categorization .
+since text categorization is a supervised learning task , words occurring in the training documents serve as valuable features ; consequently , in that work we used wikipedia concepts to augment the bag of words .
+on the other hand , computing semantic relatedness of a pair of texts is essentially a one-off task , therefore , we replace the bag of words representation with the one based on concepts .
+to illustrate our approach , we show the ten highest-scoring wikipedia concepts in the interpretation vectors for sample text fragments .
+when concepts in each vector are sorted in the decreasing order of their score , the top ten concepts are the most relevant ones for the input text .
+table 1 shows the most relevant wikipedia concepts for individual words ( equipment and investor , respectively ) , while table 2 uses longer passages as examples .
+it is particularly interesting to juxtapose the interpretation vectors for fragments that contain ambiguous words .
+table 3 shows the first entries in the vectors for phrases that contain ambiguous words bank and jaguar .
+as can be readily seen , our semantic interpretation methodology is capable of performing word sense disambiguation , by considering ambiguous words in the context of their neighbors .
+empirical evaluation .
+we implemented our esa approach using a wikipedia snapshot as of march 26 , 2006 .
+after parsing the wikipedia xml dump , we obtained 2.9 gb of text in 1,187,839 articles .
+we processed the text of these articles by removing stop words and rare words , and stemming the remaining words ; this yielded 389,202 distinct terms , which served for representing wikipedia concepts as attribute vectors .
+to better evaluate wikipedia-based semantic interpretation , we also implemented a semantic interpreter based on another large-scale knowledge repository the open directory project ( odp , http : / / www.dmoz.org ) .
+the odp is the largest web directory to date , where concepts correspond to categories of the directory , e.g. , top / computers / artificial intelligence .
+in this case , interpretation of a text fragment amounts to computing a weighted vector of odp concepts , ordered by their affinity to the input text .
+we built the odp-based semantic interpreter using an odp snapshot as of april 2004 .
+after pruning the top / world branch that contains non-english material , we obtained a hierarchy of over 400,000 concepts and 2,800,000 urls .
+textual descriptions of the concepts and urls amounted to 436 mb of text .
+in order to increase the amount of training information , we further populated the odp hierarchy by crawling all of its urls , and taking the first 10 pages encountered at each site .
+after eliminating html markup and truncating overly long files , we ended up with 70 gb of additional textual data .
+after removing stop words and rare words , we obtained 20,700,000 distinct terms that were used to represent odp nodes as attribute vectors .
+up to 1000 most informative attributes were selected for each odp node using the document frequency criterion [ sebastiani , 2002 ] .
+a centroid classifier was then trained , whereas the training set for each concept was combined by concatenating the crawled content of all the urls cataloged under this concept .
+further implementation details are available in [ gabrilovich and markovitch , 2005 ] .
+using world knowledge requires additional computation .
+this extra computation includes the ( one-time ) preprocessing step where the semantic interpreter is built , as well as the actual mapping of input texts into interpretation vectors , performed online .
+on a standard workstation , the throughput of the semantic interpreter is several hundred words per second .
+datasets and evaluation procedure .
+humans have an innate ability to judge semantic relatedness of texts .
+human judgements on a reference set of text pairs can thus be considered correct by definition , a kind of gold standard against which computer algorithms are evaluated .
+several studies measured inter-judge correlations and found them to be consistently high [ budanitsky and hirst , 2006 ; these findings are to be expected after all , it is this consensus that allows people to understand each other .
+in this work , we use two such datasets , which are to the best of our knowledge the largest publicly available collections of their kind .
+to assess word relatedness , we use the wordsimilarity-353 collection2 [ finkelstein et al. , 2002 ] , which contains 353 word pairs.3 each pair has 13 16 human judgements , which were averaged for each pair to produce a single relatedness score .
+spearman rank-order correlation coefficient was used to compare computed relatedness scores with human judgements .
+for document similarity , we used a collection of 50 documents from the australian broadcasting corporation s news mail service [ lee et al. , 2005 ] .
+these documents were paired in all possible ways , and each of the 1,225 pairs has 8 12 human judgements .
+when human judgements have been averaged for each pair , the collection of 1,225 relatedness scores have only 67 distinct values .
+spearman correlation is not appropriate in this case , and therefore we used pearson s linear correlation coefficient .
+results .
+table 4 shows the results of applying our methodology to estimating relatedness of individual words .
+as we can see , both esa techniques yield substantial improvements over prior studies .
+esa also achieves much better results than the other wikipedia-based method recently introduced [ strube and ponzetto , 2006 ] .
+table 5 shows the results for computing relatedness of entire documents .
+on both test collections , wikipedia-based semantic interpretation is superior to that of the odp-based one .
+two factors contribute to this phenomenon .
+first , axes of a multidimensional interpretation space should ideally be as orthogonal as possible .
+however , the hierarchical organization of the odp defines the generalization relation between concepts and obviously violates this orthogonality requirement .
+second , to increase the amount of training data for building the odp-based semantic interpreter , we crawled all the urls cataloged in the odp .
+this allowed us to increase the amount of textual data by several orders of magnitude , but also brought about a non-negligible amount of noise , which is common in web pages .
+on the other hand , wikipedia articles are virtually noise-free , and mostly qualify as standard written english .
+related work .
+the ability to quantify semantic relatedness of texts underlies many fundamental tasks in computational linguistics , including word sense disambiguation , information retrieval , word and text clustering , and error correction [ budanitsky and hirst , 2006 ] .
+prior work in the field pursued three main directions : comparing text fragments as bags of words in vector space [ baeza-yates and ribeiro-neto , 1999 ] , using lexical resources , and using latent semantic analysis ( lsa ) [ deer- wester et al. , 1990 ] .
+the former technique is the simplest , but performs sub-optimally when the texts to be compared share few words , for instance , when the texts use synonyms to convey similar messages .
+this technique is also trivially inappropriate for comparing individual words .
+the latter two techniques attempt to circumvent this limitation .
+lexical databases such as wordnet [ fellbaum , 1998 ] or roget s thesaurus [ roget , 1852 ] encode relations between words such as synonymy , hypernymy .
+quite a few metrics have been defined that compute relatedness using various properties of the underlying graph structure of these resources [ budanitsky and hirst , 2006 ; jarmasz , 2003 ; banerjee and pedersen , 2003 ; resnik , 1999 ; lin , 1998 ; jiang and conrath , 1997 ; grefenstette , 1992 ] .
+the obvious drawback of this approach is that creation of lexical resources requires lexicographic expertise as well as a lot of time and effort , and consequently such resources cover only a small fragment of the language lexicon .
+specifically , such resources contain few proper names , neologisms , slang , and domain-specific technical terms .
+furthermore , these resources have strong lexical orientation and mainly contain information about individual words but little world knowledge in general .
+wordnet-based techniques are similar to esa in that both approaches manipulate a collection of concepts .
+there are , however , several important differences .
+first , wordnet-based methods are inherently limited to individual words , and their adaptation for comparing longer texts requires an extra level of sophistication [ mihalcea et al. , 2006 ] .
+in contrast , our method treats both words and texts in essentially the same way .
+second , considering words in context allows our approach to perform word sense disambiguation ( see table 3 ) .
+using wordnet cannot achieve disambiguation , since information about synsets is limited to a few words ( gloss ) ; in both odp and wikipedia concept are associated with huge amounts of text .
+finally , even for individual words , esa provides much more sophisticated mapping of words to concepts , through the analysis of the large bodies of texts associated with concepts .
+this allows us to represent the meaning of words ( or texts ) as a weighted combination of concepts , while mapping a word in wordnet amounts to simple lookup , without any weights .
+furthermore , in wordnet , the senses of each word are mutually exclusive .
+in our approach , concepts reflect different aspects of the input ( see tables 1 3 ) , thus yielding weighted multi-faceted representation of the text .
+on the other hand , lsa [ deerwester et al. , 1990 ] is a purely statistical technique , which leverages word cooccurrence information from a large unlabeled corpus of text .
+lsa does not rely on any human-organized knowledge ; rather , it learns its representation by applying singular value decomposition ( svd ) to the words-by-documents cooccurrence matrix .
+lsa is essentially a dimensionality reduction technique that identifies a number of most prominent dimensions in the data , which are assumed to correspond to latent concepts .
+meanings of words and documents are then compared in the space defined by these concepts .
+latent semantic models are notoriously difficult to interpret , since the computed concepts cannot be readily mapped into natural concepts manipulated by humans .
+the explicit semantic analysis method we proposed circumvents this problem , as it represents meanings of text fragments using natural concepts defined by humans .
+our approach to estimating semantic relatedness of words is somewhat reminiscent of distributional similarity [ lee , 1999 ; dagan et al. , 1999 ] .
+indeed , we compare the meanings of words by comparing the occurrence patterns across a large collection of natural language documents .
+however , the compilation of these documents is not arbitrary , rather , the documents are aligned with encyclopedia articles , while each of them is focused on a single topic .
+in this paper we deal with semantic relatedness rather than semantic similarity or semantic distance , which are also often used in the literature .
+in their extensive survey of relatedness measures , budanitsky and hirst [ 2006 ] argued that the notion of relatedness is more general than that of similarity , as the former subsumes many different kind of specific relations , including meronymy , antonymy , functional association , and others .
+they further maintained that computational linguistics applications often require measures of relatedness rather than the more narrowly defined measures of similarity .
+for example , word sense disambiguation can use any related words from the context , and not merely similar words .
+budanitsky and hirst [ 2006 ] also argued that the notion of semantic distance might be confusing due to the different ways it has been used in the literature .
+prior work in the field mostly focused on semantic similarity of words , using r & g [ rubenstein and goodenough , 1965 ] list of 65 word pairs and m & c [ miller and charles , 1991 ] list of 30 word pairs .
+when only the similarity relation is considered , using lexical resources was often successful enough , reaching the correlation of 0.70 0.85 with human judgements [ budanitsky and hirst , 2006 ; jarmasz , 2003 ] .
+in this case , lexical techniques even have a slight edge over esa , whose correlation with human scores is 0.723 on m & c and 0.816 on r & g .4 however , when the entire language wealth is considered in an attempt to capture more general semantic relatedness , lexical techniques yield substantially inferior results ( see table 1 ) .
+wordnet-based techniques , which only consider the generalization ( is-a ) relation between words , achieve correlation of only 0.33 0.35 with human judgements [ budanitsky and hirst , 2006 ] .
+jarmasz & szpakowicz s elkb system [ jarmasz , 2003 ] based on roget s thesaurus achieves a higher correlation of 0.55 due to its use of a richer set if relations .
+sahami and heilman [ 2006 ] proposed to use the web as a source of additional knowledge for measuring similarity of short text snippets .
+a major limitation of this technique is that it is only applicable to short texts , because sending a long text as a query to a search engine is likely to return few or even no results at all .
+on the other hand , our approach is applicable to text fragments of arbitrary length .
+strube and ponzetto [ 2006 ] also used wikipedia for computing semantic relatedness .
+however , their method , called wikirelate ! , is radically different from ours .
+given a pair of words w1 and w2 , wikirelate ! searches for wikipedia articles , p1 and p2 , that respectively contain w1 and w2 in their titles .
+semantic relatedness is then computed using various distance measures between p1 and p2 .
+these measures either rely on the texts of the pages , or path distances within the category hierarchy of wikipedia .
+on the other hand , our approach represents each word as a weighted vector of wikipedia concepts , and semantic relatedness is then computed by comparing the two concept vectors .
+thus , the differences between esa and wikirelate ! are : wikirelate ! can only process words that actually occur in titles of wikipedia articles .
+esa only requires that the word appears within the text of wikipedia articles .
+wikirelate ! is limited to single words while esa can compare texts of any length .
+wikirelate ! represents the semantics of a word by either the text of the article associated with it , or by the node in the category hierarchy .
+esa has a much more sophisticated semantic representation based on a weighted vector of wikipedia concepts .
+indeed , as we have shown in the previous section , the richer representation of esa yields much better results .
+conclusions .
+we proposed a novel approach to computing semantic relatedness of natural language texts with the aid of very large scale knowledge repositories .
+we use wikipedia and the odp , the largest knowledge repositories of their kind , which contain hundreds of thousands of human-defined concepts and provide a cornucopia of information about each concept .
+our approach is called explicit semantic analysis , since it uses concepts explicitly defined and described by humans .
+compared to lsa , which only uses statistical cooccurrence information , our methodology explicitly uses the knowledge collected and organized by humans .
+compared to lexical resources such as wordnet , our methodology leverages knowledge bases that are orders of magnitude larger and more comprehensive .
+empirical evaluation confirms that using esa leads to substantial improvements in computing word and text relatedness .
+compared with the previous state of the art , using esa results in notable improvements in correlation of computed relatedness scores with human judgements : from r = 0.56 to 0.75 for individual words and from r = 0.60 to 0.72 for texts .
+furthermore , due to the use of natural concepts , the esa model is easy to explain to human users .

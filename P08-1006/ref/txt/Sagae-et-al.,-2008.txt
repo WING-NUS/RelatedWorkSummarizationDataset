@@ -1,0 +1,134 @@
+challenges in mapping of syntactic representations for framework-independent parser evaluation .
+abstract .
+we explore some of the issues and challenges created by the incompatibility of diverse representation schemes for syntactic parsing .
+in particular , we examine the problem of output format conversion for evaluation of parsers that use different formalisms .
+we discuss recent related efforts , and present an evaluation of different parsers that use representations that vary not only in formalisms , but also in depth of syntactic information .
+we attempt to compare these parsers in a domain widely used for parser evaluation , the wall street journal section of the penn treebank , and in the academic biomedical literature , where the use of parsing technologies is expected to contribute in practical applications , such as information extraction and text mining .
+introduction .
+several types of approaches to automatic syntactic analysis of natural language have benefited from progress in data-driven techniques for parsing technologies .
+there are now efficient and accurate broad-coverage parsers based on several different ways of representing syntactic information , from simple dependencies and phrase structures , to linguistic motivated formalisms such as combinatory categorial grammar ( steedman , 2000 ) and head- driven phrase structure grammar ( pollard and sag , 1994 ) .
+much of this work has been fueled by the availability of large gold-standard parsed corpora , especially the penn treebank ( marcus et al. , 1994 ) .
+while many parsers work with syntactic representations that result from simple processing of the phrase structure trees in the penn treebank , others use significantly different representations .
+although this diversity is certainly desirable from the perspectives of both parsing research and the application of parsing technologies in natural language applications , many of the potential benefits on both fronts remain unattained due to the lack of a common ground for different representations that would allow for comparisons among different types of parsers , leading to an informed selection of what approach to deploy in specific practical tasks .
+intuitively it may seem that even though syntactic structures may be expressed differently in different parsers , conversion from one parser 's format to another 's ( or conversion to a standardized common format ) may be feasible , since the different syntactic representations express much of the same information .
+in practice , however , this has been shown to be very challenging , and results obtained so far in that line of research indicate that this remains an open issue ( briscoe and carroll , 2006 ; clark and curran , 2007 ; miyao et al. , 2007 ) .
+in this paper we explore some of the issues and challenges created by the incompatibility of representation schemes for syntactic parsing .
+we examine the problem of output conversion for evaluation of parsers that use different formalisms .
+we discuss recent efforts to establish common criteria for parser evaluation , and present a case study involving parsers that use representations that vary not only in formalisms , but also in depth of syntactic information .
+we attempt to compare these parsers in a domain widely used for parser evaluation , the wall street journal section of the penn treebank , and in the academic biomedical literature , where the use of parsing technologies is expected to contribute in practical applications , such as information extraction and text mining .
+motivation .
+much of the recent progress in parsing research and in the application of syntactic analysis to practical tasks has been focused on approaches that use syntactic representations based on simplifications of the penn treebank annotation scheme .
+the most common of such simplifications include shallow phrase structure trees where empty nodes ( which represent syntactic phenomena such as long-distance dependencies and ellipsis ) and function tags ( which indicate the grammatical or semantic function of specific phrases ) are removed ( ratnaparkhi , 1997 ; collins 1997 ; charniak , 2000 ; charniak and johnson , 2005 ) , and bilexical dependencies obtained from these shallow phrase structure trees ( eisner , 1996 ; nivre and scholz , 2004 ; mcdonald et al. , 2005 ) with the use of a head percolation table ( magerman , 1995 ; collins 1999 ) .
+while parsing research has undoubtedly benefited from comparisons of parsers on a standard test set using the same evaluation criteria ( precision and recall of labeled brackets for phrase structures , and accuracy for dependencies ) , this practice has in some ways diverted attention from other parsing approaches , which have also progressed significantly ( clark and curran , 2004 ; miyao and tsujii , 2005 ; briscoe et al. , 2006 ) , and are capable of identifying deep syntactic information ( such as long-distance dependencies ) that are ignored by parsers based on the shallow representations derived from the penn treebank ( ptb ) .
+although deep syntactic parsers based on linguistically rich formalisms such as head-driven phrase structure grammar ( hpsg ) and combinatorial categorical grammar ( ccg ) have achieved high levels of both accuracy and efficiency ( matsuzaki et al. , 2007 ; clark and curran , 2004 ) , comparisons with more popular approaches based on simplified ptb representations are difficult and imperfect ( kaplan et al. , 2004 ; clark and curran , 2007 ; miyao et al. , 2007 ) .
+recent efforts towards framework- independent deep parser evaluation .
+although unlabeled dependency accuracy and labeled bracketing precision and recall of shallow ptb trees are still arguably the most widely recognized evaluation metrics for wide-coverage parsing , many have already recognized that these metrics are too limited and too specific to be applied fairly to many of the deep parsing approaches in recent and current development .
+some parser developers have turned to resource-specific evaluations , where results are not directly comparable to most other parsers .
+there have also been a few attempts at establishing specific syntactic representation formats as the basis for framework- independent parser evaluation .
+we pay special attention to one such effort , the grammatical relation ( gr ) scheme developed by carroll et al. ( 1998 ) , which was carefully designed specifically for parser evaluation .
+we use the gr scheme in our experiments presented in section 4 .
+in addition to gr , we also examine the use of the stanford dependency ( sd ) scheme , which was largely based on carroll et al. ' s gr scheme , but intended for use in applications , not in evaluation .
+however , because an automatic conversion procedure from shallow ptb structures to sd is available , sd has recently been used in evaluations of parsers in the biomedical domain ( clegg and shepherd , 2007 ; pyysalo et al. , 2007a ) .
+resource-specific dependencies .
+in the context of wide-coverage deep parsing , the de facto standard metric for parsing accuracy is precision / recall of labeled dependency relations , such as predicate-argument dependencies ( kaplan et al. , 2004 ; clark and curran , 2004 ; miyao and tsujii , 2005 ) .
+however , dependency relations used to evaluate different parsers are based on each parser 's formalism and resources .
+for example , the parc 700 dependencybank ( king et al. , 2003 ) was used for the evaluation of lfg parsers ( kaplan et al. , 2004 ; burke et al. , 2004 ) , a ccg tree- bank ( ccgbank ) ( hockenmaier and steedman , 2002 ) was used for the evaluation of ccg parsing models ( hockenmaier , 2003 ; clark and curran , 2004 ) , and hpsg treebanks , which were created manually ( oepen et al. , 2004 ) or derived from ptb data ( miyao et al. , 2005 ) , were used for the evaluation of hpsg parsers ( toutanova et al. , 2004 ; miyao and tsujii , 2005 ; ninomiya et al. , 2007 ; sagae et al. , 2007 ) .
+direct relationships among these different dependency schemes are unclear , and we have no way to perform a fair comparison of these parsers .
+grammatical relation ( gr ) evaluation .
+recognizing the shortcomings of the widely used parser evaluation metrics of bracketing precision and recall , carroll et al. ( 1998 ) proposed a grammatical relation ( gr ) scheme as a general parser evaluation framework , carefully designed to test a parser 's ability to produce structures from which certain grammatical relations ( subject , object , modifier , auxiliary , etc . ) can be determined .
+a gold-standard test set of 500 sentences from the susanne corpus was released initially ' , and has been followed by the a set of 700 sentences from the commonly used test section of the wall street journal section of the ptb ( the 700 sentences are the same as in the parc700 corpus ) .
+while the use of this evaluation scheme requires post- processing to the parser 's output to extract the grs used in the scheme , the newer 700-sentence gold- standard corpus has recently been used in the evaluation of a ccg parser ( clark and curran , 2007 ) , an hpsg parser ( miyao et al. , 2007 ) , and the rasp parser ( briscoe and carroll , 2006 ) .
+preiss ( 2003 ) conducted a gr evaluation of the collins ( 1997 ) parser and the charniak ( 2000 ) parser , using the older susanne-based corpus .
+as an example , the gr annotation of the sentence regulators also ordered centrust to stop buying back the preferred stock consists of a list of grammatical relations as follows : the first gr ( ncsubj ) indicates a non-clausal subject relationship , where regulators is the subject of ordered , and the seventh gr indicates that stock is the ( head of the ) direct object of buying .
+for a comprehensive list of gr types and what they represent , see briscoe ( 2006 ) .
+gr annotations are syntactic in nature , and not intended to evaluate some of the semantic relationships that deep parsers may be able to compute .
+however , the gr scheme does take into account long-distance dependencies , such as control / raising and wh-movement , which schemes based on shallow ptb trees fail to capture .
+in the example above , the third gr in the list ( ncsubj buying centrust _ ) indicates a control relation ( centrust is the subject of buying ) .
+such structures are computed by some parsers based on linguistically motivated formalisms , but not by more popular shallow ptb parsers .
+stanford dependency ( sd ) evaluation .
+the stanford dependency ( sd ) scheme was originally proposed for providing dependency relations that are more useful for applications than phrase structure trees ( de marneffe et al. , 2006 ) .
+this scheme was designed based on carroll et al. ( 1998 ) ' s grammatical relations and king et al. ( 2003 ) ' s dependency bank , and modified to represent more fine-grained and semantically valuable relations ( such as apposition and temporal modification ) , while at the same time leaving out certain relations that are particularly problematic for the shallow ptb parsers it was intended to work with ( such as long-distance dependencies2 ) .
+although no hand-annotated data is available , a program to convert shallow ptb style phrase structures into sd relations is available as part of the stanford parser3 ( klein and manning , 2003 ) .
+that is , in principle , any ptb-style treebank can be converted into sd gold standard data .
+in practice , however , the conversion from phrase structure trees to sd is only approximate , and converting gold standard phrase structure trees results in only partially correct sd annotations .
+unfortunately , the accuracy of these annotations is unknown , since the conversion itself has never been evaluated .
+this scheme was recently used for the evaluation of shallow ptb-style parsers in the biomedical domain ( clegg and shepherd , 2007 ; pyysalo et al. , 2007a ) using genia ( kim et al. , 2003 ) , and of link grammar ( sleator and temperley , 1993 ) parsers using bioinfer ( pyysalo et al. , 2007b ) and genia .
+the same sentence used as an example for gr annotation ( regulators also ordered centrust to stop buying back the preferred stock ) has the following representation in sd format ( as converted automatically from the gold-standard ptb tree by the program provided with the stanford parser ) : although some of the relations are very similar to those in the gr representation ( such as the subject relation between regulators and ordered , and the direct object relation between stock and buying ) , one interesting difference is that long- distance dependencies are not represented in sd ( the subjects of buying and stop are not represented ) .
+another difference is the relation between stock and preferred : in the gr representation , preferred is considered a passive verb , with stock being a complement ( a surface subject , but initially an object ) , while in sd preferred is considered simply an adjective of stock .
+finally , we once again note that while the gr representation was created manually , the sd representation was converted automatically from the gold-standard ptb representation , and in this example we see that buying is incorrectly identified in sd as a participial modifier ( partmod ) of stop ( while the correct relation is xcomp ) .
+as previously mentioned , we are not aware of any attempts to estimate the frequency of conversion errors such as this one .
+experiments .
+based on the gr and sd proposals for parser evaluation described in section 3 , we performed evaluations for different parsers in two different domains : ( 1 ) the wsj section of the ptb , and ( 2 ) biomedical abstracts from the genia treebank .
+additionally , we also conducted the more common evaluation of precision and recall of shallow ptb labeled brackets in both domains .
+set-up .
+our general approach was to convert the output of each parser into gr , sd and shallow ptb representations .
+the ptb parsers used in our evaluations were the charniak ( 2000 ) parser , and the charniak and johnson ( 2005 ) reranking parser4 .
+these parsers output shallow ptb phrase structure trees , and conversion to sd is performed with the conversion utility provided with the stanford parser .
+the conversion to gr was very difficult , even when the sd output is used as an intermediate format .
+the deep syntactic parser we used was enju5 ( miyao and tsujii , 2005 ) , which is based on hpsg and outputs both ( dependency-like ) predicate-argument relations ( miyao , 2007 ) and phrase structure trees ( although these do not follow the ptb scheme for phrase structure trees ) in an xml format .
+conversion to gr was less problematic than with the shallow ptb parsers , since enju 's syntactic representation is richer , but still quite challenging .
+this was done by mapping enju 's predicate-argument relations into grs .
+conversion to shallow ptb trees was done by mapping tree patterns from enju 's phrase structure output into the corresponding shallow ptb tree patterns , and conversion to sd was done by first converting enju 's output to shallow ptb format , then applying the same ptb-to-sd utility used with the ptb parsers .
+in addition to these three parsers , we also report previously published comparable results for other parsers .
+format conversion .
+to perform the format conversions as mentioned above , we developed the following converters : sd- > gr , hpsg ^ gr hpsg ^ ptb .
+because a converter from ptb to sd was already available , the three additional converters make it possible to obtain each of the three representations with either the shallow ptb parsers or the hpsg parser .
+to develop the hpsg ^ gr and hpsg ^ ptb converters , we used only gold-standard annotations as reference .
+our hpsg- > gr conversion followed a similar methodology as clark and curran ( 2007 ) ' s conversion from the output of their ccg parser to gr .
+because both the gold-standard gr-annotated version of the parc700 corpus and the hpsg treebank ( miyao et al. , 2004 ) were derived from sentences taken from the wsj section of the penn treebank , we had gold-standard annotations for both formats for a set of 700 sentences .
+we used the same set of 140 sentences as clark and curran for development of conversion rules .
+we then used the remaining 560 sentences to test the accuracy of the conversion .
+table 1 shows the conversion accuracy ( from gold-standard hpsg annotations , evaluated on the gold standard gr corpus ) , and for comparison purposes , the accuracy of clark and curran 's ( c & c ) conversion from gold- standard ccg annotations .
+the hpsg- > gr conversion accuracy establishes an upper bound for the performance of enju in the gr evaluation .
+the sd- > gr conversion was by far the most problematic .
+as described in section 3 , although sd and gr representations are superficially similar , there are significant differences that make conversion difficult .
+in addition , unlike in the hpsg- > gr conversion , which was developed based on gold-standard sets , the sd- > gr conversion was developed using the 700-sentence gr gold-standard , and the same sentences with sd annotations obtained from automatic conversion from gold-standard ptb trees .
+as discussed in section 3.3 , this automatic conversion introduces an unknown number of errors .
+additionally , in about 5 % of all dependencies , the automatic conversion cannot determine the dependency type , and the sd annotation is left underspecified .
+one of the differences between sd and gr that makes conversion difficult is that sd structures ( like shallow ptb trees ) do not include long-distance dependencies .
+because gr representation does include them ( see the example in section 3.2 and 3.3 ) , an automatic loss in recall in incurred .
+another mismatch is that in sd prepositional phrases are not assigned a grammatical role ( and are simply attached to a head in a relation named prep ) .
+the gr scheme , on the other hand , does assign a grammatical function to pps , most often as adjuncts or complements of verbs or nouns .
+this results in a significant loss in both precision and recall .
+differences that were addressed specif ically in the mapping between the two formats include differences in the treatment of copula ( sd attaches the verb as a dependent of the predicate nominal , while gr attaches the predicate nominal as a complement of the verb ) , coordination , and differences in head assignments .
+the accuracy of sd- > gr conversion is also shown in table 1 .
+table 1 : precision , recall and f-score of gr representations obtained with our mapping from the gold-standard hpsg treebank and sd annotations obtained from gold-standard ptb trees .
+for comparison , we also include figures for the conversion from the gold-standard ccgbank performed by clark and curran ( 2007 ) , denoted by c & c.
+finally , conversion from hpsg-style phrase structures to shallow ptb phrase structures was developed using the gold-standard trees from the penn treebank and the hpsg treebank .
+because the hpsg treebank includes most of the sentences in the wsj section of the penn treebank , the availability of data for development of the mapping rules was much more favorable than the 140 sentences available for development of the conversions to gr .
+the abundance of development data and the different nature of the conversion ( no need to map to grammatical functions ) resulted in much higher accuracy for this type of conversion .
+measured in precision , recall and f-score of labeled brackets , gold-standard data from the hpsg tree- bank was evaluated against the penn treebank at , respectively , 98.12 % , 98.07 % , and 98.09 % .
+wsj evaluation .
+we first evaluate the enju hpsg parser ( enju ) , the charniak parser ( ch ) , and the charniak and johnson reranking parser ( c & j ) on the gold-standard gr test set .
+as seen in the previous subsection , the upperbounds dictated by conversion accuracy are vastly different for hpsg and ptb parsers .
+this is not surprising , given how syntax is represented in each of these schemes ( predicate- argument relations , included in the output of enju , are much closer to grs than ptb phrase structures ) , and the level of linguistic detail contained in them .
+table 2 shows the gr results for each of the three parsers , as measured according to carroll et al. ( 1998 ) ' s microaveraged precision , recall and f- score .
+for comparison , we also include previously published results on the same test set for rasp ( briscoe and carroll , 2006 ) , and the c & c ccg parser ( clark and curran , 2007 ) .
+the results for enju and the c & c parser are close , and well above the results for the other parsers .
+it is not surprising that these two parsers do well in this evaluation , since they are deep parsers that work at a finer level of linguistic granularity than the other parsers in table 2 .
+it is , however , somewhat surprising that the results are this close , considering that each parser 's formalism is different , and output mapping was done using separate conversion schemes developed by separate groups ( but using the same gr development data ) .
+we also note that although the results for ch and c & j seem low , they do appear consistent with results reported by preiss ( 2003 ) and kaplan et al. ( 2004 ) using similar parsers in similar ( but not the same ) data sets .
+in the bracketing evaluation , the usual choice for parsers that output ptb-like trees , both c & j and ch outperform enju .
+the results are in table 3 .
+in the sd evaluation the results for the three parsers are much closer , as seen in table 4 , even though the same conversion program was applied to every parser 's shallow ptb output , where differences were greater .
+unfortunately , it is difficult to say whether this is because some of the difference in bracketing accuracy is not significant to the identification of certain syntactic relationships , or because the sd scheme , which was not designed for parser evaluation , blurs some of the distinctions in the output of the three parsers .
+for comparison , we also include results obtained with the stanford parser ( klein and manning , 2003 ) .
+genia evaluation .
+because gold-standard gr data is not available in the biomedical domain , our evaluation of parsers on the genia treebank includes only sd and shallow ptb bracketing .
+unlike recent evaluations ( clegg and shepherd , 2007 ; pyysalo , 2007a ) on data from genia , we do not evaluate parsers trained only on the wsj section of the penn tree- bank .
+since the genia treebank is available in both the ptb annotation scheme and the hpsg treebank annotation scheme , we use parsers trained on genia ( except for the reranker in c & j , which is trained on wsj , although the first-pass n- best parser in c & j is trained on genia ) .
+sections 1 to 900 were used for training , and 901 to 1050 were used for testing .
+tables 5 and 6 show the results for ptb and sd evaluations , respectively .
+we also include results for the biolg parser recently published by pyysalo et al. ( 2007a ) , and results for the lease and charniak ( 2005 ) parser , as published by clegg and shepherd ( 2007 ) .
+these parsers used a different portion of the genia treebank for testing ( clegg and shepherd , 2007 ) .
+the sd evaluations on wsj and genia ( tables 4 and 5 ) show little difference in the results obtained with the three parsers ( enju , c & j and ch ) , even though enju uses a significantly different parsing approach .
+in the ptb bracketing evaluation for genia ( table 6 ) , the difference between enju and c & j is smaller than in the wsj evaluation , perhaps because c & j 's reranker was not trained on genia .
+it should be noted that enju is penalized in the conversion from its native output format to ptb , as mentioned in section 4.2 .
+conclusion .
+we have explored the issue of evaluation across different parsing frameworks through mapping of parser output to different representations .
+our evaluation using carroll et al. ' s gr scheme confirms previous findings that conversion to gr is challenging , even from the output of a deep syntactic parser ( but even more so from the output of shallower parsers ) .
+we have also found that converting from the phrase structure output of a deep parser to shallow ptb phrase structures can be done with relatively high accuracy .
+the use of this conversion in evaluations in two domains confirmed the intuition that state-of-the-art deep parsers can produce nearly the same level of accuracy in shallow bracketing as more widely used ptb parsers , while at the same time covering additional syntactic information .
+we also found that although sd may be more useful in some applications than phrase structures , its use as an evaluation metric added little information when a detailed ( gr ) and a shallow evaluation ( ptb ) are already being performed .
+however , sd might still be valuable for high-accuracy conversion from other dependency- based schemes , as shown by pyysalo et al. ( 2007a ) .
+although many open questions remain , the continued investigation into how different parsing approaches can be compared will benefit not just parsing research , but eventually also the applications where syntactic analysis is applied .

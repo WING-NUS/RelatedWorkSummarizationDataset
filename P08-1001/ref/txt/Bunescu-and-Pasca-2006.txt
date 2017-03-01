@@ -1,0 +1,188 @@
+using encyclopedic knowledge for named entity disambiguation .
+abstract .
+we present a new method for detecting and disambiguating named entities in open domain text .
+a disambiguation svm kernel is trained to exploit the high coverage and rich structure of the knowledge encoded in an online encyclopedia .
+the resulting model significantly outperforms a less informed baseline .
+introduction .
+motivation .
+the de-facto web search paradigm defines the result to a user s query as roughly a set of links to the best-matching documents selected out of billions of items available .
+whenever the queries search for pinpointed , factual information , the burden of filling the gap between the output granularity ( whole documents ) and the targeted information ( a set of sentences or relevant phrases ) stays with the users , by browsing the returned documents in order to find the actually relevant bits of information .
+a frequent case are queries about named entities , which constitute a significant fraction of popular web queries according to search engine logs .
+when submitting queries such as john williams or python , search engine users could also be presented with a compilation of facts and specific attributes about those named entities , rather than a set of best-matching web pages .
+one of the challenges in creating such an alternative search result page is the inherent ambiguity of the queries , as several instances of the same class ( e.g. , different people ) or different classes ( e.g. , a type of snake , a programming language , or a movie ) may share the same name in the query .
+as an example , the contexts below are part of web documents referring to different people who share the same name john williams : the effectiveness of the search could be greatly improved if the search results were grouped together according to the corresponding sense , rather than presented as a flat , sense-mixed list of items ( whether links to full-length documents , or extracted facts ) .
+as an added benefit , users would have easier access to a wider variety of results , whenever the top 10 or so results returned by the largest search engines happen to refer to only one particular ( arguably the most popular ) sense of the query ( e.g. , the programming language in the case of python ) , thus submerging or hiding documents that refer to other senses of the query .
+in various natural language applications , significant performance gains are achieved as a function of data size rather than algorithm complexity , as illustrated by the increasingly popular use of the web as a ( very large ) corpus ( dale , 2003 ) .
+it seems therefore natural to try to exploit the web in order to also improve the performance of relation extraction , i.e. the discovery of useful relationships between named entities mentioned in text documents .
+however , if one wants to combine evidence from multiple web pages , then one needs again to solve the name disambiguation problem .
+without solving it , a relation extraction system analyzing the sentences in the above example could mistakenly consider the third as evidence that john williams the composer fought at rorke s drift .
+approach .
+the main goal of the research reported in this paper is to develop a named entity disambiguation method that is intrinsically linked to a dictionary mapping proper names to their possible named entitiy denotations .
+more exactly , the method : detects whether a proper name refers to a named entity included in the dictionary ( detection ) .
+disambiguates between multiple named entities that can be denoted by the same proper name ( disambiguation ) .
+as a departure from the methodology of previous approaches , the paper exploits a non-traditional web-based resource .
+concretely , it takes advantage of some of the human knowledge available in wikipedia , a free online encyclopedia created through decentralized , collective efforts of thousands of users ( remy , 2002 ) .
+we show that the structure of wikipedia lends itself to a set of useful features for the detection and disambiguation of named entities .
+the remainder of the paper is organized as follows .
+section 2 describes wikipedia , with an emphasis on the features that are most important to the entity disambiguation task .
+section 3 describes the extraction of named entity entries ( versus other types of entries ) from wikipedia .
+section 4 introduces two disambiguation methods , which are evaluated experimentally in section 5 .
+we conclude with future work and conclusions .
+wikipedia - a wiki encyclopedia .
+wikipedia is a free online encyclopedia written collaboratively by volunteers , using a wiki software that allows almost anyone to add and change articles .
+it is a multilingual resource - there are about 200 language editions with varying levels of coverage .
+wikipedia is a very dynamic and quickly growing resource articles about newsworthy events are often added within days of their occurrence .
+as an example , the september 2005 version contains 751,666 articles , around 180,000 more articles than four months earlier .
+the work in this paper is based on the english version from may 2005 , which contains 577,860 articles .
+each article in wikipedia is uniquely identified by its title a sequence of words separated by underscores , with the first word always capitalized .
+typically , the title is the most common name for the entity described in the article .
+when the name is ambiguous , it is further qualified with a parenthetical expression .
+for instance , the article on john williams the composer has the title john williams ( composer ) .
+because each article describes a specific entity or concept , the remainder of the paper sometimes uses the term entity interchangeably to refer to both the article and the corresponding entity .
+also , let e denote the entire set of entities from wikipedia .
+for any entity e e e , e.title is the title name of the corresponding article , and e.t is the text of the article .
+in general , there is a many-to-many correspondence between names and entities .
+this relation is captured in wikipedia through redirect and disambiguation pages , as described in the next two sections .
+redirect pages .
+a redirect page exists for each alternative name that can be used to refer to an entity in wikipedia .
+the name is transformed ( using underscores for spaces ) into a title whose article contains a redirect link to the actual article for that entity .
+for example , john towner williams is the full name of the composer john williams .
+it is therefore an alternative name for the composer , and consequently the article with the title john towner williams is just a pointer to the article for john williams ( composer ) .
+an example entry with a considerably higher number of redirect pages is united states .
+its redirect pages correspond to acronyms ( u.s.a. , u.s. , usa , us ) , spanish translations ( los estados unidos , estados unidos ) , misspellings ( untied states ) or synonyms ( yankee land ) .
+for any given wikipedia entity e e e , let e.r be the set of all names that redirect to e .
+disambiguation pages .
+another useful structure is that of disambiguation pages , which are created for ambiguous names , i.e. names that denote two or more entities in wikipedia .
+for example , the disambiguation page for the name john williams lists 22 associated entities .
+therefore , besides the non-ambiguous names that come from redirect pages , additional aliases can be found by looking for all disambiguation pages that list a particular wikipedia entity .
+in his philosophical article on sense and reference ( frege , 1999 ) , gottlob frege gave a famous argument to show that sense and reference are distinct .
+in his example , the planet venus may be referred to using the phrases morning star and evening star .
+this theoretical example is nicely captured in practice in wikipedia by two disambiguation pages , morning star and evening star , both listing venus as a potential referent .
+for any given wikipedia entity e g e , let e.d be the set of names whose disambiguation pages contain a link to e .
+categories .
+every article in wikipedia is required to have at least one category .
+as shown in table 1 , john williams ( composer ) is associated with a set of categories , among them star wars music , film score composers , and 20th century classical composers .
+categories allow articles to be placed into one or more topics .
+these topics can be further categorized by associating them with one or more parent categories .
+in table 1 venus is shown as both an article title and a category .
+as a category , it has one direct parent planets of the solar system , which in turn belongs to two more general categories , planets and solar system .
+thus , categories form a directed acyclic graph , allowing multiple categorization schemes to co-exist simultaneously .
+there are in total 59,759 categories in wikipedia .
+for a given wikipedia entity e g e , let e.0 be the set of categories to which e belongs ( i.e. e s immediate categories and all their ancestors in the wikipedia taxonomy ) .
+hyperlinks .
+articles in wikipedia often contain mentions of entities that already have a corresponding article .
+when contributing authors mention an existing wikipedia entity inside an article , they are required to link at least its first mention to the corresponding article , by using links or piped links .
+both types of links are exemplified in the following wiki source code of a sentence from the article on italy : the [ [ vatican city | vatican ] ] is now an independent enclave surrounded by [ [ rome ] ] .
+the string from the second link ( rome ) denotes the title of the referenced article .
+the same string is also used in the display version .
+if the author wants another string displayed ( e.g. , vatican instead of vatican city ) , then the alternative string is included in a piped link , after the title string .
+consequently , the display string for the aforementioned example is : the vatican is now an independent enclave surrounded by rome .
+as described later in section 4 , the hyperlinks can provide useful training examples for a named entity disambiguator .
+a dictionary of named entities .
+we organize all named entities from wikipedia into a dictionary structure d , where each string entry d ~ d is mapped to the set of entities d .
+e that can be denoted by d in wikipedia .
+the first step is to identify named entities , i.e. entities with a proper name title .
+because every title in wikipedia must begin with a capital letter , the decision whether a title is a proper name relies on the following sequence of heuristic steps : if e.title is a multiword title , check the capitalization of all content words , i.e. words other than prepositions , determiners , conjunctions , relative pronouns or negations .
+consider e a named entity if and only if all content words are capitalized .
+if e.title is a one word title that contains at least two capital letters , then e is a named entity .
+otherwise , go to step 3 .
+count how many times e.title occurs in the text of the article , in positions other than at the beginning of sentences .
+if at least 75 % of these occurrences are capitalized , then e is a named entity .
+the combined heuristics extract close to half a million named entities from wikipedia .
+the second step constructs the actual dictionary d as follows : the set of entries in d consists of all strings that may denote a named entity , i.e. if e e e is a named entity , then its title name e.title , its redirect names e.r , and its disambiguation names e.d are all added as entries in d. each entry string d e d is mapped to d .
+e , the set of entities that d may denote in wikipedia .
+consequently , a named entity e is included in d.e if and only if d = e.title , d e e.r , or d e e.d.
+named entity disambiguation .
+as illustrated in section 1 , the same proper name may refer to more than one named entity .
+the named entity dictionary from section 3 and the hyperlinks from wikipedia articles provide a dataset of disambiguated occurrences of proper names , as described in the following .
+as shown in section 2.4 , each link contains the title name of an entity , and the proper name ( the display string ) used to refer to it .
+we use the term query to denote the occurrence of a proper name inside a wikipedia article .
+if there is a dictionary entry matching the proper name in the query q such that the set of denoted entities q.e contains at least two entities , one of them the true answer entity q.e , then the query q is included in the dataset .
+more exactly , if q.e contains n named entities e1 , e2 , ... , en , then the dataset will be augmented with n pairs ( q , ek ) represented as follows : the field q.t contains all words occurring in a limit length window centered on the proper name .
+the window size is set to 55 , which is the value that was observed to give optimum performance in the related task of cross-document coreference ( gooi and allan , 2004 ) .
+the kronecker delta function ( ek , q.e ) is 1 when ek is the same as the entity q.e referred in the link .
+table 2 lists the query pairs created for the three john williams queries from section 1 . 1 , assuming only three entities in wikipedia correspond to this name .
+the application of this procedure on wikipedia results into a dataset of 1,783,868 disambiguated queries .
+context-article similarity .
+using the representation from the previous section , the name entity disambiguation problem can be cast as a ranking problem .
+assuming that an appropriate scoring function score ( q , ek ) is available , the named entity corresponding to query q is defined to be the one with the highest score : the factors q.t and ek.t are represented in the standard vector space model , where each component corresponds to a term in the vocabulary , and the term weight is the standard t f x idf score ( baeza-yates and ribeiro-neto , 1999 ) .
+the vocabulary v is created by reading all wikipedia articles and recording , for each word stem w , its document frequency df ( w ) in wikipedia .
+stop- words and words that are too frequent or too rare are discarded .
+a generic document d is then represented as a vector of length i v i , with a position for each vocabulary word .
+if f ( w ) is the frequency of word w in document d , and n is the total number of wikipedia articles , then the weight of word w e v in the t f x idf representation of d is : taxonomy kernel .
+an error analysis of the cosine-based ranking method reveals that , in many cases , the pair ( q , e ) fails to rank first , even though words from the query context unambiguously indicate e as the actual denoted entity .
+in these cases , cue words from the context do not appear in e s article due to two main reasons : the article may be too short or incomplete .
+even though the article captures most of the relevant concepts expressed in the query context , it does this by employing synonymous words or phrases .
+the cosine similarity between q and ek can be seen as an expression of the total degree of correlation between words from the context of query q and a given named entity ek .
+when the correlation is too low because the wikipedia article for named entity ek does not contain all words that are relevant to ek , it is worth considering the correlation between context words and the categories to which ek belongs .
+for illustration , consider the two queries for the name john williams from figure 1 .
+to avoid clutter , figure 1 depicts only two entities with the name john williams in wikipedia : the composer and the wrestler .
+on top of each entity , the figure shows one of their wikipedia categories ( film score composers and professional wrestlers respectively ) , together with some of their ancestor categories in the wikipedia taxonomy .
+the two query contexts are shown at the bottom of the figure .
+in the context on the left , words such as conducted and concert denote concepts that are highly correlated with the musicians , composers and film score composers categories .
+on the other hand , their correlation with other categories in figure 1 is considerably lower .
+consequently , a goal of this paper is to design a disambiguation method that 1 ) learns the magnitude of these correlations , and 2 ) uses these correlations in a scoring function , together with the cosine similarity .
+our intuition is that , given the query context on the left , such a ranking function has a better chance of ranking the composer entity higher than the wrestler entity , when compared with the simple cosine similarity baseline .
+the feature vector ( d ( q , ek ) contains a dedicated feature 0eos for cosine similarity , and i v i x i c features 0w , e corresponding to combinations of words w from the wikipedia vocabulary v and categories c from the wikipedia taxonomy c : the weight vector w models the magnitude of each word-category correlation , and can be learned by training on the query dataset described at the beginning of section 4 .
+we used the kernel version of the large-margin ranking approach from ( joachims , 2002 ) which solves the optimization problem in figure 2 .
+the aim of this formulation is to find a weight vector w such that 1 ) the number of ranking constraints w ( d ( q , q.e ) > w ( d ( q , ek ) from the training data that are violated is minimized , and 2 ) the ranking function w ( d ( q , ek ) generalizes well beyond the training data .
+the learned w is a linear combination of the feature vectors ( d ( q , ek ) , which makes it possible to use kernels ( vapnik , 1998 ) .
+it is straightforward to show that the dot product between two feature vectors ( d ( q , ek ) and ( d ( q , e ) is equal with the product between the number of common words in the contexts of the two queries and the number of categories common to the two named entities , plus the product of the two cosine similarities .
+the corresponding ranking kernel is : to avoid numerical problems , the first term of the kernel is normalized and the second term is multiplied with a constant a = 108 : in ( mccallum et al. , 1998 ) , a statistical technique called shrinkage is used in order to improve the accuracy of a naive bayes text classifier .
+accordingly , one can take advantage of a hierarchy of classes by combining parameter estimates of parent categories into the parameter estimates of a child category .
+the taxonomy kernel is very related to the same technique one can actually regard it as a distribution-free analogue of shrinkage . 4.3 detecting out-of-wikipedia entities the two disambiguation methods discussed above ( sections 4.1 and 4.2 ) implicitly assume that wikipedia contains all entities that may be denoted by entries from the named entity dictionary .
+taking for example the name john williams , both methods assume that in any context , the referred entity is among the 22 entities listed on the disambiguation page in wikipedia .
+in practice , there may be contexts where john williams refers to an entity eout that is not covered in wikipedia , especially when eout is not a popular entity .
+these out-of-wikipedia entities are accommodated in the ranking approach to disambiguation as follows .
+a special entity eout is introduced to denote any entity not covered by wikipedia .
+its attributes are set to null values ( e.g. , the article text eout.t = 0 , and the set of categories eout.c = 0 ) .
+the ranking in equation 1 is then updated so that it returns the wikipedia entity with the highest score , if this score is greater then a fix threshold t , otherwise it returns eout if the scoring function is implemented as a weighted combination of feature functions , as in equation 3 , then the modification shown above results into a new feature oout : the associated weight is learned along with the weights for the other features ( as defined in equation 5 ) .
+experimental evaluation .
+the taxonomy kernel was trained using the svmlight package ( joachims , 1999 ) .
+as described in section 4 , through its hyperlinks , wikipedia provides a dataset of 1,783,868 ambiguous queries that can be used for training a named entity disambiguator .
+the apparently high number of queries actually corresponds to a moderate size dataset , given that the space of parameters includes one parameter for each word-category combination .
+however , assuming svmlight does not run out of memory , using the entire dataset for training and testing is extremely time consuming .
+therefore , we decided to evaluate the taxonomy kernel under the following scenarios : ^ [ s1 ] the working set of wikipedia categories c1 is restricted to only the 110 top level categories under people by occupation .
+the query dataset used for training and testing is reduced to contain only ambiguous queries ( q , ek ) for which any potential matching entity ek belongs to at least one of the 110 categories ( i.e. ek.c n c1 za 0 ) .
+the set of negative matching entities ek is also reduced to those that differ from the true answer e in terms of their categories from c1 ( i.e. ek.c n c1 za e .
+c n c1 ) .
+in other words , this scenario addresses the task of disambiguating between entities with different top-level categories under people by occupation .
+in a slight generalization of [ s1 ] , the set of categories c2 is restricted to all categories under people by occupation .
+each category must have at least 200 articles to be retained , which results in a total of 540 categories out of the 8202 categories under people by occupation .
+the query dataset is generated as in the first scenario by replacing c1 with c2 .
+in order to make the task more realistic , all queries from the initial wikipedia dataset are considered as follows .
+for each query q , out of all matching entities that do not have a category under people by occupation , one is randomly selected as an out-of-wikipedia entity .
+then , out of all queries for which the true answer is an out-of-wikipedia entity , a subset is randomly selected such that , in the end , the number of queries with out-of-wikipedia true answers is 10 % of the total number of queries .
+in other words , the scenario assumes the task is to detect if a name denotes an entity belonging to the people by occupation taxonomy and , in the positive cases , to disambiguate between multiple entities under people by occupation that have the same name .
+the dataset for each scenario is split into a training dataset and a testing dataset which are disjoint in terms of the query names used in their examples .
+for instance , if a query for the name john williams is included in the training dataset , then all other queries with this name are allocated for learning ( and consequently excluded from testing ) .
+using a disjoint split is motivated by the fact that many wikipedia queries that have the same true answer also have similar contexts , containing rare words that are highly correlated , almost exclusively , with the answer .
+for example , query names that refer to singers often contain album or song names , query names that refer to writers often contain book names , etc .
+the taxonomy kernel can easily memorize these associations , especially when the categories are very fine-grained .
+in the current framework , the unsupervised method of context-article similarity does not utilize the correlations present in the training data .
+therefore , for the sake of comparison , we decided to prohibit the taxonomy kernel from using these correlations by training and testing on a disjoint split .
+section 6 describes how the training queries could be used in the computation of the context-article similarity , which has the potential of boosting the accuracy for both disambiguation methods .
+table 3 shows a number of relevant statistics for each scenario : # cat represents the number of wikipedia categories , # sv is the number of support vectors , tk ( a ) and cos ( a ) are the accuracy of the taxonomy kernel and the cosine similarity respectively .
+the training and testing datasets are characterized in terms of the number of queries and query-answer pairs .
+the number of ranking contraints ( as specified in figure 2 ) is also included for the training data in column # constr .
+the size of the training data is limited so that learning in each scenario takes within three days on a pentium 4 cpu at 2.6 ghz .
+furthermore , in s4 , the termination error criterion a is changed from its default value of 0.001 to 0.01 .
+also , the threshold t for detecting out-of-wikipedia entities when ranking with cosine similarity is set to the value that gives highest accuracy on training data .
+as can be seen in the last two columns , the taxonomy kernel significantly outperforms the cosine similarity in the first three scenarios , confirming our intuition that correlations between words from the query context and categories from wikipedia taxonomy provide useful information for disambiguating named entities .
+in the last scenario , which combines detection and disambiguation , the gain is not that substantial .
+most queries in the corresponding dataset have only two possible answers , one of them an out-of-wikipedia answer , and for these cases the cosine is already doing well at disambiguation .
+we conjecture that a more significant impact would be observed if the dataset queries were more ambiguous .
+future work .
+the high number of support vectors half the number of query-answer pairs in training data suggests that all scenarios can benefit from more training data .
+one method for making this feasible is to use the weight vector w explicitely in a linear svm .
+because much of the computation time is spent on evaluating the decision function , using w explicitely may result in a significant speed-up .
+the dimensionality of w ( by defaultiv i x i ci ) can be reduced significantly by considering only word-category pairs whose frequency in the training data is above a predefined threshold .
+a complementary way of using the training data is to augment the article of each named entity with the contexts from all queries for which this entity is the true answer .
+this method has the potential of improving the accuracy of both methods when the training and testing datasets are not disjoint in terms of the proper names used in their queries .
+word-category correlations have been used in ( ciaramita et al. , 2003 ) to improve word sense disambiguation ( wsd ) , although with less substantial gains .
+there , a separate model was learned for each of the 29 ambiguous nouns from the senseval 2 lexical sample task .
+while creating a separate model for each named entity is not feasible there are 94,875 titles under people by occupation named entity disambiguation can nevertheless benefit from correlations between wikipedia cate gories and features traditionally used in wsd such as bigrams and trigrams centered on the proper name occurrence , and syntactic information .
+conclusion .
+we have presented a novel approach to named entity detection and disambiguation that exploited the untapped potential of an online encyclopedia .
+experimental results show that using the wikipedia taxonomy leads to a substantial improvement in accuracy .
+the application of the new named entity disambiguation method holds the promise of better results to popular web searches .

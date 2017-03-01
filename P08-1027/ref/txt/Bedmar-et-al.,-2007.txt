@@ -1,0 +1,108 @@
+uc3m : classification of semantic relations between nominals using sequential minimal optimization .
+abstract .
+this paper presents a method for automatic classification of semantic relations between nominals using sequential minimal optimization .
+we participated in the four categories of semeval task 4 ( a : no query , no wordnet ; b : word- net , no query ; c : query , no wordnet ; d : wordnet and query ) and for all training datasets .
+best scores were achieved in category b using a set of feature vectors including lexical file numbers of nominals obtained from wordnet and a new feature wordnet vector designed for the task .
+introduction .
+the survey of the state-of-art reveals an increasing interest in automatically discovering the underlying semantics in natural language .
+in this interdisciplinary field , the growing interest is justified by the number of applications which can directly benefit from introducing semantic information .
+question answering , information retrieval and text summarization are examples of these applications ( turney and littman , 2005 ; girju et al. , 2005 ) .
+in the present work and for the purpose of the semeval task 4 , our scope is limited to the semantic relationships between nominals .
+by this definition , we understand it is the process of discovering the underlying relations between two concepts expressed by two nominals .
+within the framework of semeval , nominals can occur either on the phrase , clause or the sentence level .
+this fact constitutes the major challenge in this task since most of the previous research limited their approaches to certain types of nominals mainly the " compound nominals " ( girju et al. 2005 ) .
+the paper is divided as follows ; section 2 is a brief introduction to smo used as the classifier for the task .
+section 3 is dedicated to the description of the set of features applied in our experiments .
+in section 4 , we discuss the experiment 's results compared to the baselines of the semeval task and the top scores .
+finally , we summarize our approach , pointing out conclusions and future directions of our work .
+sequential minimal optimization .
+we decided to use support vector machine ( svm ) , as one of the most successful machine learning techniques , achieving the best performances for many classification tasks .
+algorithm performance and time efficiency are key issues in our task , considering that our final goal is to apply this classification in a question answering system .
+sequential minimal optimization ( smo ) is a fast method to train svm .
+smo breaks the large quadratic programming ( qp ) optimization problem needed to be resolved in svm into a series of smallest possible qp problems .
+these small qp problems are analytically solved , avoiding , in this way , a time-consuming numerical qp optimization as an inner loop .
+we used weka ( witten and frank , 2005 ) an implementation of the smo ( platt , 1998 ) .
+features .
+prior to the classification of semantic relations , characteristics of each sentence are automatically extracted using gate ( cunningham et al. , 2002 ) .
+gate is an infrastructure for developing and deploying software components for language engineering .
+we used the following gate components : english tokenizer , part-ofspeech ( pos ) tagger and morphological analyser .
+the set of features used for the classification of semantic relations includes information from different levels : word tokens , pos tags , verb lemmas , semantic information from wordnet , etc .
+semantic features are only applied in categories b and d. on the lexical level , the set of word features include the two nominals , their heads in case one of the nominals in question or both are compound nominals ( e.g. the relation between < e1 > tumor shrinkage < / e1 > and < e2 > radiation therapy < / e2 > is actually between the head of the first " shrinkage " and " radiation � therapy " ) . more features include : the two words before the first nominal , the two words after the second nominal , and the word list in-between ( wang et al. , 2006 ) .
+on the pos level , we opted for using a set of pos features since word features are often too sparse .
+this set includes pos tags of the two words occurring before the first nominal and the two words occurring after the second nominal together with the tag list of the words in- between ( wang et al. , 2006 ) .
+pos tags of nominals are considered redundant information .
+information regarding verbs and prepositions , occurring in-between the two nominals , is highly considered .
+in case of the verb , the system takes into account the verb token and the information concerning the voice and lemma .
+in the same way , the system keeps track of the prepositions occurring between both nominals .
+in addition , a feature , called numinter , indicating the number of words between nominals is considered .
+other important feature is the path from the first nominal to the second nominal .
+this feature is built by the concatenation of the pos tags between both nominals .
+the feature related to the query provided for each sentence is only considered in the categories c and d according to the semeval restrictions .
+on the semantic level , we used features obtained from wordnet .
+in addition to the word- net sense keys , provided for each nominal , we extracted its synset number and its lexical file number .
+based on the work of rosario , hearst and fillmore ( 2002 ) , we suppose that these lexical file numbers can help to determine if the nominals satisfy the restrictions for each relation .
+for example , in the relation theme-tool , the theme should be an object , an event , a state of being , an agent , or a substance .
+else , it is possible to affirm that the relation is false .
+for the part-whole relation and due to its relevance in this classification task , a feature indicating metonymy relation in wordnet was taken into account .
+furthermore , we designed a new feature , called wordnet vector .
+for constructing this vector , we selected the synsets of the third level of depth in wordnet and we detected if each is ancestor or not of the nominal .
+it is a binary vector , i.e. if the synset is ancestor of the nominal it is assigned the value 1 , else it is assigned the value 0 .
+in this way , we worked with two vectors , one for each nominal .
+each vector has a dimension of 13 coordinates .
+each coordinate represents one of the 13 nodes in the third level of depth in wordnet .
+our initial hypothesis considers that this representation for the nominals could perform well on unseen data .
+experiment results .
+cross validation is a way to test the ability of the model to classify unseen examples .
+we trained the system using 10-fold cross- validation ; the fold number recommended for small training datasets .
+for each relation and for each category ( a , b , c , d ) we selected the set of features that obtained the best results using the indicated cross validation .
+we submitted 16 sets of results as we participated in the four categories ( a , b , c , d ) .
+we also used all the possible sizes of the training dataset ( 1 : 1 to 35 , 2 : 1 to 70 , 3 : 1 to 106 , 4 : 1 to 140 ) .
+for some learning algorithms such as decision trees and rule learning , appropriate selection of features is crucial .
+for the svm model , this is not so important due to its learning mechanism , where irrelevant features are usually balanced between positive and negative examples for a given binary classification problem .
+however , in the experiments we observed that certain features have strong influence on the results , and its inclusion or elimination from the vector , influenced remarkably the outcomes .
+in this section , we will briefly discuss the experiments in the four categories highlighting the most relevant observations .
+in category a , we expected to obtain better results , but the overall performance of the system has decreased in the seven relations .
+this shows that our system has over-fitted the training set .
+the contrast between the f score values in the cross-validation and the final test results demonstrates this fact .
+for all the relations in the category a4 , we obtained an average of f = 43.1 % [ average score of all participating teams : f = 58.0 % and top average score : f = 64.8 % ] .
+in product-producer relation , only two features were used : the two heads of the nominals .
+in training , we obtained an average f = 60 % using cross-validation , while in the final test data , we achieved an average score f = 57.7 % .
+for the relation theme-tool , other set of features was employed : nominals , their heads , verb , preposition and the list of word between both nominals .
+based on the results of the 10-fold cross validation , we expected to obtain an average of the f = 70 % .
+nevertheless , the score obtained is f = 30 % .
+in category b , our system has achieved better scores .
+our average score f is 64.3 % and it is above the average of participating teams ( f = 63.6 % ) and the baseline .
+best results in this category were achieved in the relations : instrument-agency ( f = 73.7 % ) , product-producer ( f = 73.9 % ) , part-whole ( f = 76.4 % ) .
+however , for the relation theme- tool the system obtained lower scores ( f = 49.1 % ) .
+it is obvious that introducing wordnet information has improved notably the results compared with the results obtained in the category a. in categories c and d , only three groups have participated .
+in category c ( as in category a ) , the system results have decreased obviously ( f = 45.3 % ) with respect to the expected scores in the 10-fold cross validation .
+moreover , the score obtained is lower than the average score of all participants ( f = 58.4 % ) and the best score ( f = 65.1 % ) .
+for example , in training the instrument-agent relation , the system achieved an average f = 78 % using 10-fold cross-validation , while for the final score it only obtained f = 50.7 % .
+results reveal that the main reason behind the low scores in a and c , is the absence of information from wordnet .
+hence , the vector design needs further consideration in case no semantic information is provided .
+in category d , both wordnet senses and query were used , we achieved an average score f = 58.8 % .
+the average score for all participants is f = 60.6 % and the best system achieved f = 62.6 % .
+however , the slight difference shows that our system worked relatively well in this category .
+both run time and accuracy depend critically on the values given to two parameters : the upper bound on the coefficient 's values in the equation for the hyperplane ( -c ) , and the degree of the polynomials in the non-linear mapping ( -e ) ( witten and frank , 2005 ) .
+both are set to 1 by default .
+the best settings for a particular dataset can be found only by experimentation .
+we made numerous experiments to find the best value for the parameter c ( c = 1 , c = 10 , c = 100 , c = 1000 , c = 10000 ) , but the results were not remarkably affected .
+probably , this is due to the small size of the training set .
+conclusions and future work .
+in our first approach to automatic classification of semantic relations between nominals and as expected from the training phase , our system achieved its best performance using wordnet information .
+in general , we obtained better scores in category 4 ( size of training : 1 to 140 ) , i.e. , when all the training examples are used .
+on the other hand , overfitting the training data ( most probably due to the small size of training dataset ) is the main reason behind the low scores obtained by our system .
+these facts lead us to the conclusion that semantic features from wordnet , in general , play a key role in the classification task .
+however , the relevance of wordnet-related features varies .
+for example , lexical file numbers proved to be highly effective , while the use of the word- net vector did not improve significantly the results .
+thus , we consider that a level 3 wordnet vector is rather abstract to represent each nominal .
+developing a wordnet vector with a deeper level ( > 3 ) could be more effective as the representation of nouns is more descriptive .
+query features , on the other hand , did not improve the performance of the system .
+this is due to the fact that the same query could represent both positive and negative examples of the relation .
+however , to improve results in categories a and c , more features need to introduced , especially context and syntactic information such as chunks or dependency relations .
+to improve results across the whole dataset , wider use of semantic information is necessary .
+for example , the immediate hypernym for each synset obtained from wordnet could help in improving the system performance ( nastase et al. , 2006 ) .
+besides , information regarding the entity features could help in the classification of some relations like origin-entity or product- producer .
+other semantic resources such as verbnet , framenet , propbank , etc. could also be used .
+furthermore , we consider introducing a word sense disambiguation module to obtain the corresponding synsets of the nominals .
+also , information concerning the synsets of the list of the context words could be of great value for the classification task ( wang et al. , 2006 ) .

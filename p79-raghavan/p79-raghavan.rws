@@ -1,0 +1,55 @@
+Sebastiani’s survey paper [23] provides an overview of techniques
+in text categorization, a research problem that sits in the
+joint space of machine learning and information retrieval. In this
+section we compare our work with past work and their advantages
+and disadvantages, stating how our work either compares with, or
+overcomes the deficiencies of past methods.
+Our proposed method is an instance of query-based learning [2]
+and an extension of standard (“pool-based”) active learning which
+focuses on selective sampling of instances from a pool of unlabeled
+data [6]. To the best of our knowledge, all prior work on
+query learning and active learning focused on variants of membership
+queries, that is, requesting the label of an instance. Some recent
+works have considered using user prior knowledge to bootstrap
+learning but they typically assume that prior knowledge is given at
+the outset [27, 21, 8]. The proposed techniques typically involve
+“soft labeling” instances containing the user labeled features by assigning
+them to categories associated with those of the features.
+We expect that our proposed interactive mode has an advantage
+over requesting prior knowledge from the outset, as it may be easier
+for the user to identify or recall relevant features while labeling
+documents in the collection and being presented with candidate features.
+Some recent work has proposed extending the query model
+to include feature as well as document level feedback [18]. That
+work largely demonstrated the need to consider such a dual mode
+of feedback showing the benefits of such an approach. Their final
+algorithm was preliminary. Their simple method of scaling the user
+labeled features is one technique we explore in this paper. Our final
+algorithm which uses scaling in combination with variants of
+soft-labeling surpasses any of these individual techniques (scaling
+or soft labeling). The work of Huang and Mitchell [10] is similar in
+that a user is queried on features and documents at the same time.
+However, other than the difference in algorithms, an important aspect
+of our work is in the experimental set up which helps us better
+understand the benefits of user term feedback.
+User term feedback is common in information retrieval. A significant
+aspect of this work as compared to other works in interactive
+information retrieval is in the experimental setup that separates
+algorithmic error from human error. Most interactive IR experiments
+have an implicit hypothesis that term feedback will be useful.
+On this basis, user studies are designed to measure if users can
+provide feedback without considering whether the algorithm is capable
+of incorporating feedback in an effective way. More recently
+the works of Magennis and Rijsbergen [16] and Ruthven [20] try to
+design experiments for term feedback in the ad-hoc retrieval task in
+a manner similar to ours. Magennis and Rijsbergen had some deficiencies
+in their approach, a fact that they acknowledge. Ruthven
+improved on their experimental setup and found that term feedback
+using an oracle could give performance improvements even over
+automatic query expansion. However, he found that users cannot
+mark the terms required by the optimal query with reasonable precision.
+Oddly though, he did not report the performance achieved
+by the user marked terms. In fact, we find that even though users
+marked only a fraction of the terms marked by the oracle, the performance improvements were on par with the oracle. Besides, it is
+important to note that our work is in the domain of classification
+while theirs was in ad-hoc IR.

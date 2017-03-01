@@ -1,0 +1,92 @@
+an english to korean transliteration model of extended markov window .
+abstract .
+automatic transliteration problem is to transcribe foreign words in one 's own alphabet .
+machine generated transliteration can be useful in various applications such as indexing in an information retrieval system and pronunciation synthesis in a text-to-speech system .
+in this paper we present a model for statistical englishto-korean transliteration that generates transliteration candidates with probability .
+the model is designed to utilize various information sources by extending a conventional markov window .
+also , an efficient and accurate method for alignment and syllabification of pronunciation units is described .
+the experimental results show a recall of 0.939 for trained words and 0.875 for untrained words when the best 10 candidates are considered .
+introduction .
+as the amount of international communication increases , more foreign words are flooding into the korean language .
+especially in the area of computer and information science , it has been reported that 29.4 % of index terms are transliterated from or directly written in english in the case of a balanced corpus , kt-set [ 18 ] .
+the transliteration of foreign words is indispensable in korean language processing .
+in information retrieval , a simple method of processing foreign words is via query term translation based on a synonym dictionary of foreign words and their target transliteration .
+it is necessary to automate the construction process of a synonym dictionary since its maintenance requires continuous efforts for ever-incoming foreign words .
+another area to which transliteration can be applied is a text-to-speech system where orthographic words are transcribed into phonetic symbols .
+in such applications , maximum likelihood [ 15 ] , decision tree [ 1 ] , neural network [ 10 ] or weighted finited-state acceptor [ 19 ] has been used for finding the best fit .
+english-to-korean transliteration problem is that of generating an appropriate korean word given an english word .
+in general , there can be various possible transliterations in korean which correspond to a single english won ! .
+it is common that the newly imported foreign word is transliterated into several possible candidate words based on pronunciation , out of which only a few survive in competition over a period of time .
+in this respect , a statistical approach makes sense where multiple transliteration variations exist for one word , generating candidates in probable order .
+in this paper , we present a statistical method to transliterate english words in korean alphabet to generate various candidates .
+in the next section , we describe a phonetic mapping table construction .
+in section 2 , we describe alignment and syllabification methods , and in section 3 , mathematical formulation for a statistical model is presented .
+section 4 provides experimental results , and finally , we state our conclusions .
+phonetic mapping table construction .
+first of all , we generate a mapping between english and korean phonetic unit pairs ( table 6 ) .
+in doing so , we use pronunciation symbols for english words ( table 5 ) as defined in the oxford computer-usable dictionary [ 12 ] .
+the english and korean phonetic unit can be a consonant , a vowel or some composite of them so as to make transliteration mapping unique and accurate .
+the orthography for foreign word transliteration to korean provides a simple mapping from english to korean phonetic units .
+but in reality , there are a lot of transliteration cases that do not follow the orthography .
+table 6-1 has been constructed by examining a significant amount of corpus so that we can cover as many cases as possible .
+table 6-2 shows complex cases where a combination of two or more english phonemes are mapped to multiple candidates of a composite korean phonetic unit .
+this phonetic mapping table is carefully constructed so as to produce a unique candidate in syllabification and alignment in the training stage .
+when a given english pronunciation can be syllabificated into serveral units or a single composite unit , we adopt a heuristic that only the composite unit consisting of longer phonetic units is considered .
+for example , the english phonetic unit " u @ " can be mapped to a korean phonetic unit [ u @ ] " or " 1 [ w @ 1 " even though the composition of each unit mapping of " u " and can result in other composite mappings such as " -ph [ ju @ ] " , " -1 0 ] [ wi @ i " , [ wujal " , etc .
+this composite phonetic unit mapping is also useful for statistical tagging since composite units provide more accurate statistical information when they are well devised .
+alignment and syllabification method .
+the alignment and syllabification process is critical for probabilistic tagging as it is closely linked to computational complexity .
+there can be combinatorial explosion of state sequences because potential syllables may overlap the same letter sequences .
+a statistical approach called , forward-backward parameter estimation algorithm , is used by sharman in phonetic transcription problem [ 2 ] .
+but a statistical approach for syllabification requires expensive computational resources and a large amount of training corpus .
+moreover , it often results in many improper candidates .
+in this paper , we propose a simple heuristic alignment and syllabification method that is fast and efficient .
+the main principle in separating phonetic units is to manage a phonetic unit of english and that of korean to be mapped in a unique way .
+for example , the pronunciation notation " @ r " of the suffix " -er " in " computer " is mapped to " 01 [ @ r ] " in korean .
+in this case , the complex pronunciation " @ r " is treated as one phonetic unit .
+there are many such examples in complex vowels , as in " we " to " 11 [ we ] " , " jo " to " r. [ jo ] " , etc .
+it is essential to come up with a phonetic unit mapping table that can reduce the time complexity of a tagger and also contribute to accurate transliteration results .
+table 6 shows the examples of phonetic units and their mapping to korean .
+the alignment process in training consists of two stages .
+the first is consonant alignment which identifies corresponding consonant pairs by scanning the english phonetic unit and korean notation .
+the second is vowel alignment which separates corresponding vowel pairs within the consonant alignment results of stage 1 .
+figure 1 shows an alignment example in training .
+the aligned and syllabificated units are used to extract statistical information from the training corpus .
+the alignment process always produces one result .
+this is possible because of the predefined english to korean phonetic unit mapping in table 6 .
+after the training stage , an input english word must be syllabificated automatically so that it can be transliterated by our tagger .
+during this stage , all possible syllabification candidates are generated and are given as inputs to the statistical tagger so that the proper korean notation can be found .
+statistical transliteration model .
+a probabilistic tagger finds the most probable set of korean notation candidates from the possible syllabificated results of english pronunciation notation .
+lee [ 7 , 8 , 91 proposed a statistical transliteration model based on the statistical translation model-1 by brown [ 2 ] that uses only a simple information source of a word pair .
+various kinds of information sources are involved in the english to korean transliteration problem .
+but it is not easy to systematically exploit various information sources by extending the markov window in a statistical model .
+the tagging model proposed in this paper exploits not only simple pronunciation unit-to-unit mapping from english to korean , but also more complex contextual information of multiple units mapping .
+in what follows , we explain how the contextual information is represented as conditional probabilities .
+in determining k , four neighborhood variables are taken into account , while conventional tagging models use only two neighborhood variables .
+the extended markov window of information source is defined as in figure 2 .
+it also shows a conventional markov window using a dashed line .
+mathematical formulation for markov window extension is not an easy problem since extended window aggravates data sparseness .
+we will explain our solution in the next step .
+experimental results .
+for the evaluation we constructed a training corpus of 8368 english-korean word pairs .
+one english word can have one or more korean transliteration entries in the corpus . 90 % of the corpus is used as training data and 10 % of the corpus as test data .
+for more objective experiment evaluation , we estimated word-level accuracy based on exact string match even though many other papers are based on lexical- level distance to the correct word .
+we adopted a recall measure based on word-level accuracy .
+recall measure is the average number of generated correct words divided by the total word count of prepared correct answer set given an input word ( eq . 9 ) .
+precision measure is the average number of retrieved correct words divided by the number of generated candidates ( eq . 10 ) .
+for words not found in the pronunciation dictionary , a transcription automata is used to transform the english alphabet to the korean alphabet .
+a transcription automata can be helpful because it uses alphabetic information that our statistical tagger does not use .
+the automata produces one result and attaches it at the end of n-best results of the statistical tagger .
+this automata has about 500 transcription rules , based on previous , current , and next context window and production alphabet .
+all experimental results are estimated by 10-101d cross validation for more accurate results .
+table 1 shows the estimated recall values for the 10best results generated by the tagger and for the case when transcription automata used as well .
+figure 4 shows recall values given a number of candidates .
+lee 's model is a fully statistical approach even in pronunciation unit alignment and syllabification that may cause inaccurate results , while we use a heuristic approach in pronunciation unit alignment .
+another significant difference is that lee 's model uses only conventional information sources such as a bigram while our model use various information sources from extended markov window .
+lee 's model transliterates using english alphabet directly without pronounciation dictionary so that it can be better for unknown words or proper noun .
+conclusion .
+we have proposed a statistical english-tokorean transliteration model that exploits various information sources .
+this model is a generalized model from a conventional statistical tagging model by extending markov window with some mathematical approximation techniques .
+an alignment and syllabification method instead of a statistical method is proposed for accurate and fast operation .
+the experimental results show that the model proposed in this paper demonstrates significant improvement in its performance .

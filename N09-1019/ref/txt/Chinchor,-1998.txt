@@ -1,0 +1,169 @@
+muc-7 named entity task definition .
+introduction .
+scope .
+the named entity task consists of three subtasks ( entity names , temporal expressions , number expressions ) .
+the expressions to be annotated are " unique identifiers " of entities ( organizations , persons , locations ) , times ( dates , times ) , and quantities ( monetary values , percentages ) .
+for many text processing systems , such identifiers are recognized primarily using local pattern-matching techniques .
+the tei ( text encoding initiative ) guidelines for electronic text encoding and interchange cover such identifiers ( plus abbreviations ) together in section 6.4 and explain that the identifiers comprise " textual features which it is often convenient to distinguish from their surrounding text .
+names , dates and numbers are likely to be of particular importance to the scholar treating a text as source for a database ; distinguishing such items from the surrounding text is however equally important to the scholar primarily interested in lexis . "
+the task is to identify all instances of the three types of expressions in each text in the test set and to subcategorize the expressions .
+the original texts contain some sgml tags already ; the named entity task is to be performed within the text delimited by the slug , date , nwords , preamble , text , and trailer tags .
+the system must produce a single , unambiguous output for any relevant string in the text ; thus , this evaluation is not based on a view of a pipelined system architecture in which named entity recognition would be completely handled as a preprocess to sentence and discourse analysis .
+the task requires that the system recognize what a string represents , not just its superficial appearance .
+sometimes , the right answer is superficially apparent , as in the case of most , if not all , numex expressions , and can be obtained by local pattern-matching techniques .
+in other cases , the right answer is not superficially apparent , as when a single capitalized word could represent the name of a location , person , or organization , and the answer may have to be obtained using techniques that draw information from a larger context or from reference lists .
+the three subtasks correspond to three sgml tag elements : enamex , timex , and numex .
+the subcategorization is captured by a sgml tag attribute called type , which is defined to have a different set of possible values for each tag element .
+the markup is described in section 2 , below .
+performance evaluation .
+scoring of this task will be done using the same kinds of metrics that are used for scoring template-filling ( information extraction ) tasks .
+for specific information on the scoring , refer to " muc-7 scoring system user 's manual , " prepared for muc-7 by saic .
+cumulative scores will be generated at several levels of description of the task , e.g. , � across subtasks , for each subtask , for the subcategorization aspect of each subtask , for each part of the article that is included in the task ( < slug > , < date > , < nwords > , < preamble > , < text > , < trailer > ) .
+task overview .
+markup description .
+the output of the systems to be evaluated will be in the form of sgml text markup .
+the only insertions allowed during tagging are tags enclosed in angled brackets .
+no extra whitespace or carriage returns are to be inserted ; otherwise , the offset count would change , which would adversely affect scoring .
+the markup will have the following form : the markup is defined in sgml document type descriptions ( dtds ) , written for muc-7 use and maintained by personnel at saic .
+the dtds enable annotators and system developers to use sgml validation tools to check the correctness of the sgml-tagged texts produced by the annotator or the system .
+the validation tools are available to muc-7 participants in the file called muc7-sgml-tools and in the form of the scorer 's parser both available via anonymous ftp from ftp.muc.saic.com ( or online.muc.saic.com ) in the under the muc subdirectory .
+annotators are using a software tool provided for muc-7 and met-2 by sra corporation to assist in generating the answer keys to be used for system training and testing .
+named entities ( enamex tag element ) .
+this subtask is limited to proper names , acronyms , and perhaps miscellaneous other unique identifiers , which are categorized via the type attribute as follows : temporal expressions ( timex tag element ) .
+this subtask is for " absolute " and " relative " temporal expressions only ; explanation is provided in appendix b. the tagged tokens are categorized only via the type attribute as follows : notation reserved for use in the answer keys .
+expressing alternative attribute values .
+a vertical bar is being used to separate alternative type attribute values in the answer key .
+alternative values will be given when the annotator does not have enough information to make a unique categorization , even considering the context and the annotator 's knowledge of the world .
+expressing optional markup ( status attribute ) .
+when it is not certain that a string should be marked up , the annotator will include the status attribute in the markup to indicate that the markup is optional .
+the only value of the status attribute is " opt . "
+examples of its possible use can be found in the appendices , such as in appendix b ( holiday names ) .
+expressing alternative or minimum string boundaries ( alt or min attribute ) .
+the alt or min attribute will be used when the tagged string contains one or more substrings that should be considered correct for the purposes of scoring the system response .
+certain premodifiers ( " a , " " an , " and " the " ) are automatically ignored by the scoring program ( via the " configuration " file ) and thus do not need to be specially marked in the key .
+alt was the original term used for this attribute in past ne definitions and scorers , but the markup tool calls it min .
+either term is appropriate because the alternative string is smaller than the tagged string in all cases .
+guidelines for markup of exceptional constructions .
+conjunction and elision in multi-name , multi-modifier , and numeric range expressions .
+conjoined named entities in general are marked separately except for those in the following categories .
+all cases in these categories are tagged as * single * expressions .
+multi-name ( or multi-number ) expressions .
+a conjoined multi-name expression , in which there is elision of the head of one conjunct , should be marked up as a single expression .
+a single-name expression containing conjoined modifiers with no elision also should be marked up as a single expression .
+numeric range expressions .
+the subparts of time , date , money , and percentage range expressions should be marked up as parts of a single expression , even if there is no elision of the numeric " units " . effects of tokenization conventions .
+the systems must incorporate certain tokenization conventions .
+these conventions are contained in a separate document titled " tokenization rules . "
+the tokenization conventions for muc-7 have an impact on the boundaries of the strings to be tagged .
+for example , the conventions call for treating possessive forms , e.g. , " california 's , " as multiple tokens , unless there is a name such as " mcdonald 's [ burger company ] " that is inherently possessive .
+see the separate documentation titled " tokenization rules " for further information and examples .
+in various sources there are some special characters used that end up being within the marked string because they are contiguous , but a reader will ignore them .
+for example , in the wall street journal an @ appears at the beginning of some lines in the headline .
+in the new york times news service articles there are some codes such as " & md ; " which appear and are not always separated by white space from their environment .
+these will generally be marked up and the scorer will not be able to delete them because of the segmentation problem .
+although infrequent , the rule we follow will be to include them if they are string-internal and to exclude them otherwise .
+it is unlikely that scores will be seriously affected so the scorer will not specially treat these codes .
+nested expressions .
+no nested expressions will be marked .
+even in cases where location ( enamex ) expressions occur within timex and numex expressions , they are not to be tagged .
+also , entity names that appear within enamex tags are * not * to be tagged .
+appendices .
+wntity names used as modifiers in complex nps that are not proper names are to be tagged when it is clear to the annotator from context or the annotator 's knowledge of the world that the name is that of an organization , person , or location .
+note that uncapitalized , common-noun designators such as " division " in the phrase " chrysler division " are * not * considered part of an entity name .
+in some cases , multi-word strings that are proper names will contain entity name substrings ; such strings are not decomposable ; therefore , the substrings are not to be tagged . ( see a.1.2 re special cases involving prenominal modifiers of person identifiers . )
+non-entities modified by entity expressions .
+entity-expressions that " possess " other entity-expressions .
+entity-expression aliases .
+aliases for entities are to be tagged .
+taggable aliases will include the following forms of entity names : acronyms , formed from the initial letter ( s ) or syllable ( s ) of successive or major parts of a compound term , for example : certain metonyms , herein designated " proper " metonyms , which chiefly include references to an organization based on the name of a unique structure or facility in which the organization holds office .
+the association between the name and the organization should be idiosyncratic enough to justify its inclusion in the dictionary definition of the term ( in contrast with " common " metonyms , discussed below ) , as a kind of nickname for the organization .
+some examples follow .
+taggable aliases will not include the following forms of entity names : common nouns , including pronouns , used in anaphoric reference to taggable entity names , such as " ibm announced that the company would lay off ... " [ no markup for " the company " ] aliases that refer to broad industrial sectors , political power centers , etc . , rather than to specific organizations .
+for example , do not tag " wall street " as an alias for the u.s. stock market , " japan incorporated " as an alias for japanese industries , " uncle sam " and " washington " as aliases for the u.s. government , or " capitol hill " as an alias for the congress , since these do not refer to specific organizations .
+the " ivy league " refers to a specific set of universities , but does not seem to be a specific organization in its own right .
+similarly , the " axis " ( wwii germany-japan-italy ) and the " iron curtain countries " are aliases for finite sets of entities , but not for specific organizations with corporation-like infrastructures .
+metonyms , herein designated " common " metonyms , that reference political , military , athletic , and other organizations by the name of a city , country , or other associated location .
+in these cases , the association between the name 's semantic type and the organization is sufficiently predictable and non-idiosyncratic as to preclude a dictionary gloss ; hence the name should be tagged as a location .
+some examples of " common " metonyms follow .
+" germany invaded poland in 1939 . "
+quotation marks around an alias .
+quotes are included in the tag if they appear within a person 's name .
+miscellaneous non-entities .
+miscellaneous types of proper names that are * not * to be tagged as enamex include artifacts , other products , and plural names that do not identify a single , unique entity .
+note that just as in a.1.1 , entity names used as modifiers in complex nps that are not to be marked as entities are to be tagged when it is clear to the annotator from context or the annotator 's knowledge of the world that the name is that of an organization , person , or location .
+more specifically , cases where the manufacturer and the product are named , the manufacturer will be tagged .
+the product will not be tagged .
+" ford taurus " however , the scorer ignores corporate designators as listed in the configuration file , so the scoring is lenient in this respect .
+it is possible that at a later date only partial credit will be given if the existing corporate designator is not included in the markup .
+miscellaneous org-type entity-expressions .
+articles appearing with organization-type expressions .
+the scorer does ignore a list of premodifiers that it is given in its configuration file because some of these articles can be included unconsciously during human markup and systems should not be penalized .
+the answer keys are not consistent with respect to including or excluding articles and the examples in this document reflect the inconsistency of humans .
+however , the scoring ignores these premodifiers .
+generic organization-like non-entities .
+generic entity names such as " the police " and " the government , " are not to be tagged .
+a.2.3 org-type entity-expressions easily confused with non-entities miscellaneous types of proper names referring to facilities ( e.g. , churches , embassies , factories , hospitals , hotels , museums , universities ) will be tagged as organization .
+event-type non-entities .
+a location name that is part of an event name should be tagged if the location name is not rendered in an adjectival form ( as in " pan-american " , above ) .
+also note that certain designators such as " congress " or " conference " ( " congress of deputies " , " 91st congress " , etc . ) may refer to events , to organizations , or ambiguously to either one , depending on the context ( compare " member of the 91st congress " and " commencement of the 91st congress " . )
+guidelines that pertain only to person a.3.1 titles vs. generational designators .
+titles such as " mr. " and role names such as " president " are * not * considered part of a person name .
+however , appositives such as " jr . " , " sr. " , and " iii " * are * considered part of a person name .
+family entity-expressions .
+family names are to be tagged .
+miscellaneous personal non-entities .
+miscellaneous types of proper names that are not to be tagged as person include political groups , laws named after people , diseases / prizes named after people , and saints ( because removal of a saint 's title leaves a non-unique name ) .
+examples of place-related strings that are tagged as location include named heavenly bodies , continents , countries , provinces , counties , cities , regions , districts , towns , villages , neighborhoods , airports , highways , street names , street addresses , oceans , seas , straits , bays , channels , sounds , rivers , islands , lakes , national parks , mountains , fictional or mythical locations , and monumental structures , such as the eiffel tower and washington monument , that were built primarily as monuments .
+if the name of the airport refers to the organization or business of the airport and not its location or facilities , then it is still marked as a location ..
+embedded locative entity-strings and conjoined locative entity-expressions .
+the phrase " of < place-name > " following an organization name may or may not be part of the organization name proper .
+the annotation in the answer key will follow these guidelines : ( 1 ) if there is a corporate designator , it marks the end of the organization name ; ( 2 ) if there is no corporate designator , the " of < place-name > " is part of the organization name .
+locative entity-expressions tagged in succession .
+compound expressions in which place names are separated by a comma are to be tagged as separate instances of location .
+miscellaneous locative non-entities .
+locative designators and specifiers .
+designators that are integrally associated with a place name are to be tagged as part of the name .
+for example , include in the tagged string the word " river " in the name of a river , " mountain " in the name of a mountain , " city " in the name of a city , etc . , if such words are contained in the string .
+however , the scoring program ignores a certain list of premodifiers as specified in section 3.3 which may make the scoring in some of these cases more lenient than this rule implies .
+locative non-entities : the postposed partitive specifier .
+do not include in the tagged string common noun phrases functioning as partitive-type locative specifiers directly after location names , such as : exceptional locative specifiers used as entity expressions .
+note that , due to the political significance of the jordan river 's west bank , the term " west bank " may , in the context of discussions about the middle east , assume the status of a named entity expression .
+a similar example is the term " left bank " ( of the seine river ) as a name for an area of paris .
+use context and world knowledge to determine whether such a term is being used as a specifying non-entity following a place name , or as an entity expression ( a proper noun ) representing a particular location .
+transnational and subnational region names a.4.5.1 transnational locative entity expressions .
+subnational region names .
+do not tag names of sub-national regions when referenced only by compass-point modifiers .
+do not tag " the south " or the " mid-west " , analogies to " the middle east " notwithstanding , because , unlike the latter term , their referential value varies from country to country .
+do tag names of sub-national regions when they are associated with specific regions , if they are identifiable even when the name is disassociated from context .
+examples include " the ruhr " , " the auvergne " , and " amazonia " . note that these names generally straddle , or lie within , geo-political jurisdictions such as states or provinces .
+time and space modifiers of locative entity expressions .
+historic-time modifiers ( " former " , " present-day " ) and directional modifiers ( " north " , " south " , " east " , " west " , " upper " , " lower " , and combinations thereof ) are taggable only when they are intrinsic parts of a location 's official name , as in " upper volta " or " north dakota . "
+do not include them in tagged expressions when used as ad hoc modifiers that are readily separable from the name .
+contrast " premier of the former soviet union " and " formerly premier of the soviet union " ; " east baltimore " and " eastern section of baltimore " ; and " upper volta " and " upper section of volta " to see the separability of these modifiers .
+appendix b. timex : specific guidelines .
+introduction .
+both " absolute " time expressions and certain " relative " time expressions , as specified below ( b.1.2 ) , are to be tagged in muc-7 .
+note that the tag itself does not differentiate between " absolute " and " relative " types , i.e. , all time expressions are labeled with the same type of tag .
+the salient features of the time expressions that are marked is that whether absolute or relative , they can be anchored on a timeline ; unanchored durations , for example , are not marked .
+the time sub-type is defined as a temporal unit shorter than a full day , such as second , minute , or hour .
+the date sub-type is a temporal unit of a full day or longer .
+both date and time expressions may be either absolute or relative .
+both absolute and relative times are tagged as time and absolute and relative dates are tagged as date .
+absolute temporal expressions - time & date .
+to be considered an absolute time expression , the expression must indicate a specific segment of time , as follows : time-tagged expressions scope of temporal expressions .
+absolute time expressions combining numerals and time-unit designators ( " a.m. , " p.m. " , " est " , etc . ) , or other subparts associated with a single timex sub-type , are to be tagged as a single item .
+that is , the subparts ( such as numbers and time-units ) are not to be tagged separately , even in the case of possessive or partitive constructions .
+temporal expressions containing adjacent absolute and relative strings .
+when a time expression contains both relative and absolute elements , the entire expression is to be tagged .
+the following examples illustrate some of the ways in which elements of relative and absolute time expressions may combine to form taggable time expressions .
+holidays .
+special days , such as holidays , that are referenced by name , should be tagged .
+" because of the observance of all saints ' day " because of the observance of < timex type = " date " > all saints ' day < / timex >
+b.5 locative entity-strings embedded in temporal expressions rarely , multiword strings that are to be tagged as timex will contain location ( enamex ) substrings .
+include these words within the scope of the tagged expression , but do not apply an embedded location tag .
+note that the above locative entity-string ( " chicago " ) , plus the word " time " , modifies a contiguous timex expression of the " time " sub-type .
+sometimes , however , the phrasing is such that the modification and types are non-contiguously arranged as in " japan time , 19 february , 8 : 00 a.m. " but marking three items of separately does not represent the modification accurately .
+in such cases , mark the entire phrase as a single temporal expression as shown in the following : a locative expression should be tagged separately as location if it is not contiguous to the " timex " type expression , as in : " in japan , it would have occurred on 19 february , 8 : 00 a.m. "
+in < enamex type = " location " > japan < / enamex > , it would have occurred on < timex type = " date " > 19 february < / timex > , < timex type = " time " > 8 : 00 a.m. < / timex >
+temporal expressions based on alternate calendars .
+temporal expressions in terms of alternate calendars , such as fiscal years , the hebrew calendar , julian dates and " star date , " will generally be marked up in accordance with the above guidelines for date .

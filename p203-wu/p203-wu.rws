@@ -1,0 +1,103 @@
+The goal of text classification is to classify the topic or
+theme of a document [10]. Automated text classification is
+a supervised learning task, defined as automatically assigning
+pre-defined category labels to documents [23]. It is a
+well studied task, with many effective techniques. Feature
+selection is known to be important. The purpose of feature selection is to reduce the dimensionality of the term space
+since high dimensionality may result in the overfitting of a
+classifier to the training data. Yang and Pedersen studied
+five feature selection methods for aggressive dimensionality
+reduction: term selection based on document frequency
+(DF), information gain (IG), mutual information, a ?2 test
+(CIII), and term strength [24]. Using the kNN and Linear
+Least Squares Fit mapping (LLSF) techniques, they found
+IG and CIII most effective in aggressive term removal without
+losing categorization accuracy. They also found that
+DF thresholding, the simplest method with the lowest cost
+in computation could reliably replace IG or CIII when the
+computations of those measure were expensive.
+Popular techniques for text classification include probabilistic
+classifiers (e.g, Naive Bayes classifiers), decision tree
+classifiers, regression methods (e.g., Linear Least-Square Fit),
+on-line (filtering) methods (e.g., perceptron), the Rocchio
+method, neural networks, example-based classifiers (e.g., kNN),
+Support Vector Machines, Bayesian inference networks, genetic
+algorithms, and maximum entropymodelling [18]. Yang
+and Liu [23] conducted a controlled study of 5 well-known
+text classification methods: support vector machine (SVM),
+k-Nearest Neighbor (kNN), a neural network (NNet), Linear
+Least-Square Fit (LLSF) mapping, and Naive Bayes (NB).
+Their results show that SVM, kNN, and LLSF significantly
+outperform NNet and NB when the number of positive training
+examples per category are small (fewer than 10).
+In monolingual text classification, both training and test
+data are in the same language. Cross-language text classification
+emerges when training data are in some other language.
+There have been only a few studies on this issue.
+In 1999, Topic Detection and Tracking (TDT) research was
+extended from English to Chinese [21]. In topic tracking,
+a system is given several (e.g., 1-4) initial seed documents
+and asked to monitor the incoming news stream for further
+documents on the same topic [4], the effectiveness of crosslanguage
+classifiers (trained on Chinese data and tested on
+English) was worse than monolingual classifiers.
+Bel et al. [2] studied an English-Spanish bilingual classification
+task for the International Labor Organization (ILO)
+corpus, which had 12 categories. They tried two approaches—
+a poly-lingual approach in which both English and Spanish
+training and test data were available, and cross-lingual
+approach in which training examples were available in one
+language. Using the poly-lingual approach, in which a single
+classifier was built from a set of training documents in
+both languages, their Winnow classifier, which, like SVM,
+computes an optimal linear separator in the term space
+between positive and negative training examples, achieved
+F1 of 0.811, worse than their monolingual English classifier
+(with F1=0.865) but better than their monolingual Spanish
+classifier (with F1=0.790). For the cross-lingual approach,
+they used two translation methods—terminology translation
+and profile translation. When trained on English and tested
+on Spanish translated into English, their classifier achieved
+F1 of 0.792 using terminology translation and 0.724 using
+profile translation; when trained on Spanish and tested on
+pseudo-Spanish, their classifier achieved F1 of 0.618; all worse
+than their corresponding monolingual classifiers.
+Rigutini et al. [17] studied English and Italian cross-language
+text classification in which training data were available in
+English and the documents to be classified were in Italian.
+They used a Naive Bayes classifier to classify English and Italian newsgroups messages of three categories: Hardware,
+Auto and Sports. English training data (1,000 messages
+for each category) were translated into Italian using
+Office Translator Idiomax. Their cross-language classifier
+was created using Expectation Maximation (EM), with English
+training data (translated into Italian) used to initialize
+the EM iteration on the unlabeled Italian documents. Once
+the Italian documents were labeled, these documents were
+used to train an Italian classifier. The cross-language classifier
+performed slightly worse than monolingual classifier,
+probably due to the quality of their translated Italian data.
+Gliozzo and Strapparava [5] investigated English and Italian
+cross-language text classification by using comparable
+corpora and bilingual dictionaries (MultiWordNet and the
+Collins English-Italian bilingual dictionary). The comparable
+corpus was used for Latent Semantic Analysis which
+exploits the presence of common words among different languages
+in the term-by-document matrix to create a space
+in which documents in both languages were represented.
+Their cross-language classifier, either trained on English and
+tested on Italian, or trained on Italian and tested on English,
+achieved an F1 of 0.88, worse than their monolingual classifier
+(with F1 =0.95 for English and 0.92 for Italian).
+Olsson et al. [16] classified Czech documents using English
+training data. They translated Czech document vectors into
+English document vectors using a probabilistic dictionary
+which contained conditional word-translation probabilities
+for 46,150 word translation pairs. Their “concept label” kNN
+classifier (k = 20) achieved precision of 0.40, which is 73%
+of the precision of a corresponding monolingual classifier.
+The main differences of our approach compared with earlier
+approaches include: (1) classifying document segments
+into aspects, rather than documents into topics; (2) using
+few training examples from both languages; (3) using statistical
+machine translation results to map segment vectors
+from one language into the other.

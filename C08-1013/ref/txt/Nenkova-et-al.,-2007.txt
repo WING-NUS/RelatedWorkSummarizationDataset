@@ -1,0 +1,341 @@
+the pyramid method : incorporating human content selection variation in summarization evaluation .
+abstract .
+human variation in content selection in summarization has given rise to some fundamental research questions : how can one incorporate the observed variation in suitable evaluation measures ?
+how can such measures reflect the fact that summaries conveying different content can be equally good and informative ?
+in this paper we address these very questions by proposing a method for analysis of multiple human abstracts into semantic content units .
+such analysis allows us not only to quantify human variation in content selection , but also to assign empirical importance weight to different content units .
+it serves as the basis for an evaluation method , the pyramid method , that incorporates the observed variation and is predictive of different equally informative summaries .
+we discuss the reliability of content unit annotation , the properties of pyramid scores , and their correlation with other evaluation methods .
+introduction .
+the most common way to evaluate the informativeness of automatic summaries is to compare them with human-authored model summaries .
+for decades , the task of automatic summarization was cast as a sentence selection problem and systems were developed to identify the most important sentences in the input and those were selected to form a summary .
+it was thus appropriate to generate human models by asking people to produce summary extracts by selecting representative sentences .
+systems were evaluated using metrics such as precision and recall [ salton et al. 1997 ] , measuring to what degree automatic summarizers select the same sentences as a human would do .
+content selection is not a determininstic process [ salton et al. 1997 ; marcu 1997 ; mani 2001 ] .
+different people choose different sentences to include in a summary , and even the same person can select different sentences at different times [ rath et al. 1961 ] .
+such observations lead to concerns about the advisability of using a single human model and suggest that multiple human gold-standards would provide a better ground for comparison .
+analysis granularity .
+even ignoring the issue of human variability , comparing the degree of sentence co-selection is not always justified .
+even if a system does not choose exactly the same sentence as the human model , the sentence it does choose may overlap in content with one or more of the model sentences , conveying a subset of their content .
+this partial match should be accounted for , but requires analysis below the sentence level .
+semantic equivalance .
+an issue related to that of appropriate granularity for analysis is semantic equivalence .
+particularly in news , or in multi-document summarization , different input sentences can express the same meaning even when they use different wording .
+naturally , annotators would choose only one of the equivalent sentences for their summaries and a system will be penalized if it selects one of the other equally appropriate options .
+extracts or abstracts ?
+when asked to write a summary of a text , people do not normally produce an extract of sentences from the original .
+rather , they use their own wording and synthesis of the important information .
+thus , exact match of system sentences with human model sentences , as required for recall and precision metrics , is not at all possible .
+as the field turns to the development of more advanced non-extractive summarizers , we will clearly need to move to a more sophisticated evaluation method which can handle semantic equivalence at varying levels of granularity .
+the pyramid method , the description and analysis of which are the focus of this paper , provides a unified framework for addressing the issues outlined above .
+a key assumption of the pyramid method is the need for multiple human models which , taken together , yield a gold-standard for system output .
+the method features a procedure for manual identification of semantic equivalance in abstracts , allowing for variability in the granularity of the analysis .
+when applied to the human abstracts , it results in a representation that explicitly identifies commonly agreed upon content units .
+such semantically motivated analysis allows for the definition of an intuitive evaluation metric that incorporates a differential importance weighting of information based on agreement across abstracts .
+thus , the method can also be used to compare system output against the pyramid of human abstracts , yielding a score reflecting how much of the important content the system summary captured .
+our analysis of the scoring method shows that despite the inherent difficulty of the task , it can be performed reliably .
+in the remainder of this paper , we first define the analysis method , showing how it is used to create pyramids and score system output ( section 2 ) .
+we then present our analysis confirming the need for multiple models in section 3 , turn to a discussion of the reliability of manual content analysis of automated summaries ( section 4 ) , and before closing , discuss other evaluation approaches and compare them with the pyramid method approach ( section 5 ) .
+defining pyramids .
+quantitative evaluation of content selection of summarization systems requires a gold-standard against which automatically generated summaries can be compared ; a pyramid is a representation of a gold-standard summary for an input set of documents .
+because a pyramid is used for evaluating summary content ( as opposed , for example , to wording ) , units of comparison within a pyramid correspond to units of meaning .
+we call these summary content units ( scus ) .
+unlike many gold- standards , a pyramid represents the opinions of multiple human summary writers each of whom has written a model summary for the input set of documents .
+a key feature of a pyramid is that it quantitatively represents agreement among the human summaries : scus that appear in more of the human summaries are weighted more highly , allowing differentiation between important content ( that appears in many human summaries ) from less important content .
+such weighting is necessary in summarization evaluation , given that different people choose somewhat different information when asked to write a summary for the same set of documents .
+in this section , we define scus , outline a procedure for identifying them , and present a method for scoring a new summary against a pyramid .
+summary content units .
+scus are semantically motivated , sub-sentential units ; they are variable in length but not bigger than a sentential clause .
+this variability is intentional since the same information may be conveyed in a single word or a longer phrase .
+scus emerge from annotation of a collection of human summaries for the same input .
+they are identified by noting information that is repeated across summaries , whether the repetition is as small as a modifier of a noun phrase or as large as a clause .
+during the process , annotators label the scus in their own words , and can modify the label as they go along .
+sentences corresponding to information that appears only in one summary are broken down into clauses , each of which is one scu in the pyramid .
+weights are associated with each scu indicating the number of summaries in which it appeared .
+rather than attempting to provide a formal semantic or functional characterization of what an scu is , our annotation procedure defines how to compare summaries to locate the same or different scus .
+they are similar in spirit to the automatically identified elementary discourse units [ marcu 2000 ; soricut and marcu 2003 ] , the manually marked information nuggets [ voorhees 2004 ] and factoids [ van halteren and teufel 2003 ] , all of which are discussed in greater length in section 5 .
+below is an example of the emergence of two scus from six human abstracts .
+the sentences are indexed by a letter and number combination , the letter showing which summary the sentence came from and the number indicating the position of the sentence within its respective summary .
+the industrial espionage case involving gm and vw began with the hiring of jose ignacio lopez , an employee of gm subsidiary adam opel , by vw as a production director .
+however , he left gm for vw under circumstances , which along with ensuing events , were described by a german judge as potentially the biggest-ever case of industrial espionage .
+the remaining parts of the six sentences above end up as contributors to many scus of different weight and granularity .
+scoring a summary .
+after the annotation procedure is completed , the final scus can be partitioned in a pyramid based on the weight of the scu ; each tier contains all and only the scus with the same weight .
+the number of annotated model summaries n determines the maximum possible number of tiers in the pyramid which we say is a pyramid of size n .
+the number of tiers in the pyramid can be different from its size in cases where there is no overlap between all of the models used for the pyramid creation .
+the name pyramid comes from the observed zipffian distribution of scu weights .
+there are few content units ( at the top of the pyramid ) that all people expressed in their summaries , and a very large number of content units expressed by only one of the summary writters ( forming the base of the pyramid ) .
+in descending tiers , scus become less important informationally since they emerged from fewer summaries .
+we use the term pyramid of order n to refer to a pyramid with n tiers .
+given a pyramid of order n , we can predict the optimal summary content for a specified number of contributorsit should include all scus from the top tier , if length permits , scus from the next tier and so on .
+in short , in terms of maximizing information content value , an scu from tier ( n 1 ) should not be expressed if all the scus in tier n have not been expressed .
+this characterization of optimal content ignores many complicating factors such as constraints for ordering scus in the summary .
+however , we explicitly aim at developing a metric for evaluating content selection , under the assumption that a separate linguistic quality evaluation of the summaries will be done as well .
+the proposed characterization of optimal content is predictive : among summaries produced by humans , many seem equally good without having identical content .
+figure 1 , with two scus in the uppermost tier and four in the next , illustrates two of six optimal summaries of size four ( in scus ) that this pyramid predicts .
+based on a pyramid , the informativeness of a new summary can be computed as the ratio of the sum of the weights of its scus to the weight of an optimal summary with the same number of scus .
+such scores range from 0 to 1 , with higher scores indicating that relatively more of the content is as highly weighted as possible .
+then the pyramid score p is the ratio of d to max .
+because p compares the actual distribution of scus to an empirically determined weighting , it provides a direct comparison to the way people select information from source texts .
+other scores based on pyramid annotation .
+the original pyramid score defined in the previous section represents only one of the possible ways for incorporating the content unit analysis into a score reflecting the appropriateness of a content in a summary .
+the original pyramid score is similar to a precision metricit reflects how many of the content units that were included in a summary under evaluation are as highly weighted as possible and it penalizes the use of a content unit when a more highly weighted one is available and not used .
+alternatively , we define a pyramid score corresponding to recall , which we term the modified pyramid score .
+this recall oriented score is defined as the weight of the content units in the summary normalized by the weight of an ideally informative summary of scu size equal to the average scu size the human summaries in the pyramid .
+so again , the score is the ratio between d ( the sum of weights of scus expressed in the summary ) and max ( the optimal score of a summary of size x , ) , but this time x is not the scu length of the evaluated peer , but rather the average number of scus in the model summaries used for the creation of the pyramid , xa .
+this score measures if the summary under evaluation is as informative as one would expect given the scu size of the human models .
+for example , in cases when a new summary expresses more content units than the average pyramid model , the modified pyramid score is not sensitive to the weight of this additionally packed information .
+note that in theory the modified score can be greater than 1 .
+in practice this never happens even when evaluating new human-written summaries because even they contain scus with lower weight before expressing all content weigther more highly .
+in the next section we will discuss the findings from the application of the pyramid evaluation method in duc 2005 where the modified pyramid score showed better qualities than the original pyramid scoresit proved to be less sensitive to peer annotation errors , it distinguished better between systems and had higher correlation with other manual evaluation metrics such as responsiveness judgments .
+the modified score requires less annotation effort , since the parts of a new summary that dont correspond to any scu in the pyramid need not be broken down in individual scus .
+this step is necessary for the computation of the original pyramid score because the exact number of content units in the summary needs to be known for the computation of the weight of the ideal summary .
+another possibility for a score can ignore the weighting of content units alto- gether .
+the pyramid annotation can be used simply to obtain a pool of content units that are likely to appear in the summary , similarly to the way nuggets are used for evaluation of question-answering systems [ voorhees 2004 ] .
+in this scenario , the standard precision and recall used in information retrieval can be computed .
+earlier we defined di as the number of scus in a summary under evaluation that appear in tier ti of the pyramid .
+in particular , d0 is the number of scus in the peer that do not appear in the pyramid .
+then we can straightforwardly define : recall is equal to the fraction of content units in the peer summary that are also in the pyramid and precision is the ratio of scus from the pyramid that are expressed in the peer to all scus expressed in the peer .
+such scores would not incorporate all the knowledge derivable from scu analysis of multiple summariesthe benefit from the use of multiple models will be only that a bigger pool of potential content units can be collected .
+but the importance weighting will not be used .
+a notable difference of the precision / recall approach proposed here and that used in evaluation of question answering systems is that the pyramid method is based on an analysis of human models , while the information nuggets in question-answering evaluation are obtained by analyzing ( mostly ) the output of automatic systems , thus making it impossible to claim that an occurrence in the answer provides empirical evidence for the importance of the nugget .
+another interesting possibility is to use each scu as the unit of evaluation .
+such an approach is similar to the one used in machine translation , where human judgments for quality are collected on a sentence by sentence basis , rather than for a complete text .
+this kind of score can be used when the goal is to compare systems and will work in the following way .
+say there are n content units in a pyramid , n = en i = 1 ti .
+each peer summary will be associated with a binary vector s and s [ k ] = 1 if the kth content unit from the pyramid is expressed in the peer ( and is 0 otherwise ) .
+thus , when comparing two summaries from different systems , for each test set we will get a vector of observations , rather than a single number as the original or modified pyramid scores do .
+this means that one can apply a paired statistical test and test if two different summaries for the same set are statistically significantly different .
+it is not possible to make conclusions of this sort from the original pyramid scores because a vector of observations is necessary to compute the variance of the scores .
+similarly , when comparing the performance of two systems across several test sets , the content unit based evaluation would give more data points which can be used to compare the systems .
+say there are y test sets .
+if the per summary scores are used , the basis for comparison between the two systems will consist of a vector of y observations .
+but there will be about y * na data points for content unit based evaluation , where na is the expected number of scus in a pyramid .
+this large gain in data can make it possible to reach statistically significant conclusions even when few test sets are available .
+the need for multiple models in summarization evaluation .
+it is well known that different people choose different content for inclusion in their summaries and thus a summary under evaluation could receive a rather different score depending on which summary is chosen to be the model .
+in fact , in previous work , mckeown et al. [ mckeown et al. 2001 ] showed that in evaluations based on a single model , the choice of the model had a significant impact on the scores assigned to summaries .
+if an evaluation uses too few models , the resulting ranking of systems is necessarily suspect : would the ranking have been different if different model summaries were used ?
+in this section , we present a study of the effect of the size of the pyramid on summary scores .
+the two specific questions we examine are : how does variability of scores change as pyramid size increases ?
+at what size pyramid do scores become reliable ?
+the data we use to address these questions is 10 100-word summaries for three test sets consisting of about 10 articles each .
+empirically , we observed that as more human summaries are added in the pyramid , and the range between higher weight and lower weight scus grows larger , scores for held-out summaries for pyramids of growing size change less .
+this makes sense in light of the fact that a score is dominated by the higher weight scus that appear in a summary .
+however , we wanted to study more precisely at what point scores become independent of the choice of models that populate the pyramid .
+we conducted three experiments to locate the point at which scores stabilize across our three datasets .
+each experiment supports the conclusion that about five summaries are needed .
+specifically , we used three duc 2003 summary sets for which four human summaries were written .
+in order to provide as broad a comparison as possible for the least annotation effort , we selected the set that received the highest duc scores ( set d30042 ) , and the two that received the lowest ( sets d31041 , d31050 ) .
+for each set , we collected six new summaries from advanced undergraduate and graduate students with evidence of superior verbal skills ; we gave them the same instructions used by nist to produce model summaries .
+our first step in investigating score variability was to examine all pairs of summaries where the difference in scores for a size 9 pyramid was greater than 0.1 ; there were 68 such pairs out of 135 total .
+all such pairs exhibit the same pattern illustrated in figure 2 for two summaries we call summary a ( shown with solid lines ) and summary b ( shown with dotted lines ) .
+the x-axis on the plot shows how many summaries were used in the pyramid ( and in brackets , the number of pyramids of that size that could be constructed with the nine available model summaries ) and the y-axis shows the minimum ( marked on the plot by a triangle ) , maximum ( marked by a cross ) and average ( marked by a square ) of the summaries for a given size of pyramid.1 of the two , a has the higher score for the size 9 pyramid , and is perceivably more informative .
+averaging over all size-1 pyramids , the score of summary a is higher than that for b ( with all sizes of pyramids , including that for size-1 , the square representing the average score for summary a across all possible pyramids is above the square that represents the average score for summary b ) .
+but some individual size-1 pyramids might yield a higher score for summary b : the minimum score assigned by some pyramid to summary a ( triangle ) is lower than the average score for the worse summary b. the score variability at size-1 is huge : it can be as high as 0.5 , with scores for summary a varying between around 0.3 to close to 0.8 .
+with pyramids of bigger size , scores stabilize : the difference between the maximum and minimum score each summary could be assigned diminishes , and even the lowest score assigned to the better summary ( a ) is higher than any score for the worse summary ( b ) .
+specifically , in our data , if summaries diverge at some point as in figure 2 , meaning that the minimum score for the better summary is higher than the maximum score for the worse summary , the size of the divergence never decreases as pyramid size increases .
+this is visually expressed in the figure by the growing distance between the triangles and the crosses .
+the vertical dotted line at pyramids of size 5 marks the first occurrence of divergence in the graph .
+for pyramids of size > 4 , summaries a and b never receive scores that would reverse their ranking , regardless of which model summaries are used in the pyramids .
+for all pairs of divergent summaries , the relationship of scores follows the same pattern we see in figure 2 .
+the point of divergence where the scores for one summary become consistently higher than those of the other was found to be stable .
+in all instances , if summary a gets higher scores than summary b for all pyramids of size n , then a gets higher scores for pyramids of size > n .
+we analyzed the score distributions for all 67 pairs of summaries the size-9 scores for which differed by more than 0.1 , in order to determine what size of pyramid is required to reliably determine which is the better one .
+the expected value for the point of divergence of scores , in terms of number of summaries in the pyramid , is 5.5 .
+we take the scores assigned at size 9 pyramids as being a reliable metric on the assumption that the pattern we have observed in our data is a general one , namely that variance always decreases with increasing sizes of pyramid .
+when testing all combinations of pyramids with four or five models , if the observed range of scores for one summary is lower than the score range for another summary , it will remain lower for all pyramids with a larger number of models .
+we postulate that summaries whose scores differ by less than 0.06 have roughly the same informativeness .
+the assumption is supported by two facts .
+first , this corresponds to the difference in scores for the same summary when the pyramid annotation has been performed by two independent annotators ( see [ nenkova and passonneau 2004 ] for details ) .
+in later studies in the context of duc 2005 , it was also shown that scores based on peer annotations produced by novice annotators given the same pyramid also differ on average by 0.06 [ passonneau et al. 2005 ] .
+second , the pairs of summaries whose scores never clearly diverged , had scores differing by less than 0.06 at pyramid size 9 .
+so we assume that differences in scores by less than 0.06 do not translate to meaningful differences in information quality and proceed to examine how the relative difference between two summaries at size-9 pyramids could change if we used pyramids of smaller size instead .
+now , for each pair of summaries ( sum1 , sum2 ) , we can say whether they are roughly the same when evaluated against a pyramid of size n and we will denote this as i sum1i = = n isum2i , ( scores differ by less than 0.06 for some pyramid of size n ) or different ( scores differ by more than 0.06 for all pyramids of size n ) and we will use the notation i sum1i < n isum2i if the score for sum2 is higher .
+when pyramids of smaller size are used , the following errors can occur , with the associated probabilities : table 3 shows that for size-4 pyramids , the errors of type e3 are ruled out .
+at size-5 pyramids , the total probability of error drops to 0.1 and is mainly due to error e2 , which is the mildest one .
+choosing a desirable size of pyramid involves balancing the two desiderata of having less data to annotate and score stability .
+our data suggest that for this corpus , 4 or 5 summaries provide an optimal balance of annotation effort with score stability .
+this is reconfirmed by our following analysis of ranking stability .
+in order to study the issue of how the pyramid scores behave when more than two summarizers are compared , for each set we randomly selected five peer summaries and constructed pyramids consisting of all possible subsets of the remaining five .
+we computed the spearman rank-correlation coefficient for the ranking of the five peer summaries compared to the ranking of the same summaries given by the size-9 pyramid .
+spearman coefficient rs [ dixon and massey 1969 ] ranges from -1 to 1 , and the sign of the coefficient shows whether the two rankings are correlated negatively or positively and its absolute value shows the strength of the correlation .
+the statistic rs can be used to test the hypothesis that the two ways to assign scores leading to the respective rankings are independent .
+the null hypothesis can be rejected with a one-sided test with level of significance a = 0.05 , given our sample size n = 5 , if rs > 0.85 .
+since there are multiple pyramids of size n < 5 , we computed the average ranking coefficient , as shown in table ii .
+again we can see that in order to have a ranking of the summaries that is reasonably close to the rankings produced by a pyramid of size n = 9 , 4 or more summaries should be used .
+application of the method in duc 2005 .
+in the 2005 document understanding conference , special attention was devoted to the study of evaluation metrics .
+the pyramid semantic-centered evaluation was one of the metrics used . 20 test sets were evaluated with the pyramid method , in addition to the linguistic quality evaluation , responsiveness and the automatic rouge metrics .
+the task in the conference was to produce a 250-word summary in response to a topic such as this shown below : explain the industrial espionage case involving vw and gm .
+identify the issues , charges , people , and government involvement .
+report the progress and resolution of the case .
+include any other relevant factors or effects of the case on the industry .
+pyramid evaluation was applied to 27 peers for each of the 20 test sets .
+the 20 pyramids were constructed by a team at columbia university , and the peer annotation was performed by duc participants and additional volunteers who were interested in the pyramid annotation .
+there were a total of 26 peer annotators and all 27 summaries in some sets were annotated by two different annotators allowing for a study of annotation reliability .
+peer annotation reliability .
+pyramid scores rely on two kinds of human annotation : creation of the pyramids , and annotation of peer summaries against pyramids .
+use of human annotations requires an assessment of their reliability .
+the reliability of pyramid construction is discussed in [ passonneau 2006 ] .
+here , we analyze the reliability of the duc 2005 peer annotations , which were performed by untrained annotators under time pressure .
+for six of the twenty document sets , we have annotations made by two different annotators ( 12 total annotators ) .
+the purpose of a reliability analysis is to determine whether a change in annotator would have a significant impact on results .
+this is typically assessed by measuring inter-annotator agreement .
+in general , we believe it is important to combine measures of agreement with an independent assessment of the impact of substituting different annotations of the same data on the end results [ passonneau 2006 ] , such as scoring peer systems .
+we use interannotator agreement to see if two annotators find largely the same scus in a peer , meaning the same content .
+we also measure the correlation of scores from different peer annotations to determine whether two annotations yield equivalent scores .
+note that if two annotators find different scus in the same peer , the overall sum can be the same ; two scus of weight two yield the same sum as one scu of weight four .
+further , a pyramid might contain two scus that are similar in content but have distinct weights , thus in principle , two annotators could find roughly the same content in a peer , but the sum of the scu weights could be quite distinct .
+we find high interannotator agreement on peer annotations , which indicates that different annotators find largely the same scus in the peer summaries .
+we also find high correlations between the scores resulting from the different annnotations .
+finally , the absolute differences in score values , on average , are generally smaller than the .06 difference we identified earlier as the threshold for a meaningful difference ( 3 ) .
+data representation .
+typically , an annotation task begins with a set of items to be annotated , and the annotation categories to use .
+comparing annotations involves a one-to-one comparison between each decision made by annotators for each item .
+the peer annotation task does not fall directly into this model because the content units in a summary are not given in advance .
+annotators are instructed to make their own selections of word sequences in the peer that express the same information as expressed in some scu of the pyramid , and different annotators find different cardinalities of scus per peer .
+however , the pyramid is given in advance , and in order to correctly perform the task , an annotator must review every scu in the pyramid at least once .
+thus , for each document set , we take the annotator to make j decisions , where j is the number of scus in the pyramid .
+we follow krippendorff [ 1980 ] in representing agreement data in an i x j matrix for each decision made by each of the i coders ( rows ) on the j items ( columns ) ; so each annotation matrix has two rows , and a number of columns given by the number of scus per pyramid , which ranges from 88 to 171 for the 6 document sets considered here .
+to calculate interannotator agreement , we use krippendorffs .
+the values in each cell ( i , j ) of the agreement matrix indicate how often annotator i finds scu j in the peer .
+annotators often find a peer summary to contain multiple instances of a given scu .
+this will occur when a peer summary contains repetitive information , which occurs rather often in automatic multi-document summarization .
+there were a total of 359 cases of scus that were multiply-selected .
+cell values for these cases indicate the number of times an scu was matched to a peer , which ranged from zero to seven .
+we will illustrate below how we extend a to scale the comparison of choices made by annotators when they agree on an scu , but not on how often it appears .
+our data representation contrasts with the method adopted in [ teufel and van halteren 2004 ] for a similar annotation task , involving factoid annotation of 100- word summaries where the number of factoids is approximately the same order of magnitude ( e.g. , 153 factoids ) as in pyramids .
+there , the authors assume that annotators consider each factoid for each sentence of the summary ; for one twenty- sentence summary , they should arrive at 3,630 coding units.2 in contrast , if a pyramid has 153 scus , our data representation of peer annotation represents 153 decisions per annotator .
+the difference in choice of data representation accounts for some of the difference in the agreement we find ( see table iii ) versus the figures of 0.86 and 0.87 reported in [ teufel and van halteren 2004 ] .
+multiply annotated units .
+in [ passonneau et al. 2005 ] , we discussed in detail the motivation for using krippendorffs a so as to give partial credit when annotators agree that a peer expresses a given scu , but differ as to how often .
+here , we briefly summarize the argument .
+in the formula for a shown below , where j is the number of coders and i is the number of units , the numerator is a summation over the product of counts of all pairs of values b and c , times a weight or distance metric s , within rows .
+the denominator is a summation of comparisons of paired values within columns .
+the choice of distance metric s depends on the scale of values that is used in the annotation ; because a measures disagreements , s is set to zero when annotators agree .
+for nominal ( categorical ) data , when any pair of values are compared , say s and t , sat is 0 if they are the same ( no disagreement ) and 1 otherwise ( disagreement ) .
+applied here , the result is that if annotator a finds an scu three times in a given peer , and annotator b finds the same scu twice , they are said to disagree completely ( s = 1 ) .
+in order to quantify the cases of partial agreement on scus , we will report agreement using a s based on the dice coefficient [ l.r.dice 1945 ] , a ratio for comparing the size of two sets .
+let a represent the cases where two annotators a and b agree that an scu appears in the current peer , b the cases where a finds scus that b does not , and c the cases where b finds scus that a does not .
+dice is then : ( 2 a + b + c ) .
+where a finds two instances of an scu and b finds three , dice equals .8 .
+because a measures disagreements , s is ( 1-dice ) , which in this case is = .2 . ( 1-dice ) increases as the disparity in scu counts grows larger .
+table iii summarizes the interannotator agreement for the six pairs of doubly annotated peers .
+the rows represent pairs of annotators on a particular document set and pyramid .
+the rightmost column represents average agreement across the 27 peers in each set .
+analysis of variance of the full data set , with each agreement measured in turn as the dependent variable , and annotator pair , set , and peer as factors , shows no significant difference in variance on agreement , thus it is reasonable here to report the average agreement as representative of the individually computed agreement measures .
+values for adice range from 0.49 , about halfway between chance and perfect agreement , to 0.68 for sets 324 and 633 , indicating that annotators agree rather well , especially considering the large number of degrees of freedom in their decisions .
+they had between 88 and 171 scus to select from , and each summary had 250 words .
+annotators were free to select any sequence of words within a sentence as expressing an scu , and could reselect words to match a different scu , as long as the total selection was not a duplicate .
+regarding the difference in performance across document sets , it is possible that at least one of the annotators who did sets 400 and 407 ( the pair with lowest agreemnt ) was less careful , or that these sets were more difficult to annotate . 4.1.3 interpretation of results and score correlation .
+we now look at the correlation of summary scores resulting from the two different annotations , followed by an examination of the size of the difference in score values .
+investigators rarely report reliability results paired with independent results indicating at what level of reliability the annotations become useful .
+instead , they often rely on an a priori threshold , such as the 0.67 value offered by krippendorff [ 1980 ] .
+in [ passonneau 2006 ] , we introduced the term paradigmatic reliability study to refer to the type of reliability study exemplified here , where interannotator agreement is reported along with an independent assessment of how much the results based on the annotated data would vary , given a different annotator .
+table iv shows pearsons correlations on scores from the two different annotations for each set , and the confidence intervals , for both types of pyramid score .
+the correlations are high , and the differences between the correlations for the original and modified score are relatively small .
+for the four sets 400 , 407 , 426 and 695 the correlations are relatively higher ( > 0.90 ) , especially on the modified scores .
+in addition to the correlations , we examined absolute differences in average scores .
+the average difference in scores across the 162 pairs of doubly annotated peers was 0.0617 for the original score and 0.0555 for the modified score .
+these numbers are very close to the empirically estimated difference of scores that we postulated in section 2 .
+table v shows the average paired difference for each set for the original ( in column 2 ) and modified scores ( in column 3 ) respectively .
+the average differences in the six sets are overall in the expected range , smaller than 0.06 .
+the only exception is set 324 , where the scores differed on average by 0.1 for the modified score and 0.07 for the original pyramid scores .
+one of the annotators for this set reported that he was pressed for time and did not use the script provided to annotators to ensure consistency , so it comes as no surprise that the set this annotator was involved in exhibits the largest differences across annotator scores .
+the smaller differences for the modified score compared to the original score is consistent with the fact that many annotators reported that they were unsure how to annotate content in the peer that is not in the pyramid .
+for the modified score , which does not make use of the annotation of content that does not appear in the pyramid , the differences are more systematic , indicated by the lower p-values for each set .
+annotator training , or a protocol for doublechecking the annotations , possibly by another annotator , are likely to further reduce the observed differences . 4.1.4 discussion .
+for the peer annotation data , the use of adice is more intuitive , given the characteristics of the data , and more accurately quantifies the amount of agreement , than an unweighted metric .
+this makes it possible to place pairs of values from different annotators on a scale , as opposed to a binary contrast between agreement and disagreement .
+here we have provided multiple assessments of the peer annotations , noting that scores from different annotations correlate very highly , with values generally above 0.80 , and often above 0.90 .
+the highly significant results on correlations of scores provide an independent assessment of the reliability of the peer annotations , as does the size of the score differences , which tend to be well below the sensitivity threshold of the pyramid metric .
+by combining three different types of evidence , we provide a comprehensive assessment of the reliability of peer annotation .
+correlations with other evaluation metrics .
+in this section , we will overview the correlations between the manual and automatic metrics used in duc .
+the study of correlations is important in order to identify which metrics are mutually redundant or substitutable .
+for example , if two metrics a and b have correlation exceeding 0.95 , and if we know the scores for one metric , say a , then we can predict the scores for the other ( b ) with very high accuracy .
+if the scores for metric b are more difficult to obtain than those for metric a ( e.g. , they require more annotation , more human subjects , etc . ) then we can say that the metrics are mutually substitutable and simply use metric a in place of metric b. this situation usually arises when one of the metrics is automatic ( easier to produce ) and the other is manual ( more difficult and expensive to produce ) .
+in the case when scores for both metrics with high correlation above 0.95 are equally easy / difficult to produce , it is advisable to chose and report only one of them , since the other does not bring in any new information into the analyses .
+likewise , if two metrics are not perfectly correlated , they give information on some orthogonal qualities of the summaries and can be used jointly for overall assessment .
+table vi shows the correlations between pyramid scores and the other official metrics from duc 2005responsiveness and bigram overlap ( rouge-2 ) and skip bigram ( rouge-su4 ) .
+the responsiveness judgments were solicited by two nist annotators ( responsiveness-1 and responsiveness-2 ) , who ranked all summaries for the same input on a scale from 1 to 5 .
+the two rouge metrics are automatically computed by comparing a summary to a pool of human models on the basis of n-gram overlap .
+the numbers are computed using only the 25 automatic peers as this gives a more fair and realistic analysis of correlations .
+when the humans are included , all correlations exceed 0.92 .
+this is related to the fact that in all metrics the human km corrected misspelling performance is much better and consequently become outliers among the scores for each set and inflate the correlation .
+all correlations are rather high and significantly different from zero .
+the two variants of the pyramid scores ( original and modified ) are very highly correlated , with pearsons correlation coefficient of 0.96 ; so are the two automatic metrics as well ( p = 0.98 ) , indicating that the two pairs of metrics are mutually redundant .
+at the same time , the two sets of responsiveness judgments , given by two different judges under the same guidelines , have a correlations of only 0.83 , confirming that the metric is subjective and different scores are likely to be assigned by different humans .
+the correlation between responsiveness-2 and the modified pyramid score is as high as 0.9 but still the metrics are not mutually redundant and each reveals information about the summary quality that is not captured by the other .
+the automatic metrics correlate quite well with the manual metrics , with pearsons correlation in the range 0.80 to 0.92 but still do not seem to be high enough to suggest that the automatic metrics can be used to replace manual metrics .
+the findings are comparable with results from previous years on multi-document test sets [ lin 2004 ] .
+in previous years , a manual evaluation protocol based on a comparison between a single model and a peer was used .
+in his studies , lin compared the correlations between these manual scores and several versions of automatic scores .
+very good results were achieved for single document summarization and for very short summaries of 10 words where the correlation between the automatic and manual metrics was 0.99 and 0.98 respectively .
+but for 100-word multi-document summaries , the best correlation between an automatic metric and the manual metric was 0.81 : the correlations for multi-document summarization are not as high as the ones achieved in automatic evaluation metrics for machine translations and for other summarization tasks , where pearsons correlations between manual and automatic scores was close to perfect 0.99 [ papineni et al. 2002 ] .
+related work .
+summarization evaluation has been seen as a research topic in its own right for quite some time , with the difficulties stemming from the fact that there are multiple good summaries for the same input document ( s ) .
+many researchers have identified problems that arise as a consequence [ rath et al. 1961 ; minel et al. 1997 ; jing et al. 1998 ; goldstein et al. 1999 ; donaway et al. 2000 ] .
+perhaps because of these early acknowledgements of the difficulties , there have been many recent efforts to develop evaluation methodology that is accurate , easy to use and can be applied on a wide scale .
+in this section , we discuss the annual summarization evaluation run by nist , as well as other manual evaluation methods .
+nist-run summarization evaluation .
+the largest of recent efforts on evaluation has been developed within the document understanding conference ( duc ) series , which began in km or to on 2001 and in which each year a large number of participants test their systems on a common test set .
+the duc approach ( until 2004 ) for evaluating summary content involves the comparison of peer summaries ( i.e. , summaries generated by automatic systems ) against a single human-authored model .
+each year , nist collected multipled models , one of which was used for comparison while the other human models were scored against the first .
+to do the scoring , the human model was automatically broken down into elementary discourse units ( edus ) , capturing the need for analysis on a level smaller than a sentence .
+software developed at isi [ soricut and marcu 2003 ] was used for this task and since it was done automatically , the granularity of each edu varied from as short as a noun phrase to as long as a complex sentence with multiple clauses .
+for each edu in the model , the human evaluator had to decide on a 1 to 5 scale the degree to which the peer expresses its information .
+in addition , for sentences in the peer that did not express any model edu , the evaluators assigned a score reflecting whether the sentence contained important information .
+different proposals were made on how to incorporate the model edu judgments into a final score , and average model edu per summary was eventually adopted as a metric that was used throughout duc 2004 .
+two main drawbacks of the duc approach were the use of a single model and the granularity of edus .
+post evaluation analysis by mckeown et al. [ mckeown et al. 2001 ] indicated that the model had larger impact on peer scores than which summarizer performed the task .
+in addition , marcu [ marcu 2001 ] reported that some systems were overly penalized since they contained content ranked as highly relevant for the topic , but not included in the model summary , again pointing out a shortcoming of the use of a single model .
+the second drawback of the evaluation was the granularity of automatically identified edus .
+nist evaluators reported having trouble deciding when an edu can be said to match content in the peer and were also unsure how to use context in order to interpret the meaning of edus .
+our work on pyramid evaluation aims at addressing these problems , and we are grateful to the duc organizers and participants for giving us the opportunity to analyze some of the problems and look for solutions .
+other manual methods .
+there have been several other approaches to manual evaluation that address the problem of matching semantically similar units of information in a system summary against a model summary .
+these include a method for scoring sentences ranked for relevance , the use of nuggets as part of the trec evaluation of definition questions , and the development of factoids and analysis of their impact on evaluation methodology .
+relative utility [ radev et al. 2000 ; radev and tam 2003 ] was one of the possible evaluation approaches listed in the evaluation road map for summarization research3 , prepared in the beginning of the document understanding conferences .
+in this method , all sentences in the input are ranked on a scale from 0 to 10 as to their suitability for inclusion in a summary .
+in addition , sentences that contain similar information are explicitly marked , so that in the evaluation metric one could penalize for redundancy and reward equally informationally equivalent sentences .
+the ranking of sentences from the entire input allows for a lot of flexibility , because summaries of any size or compression rate can be evaluated .
+at the same time , the method is applicable only to extractive systems that select sentences directly from the input and do not attempt any reformulation or regeneration of the original journalist-written sentence .
+the relative utility approach is very similar in spirit to the evaluation used by marcu [ marcu 2000 ] , chapter 9 ) , who asked multiple independent subjects to rank the importance of information units following older research strategies [ johnson 1970 ; garner 1982 ] .
+the main difference is that earlier research directly concentrated on subsentential units rather than sentences .
+information nuggets have served for evaluation of question answering systems on non-factoid questions , which require a longer answer , very similar to summarization .
+information nuggets are identified by human annotators through the analysis of all systems responses to the question , as well as the searches made by the person who designed the question .
+they are atomic pieces of interesting information about the target , each of which is marked as vital ( i.e. , required ) or non-vital ( i.e. , acceptable but not required ) [ voorhees 2004 ] .
+in theory , the requirement that information nuggets be atomic distinguishes nuggets from our scus .
+scus vary in granularity | usually highly-weighted scus are characterized by shorter contributors and more atomicity than lower-weight scus .
+the information nuggets are also tailored to the contents of peer answers and are , at least in theory , meant to be atomic with respect to peers .
+but when we look at actual question answering evaluations , the identification of nuggets in the systems answer allows for a lot of freedom and subjective interpretation by the annotator .
+the classification of nuggets into vital and non-vital is subjective , and can differ between different humans .
+in the question-answering settings , it is not possible to assign an empirical weight to a nugget , depending on the number of answers that contain it , since the nuggets are derived mainly from systems answers rather than from answers that a human would produce .
+it will be interesting to further explore the parallels of the pyramid method and the nugget-based evaluation approach , possibly combining desirable characteristics from both in order to reach a unified evaluation framework for nonfactoid questions answering and summarization , as has already been suggested , for example , in lin and demner-fushman [ lin and demner-fushman 2005 ] .
+the most thorough analysis on the consensus of human summaries of the same text was presented by van haltren and teufel [ van halteren and teufel 2003 ] .
+they collected 50 abstractive summaries of the same text and developed an annotation scheme for content units called factoids , analyzing the 50 abstracts in terms of factoids .
+their large pool of summaries allowed for insightful observations and an empirical judgment that the appearance of new content with the addition of new summaries does not tail off .
+their initial work was semantically oriented , also including an analysis between the relations among different factoids , much in the spirit of the van dijk tradition | factoids correspond to expressions in a foplstyle semantics , which are compositionally interpreted and they envisioned even further formalization of their mark-up .
+in their later work [ teufel and van halteren 2004 ] , where they included the analysis of another set of 20 summaries , they seem to settle to a representation closer to scus than on a first order logic language .
+in their work , van halteren and teufel also address the question of how many summaries are enough for stable evaluation results .
+their investigation leads to the conclusion that 20 to 30 model summaries are necessary [ teufel and van halteren 2004 ] 4 .
+this conclusion is dramatically different from our study of pyramid evaluation where we established that about five human models are necessary for stable results .
+a careful analysis shows that there is no contradiction as it might seem at a first glance and that actually two different questions were addressed in their work and ours .
+the approach that teufel and halteren take is the following : they resample their pool of summaries ( with possible repetitions ) in order to get sets of n summaries for different values of n. then for each pool of summaries derived in this manner , they score summaries against the factoid inventory using the weight of factoids in the peer summaries ( without the normalization factor we propose ) .
+then , for each pair of system rankings , regardless of the difference in scores , they compute the spearman correlation coefficient and then take the average of the correlation coefficients for a given n. they deem a scoring reliable when the average correlation for a given n exceeds 0.95 .
+our approach is more practical in naturewe assumed that a small difference in pyramid score does not necessarily entail a difference in summary quality .
+in fact , summaries with pyramid scores that differed by less than 0.06 were considered equal with respect to their information content .
+then we proceeded to investigate what errors can arise in identifying summaries as being informationally equal or different ( i.e. , result in a change in system ranking ) .
+consider , for example , the following scores for six systems under two different pyramid inventories .
+in the pyramid analysis , all systems summaries will be considered informationally equal under both inventories and thus the scores will be considered stable .
+but the rank correlation is perfectly negative , -1 .
+so the apparent difference between their conclusion and ours in fact is due to the required strength of the expected results .
+conclusions .
+in this paper , we presented the pyramid evaluation method , which is based on the semantic analysis of multiple human models .
+we demonstrated that the semnatic analysis into content units can be performed reliably and that pyramid scores lead to stable evaluation results .
+pyramid scores are highly correlated with direct overall judgments of the summary quality ( summary responsiveness ) , but in addition they are also diagnostic , providing an indication for what important information is missing from a summary .
+part of the motivation for developing the pyramid method was to provide a much needed in the summarization community evaluation metric that transparently incorporates the complexities of the the summarization task .
+the wide use of the method , both in large-scale evaluations and in individual studies , indicates that this goal has mostly been fulfilled .
+we hope that in the future data from pyramid annotations will be also used to further research in abstractive summarization through the study of different verbalizations of the same content and the packaging of information in sentences .

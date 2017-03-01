@@ -1,0 +1,53 @@
+textual entailment resolution via atomic propositions .
+abstract .
+this paper presents an approach to solving the problem of textual entailment recognition and describes the computer application built to demonstrate the performance of the proposed approach .
+the method presented here is based on syntax-driven semantic analysis and uses the notion of atomic proposition as its main element for entailment recognition .
+the idea is to find the entailment relation in the sentence pairs by comparing the atomic propositions contained in the text and hypothesis sentences .
+the comparison of atomic propositions is performed via an automated deduction system otter ; the propositions are extracted from the output of the link parser ; and semantic knowledge is taken from the wordnet database .
+on its current stage the system is capable to recognize basic semantically and syntactically based entailments and is potentially capable to use more external and internal knowledge to deal with more complex entailments .
+introduction .
+the variety of ways to transmit the same information is an interesting phenomenon of natural language and is an obstacle for many applications in the domain of natural language processing .
+question answering , for example , has faced the fact that a possible answer to a question could be expressed in a way that is syntactically and semantically different from the question sentence , or has to be entailed from it .
+the paper is devoted to the phenomena of entailment .
+by textual entailment is understood a relationship between a coherent text t and a language expression h , which is considered as a hypothesis .
+t entails h if the meaning of h , as interpreted in the context of t , can be deduced from the meaning of t. by a language expression is understood a syntactically coherent text fragment , having a well formed fully connected syntactic analysis ( dagan and glickman , 2004 ) .
+meaning representation .
+to know if a hypothesis h is entailed from a text t one should compare their meanings .
+we represent meaning of a sentence as a set of atomic propositions contained in it and compare the propositions in order to compare the sentences .
+we mean by an atomic proposition a minimal declarative statement ( or a small idea ) that is either true ( t ) or false ( f ) and whose truth or falsity does not depend on the truth or falsity of any other proposition . ( coffee boosts energy and provides health benefits. propositions are : coffee boosts energy. and coffee provides health benefits . )
+to break a sentence into its atomic propositions a syntax-driven semantic analysis of the sentence ( jurafsky and martin , 2000 ) is applied , as we believe that a deep semantic and syntactical analysis is vital to solve the problem .
+the implementation of the method uses an output of the parser as an input for the semantic analyser producing the output from which a first-order logic representation of the meaning can be derived .
+this final meaning representation is called the logic formula of the sentence .
+see figure 1 for an example of the data the system has .
+a logical meaning representation of a sentence and an automatic deduction system to work with it are often used in qa applications ( moldovan et al. , 2002 ; moldovan et al. , 2003 ) .
+there exist many approaches to describe meaning by means of a logical form .
+thus , a sentence a restaurant serves meat can have a description exists e , x isa ( e , serving ) & server ( e , x ) & served ( e , meat ) & isa ( x , restuarant ) ( jurafsky and martin , 2000 ) .
+from our point of view , these forms are rigid and hard to produce .
+there are no automatic rules to understand that the event here is serving , and the subject of the sentence is a server .
+its not clear how to compare two such logical representations .
+as a result we use a simplified representation in this version of the system .
+there are three types of objects - subj ( x ) , obj ( x ) , pred ( x ) and a meaning attaching element iq ( x , < meaning of x > ) .
+the rules are called knowledge rules , as they represent knowledge of the system .
+wordnet relatedness .
+a wordnet ( wordnet ) relatedness algorithm used in the system was developed specially for this system , as the existing ones ( budanitsky and hirst , 2001 ) are not quite right for the system .
+the result of its work is a relatedness score .
+it is used to prove the synonymy or entailment relation between words ( see figure 3 for details ) .
+as it compares senses of the words , a wsd algorithm could be used ( will be in future ) prior to the comparison to get a more reliable score ( otherwise the probability that the current word has sense i could be estimated as 1 / n , where n number of senses the word has ) .
+the score is calculated from the paths between the senses of the words in the graph .
+we use the length of a path ( take overbuy has a length 2 , form-make-establish has a length 3 ; the longer the path , the less is the relatedness ) ; the amount of sense of the words that is on the path between these two words ( two words connected with a verb print , for example , are more close to each other , as the words connected via make , because print has only 4 senses and make has 49 ) ; and the total number of different paths ( the words which senses are connected through 10 different paths are more related then the words having only one connecting path , for example ) .
+though we compare all words similarly now , i would like to emphasize that the following method ideally should be used only for verbs and nouns derived from them , and a different one in other cases , for , intuitively , the verbs ( think about decide and conclude , and the nouns decision and conclusion derived from them ) have a more generic meaning , than the nouns describing particular objects ( train , car , bus ) .
+system description .
+the scheme of the system is presented on the figure 2 .
+the link parser 4.1 a ( link grammar ) to trace the connections between the elements of sentences and a version 3.3 of otter ( otter ) for comparison of the atomic propositions are used now .
+a way to logic form is shown in section 2 .
+after the algorithm is the following ( figure 2 : otter and its input data ; and figure 4 ) : if for every proposition in the hypothesis sentence there is one in the text sentence from that it could be entailed then the sentence entailment holds , otherwise the entailment does not hold .
+the same algorithm also can be used to obtain some knowledge rules from the data set : when entailment holds we want to find pairs < p1 , p2 > ( see fig . 2 ) and to build knowledge rules p1- > p2 to use them later .
+the idea of this process is the following : for every atomic proposition y in the hypothesis find the atomic proposition in the text from which it is entailed .
+if there is none , find the closest ( with the higher relatedness score according to wordnet ( see section 7 ) ) atomic proposition x and create a rule prop x - > prop y. so , what we can learn is : reduce the risk of diseases - > have health benefits .
+performance of the system .
+results .
+future work .
+despite not very high results we believe the proposed system has a strong potential .
+the main future tasks are : to make inferences inside the text sentence itself , to try reasoning with all propositions from the text , and to create an inference rule database .
+an attempt will be done to construct the database using sentences with inferences inside them .
+that is the sentences with the conjunctions as result of , because , if , and predicates cause , follow .

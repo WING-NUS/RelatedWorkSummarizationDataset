@@ -1,0 +1,101 @@
+The literature on pronominal anaphora is quite
+large, and we cannot hope to do justice to it here.
+Rather we limit ourselves to particular papers and
+systems that have had the greatest impact on, and
+similarity to, ours.
+Probably the closest approach to our own is
+(Cherry and Bergsma 2005), which also presents
+an EM approach to pronoun resolution, and obtains
+quite successful results. Our work improves
+upon theirs in several dimensions. Firstly, they
+do not distinguish antecedents of non-reflexive
+pronouns based on syntax (for instance, subjects
+and objects). Both previous work (cf. (Tetreault 2001) discussed below) and our present results
+find these distinctions extremely helpful. Secondly,
+their system relies on a separate preprocessing
+stage to classify non-anaphoric pronouns,
+and mark the gender of certain NPs (Mr., Mrs. and some first names). This allows the incorporation
+of external data and learning systems, but
+conversely, it requires these decisions to be made
+sequentially. Our system classifies non-anaphoric
+pronouns jointly, and learns gender without an
+external database. Next, they only handle thirdperson
+pronouns, while we handle first and second
+as well. Finally, as a demonstration of EM’s
+capabilities, its evidence is equivocal. Their EM
+requires careful initialization — sufficiently careful
+that the EM version only performs 0.4% better
+than the initialized program alone. (We can say
+nothing about relative performance of their system
+vs. ours since we have been able to access neither
+their data nor code.)
+A quite different unsupervised approach is
+(Kehler et al. 2004a), which uses self-training of a
+discriminative system, initialized with some conservative number and gender heuristics. The system
+uses the conventional ranking approach, applying
+a maximum-entropy classifier to pairs of
+pronoun and potential antecedent and selecting the
+best antecedent. In each iteration of self-training,
+the system labels the training corpus and its decisions
+are treated as input for the next training
+phase. The system improves substantially over a
+Hobbs baseline. In comparison to ours, their feature
+set is quite similar, while their learning approach
+is rather different. In addition, their system
+does not classify non-anaphoric pronouns,
+A third paper that has significantly influenced
+our work is that of (Haghighi and Klein, 2007).
+This is the first paper to treat all noun phrase (NP)
+anaphora using a generative model. The success
+they achieve directly inspired our work. There are,
+however, many differences between their approach
+and ours. The most obvious is our use of EM
+rather than theirs of Gibbs sampling. However, the
+most important difference is the choice of training
+data. In our case it is a very large corpus of parsed,
+but otherwise unannotated text. Their system is
+trained on the ACE corpus, and requires explicit
+annotation of all “markables”—things that are or
+have antecedents. For pronouns, only anaphoric
+pronouns are so marked. Thus the system does
+not learn to recognize non-anaphoric pronouns —
+a significant problem. More generally it follows
+from this that the system only works (or at least
+works with the accuracy they achieve) when the
+input data is so marked. These markings not only
+render the non-anaphoric pronoun situation moot,
+but also significantly restrict the choice of possible
+antecedent. Only perhaps one in four or five NPs
+are markable (Poesio and Vieira, 1998).
+There are also several papers which treat
+coference as an unsupervised clustering problem
+(Cardie and Wagstaff, 1999; Angheluta et al., 2004). In this literature there is no generative
+model at all, and thus this work is only loosely
+connected to the above models.
+Another key paper is (Ge et al., 1998). The data
+annotated for the Ge research is used here for testing
+and development data. Also, there are many
+overlaps between their formulation of the problem
+and ours. For one thing, their model is generative,
+although they do not note this fact, and (with
+the partial exception we are about to mention) they
+obtain their probabilities from hand annotated data
+rather than using EM. Lastly, they learn their gender information (the probability of that a pronoun
+will have a particular gender given its antecedent)
+using a truncated EM procedure. Once they have
+derived all of the other parameters from the training
+data, they go through a larger corpus of unlabeled
+data collecting estimated counts of how often
+each word generates a pronoun of a particular
+gender. They then normalize these probabilities
+and the result is used in the final program. This is,
+in fact, a single iteration of EM.
+(Tetreault 2001) is one of the few papers that
+use the (Ge et al., 1998) corpus used here. They
+achieve a very high 80% correct, but this is
+given hand-annotated number, gender and syntactic
+binding features to filter candidate antecedents
+and also ignores non-anaphoric pronouns.
+We defer discussion of the systems against
+which we were able to compare to Section 7 on
+evaluation.

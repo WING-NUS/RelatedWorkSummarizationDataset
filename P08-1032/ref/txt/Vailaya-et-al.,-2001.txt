@@ -1,0 +1,364 @@
+image classification for content-based indexing .
+abstract .
+grouping images into ( semantically ) meaningful categories using low-level visual features is a challenging and important problem in content-based image retrieval .
+using binary bayesian classifiers , we attempt to capture high-level concepts from low-level image features under the constraint that the test image does belong to one of the classes .
+specifically , we consider the hierarchical classification of vacation images ; at the highest level , images are classified as indoor or outdoor ; outdoor images are further classified as city or landscape ; finally , a subset of landscape images is classified into sunset , forest , and mountain classes .
+we demonstrate that a small vector quantizer ( whose optimal size is selected using a modified mdl criterion ) can be used to model the class-conditional densities of the features , required by the bayesian methodology .
+the classifiers have been designed and evaluated on a database of 6931 vacation photographs .
+our system achieved a classification accuracy of 90.5 % for indoor / outdoor , 95.3 % for city / landscape , 96.6 % for sunset / forest & mountain , and 96 % for forest / mountain classification problems .
+we further develop a learning method to incrementally train the classifiers as additional data become available .
+we also show preliminary results for feature reduction using clustering techniques .
+our goal is to combine multiple two-class classifiers into a single hierarchical classifier .
+introduction .
+many organizations have large image and video collections ( programs , news segments , games , art ) in digital format , available for on-line access .
+organizing these libraries into categories and providing effective indexing is imperative for real-time browsing and retrieval .
+with the development of digital photography , more and more people are able to store vacation and personal photographs on their computers .
+as an example , travel agencies are interested in digital archives of photographs of holiday resorts ; a user could query these databases to plan a vacation .
+however , in order to make these databases more useful , we need to develop schemes for indexing and categorizing the humungous data .
+several content-based image retrieval systems have been recently proposed : qbic [ 5 ] , photobook [ 26 ] , swim [ 44 ] , virage [ 10 ] , visualseek [ 36 ] , netra [ 17 ] , and mars [ 20 ] .
+these systems follow the paradigm of representing images using a set of attributes , such as color , texture , shape , and layout , which are archived along with the images .
+retrieval is performed by matching the features of a query image with those in the database .
+users typically do not think in terms of low-level features , i.e. , user queries are typically semantic ( e.g. , show me a sunset image ) and not low-level ( e.g. , show me a predominantly red and orange image ) .
+as a result , most of these image retrieval systems have poor performance for ( semantically ) specific queries .
+for example , fig . 1 ( b ) shows the top-ten retrieved images ( based on color histogram features ) from a database of 2145 images of city and landscape scenes , for the query in fig . 1 ( a ) .
+while the query image has a monument , some of the retrieved images have mountain and coast scenes .
+recent research in human perception of image content [ 21 ] , [ 24 ] , [ 27 ] , [ 31 ] suggests the importance of semantic cues for efficient retrieval .
+one method to decode human perception is through the use of relevance feedback mechanisms [ 33 ] .
+a second method relies on grouping the images into semantically meaningful classes [ 42 ] .
+fig . 1 ( c ) shows the top-ten results ( again based on color histograms ) on a database of 760 city images for the same query ; clearly , filtering out landscape images improves the retrieval result .
+as shown in fig . 1 ( a ) ( c ) , a successful indexing / categorization of images greatly enhances the performance of content- based retrieval systems by filtering out irrelevant classes .
+this rather difficult problem has not been adequately addressed in current image database systems .
+the main problem is that only low-level features ( as opposed to higher level features such as objects and their inter-relationships ) can be reliably extracted from images .
+for example , color histograms are easily extracted from color images , but the presence of sky , trees , buildings , people , etc . , cannot be reliably detected .
+the main challenge , thereby , lies in grouping images into semantically meaningful categories based on low-level visual features .
+one attempt to solve this problem is the hierarchical indexing scheme proposed in [ 45 ] , [ 46 ] , which performs clustering based on color and texture , using a self-organizing map .
+this indexing scheme was further applied in [ 16 ] to create a texture thesaurus for indexing a database of aerial photographs .
+however , the success of such clustering-based schemes is often limited , largely due to the low-level feature-based representation of image content .
+for example , fig . 2 ( a ) ( d ) shows two images and their corresponding edge direction coherence feature vectors ( see [ 42 ] ) .
+although , these are semantically very different concepts , their edge direction histograms are highly similar , illustrating the limitations of this low-level feature in capturing semantic content .
+yet , we shall show that these same features are sufficiently discriminative for city / landscape classification .
+that is , specific low-level fig . 3 .
+( a ) hierarchy of the 11 categories obtained from human provided grouping [ 42 ] and ( b ) simplified semantic classification of images ; solid lines show the classification problems addressed in this paper. features can be used in constrained environments to discriminate between certain conceptual image classes .
+to achieve automatic categorization / indexing in a large database , we need to develop robust schemes to identify salient image features capturing a certain aspect of the semantic content .
+this necessitates an initial specification of meaningful classes , so that the database images can be organized in a supervised fashion .
+in this paper , we address the problem of image classification from low-level features .
+specifically , we classify vacation photographs into a hierarchy of high-level classes .
+photographs are first classified as indoor or outdoor .
+outdoor images are then classified as city or landscape .
+a subset of landscape images is further classified into sunset , forest , and mountain classes .
+the above hierarchy was identified based on experiments with human subjects on a small database of 171 images [ 42 ] ( as briefly described in section ii ) .
+these classification problems are addressed using bayesian theory .
+the required class-conditional probability density functions are estimated , during a training phase , using vector quantization ( vq ) [ 9 ] .
+an mdl-type principle [ 30 ] is used to determine the optimal codebook size from the training samples .
+psychophysical and psychological studies have shown that scene identification by humans can proceed , in certain cases , without any kind of object identification [ 1 ] , [ 2 ] , [ 34 ] .
+biederman [ 1 ] , [ 2 ] suggested that an arrangement of volumetric primitives ( geons ) , each representing a prominent object in the scene , may allow rapid scene identification independently of local object identification .
+schyns and oliva [ 34 ] demonstrated that scenes can be identified from low spatial-frequency images that preserve the spatial relations between large-scale structures in the scene , but which lack the visual detail to identify local objects .
+these results suggest the possibility of coarse scene identification from global low-level features before the identity of objects is established .
+based on these observations , we address the problem of scene identification as the first step toward building semantic indices into image databases .
+the first step toward building a classifier is to identify meaningful image categories which can be automatically identified by simple and efficient pattern recognition techniques .
+for this purpose , we conducted a simple small-scale experiment in which eight human subjects classified 171 vacation images [ 42 ] .
+our goal was to identify a hierarchy of classes into which the vacation images can be organized .
+since these classes match human perception , they allow organizing the database for effective browsing and retrieval .
+our experiments revealed a total of 11 semantic categories : forests and farmlands , mountains , beach scenes , pathways , sunset / sunrise images , long distance city shots , streets / buildings , monuments / towers , shots of washington , dc , miscellaneous images , and faces .
+we organized these 11 categories into the hierarchy shown in fig . 3 ( a ) .
+the first four classes ( forests , mountains , beach scenes , and pathways ) are grouped into the class natural scenes .
+natural scenes and sunset images were further grouped into the landscape class .
+city shots , monuments , and shots of washington dc were grouped into the city class .
+finally , the miscellaneous , face , landscape , and city classes were grouped into the top-level class of vacation scenes .
+we conducted additional experiments to verify that the above hierarchy is reasonable : we used a multidimensional scaling algorithm to generate a three-dimensional ( 3-d ) feature space to embed the 171 images from the dissimilarity matrix used above ( generated from user groupings ) .
+we then applied a -means clustering algorithm to partition the ( 3-d ) data .
+our goal was to verify if the main clusters in this representation space agreed with the hierarchy shown in fig . 3 ( a ) .
+for , we obtained two clusters of 62 and 109 images , respectively .
+the first cluster consisted of predominantly city images , while the second cluster contained landscape images .
+these groupings motivated us to study a hierarchical classification of vacation images .
+in order to make the problem more tractable , we simplified the classification hierarchy as shown in fig . 3 ( b ) .
+the solid lines show the classification problems addressed in this paper .
+this hierarchy is not complete , e.g. , a user may be interested in images captured in the evening or images containing faces .
+however , it is a reasonable approach to simplify the image retrieval problem .
+another limitation of the proposed hierarchy is that the leaf nodes are not mutually exclusive .
+for example , an image can belong to both the city and sunset categories .
+one way to address this issue is to develop individual classifiers such as city / non-city or sunset / non-sunset , instead of a hierarchy .
+however , this would drastically increase the complexity of the classification task ( now we will have to identify city scenes from all possible scenes , rather than differentiate between city and landscape scenes ) .
+most images can be classified as representing indoor or outdoor scenes .
+exceptions include close-ups and pictures of a window or door .
+outdoor images can be further divided into city or landscape [ 40 ] , [ 42 ] .
+city scenes can be characterized by the presence of man-made objects and structures such as buildings , cars , roads .
+natural scenes , on the other hand , lack these structures .
+a subset of landscape images can be further classified into one of the sunset , forest , and mountain classes .
+sunset scenes are characterized by saturated colors ( red , orange , or yellow ) , forest scenes have predominantly green color distribution , and mountain scenes can be characterized by long distance shots of mountains ( either snow covered , or barren plateaus ) .
+we assume that the input images do belong to one of the classes under consideration .
+this restriction is imposed because automatically rejecting images that do not belong to any of the classes , based on low-level image features alone , is in itself a very difficult problem ( see fig . 2 ) .
+however , for images belonging to the classes of interest , the bayesian methodology can be used to reject ambiguous images based on the confidence values associated with the images ( images that belong to both the classes of interest , such as an image of a city scene at sunset ) .
+we briefly discuss incorporating the reject option in section vi-f .
+bayesian framework .
+bayesian methods have been successfully adopted in many image analysis and computer vision problems .
+however , its use in content-based retrieval from image databases is just being realized [ 43 ] .
+in most image classification problems , the decision is based on , say , feature sets , , rather than directly on the raw pixel values .
+of course , is a function of the image .
+we will then have class-conditional densities for the features , rather than for the raw images .
+density estimation by vector quantization .
+the performance of a bayes classifier depends critically on the ability of the features to discriminate among the various classes .
+moreover , since the class-conditional densities have to be estimated from data , the accuracy of these estimates is also critical .
+choosing the right set of features is a difficult problem to which we return in section v-a .
+in this section , we focus on estimating the class-conditional densities , adopting a vector quantization approach [ 9 ] .
+introduction to vector quantization .
+vector quantization for density estimation .
+this approximation fails if the cells are not sufficiently small , for example , when the dimensionality of is large .
+in that case , the class-conditional densities can be approximated using a mixture of gaussians [ 9 ] , [ 43 ] , each centered at a codebook vector .
+the mse criterion is the sum of the euclidean distances of each training sample from its closest codebook vector .
+the value of is not estimated by the vq algorithm , and so we empirically choose it for each feature .
+alternatively , we could use the em algorithm to directly find maximum likelihood ( ml ) estimates of the mixture parameters , under a diagonal covariance constraint [ 19 ] .
+this choice is computationally demanding , and we have found that the value of is not crucial ; it simply affects the number of codebook vectors that influence classification .
+unless is exceptionally 1actually , learning vector quantization ( lvq ) is used to select the codebook vectors .
+lvq does not run the gla separately for each class ; in this algorithm , the codebook vectors are also pushed away from incorrectly classified samples ( see [ 14 ] , [ 29 ] ) .
+selecting codebook size .
+selecting is a key issue in using a vq , or a mixture , for density representation .
+we start by noting that gla approximately looks for the maximum likelihood ( ml ) estimates of the parameters of the mixture in ( 4 ) .
+in fact , the em algorithm becomes exactly equivalent to the gla when the variance goes to zero [ 29 ] .
+we will therefore apply an mdl criterion to select , since mdl allows extending maximum likelihood ( ml ) estimation to situations where the dimension of the model is unknown [ 30 ] .
+consider a training set of independent samples , from the class .
+these are , of course , samples of one of the features , although here we omit this from the notation to keep it simpler .
+a direct application of the standard mdl criterion would lead to the following criterion to select [ the size of the mixture in ( 4 ) ] where is the ml estimate assuming size , and is the number of real-valued parameters needed to specify a -component mixture ( with denoting dimension of ) [ 30 ] .
+notice that the additional term proportional to grows with , thus counterbalancing the unbounded increase , with , of the likelihood .
+the penalty paid by each additional real parameter has an asymptotical justification ( see [ 30 ] ) .
+for a mixture , however , it can be argued that each center does not see data points , but only ( on average ) ( for the th center ) ( see [ 15 ] and [ 6 ] , for details ) .
+this leads to the following modified mdl ( mmdl ) criterion .
+implementation issues .
+experiments were conducted on two databases ( both independently and combined ) of 5081 ( indoor / outdoor classification ) and 2716 ( city / landscape classification and further classification of landscape images ) images .
+the two databases , henceforth referred to as d1 and d2 , have 866 images in common , leading to a total of 6931 distinct images , collected from various sources ( corel library , scanned personal photographs , key frames from tv serials , and images downloaded from the web ) and are of varying sizes ( from to ) .
+the color images are stored with 24-bits per pixel in jpeg format .
+the ground truth for all the images was assigned by a single subject .
+image features .
+outdoor images tend to have uniform spatial color distributions , such as the sky is on top and is typically blue .
+indoor images tend to have more varied color distributions and have more uniform lighting ( most are close up shots ) .
+thus , it seems logical that spatial color distribution can discriminate between indoor and outdoor images .
+on the other hand , shape features may not be useful because objects with similar shapes can be present in both indoor and outdoor scenes .
+therefore , we use spatial color information features to represent these qualitative attributes .
+specifically , first- and second-order moments in the color space were used as color features ( it was pointed out in [ 7 ] that moments yield better results in image retrieval than other spaces ) .
+the image was divided into subblocks and six features ( three means and three standard deviations ) were extracted [ 37 ] , [ 41 ] .
+as another set of features for indoor / outdoor classification , we extract subblock msar texture features as described in [ 18 ] , [ 39 ] .
+we looked for similar qualitative attributes for city / landscape classification , and further classification of landscape images .
+city images usually have strong vertical and horizontal edges due to the presence of man-made objects .
+non-city images tend to have randomly distributed edge directions .
+the edge direction distribution seems then as a natural feature to discriminate between these two categories [ 42 ] .
+on the other hand , color features would not have sufficient discriminatory power as man-made objects have arbitrary colors .
+in the case of further classification of landscape images as sunset , forest , or mountain , global color distributions seem to adequately describe these classes .
+sunset pictures typically have saturated colors ( mostly yellow and red ) ; mountain images tend to have the sky in the background ( typically blue ) ; and forest scenes tend to have more greenish distributions .
+based on the above observations , we use edge direction features ( histograms and coherence vectors ) for city / landscape classification and color features ( histograms , coherence vectors , and spatial moments ) in and color space for further classification of landscape images [ 25 ] , [ 38 ] , [ 42 ] .
+table i summarizes the qualitative attributes of the various classes and the features used to represent them .
+vector quantization .
+we used the lvq _ pak package [ 14 ] for vector quantization .
+half of the database was used to train the lvq for each of the image features .
+the mmdl criterion ( section iv-c ) was used to determine the codebook sizes .
+for the indoor and outdoor classes , with the spatial color moment features , fig . 4 ( a ) ( c ) plots the mmdl cost function [ ( 5 ) ] versus the codebook size .
+these plots show that and are the mmdl choices for the indoor and outdoor classes , respectively .
+for the combination of the two classes , minimizes the mmdl criterion .
+to confirm this choice from a classification point of view , fig . 5 plots the accuracy of the indoor / outdoor classifier ( on an independent test set of size 2540 ) as a function of the total codebook size .
+as is initially increased , the classifier accuracy improves .
+however , it soon stabilizes and further increasing beyond 30 does not improve the accuracy .
+this conclusion ( and similar ones for city / landscape classification ) supports the use of mmdl for codebook size selection .
+based on similar analysis ( see [ 40 ] ) , 20 codebook vectors were extracted for each of the city and landscape classes .
+for further classification of landscape images , a codebook of five vectors was selected for each class .
+these vectors were then stored as representatives of each class .
+table ii shows the number and dimensionality of the codebook vectors for the various classification problems .
+experimental results .
+given an input image , the classifier computes the class-conditional probabilities for each of the features using ( 4 ) .
+these probabilities are then used to obtain the map classification [ ( 2 ) ] .
+we present classification accuracies on a set of independent test patterns as well as on the training patterns .
+we have done classifications based on individual features and also based on combinations of features [ assumed independent , ( 1 ) ] .
+as we show later , each of the individual features chosen for the classification problems has sufficient discrimination power for that particular classification problem , and introducing other features does not significantly improve the results .
+indoor / outdoor classification .
+database d1 ( 2470 indoor and 2611 outdoor images ) was used to train the indoor / outdoor classifier .
+apart from the color moment features , we also considered the subblock msar texture features [ 39 ] , edge direction features , and color histograms .
+msar features yielded an accuracy of around 75 % on the test set .
+a higher classification accuracy ( using a -nn classifier and leave-one-out testing ) of 84 % on a database of 1324 images was reported in [ 39 ] .
+we attribute this discrepancy to differences in the database ( our database of 5081 images is larger ) and mode of testing ( we report results on an independent test set ) .
+edge direction and coherence vector features yielded an accuracy of around 60 % , while the color moment features lead to a much higher accuracy of around 90 % .
+these results show that the spatial color distribution ( probably capturing illumination changes ) is suited for indoor / outdoor classification .
+a combination of color and texture features did not yield a better accuracy than color moment features alone .
+table iii shows the classification results with the color moment features for indoor / outdoor classification .
+the classifier showed an accuracy of 94.2 % and 88.2 % on the training set and an independent test set ( test set 1 in table iii ) , respectively .
+on a different test set ( test set 2 in table iii ) of 1850 images from database d2 , the classifier accuracy was 88.7 % .
+an accuracy of 90.5 % was obtained on the entire database of 6931 images .
+szummer et al. [ 39 ] use a -nn classifier and report 90 % accuracy using leave-one-out testing , for the indoor / outdoor classification on a database of 1324 images .
+thus , our classifiers performance is comparable to those reported in the literature .
+a major advantage of the bayesian classifier over -nn classifier is its efficiency due to the small number of codebook vectors needed to represent the training data .
+fig . 6 shows a representative subset of the misclassified indoor / outdoor scenes .
+presence of bright spots either from some light source or from sunshine through windows and doors seems to be a main cause of misclassification of indoor images .
+the main reasons for the misclassification of outdoor images are 1 ) uniform lighting on the image mostly as a result of a close-up shot and 2 ) low-contrast images ( several of the indoor images used in the training set were low contrast digital images and hence most low contrast outdoor images were classified as indoor scenes ) .
+the results show that spatial color distribution captured in the subblock color moment features has sufficient discrimination power for indoor / outdoor classification .
+city / landscape classification .
+the city versus landscape classification problem and further classification of landscape images as sunset , forest , or mountain using the bayesian framework has been addressed in detail in [ 40 ] .
+we summarize the results here .
+table iv shows the results for the city / landscape classification problem using database d2 .
+edge direction coherence vector provides the best individual accuracy of 97.0 % for the training set and 92.9 % for the test set .
+a total of 126 images were misclassified ( 95.3 % accuracy ) when the edge direction coherence vector was combined with the color histogram .
+fig . 7 shows a representative subset of misclassified images .
+most of the misclassified landscape images had strong vertical edges from tree trunks , close-ups of stems , fences , etc . , that led to their assignment to the city class .
+we also computed the classification accuracy using the edge direction coherence vector on an independent test set of 568 outdoor images from database d1 .
+a total of 1177 images of the 4181 outdoor images in database d1 contained close ups of human faces .
+we removed these images for the city / landscape test .
+recent advances show that faces can be detected rather reliably [ 32 ] .
+of the remaining test images , we extracted 568 that were not part of database d2 .
+the edge direction features yielded an accuracy of 90.0 % ( 57 misclassifications out of the 568 images ) .
+combining color histogram features with edge direction coherence vector features reduced the misclassification in the above experiment to 56 , confirming that edge directions are sufficient to discriminate between city and landscape .
+further classification of landscape images .
+while our limited experiments on human subjects [ 42 ] revealed classes such as sunset and sunrise , forest and farmland , mountain , pathway , water scene , etc . , these groups were not consistent among the subjects in terms of the actual labeling of the images .
+we found it extremely difficult to generate a semantic partitioning of landscape images .
+we thus restricted classification of landscape images into three classes that could be more unambiguously distinguished : sunset , forest , and mountain .
+of these 528 images , a human subject labeled 177 , 196 , and 155 images as belonging to the forest , mountain , and sunset classes , respectively .
+a two-stage classifier was constructed .
+first , we classify an image into either sunset or the forest and mountain class .
+the above hierarchy was based on the human study , as shown in fig . 3 ( a ) , where the sunset cluster seemed to be more compact and well separated from the other categories in the landscape class .
+table v shows the results for the classification of landscape images into sunset vs. forest and mountain classes .
+the color coherence vector provides the best accuracy of 99.2 % for the training set and 93.9 % for the test set .
+color features do much better than the edge direction features here , since color distributions remain more or less constant for natural images ( blue sky , green grass , trees , plants , etc ) .
+a total of 18 images were misclassified ( a classification accuracy of 96.6 % ) when the color coherence vector feature was used .
+we find that combining features does not improve the classification accuracy .
+this shows that color coherence vector has sufficient discrimination ability for the problem at hand .
+table vi shows the classification results for the individual features for forest and mountain classes ( 373 images ) .
+spatial color moment features provide the best accuracy of 98.4 % for the training set and 93.6 % on the test set .
+a total of 15 images were misclassified ( a classification accuracy of 96 % ) when the spatial color moment features were used .
+again , the combinations of features did not perform better than the color features , showing that these features are adequate for this problem .
+note that the spatial color moment features and the color coherence vector features yield similar accuracies for the classification of landscape images .
+however , the database of 528 images is very small to identify the best color feature for the classification of landscape images .
+using color coherence vector features increases the complexity of the classifiers .
+error propagation in hierarchical classification .
+the goal of hierarchical classification is to break a complex problem into simpler problems .
+however , since each classifier is not perfect , the errors from a classifier located higher up in the tree are propagated to the lower levels .
+the indoor / outdoor image classifier yielded an accuracy of 90.5 % on the entire database of 6931 images ( 658 images were misclassified ) .
+of these , 269 images were indoor images out of which 229 were close-ups of people and pets .
+out of the remaining 40 images , three were classified as landscape images and 37 were classified as city images .
+fig . 8 shows these three indoor images that were misclassified as landscapes .
+if a face detector is not available and we submit all the 269 images to the city / landscape classifier , it classifies 199 images as city images ( most indoor images have man-made structures with strong vertical and horizontal edges ) and 70 as landscape .
+since we have not yet developed a classifier to identify sunset , forest , and mountain images from other landscape images , in the worst case , all 70 of these images will be fed to the sunset / forest / mountain classifier and hence , degrade the overall classification accuracy .
+fig . 8 ( a ) and ( b ) was classified as sunrise / sunset images and fig . 8 ( c ) was classified as a forest image .
+feature saliency .
+the accuracy of the individual classifiers depends on the underlying low-level representation of the images .
+for example , the edge direction and coherence vector features yield accuracies of about 60 % for the indoor / outdoor problem , yet they yield approximately 95 % accuracy for the city / landscape problem .
+this shows the importance of feature definition and selection .
+reject option .
+introducing a reject option is useful , yet a difficult problem in image classification .
+for bayesian classifiers , the simplest strategy is to reject images whose maximum a posteriori probability is below a threshold .
+table vii shows the accuracies for the indoor / outdoor and city / landscape image classifiers with reject option , for .
+the indoor / outdoor classifier used spatial color moment features and was trained on 2541 images from database and tested on the entire set ( 6931 images ) .
+the classification accuracy improved from 90.5 % ( no rejection ) to 92.1 % at 5.4 % reject rate .
+the city / landscape classifier used edge direction coherence vector features ; it was trained on 1358 images from database and tested on the complete database ( 2716 images ) .
+the classification accuracy improved from 95.0 % ( no rejection ) to 95.7 % at 2.1 % reject rate .
+there is a clear accuracy / reject tradeoff ; too much rejection may be needed to further reduce the error rate .
+incremental learning .
+it is well-known that the classification performance depends on the training set size : the more comprehensive a training set , the better the classification performance .
+table viii compares the classification accuracies of the indoor / outdoor image classifier ( based on spatial color moment features ) as the training set size is increased .
+as expected , increasing the training set size improves the classification accuracy .
+when we trained the lvq with all the available 5081 images using the color moment features , a classification accuracy of 95.7 % ( resubstitution accuracy ) was obtained .
+this shows that the classifier still has the capacity to learn , provided additional training samples are available .
+the above observations illustrate the need for an incremental learning method for bayesian classifiers .
+collecting a large and representative training set is expensive , time consuming , and sometimes not feasible .
+therefore , it is not realistic to assume that a comprehensive training set is initially available .
+rather , it is desirable to incorporate learning techniques in a classifier [ 22 ] , [ 29 ] .
+as additional data become available , the classifier should be able to adapt , while retaining what it has already learnt .
+since the training set can become extremely large , it may not be feasible to store all the previous data .
+therefore , instead of retraining the classifier on the entire training set every time new samples are collected , it is more desirable to incrementally train the classifier on the new samples .
+for the bayesian classifier proposed above , the initial training set is represented in terms of the codebook vectors ( ) .
+learning involves incrementally updating these codebook vectors as new training data become available .
+one simple method to retrain the classifier is to train it with the new data , i.e. , start with the previously learnt codebook vectors and run the lvq with the new data .
+this straightforward method , however , does not assign an appropriate weight to the previously learnt codebook .
+in other words , if a classifier was trained on a large number of samples and then a small number of new samples are used to further train the classifier using the above learning paradigm , the new data will unduly influence the current value of the codebook vectors .
+learning with this small amount of new data will in fact lead to unlearning of the distribution based on previous samples .
+table ix demonstrates the results of training the indoor / outdoor classifier using only the new data .
+the indoor / outdoor classifier was initially trained on 1418 images and yielded an accuracy of 79.8 % on an independent test set of 2540 images .
+when the classifier is further trained with 350 new images , the performance on the independent test set deteriorates to 63.7 % .
+when the classifier is further trained on an additional 773 samples using the naive approach , the accuracy on the test set slightly recovers to 72.5 % .
+note that when all the available data were used ( images ) , the accuracy on the independent test set was 88.2 % ( table viii ) .
+these results show that any robust incremental learning scheme must assign an appropriate weight to the already learnt distribution .
+proposed incremental learning scheme .
+the idea behind the proposed scheme is to try to generate the original samples from the codebook vectors and then augment these estimated samples to the new training set .
+the combined training set is then used ( starting at the current codebook vectors ) to determine the new set of codebook vectors .
+this method differs from traditional bootstrapping [ 11 ] which assumes that the original training samples are available for sampling with replacement .
+in our case , the new samples representing the original training set are generated based on the number of training samples , the proportion of these samples assigned to each code- book vector ( ) , and the codebook vectors themselves .
+fig . 9 illustrates this learning paradigm for synthetic data where two-dimensional samples are generated from two i.i.d.
+gaussian distributions with mean vectors and , respectively , and identity covariance matrices .
+we see that as the classifier is incrementally trained with additional data , the new codebook vectors approach the true mean vectors .
+we have used the following methods to generate ( independent ) samples from a codebook vector .
+case 1 : using duplicates of the codebook vectors as the samples ( this is , by far , the least computationally demanding case , since no samples have to be actually generated ) .
+case 2 : sampling from a multivariate gaussian , with covariance , centered at the codebook vectors .
+case 3 : same as case 2 , except that we use a diagonal covariance matrix .
+the diagonal elements correspond to the individual variances of features of the training samples assigned to the respective codebook vector .
+case 4 : sampling from a multivariate gaussian with covariance , centered at the mean of the training patterns assigned to the codebook vector .
+note that each codebook vector need not be the mean of the samples assigned to it , as both positive and negative examples influence the codebook vectors ( see footnote 1 , section v-b ) .
+case 5 : same as case 4 , except that we use a diagonal covariance matrix .
+the diagonal elements correspond to the individual variances of features of the training samples assigned to the respective codebook vector .
+the last four methods do not enforce the condition that the generated samples be closest to the codebook vector they are estimated from .
+the above criterion is satisfied in case 1 since the generated samples are all identical to the codebook vector .
+the number of samples generated from each codebook vector are the same as the number of original training samples assigned to that codebook vector .
+if we had chosen to use the em algorithm to estimate mixture representations of the class-conditional densities , instead of lvq , then , incremental learning could be achieved by using an on-line version of em , such as the one in [ 35 ] .
+experimental results .
+we have tested the proposed incremental learning method with the bayesian indoor / outdoor and city / landscape classifiers .
+initially , half the images from the database were used to train a classifier .
+the classifier was then incrementally trained ( all the five methods described above were tested ) using the remaining images .
+the performance of a classifier trained on the entire set of database images ( nonincremental learning ) was also measured .
+table x shows the classification accuracies for the various methods .
+the best classification accuracies achieved for each of the classifiers were 95.9 % for the city / landscape classifier ( on 2716 images ) and 94.6 % for the indoor / outdoor classifier ( on 5081 images ) , versus 97.0 % and 95.7 % , respectively , for the classifiers trained on the entire database .
+these results show that a classifier trained incrementally achieves almost similar accuracies as one trained with all the data .
+the five methods used to regenerate training samples perform equally well .
+since the first method ( case 1 ) requires , by far , the least additional storage ( only one number denoting the total number of training samples used to train the classifier so far ) and computation ( no random number generation ) , it clearly has the best cost / performance tradeoff .
+feature subset selection .
+automatic feature subset selection is an important issue in designing classifiers .
+in fact , one usually finds that the performance of a classifier trained on a finite number of samples starts deteriorating as more features are added beyond a certain number ( the curse of dimensionality [ 4 ] , [ 12 ] , [ 29 ] ) .
+can the classification be improved using feature subset selection methods ?
+selecting the optimal features is a problem of exponential time complexity and various suboptimal heuristics have been proposed [ 12 ] , [ 13 ] .
+jain and zongker [ 13 ] studied the merits of various feature subset selection methods .
+while the branch-and-bound algorithm proposed in [ 23 ] is optimal , it requires the feature selection criterion function to be monotone ( i.e. , it cannot decrease when new features are added ) .
+the above requirement may not be true for small samples .
+it is thus desirable to use approximate methods that are fast and also guarantee near optimal solutions .
+therefore , we tested the sequential floating forward selection ( sffs ) method , which was shown to be a promising alternative where the branch-and-bound method cannot be used [ 28 ] .
+we have also applied a simple heuristic procedure based on clustering the features ( using -means [ 11 ] ) , trying to remove redundancy .
+the feature components assigned to each cluster are then averaged to form the new feature .
+thus , the number of clusters determines the final number of features .
+although this method does not guarantee an optimal solution , it does attempt to eliminate highly correlated features in high-dimensional feature spaces .
+we refer to this method as the feature cluster ( fc ) method .
+experiments using sffs .
+we have experimented with feature subset selection on the indoor / outdoor classifier using the implementation of sffs provided in [ 13 ] .
+we found the algorithm to be very slow over the entire training set of 2541 training samples from database .
+we hence took 700 samples each from the training and test sets for the feature subset selection process .
+our results using sffs are summarized as follows .
+it took the program 12 days on a sun ultra 2 model 2300 ( dual 300-mhz processors ) processor with 512 mb memory to select up to 67 features from the 600-dimensional feature vector for the small training set of 700 samples .
+the best accuracy of 87 % on the independent test set of 700 samples was provided by a subset of 52 features , compared to the 88.2 % accuracy using all the 600 features .
+training a new classifier , with the 52 features selected by sffs , on the 2541 samples from the training set of database yielded 82.2 % accuracy on the test set ( 2540 samples ) .
+the lower accuracy on larger sets agrees with the observations in [ 13 ] on the pitfalls of using feature subset selection on sparse data in a high-dimensional space .
+experiments using fc .
+the spatial color moment features used for indoor / outdoor classification ( feature dimensionality of 600 ) were clustered to generate new feature vectors of sizes 50 , 75 , 100 , 125 , 150 , 175 , and 200 .
+the components assigned to each cluster were averaged to define a new feature .
+this approach is incomparably faster than sffs , taking only a few seconds on a training set size of 2541 , from database .
+the classification accuracies for the various feature set sizes are plotted in fig . 10 .
+a code- book size of 30 ( optimal for the spatial color moments features ) was used for all the features .
+the best classification accuracy of 91.8 % on the entire database of 5081 images ( 95.2 % on the training set and 88.3 % on an independent test set of 2540 images ) was obtained with feature vectors of 75 components .
+note that these accuracies are marginally better than those obtained from training the classifier on the 600-dimensional spatial color moment features ( accuracy of 88.2 % on an independent test set of 2540 images and an accuracy of 94.2 % on the training set ) .
+on examining the feature components that were clustered together , we found that all groupings were formed within features of neighboring image regions .
+these preliminary results show that clustering the features ( linear combination of features ) is more efficient and accurate than the sffs feature subset selection method for very high-dimensional feature vectors .
+we used mmdl to select the optimal codebook size for the new feature set .
+the criterion selected , for the indoor / outdoor classifier based on the 2541 training samples .
+therefore , we extracted 25 codebook vectors each for the indoor and outdoor image classes under the new feature set of 75 components .
+this illustrates how a reduction in feature size ( from 600 spatial color moment features to the new set of 75 features ) leads to the generation of a larger codebook ( 50 vectors represent the underlying density as opposed to 30 for the full spatial color moment features ) .
+table xi shows the accuracies for the classifier trained on these new features compared against those of the classifier trained on the full spatial color moment features .
+the fc method for feature selection improved the classifier performance from 91.2 % to 92.4 % for the indoor / outdoor problem ( on a database of 5081 images ) , while reducing the feature vector dimensionality from 600 components to 75 components .
+recall that the low-level features used for the indoor / outdoor image classification problem are extracted over subblocks in the image .
+usually , neighboring subblocks in an image have similar features as various objects span multiple subblocks ( e.g. , sky , forest , etc . , may span a number of sub- blocks in many images ) .
+other linear and nonlinear techniques for feature extraction ( pca , discriminant analysis , sammons nonlinear projection ) may be as effective as fc in reducing feature dimensionality .
+conclusion and future work .
+user queries in content-based retrieval are typically based on semantics and not on low-level image features .
+providing high-level semantic indices for large databases is a challenging problem .
+we have shown that certain high-level semantic categories can be learnt using specific low-level image features under the constraint that the images do belong to one of the classes under consideration .
+specifically , we have developed a hierarchical classifier for vacation images .
+at the top level , vacation images are classified as indoor or outdoor .
+the outdoor images are then classified as city or landscape ( we assume a face detector that separates close-up images ofpeople in outdoor im ages ) and finally , a subset of landscape images are classified as sunset , forest , or mountain .
+we have adopted a bayesian classification approach , using vector quantization ( lvq ) to learn the class-conditional probability densities of the features .
+this approach has the following advantages : small number of codebook vectors represent a particular class of images , regardless of the size of the training set ; it naturally allows for the integration of multiple features through the class-conditional densities ; it not only provides a classification rule , but also assigns a degree of confidence in the classification , which may be used to build a reject option .
+classifications based on local color moments , color histograms , color coherence vectors , edge direction histograms , and edge direction coherence vectors have shown promising results .
+the accuracy of the above classifiers depends on the features used , the number of training samples , and the classifiers ability to learn the true decision boundary from the training data .
+we have developed methods for incremental learning and feature subset selection .
+another challenging issue is to introduce a reject option .
+in the simplest form , the a posteriori class probabilities can be used for rejection ( rejecting images whose maximum a posteriori probability is less than a threshold , say 0.6 ) .
+we are looking at other means of adding the reject option into the system .
+finally , we will introduce other binary classifiers into the system for categories such as day / night , people / nonpeople , text / nontext , etc .
+these classifiers can be added to the present hierarchy to generate semantic indices into the database .

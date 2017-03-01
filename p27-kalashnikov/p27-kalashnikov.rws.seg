@@ -1,0 +1,26 @@
+(claim)#the web people search challenge is closely related to the well-studied entity resolution problem .
+0.1#(9);(15);(18);(23)#in our previous work we also have developed interrelated techniques to solve various entity resolution challenges , e.g. $1 $2 $3 $4 .
+(claim)#the approach covered in the paper , however , is not related to those techniques .
+(claim)#the key algorithm for training the skyline based classifier is new .
+(claim)#in fact , we are unaware of any entity resolution technique that would use a similar approach under any context .
+0#(13);(5);(6);(8);(22);(25)#there are several research efforts that address specifically web person search and related challenges $1 $2 $3 $4 $5 $6 .
+0.2#(5)#the approach of $1 is based on exploiting the link structure of pages on the web , with the hypotheses that web pages belonging to the same real person are more likely to be linked together . three algorithms are presented for disambiguation , the first is just exploiting the link structure of web pages and forming clusters based on link analysis , the second algorithm is based on word similarities between documents and does clustering using agglomerative / conglomerative double clustering ( a/dc ) , the third approach combines link analysis with a / dc clustering .
+0#(21)#the work in $1 clusters documents based on the entity ( person , organization , and location ) names and can be applied to the disambiguation of semi-structured documents , such as web pages .
+(claim)#the primary new contribution is the development of a document generation model that explains , for a given document how entities of various types ( other person names , locations , and organizations ) are " prinkled " onto the document .
+0.2#(2)#in sem-eval 2007 , a workshop on weps task was held $1 . sixteen different teams from different universities have participated to the task . the participated systems utilized named entities , tokens , urls , etc that exist in the documents . it has been shown that as the extracted information increases the quality of the clustering increases . use of different ne recognition tools affects the results of clustering as well .
+0.2#(12)#the ne based single link clustering was the one of the top three systems $1 , because the named entity network alone enables to identify most of the individuals .
+(claim)#there are also a few publicly available web search engines that offer related functionality , in that web search results are returned in clusters .
+(claim)#clusty ( http://www.clusty.com ) from vivisimo inc. and kartoo ( http://www.kartoo.com ) are search engines that return clustered results .
+(claim)#however the clusters are determined based on intersection of broad topics ( for instance research related pages could form one cluster and family pages could form another cluster ) or page source , also the clustering does not take into account the fact that multiple persons can have the same name .
+(claim)#for all of these engines , clustering is done based on entire web page content or based on the title and abstract from a standard search engine result .
+(claim)#zoominfo ( http://www.zoominfo.com/ ) and spock ( http://www.spock.com/ ) are commercially available people search engines .
+0.4#(7);(11);(13);(19)#recently , researchers have started to use external databases , such as ontology and web search engine in order to improve the classification and clustering qualities in different domains $1 $2 $3 $4 .
+0.4#(7);(11);(19)#for example , querying the web and utilizing the search results are used for word sense disambiguation ( wsd ) $1 and record linkage in publications domain $2 $3 .
+(claim)#the number of queries to a search engine is a bottleneck in these approaches .
+0.4#(19)#hence , the study in kanani and mccallum $1 tries to solve the problem in the case of limited resources . the suggested algorithm increased the accuracy of data cleaning while keeping the number of queries to a search engine minimal .
+0.4#(11)#similarly the approach in $1 uses the web as a knowledge source for data cleaning . the study proposed a way to formulate queries and used some standard measures like tf / idf similarity to compute the similarity of two different references to an entity .
+0.4#(12);(19)#the work in $1 is a complementary work to the one in $2 .
+0.4#(7)#in $1 the authors proposed to use the co-occurrence counts for disambiguation of different meanings of words . the authors used web-based similarity measures like webjaccard , webdice , and so on . these measures are also utilized as features for the svm based trainer along with a set of token based features , where the trainer learns the probability of two terms being the same .
+(claim)#in this paper , we study a similar approach , where our aim is to increase the quality of the web person search .
+(claim)#our study differs from the others in the way we utilize the web search results .
+(claim)#in addition , we have used a different way to formulate queries .

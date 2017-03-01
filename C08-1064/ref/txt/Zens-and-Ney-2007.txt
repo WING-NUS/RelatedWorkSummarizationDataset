@@ -1,0 +1,200 @@
+efficient phrase-table representation for machine translation with applications to online mt and speech translation abstract .
+in phrase-based statistical machine translation , the phrase-table requires a large amount of memory .
+we will present an efficient representation with two key properties : on-demand loading and a prefix tree structure for the source phrases .
+we will show that this representation scales well to large data tasks and that we are able to store hundreds of millions of phrase pairs in the phrase-table .
+for the large chinese english kist task , the memory requirements of the phrase-table are reduced to less than 20 mb using the new representation with no loss in translation quality and speed .
+additionally , the new representation is not limited to a specific test set , which is important for online or real-time machine translation .
+one problem in speech translation is the matching of phrases in the input word graph and the phrase-table .
+we will describe a novel algorithm that effectively solves this combinatorial problem exploiting the prefix tree data structure of the phrase-table .
+this algorithm enables the use of significantly larger input word graphs in a more efficient way resulting in improved translation quality .
+introduction .
+in phrase-based statistical machine translation , a huge number of source and target phrase pairs is memorized in the so-called phrase-table .
+for medium sized tasks and phrase lengths , these phrase-tables already require several gbs of memory or even do not fit at all .
+if the source text , which is to be translated , is known in advance , a common trick is to filter the phrase-table and keep a phrase pair only if the source phrase occurs in the text .
+this filtering is a time-consuming task , as we have to go over the whole phrase-table .
+furthermore , we have to repeat this filtering step whenever we want to translate a new source text .
+to address these problems , we will use an efficient representation of the phrase-table with two key properties : on-demand loading and a prefix tree structure for the source phrases .
+the prefix tree structure exploits the redundancy among the source phrases .
+using on-demand loading , we will load only a small fraction of the overall phrase-table into memory .
+the majority will remain on disk .
+the on-demand loading is employed on a per sentence basis , i.e. we load only the phrase pairs that are required for one sentence into memory .
+therefore , the memory requirements are low , e.g. less than 20 mb for the chin.-eng.
+kist task .
+another advantage of the on-demand loading is that we are able to translate new source sentences without filtering .
+a potential problem is that this on-demand loading might be too slow .
+to overcome this , we use a binary format which is a memory map of the internal representation used during decoding .
+additionally , we load coherent chunks of the tree structure instead of individual phrases , i.e. we have only few disk access operations .
+in our experiments , the on-demand loading is not slower than the traditional approach .
+as pointed out in ( mathias and byrne , 2006 ) , one problem in speech translation is that we have to match the phrases of our phrase-table against a word graph representing the alternative asr transcriptions .
+we will present a phrase matching algorithm that effectively solves this combinatorial problem exploiting the prefix tree data structure of the phrase-table .
+this algorithm enables the use of significantly larger input word graphs in a more efficient way resulting in improved translation quality .
+the remaining part is structured as follows : we will first discuss related work in sec . 2 .
+then , in sec . 3 , we will describe the phrase-table representation .
+afterwards , we will present applications in speech translation and online mt in sec . 4 and 5 , respectively .
+experimental results will be presented in sec . 6 followed by the conclusions in sec 7 .
+related work . ( callison-burch et al. , 2005 ) and ( zhang and vogel , 2005 ) presented data structures for a compact representation of the word-aligned bilingual data , such that on-the-fly extraction of long phrases is possible .
+the motivation in ( callison-burch et al. , 2005 ) is that there are some long source phrases in the test data that also occur in the training data .
+however , the more interesting question is if these long phrases really help to improve the translation quality .
+we have investigated this and our results are in line with ( koehn et al. , 2003 ) showing that the translation quality does not improve if we utilize phrases beyond a certain length .
+furthermore , the suffix array data structure of ( callison-burch et al. , 2005 ) requires a fair amount of memory , about 2 gb in their example , whereas our implementation will use only a tiny amount of memory , e.g. less than 20 mb for the large chinese-english nist task .
+efficient phrase-table representation .
+in this section , we will describe the proposed representation of the phrase-table .
+a prefix tree , also called trie , is an ordered tree data structure used to store an associative array where the keys are symbol sequences .
+in the case of phrase-based mt , the keys are source phrases , i.e. sequences of source words and the associated values are the possible translations of these source phrases .
+in a prefix tree , all descendants of any node have a common prefix , namely the source phrase associated with that node .
+the root node is associated with the empty phrase .
+the prefix tree data structure is quite common in automatic speech translation .
+there , the lexicon , i.e. the mapping of phoneme sequences to words , is usually organized as a prefix tree ( ney et al. , 1992 ) .
+we convert the list of source phrases into a prefix tree and , thus , exploit that many of them share the same prefix .
+this is illustrated in fig . 1 ( left ) .
+within each node of the tree , we store a sorted array of possible successor words along with pointers to the corresponding successor nodes .
+additionally , we store a pointer to the possible translations .
+one property of the tree structure is that we can efficiently access the successor words of a given prefix .
+this will be a key point to achieve an efficient phrase matching algorithm in sec . 4 .
+when looking for a specific successor word , we perform a binary search in the sorted array .
+alternatively , we could use hashing to speed up this lookup .
+we have chosen an array representation as this can be read very fast from disk .
+additionally , with the exception of the root node , the branching factor of the tree is small , i.e. the potential benefit from hashing is limited .
+at the root node , however , the branching factor is close to the vocabulary size of the source language , which can be large .
+as we store the words internally as integers and virtually all words occur as the first word of some phrase , we can use the integers directly as the position in the array of the root node .
+hence , the search for the successors at the root node is a simple table lookup with direct access , i.e. in 0 ( 1 ) .
+if not filtered for a specific test set , the phrase- table becomes huge even for medium-sized tasks .
+therefore , we store the tree structure on disk and load only the required parts into memory on- demand .
+this is illustrated in fig . 1 ( right ) .
+here , we show the matching phrases for the source sentencec a a c , where the matching phrases are set in bold and the phrases that are loaded into memory are set in italics .
+the dashed part of the tree structure is not loaded into memory .
+note that some nodes of the tree are loaded even if there is no matching phrase in that node .
+these are required to actually verify that there is no matching phrase .
+an example is the bc node in the lower right part of the figure .
+this node is loaded to check if the phrase c a a occurs in the phrase-table .
+the translations , however , are loaded only for matching source phrases .
+in the following sections , we will describe applications of this phrase-table representation for speech translation and online mt .
+speech translation .
+in speech translation , the input to the mt system is not a sentence , but a word graph representing alternative asr transcriptions .
+as pointed out in ( mathias and byrne , 2006 ) , one problem in speech translation is that we have to match the phrases of our phrase-table against the input word graph .
+this results in a combinatorial problem as the number of phrases in a word graph increases exponentially with the phrase length .
+problem definition .
+in this section , we will introduce the notation and state the problem of matching source phrases of an input graph g and the phrase-table , represented as prefix tree t. the input graph g has nodes 1 , ... , j , ... , j. the outgoing edges of a graph node j are numbered with 1 , ... , n , ... , n9 , i.e. an edge in the input graph is identified by a pair ( j , n ) .
+the source word labeling the nth outgoing edge of graph node j is denoted as fg9 , n and the successor node of this edge is denoted as sg 9 , ne ~ 1 , ... , j } .
+this notation is illustrated in fig . 2 .
+our goal is to find all non-empty sets of translation options e ( j ' , j ) .
+the naive approach would be to enumerate all paths in the input graph from node j ' to node j , then lookup the corresponding source phrase in the phrase-table and add the translations , if there are any , to the set of translation options e ( j ' , j ) .
+this solution has some obvious weaknesses : the number of paths between two nodes is typically huge and the majority of the corresponding source phrases do not occur in the phrase-table .
+we omitted the probabilities for notational convenience .
+the extensions are straightforward .
+note that we store only the target phrases a in the set of possible translations e ( j ' , j ) and not the source phrases .
+this is based on the assumption that the models which are conditioned on the source phrase f are independent of the context outside the phrase pair .
+this assumption holds for the standard phrase and word translation models .
+thus , we have to keep only the target phrase with the highest probability .
+it might be violated by lexicalized distortion models ( dependent on the configuration ) ; in that case we have to store the source phrase along with the target phrase and the probability , which is again straightforward .
+algorithm .
+here , the definition was first rewritten using eq . 2 and then using eq . 3 .
+again , the set is expressed recursively as a union over the inbound edges .
+in this section , we will analyze the computational complexity of the algorithm .
+the computational complexity of lines 5-9 is in o ( nj log mk ) , i.e. it depends on the branching factors of the input graph and the prefix tree .
+both are typically small .
+an exception is the branching factor of the root node of the prefix tree , which can be rather large , typically it is the vocabulary size of the source language .
+but , as described in sec . 3 , we can access the successor nodes of the root node of the prefix tree in o ( 1 ) , i.e. in constant time .
+so , if we are at the root node of the prefix tree , the computational complexity of lines 5- 9 is in o ( nj ) .
+using hashing at the interior nodes of the prefix tree would result in a constant time lookup at these nodes as well .
+nevertheless , the sorted array implementation that we chose has the advantage of faster loading from disk which seems to be more important in practice .
+assuming both sets are sorted , this could be done in linear time , i.e. in o ( nj + mk ) .
+in our case , only the edges in the prefix tree are sorted .
+obviously , we could sort the edges in the input graph and then apply the linear algorithm , resulting in an overall complexity of o ( nj lognj + mk ) .
+as the algorithm visits nodes multiple times , we could do even better by sorting all edges of the graph during the initialization .
+then , we could always apply the linear time method .
+on the other hand , it is unclear if this pays off in practice and an experimental comparison has to be done which we will leave for future work .
+the overall complexity of the algorithm depends on how many phrases of the input graph occur in the phrase-table .
+in the worst case , i.e. if all phrases occur in the phrase-table , the described algorithm is not more efficient than the naive algorithm which simply enumerates all phrases .
+nevertheless , this does not happen in practice and we observe an exponential speed up compared to the naive algorithm , as will be shown in sec . 6.3 .
+online machine translation .
+beside speech translation , the presented phrase- table data structure has other interesting applications .
+one of them is online mt , i.e. an mt system that is able to translate unseen sentences without significant delay .
+these online mt systems are typically required if there is some interaction with human users , e.g. if the mt system acts as an interpreter in a conversation , or in real-time systems .
+this situation is different from the usual research environment where typically a fair amount of time is spent to prepare the mt system to translate a certain set of source sentences .
+in the research scenario , this preparation usually pays off as the same set of sentences is translated multiple times .
+in contrast , an online mt system translates each sentence just once .
+one of the more time-consuming parts of this preparation is the filtering of the phrase-table .
+using the on-demand loading technique we described in sec . 3 , we can avoid the filtering step and directly translate the source sentence .
+an additional advantage is that we load only small parts of the full phrase-table into memory .
+this reduces the memory requirements significantly , e.g. for the chinese english nist task , the memory requirement of the phrase-table is reduced to less than 20 mb using on- demand loading .
+this makes the mt system usable on devices with limited hardware resources .
+experimental results 6.1 translation system .
+for the experiments , we use a state-of-the-art phrase-based statistical machine translation system as described in ( zens and ney , 2004 ) .
+we use a log-linear combination of several models : a four- gram language model , phrase-based and word-based translation models , word , phrase and distortion penalty and a lexicalized distortion model .
+the model scaling factors are optimized using minimum error rate training ( och , 2003 ) .
+empirical analysis for a large data task .
+in this section , we present an empirical analysis of the described data structure for the large data track of the chinese-english nist task .
+the corpus statistics are shown in tab 1 .
+the translation quality is measured using two accuracy measures : the bleu and the nist score .
+additionally , we use the two error rates : the word error rate ( wer ) and the position-independent word error rate ( per ) .
+these evaluation criteria are computed with respect to four reference translations .
+we observe a large improvement when going beyond length 1 , but this flattens out very fast .
+using phrases of lengths larger than 4 or 5 does not result in further improvement .
+note that the minor differences in the evaluation results for length 4 and beyond are merely statistical noise .
+even a length limit of 3 , as proposed by ( koehn et al. , 2003 ) , would result in almost optimal translation quality .
+in the following experiments on this task , we will use a limit of 5 for the source phrase length .
+in tab . 3 , we present statistics about the extracted phrase pairs for the chineseenglish nist task as a function of the source phrase length , in this case for length 1-5 .
+the phrases are not limited to a specific test set .
+we show the number of distinct source phrases , the number of distinct source-target phrase pairs and the average number of target phrases ( or translation candidates ) per source phrase .
+in the experiments , we limit the number of translation candidates per source phrase to 200 .
+we store a total of almost 90 million distinct source phrases and more than 225 million distinct source-target phrase pairs in the described data structure .
+obviously , it would be infeasible to load this huge phrase-table completely into memory .
+nevertheless , using on- demand loading , we are able to utilize all these phrase pairs with minimal memory usage .
+the sentences were sorted according to the memory usage .
+the maximum amount of memory for the phrase-table is 19 mb ; for more than 95 % of the sentences no more than 15 mb are required .
+storing all phrase pairs for this test set in memory requires about 1.7 gb of memory , i.e. using the described data structures , we not only avoid the limitation to a specific test set , but we also reduce the memory requirements by about two orders of a magnitude .
+another important aspect that should be considered is translation speed .
+in our experiments , the described data structure is not slower than the traditional approach .
+we attribute this to the fact that we use a binary format that is a memory map of the data structure used internally and that we load the data in rather large , coherent chunks .
+additionally , there is virtually no initialization time for the phrase-table which decreases the overhead of parallelization and therefore speeds up the development cycle .
+speech translation .
+the training corpus statistics are presented in tab . 4 .
+the phrase-tables for this task were kindly provided by itc-irst .
+we evaluate the phrase-match algorithm in the context of confusion network ( cn ) decoding ( bertoldi and federico , 2005 ) , which is one approach to speech translation .
+cns ( mangu et al. , 2000 ) are interesting for mt because the reordering can be done similar to single best input .
+for more details on cn decoding , please refer to ( bertoldi et al. , 2007 ) .
+note that the phrase-match algorithm is not limited to cns , but can work on arbitrary word graphs .
+statistics of the cns are also presented in tab . 4 .
+we distinguish between the full cns and pruned cns .
+the pruning parameters were chosen such that the resulting cns are similar in size to the largest ones in ( bertoldi and federico , 2005 ) .
+the average depth of the full cns , i.e. the average number of alternatives per position , is about 2.7 words whereas the maximum is as high as 136 alternatives .
+in fig . 5 , we present the average number of phrase-table look-ups for the full epps cns as a function of the source phrase length .
+the curve cn total represents the total number of source phrases in the cns for a given length .
+this is the number of phrase-table look-ups using the naive algorithm .
+note the exponential growth with increasing phrase length .
+therefore , the naive algorithm is only applicable for very short phrases and heavily pruned cns , as e.g. in ( bertoldi and federico , 2005 ) .
+the curve cn explored is the number of phrase- table look-ups using the phrase-match algorithm described in fig . 3 .
+we do not observe the exponential explosion as for the naive algorithm .
+thus , the presented algorithm effectively solves the combinatorial problem of matching phrases of the input cns and the phrase-table .
+for comparison , we plotted also the number of look-ups using the phrase-match algorithm in the case of single source phrase length best input , labeled single-best explored .
+the maximum phrase length for these experiments is seven .
+for cn input , this length can be exceeded as the cns may contain c-transitions .
+in tab . 5 , we present the translation results and the translation times for different input conditions .
+we observe a significant improvement in translation quality as more asr alternatives are taken into account .
+the best results are achieved for the full cns .
+on the other hand , the decoding time increases only moderately .
+using the new algorithm , the ratio of the time for decoding the cns and the time for decoding the single best input is 3.4 for the full cns and 1.8 for the pruned cns .
+in previous work ( bertoldi and federico , 2005 ) , the ratio for the pruned cns was about 25 and the full cns could not be handled .
+to summarize , the presented algorithm has two main advantages for speech translation : first , it enables us to utilize large cns , which was prohibitively expensive beforehand and second , the efficiency is improved significantly .
+whereas the previous approaches required careful pruning of the cns , we are able to utilize the unpruned cns .
+experiments on other tasks have shown that even larger cns are unproblematic .
+conclusions .
+we proposed an efficient phrase-table data structure which has two key properties : on-demand loading .
+we are able to store hundreds of millions of phrase pairs and require only a very small amount of memory during decoding , e.g. less than 20 mb for the chinese-english nist task .
+this enables us to run the mt system on devices with limited hardware resources or alternatively to utilize the freed memory for other models .
+additionally , the usual phrase-table filtering is obsolete , which is important for online mt systems .
+prefix tree data structure .
+utilizing the prefix tree structure enables us to efficiently match source phrases against the phrase- table .
+this is especially important for speech translation where the input is a graph representing a huge number of alternative sentences .
+using the novel algorithm , we are able to handle large cns , which was prohibitively expensive beforehand .
+this results in more efficient decoding and improved translation quality .
+we have shown that this data structure scales very well to large data tasks like the chinese-english nist task .
+the implementation of the described data structure as well as the phrase-match algorithm for confusion networks is available as open source software in the moses toolkit .
+not only standard phrase-based systems can benefit from this data structure .
+it should be rather straightforward to apply this data structure as well as the phrase-match algorithm to the hierarchical approach of ( chiang , 2005 ) .
+as the number of rules in this approach is typically larger than the number of phrases in a standard phrase-based system , the gains should be even larger .
+the language model is another model with high memory requirements .
+it would be interesting to investigate if the described techniques and data structures are applicable for reducing the memory requirements of language models .
+some aspects of the phrase-match algorithm are similar to the composition of finite-state automata .
+an efficient implementation of on-demand loading ( not only on-demand computation ) for a finite-state toolkit would make the whole range of finite-state operations applicable to large data tasks .

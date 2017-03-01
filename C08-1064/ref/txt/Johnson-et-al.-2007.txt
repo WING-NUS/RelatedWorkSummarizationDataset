@@ -1,0 +1,154 @@
+improving translation quality by discarding most of the phrasetable .
+abstract .
+it is possible to reduce the bulk of phrase- tables for statistical machine translation using a technique based on the significance testing of phrase pair co-occurrence in the parallel corpus .
+the savings can be quite substantial ( up to 90 % ) and cause no reduction in bleu score .
+in some cases , an improvement in bleu is obtained at the same time although the effect is less pronounced if state-of-the-art phrasetable smoothing is employed .
+introduction .
+an important part of the process of statistical machine translation ( smt ) involves inferring a large table of phrase pairs that are translations of each other from a large corpus of aligned sentences .
+these phrase pairs together with estimates of conditional probabilities and useful feature weights , called collectively a phrasetable , are used to match a source sentence to produce candidate translations .
+the choice of the best translation is made based on the combination of the probabilities and feature weights , and much discussion has been made of how to make the estimates of probabilites , how to smooth these estimates , and what features are most useful for discriminating among the translations .
+however , a cursory glance at phrasetables produced often suggests that many of the translations are wrong or will never be used in any translation .
+on the other hand , most obvious ways of reducing the bulk usually lead to a reduction in translation quality as measured by bleu score .
+this has led to an impression that these pairs must contribute something in the grand scheme of things and , certainly , more data is better than less .
+nonetheless , this bulk comes at a cost .
+large tables lead to large data structures that require more resources and more time to process and , more importantly , effort directed in handling large tables could likely be more usefully employed in more features or more sophisticated search .
+in this paper , we show that it is possible to prune phrasetables using a straightforward approach based on significance testing , that this approach does not adversely affect the quality of translation as measured by bleu score , and that savings in terms of number of discarded phrase pairs can be quite substantial .
+even more surprising , pruning can actually raise the bleu score although this phenomenon is less prominent if state of the art smoothing of phrasetable probabilities is employed .
+section 2 reviews the basic ideas of statistical machine translation as well as those of testing significance of associations in two by two contingency tables departing from independence .
+from this , a filtering algorithm will be described that keeps only phrase pairs that pass a significance test .
+section 3 outlines a number of experiments that demonstrate the phenomenon and measure its magnitude .
+section 4 presents the results of these experiments .
+the paper concludes with a summary of what has been learned and a discussion of continuing work that builds on these ideas .
+background theory .
+our approach to statistical machine translation .
+we define a phrasetable as a set of source phrases ( n- grams ) s ~ and their translations ( m-grams ) ~ t , along with associated translation probabilities p ( ~ sj ~ t ) and p ( ~ tj ~ s ) .
+these conditional distributions are derived from the joint frequencies c ( ~ s , ~ t ) of source / target n , m-grams observed in a word-aligned parallel corpus .
+these joint counts are estimated using the phrase induction algorithm described in ( koehn et al. , 2003 ) , with symmetrized word alignments generated using ibm model 2 ( brown et al. , 1993 ) .
+phrases are limited to 8 tokens in length ( n , m < 8 ) .
+given a source sentence s , our phrase-based smt system tries to find the target sentence t ~ that is the most likely translation of s .
+to make search more efficient , we use the viterbi approximation and seek the most likely combination of t and its alignment a with s , rather than just the most likely t : .
+the features used are : the length of t ; a single-parameter distortion penalty on phrase reordering in a , as described in ( koehn et al. , 2003 ) ; phrase translation model probabilities ; and 4-gram language model probabilities logp ( t ) , using kneser-ney smoothing as implemented in the srilm toolkit ( stolcke , 2002 ) .
+phrase translation model probabilities are features of the form : the forward phrase probabilities p ( ~ tj ~ s ) are not used as features , but only as a filter on the set of possible translations : for each source phrase s ~ that matches some ngram in s , only the 30 top-ranked translations t ~ according to p ( ~ tj ~ s ) are retained .
+one of the reviewers has pointed out correctly that taking only the top 30 translations will interact with the subject under study ; however , this pruning technique has been used as a way of controlling the width of our beam search and rebalancing search parameters would have complicated this study and taken it away from our standard practice .
+the phrase translation model probabilities are smoothed according to one of several techniques as described in ( foster et al. , 2006 ) and identified in the discussion below .
+significance testing using two by two contingency tables .
+each phrase pair can be thought of as am n , m-gram ( ~ s , ~ t ) where s ~ is an n-gram from the source side of the corpus and t ~ is an m-gram from the target side of the corpus .
+we then define : c ( ~ s , ~ t ) as the number of parallel sentences that contain one or more occurrences of s ~ on the source side and t ~ on the target side ; c ( ~ s ) the number of parallel sentences that contain one or more occurrences of s ~ on the source side ; and c ( ~ t ) the number of parallel sentences that contain one or more occurrences of t ~ on the target side .
+together with n , the number of parallel sentences , we have enough information to draw up a two by two contingency table representing the unconditional relationship between s ~ and ~ t .
+this table is shown in table 1 .
+a standard statistical technique used to assess the importance of an association represented by a contingency table involves calculating the probability that the observed table or one that is more extreme could occur by chance assuming a model of independence .
+this is called a significance test .
+introductory statistics texts describe one such test called the chi-squared test .
+there are other tests that more accurately apply to our small tables with only two rows and columns .
+fishers exact test of significance is considered a gold standard since it represents the precise probabilities under realistic assumptions .
+tests such as the chi-squared test or the log-likelihood-ratio test ( yet another approximate test of significance ) depend on asymptotic assumptions that are often not valid for small counts .
+note that the count c ( 9 , ~ t ) can be larger or smaller than c ( g , ~ t ) discussed above .
+in most cases , it will be larger , because it counts all co-occurrences of 9 with t ~ rather than just those that respect the word alignment .
+it can be smaller though because multiple co-occurrences can occur within a single aligned sentence pair and be counted multiple times in c ( g , ~ t ) .
+on the other hand , c ( 9 , ~ t ) will not count all of the possible ways that an n , m-gram match can occur within a single sentence pair ; it will count the match only once per sentence pair in which it occurs .
+moore ( 2004 ) discusses the use of significance testing of word associations using the loglikelihood-ratio test and fishers exact test .
+he shows that fishers exact test is often a practical method if a number of techniques are followed : approximating the logarithms of factorials using commonly available numerical approximations to the log gamma function , using a well-known recurrence for the hypergeometic distribution , noting that few terms usually need to be summed , and observing that convergence is usually rapid .
+significance pruning .
+the idea behind significance pruning of phrasetables is that not all of the phrase pairs in a phrasetable are equally supported by the data and that many of the weakly supported pairs could be removed because : the chance of them occurring again might be low , and their occurrence in the given corpus may be the result of an artifact ( a combination of effects where several estimates artificially compensate for one another ) .
+this concept is usually referred to as overfit since the model fits aspects of the training data that do not lead to improved prediction .
+phrase pairs that cannot stand on their own by demonstrating a certain level of significance are suspect and removing them from the phrasetable may be beneficial in terms of reducing the size of data structures .
+this will be shown to be the case in rather general terms .
+note that this pruning may and quite often will remove all of the candidate translations for a source phrase .
+this might seem to be a bad idea but it must be remembered that deleting longer phrases will allow combinations of shorter phrases to be used and these might have more and better translations from the corpus .
+here is part of the intuition about how phrasetable smoothing may interact with phrasetable pruning : both are discouraging longer but infrequent phrases from the corpus in favour of combinations of more frequent , shorter phrases .
+because the probabilities involved below will be so incredibly tiny , we will work instead with the negative of the natural logs of the probabilities .
+thus instead of selecting phrase pairs with a p-value less than exp ( -20 ) , we will select phrase pairs with a negative-log-p-value greater than 20 .
+this has the advantage of working with ordinary-sized numbers and the happy convention that bigger means more pruning .
+an important special case of a table occurs when a phrase pair occurs exactly once in the corpus , and each of the component phrases occurs exactly once in its side of the parallel corpus .
+moore ( 2004 ) comments that the p-value for these tables under fishers exact test is 1 / n.
+since we are using thresholds of the negative logarithm of the p- value , the value a = log ( n ) is a useful threshold to consider .
+in particular , a + e ( where e is an appropriately small positive number ) is the smallest threshold that results in none of the 1-1-1 phrase pairs being included .
+similarly , a e is the largest threshold that results in all of the 1-1-1 phrase pairs being included .
+because 1-1-1 phrase pairs can make up a large part of the phrase table , this is important observation for its own sake .
+since the contingency table with c ( s , ~ t ) = 1 having the greatest significance ( lowest p-value ) is the 1-1-1 table , using the threshold of a + e can be used to exclude all of the phrase pairs occurring exactly once ( c ( 9 , ~ t ) = 1 ) .
+the common strategy of deleting all of the 1- count phrase pairs is very similar in effect to the use of the a + e threshold .
+experiments .
+wmt06 .
+the corpora used for most of these experiments are publicly available and have been used for a number of comparative studies ( workshop on statistical machine translation , 2006 ) .
+provided as part of the materials for the shared task are parallel corpora for frenchenglish , spanishenglish , and german english as well as language models for english , french , spanish , and german .
+these are all based on the europarl resources ( europarl , 2003 ) .
+the only change made to these corpora was to convert them to lowercase and to unicode utf-8 .
+phrasetables were produced by symmetrizing ibm2 conditional probabilities as described above .
+the phrasetables were then used as a list of n , m-grams for which counts c ( , ~ t ) , c ( s ) , and c ( ~ t ) were obtained .
+negative-log-p-values under fishers exact test were computed for each of the phrase pairs in the phrasetable and the entry was censored if the negative-log-p-value for the test was below the pruning threshold .
+the entries that are kept are ones that are highly significant .
+in addition , a number of different phrasetable smoothing algorithms were used : no smoothing , good-turing smoothing , kneser-ney 3 parameter smoothing and the loglinear mixture involving two features called zens-ney ( foster et al. , 2006 ) .
+chinese .
+to test the effects of significance pruning on larger corpora , a series of experiments was run on a much larger corpus based on that distributed for mt06 chineseenglish ( nist mt , 2006 ) .
+since the objective was to assess how the method scaled we used our preferred phrasetable smoothing technique of zens-ney and separated our corpus into two phrase- tables , one based on the un corpus and the other based on the best of the remaining parallel corpora available to us .
+different pruning thresholds were considered : no pruning , 14 , 16 , 18 , 20 , and 25 .
+in addition , another more aggressive method of pruning was attempted .
+moore points out , correctly , that phrase pairs that occur in only one sentence pair , ( c ( ~ s , ~ t ) = 1 ) , are less reliable and might require more special treatment .
+these are all pruned automatically at thresholds of 16 and above but not at threshold of 14 .
+a special series of runs was done for threshold 14 with all of these singletons removed to see whether at these thresholds it was the significance level or the pruning of phrase pairs with ( c ( ~ s , ~ t ) = 1 ) that was more important .
+this is identified as 14 ' in the results .
+the results of the experiments are described in tables 2 through 6 .
+table 2 presents the sizes of the various parallel corpora showing the number of parallel sentences , n , for each of the experiments , together with the a thresholds ( a = log ( n ) ) .
+table 3 shows the sizes of the phrasetables that result from the various pruning thresholds described for the wmt06 data .
+it is clear that this is extremely aggressive pruning at the given levels .
+table 4 shows the corresponding phrasetable sizes for the large corpus chineseenglish data .
+the pruning is not as aggressive as for the wmt06 data but still quite sizeable .
+tables 5 and 6 show the main results for the wmt06 and the chineseenglish large corpus experiments .
+to make these results more graphic , figure 1 shows the french ) english data from the wmt06 results in the form of three graphs .
+note that an artificial separation of 1 bleu point has been introduced into these graphs to separate them .
+without this , they lie on top of each other and hide the essential point .
+in compensation , the scale for the bleu co-ordinate has been removed .
+these results are summarized in the following subsections .
+bleu as a function of threshold .
+in tables 5 and 6 , the largest bleu score for each set of runs has been marked in bold font .
+in addition , to highlight that there are many near ties for largest bleu , all bleu scores that are within 0.1 of the best are also marked in bold .
+when this is done it becomes clear that pruning at a level of 20 for the wmt06 runs would not reduce bleu in most cases and in many cases would actually increase it .
+a pruning threshold of 20 corresponds to discarding roughly 90 % of the phrase- table .
+for the chineseenglish large corpus runs , a level of 16 seems to be about the best with a small increase in bleu and a 60 % - 70 % reduction in the size of the phrasetable .
+bleu as a function of depth of pruning .
+another view of this can be taken from tables 5 and 6 .
+the fraction of the phrasetable retained is a more or less simple function of pruning threshold as shown in tables 3 and 4 .
+by including the percentages in tables 5 and 6 , we can see that bleu goes up as the fraction approaches between 20 % and 30 % .
+this seems to be a relatively stable observation across the experiments .
+it is also easily explained by its strong relationship to pruning threshold .
+large corpora .
+table 6 shows that this is not just a small corpus phenomenon .
+there is a sizeable benefit both in phrase- table reduction and a modest improvement to bleu even in this case .
+is this just the same as phrasetable smoothing ?
+one question that occurred early on was whether this improvement in bleu is somehow related to the improvement in bleu that occurs with phrasetable smoothing .
+it appears that the answer is , in the main , yes , although there is definitely something else going on .
+it is true that the benefit in terms of bleu is lessened for better types of phrasetable smoothing but the benefit in terms of the reduction in bulk holds .
+it is reassuring to see that no harm to bleu is done by removing even 80 % of the phrasetable .
+another question that came up is the role of phrase pairs that occur only once : c ( s , ~ t ) = 1 .
+in particular as discussed above , the most significant of these are the 1-1-1 phrase pairs whose components also only occur once : c ( s ) = 1 , and c ( ~ t ) = 1 .
+these phrase pairs are amazingly frequent in the phrase- tables and are pruned in all of the experiments except when pruning threshold is equal to 14 .
+the chineseenglish large corpus experiments give us a good opportunity to show that significance level seems to be more an issue than the case that c ( s , ~ t ) = 1 .
+note that we could have kept the phrase pairs whose marginal counts were greater than one but most of these are of lower significance and likely are pruned already by the threshold .
+the given configuration was considered the most likely to yield a benefit and its poor performance led to the whole idea being put aside .
+conclusions and continuing work .
+to sum up , the main conclusions are five in number : phrasetables produced by the standard diagand method ( koehn et al. , 2003 ) can be aggressively pruned using significance pruning without worsening bleu .
+if phrasetable smoothing is not done , the bleu score will improve under aggressive significance pruning .
+if phrasetable smoothing is done , the improvement is small or negligible but there is still no loss on aggressive pruning .
+the preservation of bleu score in the presence of large-scale pruning is a strong effect in small and moderate size phrasetables , but occurs also in much larger phrasetables .
+in larger phrasetables based on larger corpora , the percentage of the table that can be discarded appears to decrease .
+this is plausible since a similar effect ( a decrease in the benefit of smoothing ) has been noted with phrasetable smoothing ( foster et al. , 2006 ) .
+together these results suggest that , for these corpus sizes , the increase in the number of strongly supported phrase pairs is greater than the increase in the number of poorly supported pairs , which agrees with intuition .
+although there may be other approaches to pruning that achieve a similar effect , the use of fishers exact test is mathematically and conceptually one of the simplest since it asks a question separately for each phrase pair : considering this phase pair in isolation of any other analysis on the corpus , could it have occurred plausibly by purely random processes inherent in the corpus construction ?
+if the answer is yes , then it is hard to argue that the phrase pair is an association of general applicability from the evidence in this corpus alone .
+note that the removal of 1-count phrase pairs is subsumed by significance pruning with a threshold greater than a and many of the other simple approaches ( from an implementation point of view ) are more difficult to justify as simply as the above significance test .
+nonetheless , there remains work to do in determining if computationally simpler approaches do as well .
+moores work suggests that log-likelihood-ratio would be a cheaper and accurate enough alternative , for example .
+we will now return to the interaction of the selection in our beam search of the top 30 candidates based on forward conditional probabilities .
+this will affect our results but most likely in the following manner : for very small thresholds , the beam will become much wider and the search will take much longer .
+in order to allow the experiments to complete in a reasonable time , other means will need to be employed to reduce the choices .
+this reduction will also interact with the significance pruning but in a less understandable manner .
+for large thresholds , there will not be 30 choices and so there will be no effect .
+for intermediate thresholds , the extra pruning might reduce bleu score but by a small amount because most of the best choices are included in the search .
+using thresholds that remove most of the phrase- table would no doubt qualify as large thresholds so the question is addressing the true shape of the curve for smaller thresholds and not at the expected operating levels .
+nonetheless , this is a subject for further study , especially as we consider alternatives to our filter 30 approach for managing beam width .
+there are a number of important ways that this work can and will be continued .
+the code base for taking a list of n , m-grams and computing the required frequencies for signifance evaluation can be applied to related problems .
+for example , skip-ngrams ( n-grams that allow for gaps of fixed or variable size ) may be studied better using this approach leading to insight about methods that weakly approximate patterns .
+the original goal of this work was to better understand the character of phrasetables , and it remains a useful diagnostic technique .
+it will hopefully lead to more understanding of what it takes to make a good phrasetable especially for languages that require morphological analysis or segmentation to produce good tables using standard methods .
+the negative-log-p-value promises to be a useful feature and we are currently evaluating its merits .

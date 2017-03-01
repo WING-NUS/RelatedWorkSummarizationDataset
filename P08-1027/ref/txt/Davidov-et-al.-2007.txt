@@ -1,0 +1,193 @@
+fully unsupervised discovery of concept-specific relationships by web mining .
+abstract .
+we present a web mining method for discovering and enhancing relationships in which a specified concept ( word class ) participates .
+we discover a whole range of relationships focused on the given concept , rather than generic known relationships as in most previous work .
+our method is based on clustering patterns that contain concept words and other words related to them .
+we evaluate the method on three different rich concepts and find that in each case the method generates a broad variety of relationships with good precision .
+introduction .
+the huge amount of information available on the web has led to a flurry of research on methods for automatic creation of structured information from large unstructured text corpora .
+the challenge is to create as much information as possible while providing as little input as possible .
+a lot of this research is based on the initial insight ( hearst , 1992 ) that certain lexical patterns ( x is a country ) can be exploited to automatically generate hyponyms of a specified word .
+subsequent work ( to be discussed in detail below ) extended this initial idea along two dimensions .
+one objective was to require as small a user- provided initial seed as possible .
+thus , it was observed that given one or more such lexical patterns , a corpus could be used to generate examples of hyponyms that could then , in turn , be exploited to gen erate more lexical patterns .
+the larger and more reliable sets of patterns thus generated resulted in larger and more precise sets of hyponyms and vice versa .
+the initial step of the resulting alternating bootstrap process the user-provided input could just as well consist of examples of hyponyms as of lexical patterns .
+a second objective was to extend the information that could be learned from the process beyond hyponyms of a given word .
+thus , the approach was extended to finding lexical patterns that could produce synonyms and other standard lexical relations .
+these relations comprise all those words that stand in some known binary relation with a specified word .
+in this paper , we introduce a novel extension of this problem : given a particular concept ( initially represented by two seed words ) , discover relations in which it participates , without specifying their types in advance .
+we will generate a concept class and a variety of natural binary relations involving that class .
+an advantage of our method is that it is particularly suitable for web mining , even given the restrictions on query amounts that exist in some of todays leading search engines .
+the outline of the paper is as follows .
+in the next section we will define more precisely the problem we intend to solve .
+in section 3 , we will consider related work .
+in section 4 we will provide an overview of our solution and in section 5 we will consider the details of the method .
+in section 6 we will illustrate and evaluate the results obtained by our method .
+finally , in section 7 we will offer some conclusions and considerations for further work .
+problem definition .
+in several studies ( e.g. , widdows and dorow , 2002 ; pantel et al , 2004 ; davidov and rappoport , 2006 ) it has been shown that relatively unsupervised and language-independent methods could be used to generate many thousands of sets of words whose semantics is similar in some sense .
+although examination of any such set invariably makes it clear why these words have been grouped together into a single concept , it is important to emphasize that the method itself provides no explicit concept definition ; in some sense , the implied class is in the eye of the beholder .
+nevertheless , both human judgment and comparison with standard lists indicate that the generated sets correspond to concepts with high precision .
+in addition to these basic types , several studies deal with the discovery and labeling of more specific relation sub-types , including inter-verb relations ( chklovski and pantel , 2004 ) and noun- compound relationships ( moldovan et al , 2004 ) .
+we wish now to build on that result in the following way .
+given a large corpus ( such as the web ) and two or more examples of some concept x , automatically generate examples of one or more relations r c x x y , where y is some concept and r is some binary relationship between elements of x and elements of y. studying relationships between tagged named entities , ( hasegawa et al , 2004 ; hassan et al , 2006 ) proposed unsupervised clustering methods that assign given ( or semi-automatically extracted ) sets of pairs into several clusters , where each cluster corresponds to one of a known relationship type .
+these studies , however , focused on the classification of pairs that were either given or extracted using some supervision , rather than on discovery and definition of which relationships are actually in the corpus .
+we can think of the relations we wish to generate as bipartite graphs .
+unlike most earlier work , the bipartite graphs we wish to generate might be one-to-one ( for example , countries and their capitals ) , many-to-one ( for example , countries and the regions they are in ) or many-to-many ( for example , countries and the products they manufacture ) .
+for a given class x , we would like to generate not one but possibly many different such relations .
+several papers report on methods for using the web to discover instances of binary relations .
+however , each of these assumes that the relations themselves are known in advance ( implicitly or explicitly ) so that the method can be provided with seed patterns ( agichtein and gravano , 2000 ; pantel et al , 2004 ) , pattern-based rules ( etzioni et al , 2004 ) , relation keywords ( sekine , 2006 ) , or word pairs exemplifying relation instances ( pasca et al , 2006 ; alfonseca et al , 2006 ; rosenfeld and feldman , 2006 ) .
+the only input we require , aside from a corpus , is a small set of examples of some class .
+however , since such sets can be generated in entirely unsupervised fashion , our challenge is effectively to generate relations directly from a corpus given no additional information of any kind .
+the key point is that we do not in any manner specify in advance what types of relations we wish to find .
+in some recent work ( strube and ponzetto , 2006 ) , it has been shown that related pairs can be generated without pre-specifying the nature of the relation sought .
+however , this work does not focus on differentiating among different relations , so that the generated relations might conflate a number of distinct ones .
+related work .
+it should be noted that some of these papers utilize language and domain-dependent preprocessing including syntactic parsing ( suchanek et al , 2006 ) and named entity tagging ( hasegawa et al , 2004 ) , while others take advantage of handcrafted databases such as wordnet ( moldovan et al , 2004 ; costello et al , 2006 ) and wikipedia ( strube and ponzetto , 2006 ) .
+as far as we know , no previous work has directly addressed the discovery of generic binary relations in an unrestricted domain without ( at least implicitly ) pre-specifying relationship types .
+most related work deals with discovery of hypernymy ( hearst , finally , ( turney , 2006 ) provided a pattern distance measure which allows a fully unsupervised measurement of relational similarity between two pairs of words ; however , relationship types were not discovered explicitly .
+outline of the method .
+generalizing the seed .
+we will use two concept words contained in a concept class c to generate a collection of distinct relations in which c participates .
+in this section we offer a brief overview of our method .
+the first step is to take the seed , which might consist of as few as two concept words , and generate many ( ideally , all , when the concept is a closed set of words ) members of the class to which they belong .
+we do this as follows , essentially implementing a simplified version of the method of davidov and rappoport ( 2006 ) .
+for any pair of seed words 5i and 5j , search the corpus for word patterns of the form 5ih5j , where h is a high-frequency word in the corpus ( we used the 100 most frequent words in the corpus ) .
+of these , we keep all those patterns , which we call symmetric patterns , for which 5jh5i is also found in the corpus .
+repeat this process to find symmetric patterns with any of the structures h5h5 , 5h5h or 5hh5 .
+it was shown in ( davidov and rappoport , 2006 ) that pairs of words that often appear together in such symmetric patterns tend to belong to the same class ( that is , they share some notable aspect of their semantics ) .
+other words in the class can thus be generated by searching a sub-corpus of documents including at least two concept words for those words x that appear in a sufficient number of instances of both the patterns 5ihx and xh5i , where 5i is a word in the class .
+the same can be done for the other three pattern structures .
+the process can be bootstrapped as more words are added to the class .
+step 1 : use a seed consisting of two ( or more ) example words to automatically obtain other examples that belong to the same class .
+call these concept words . ( for instance , if our example words were france and angola , we would generate more country names . )
+note that our method differs from that of davidov and rappoport ( 2006 ) in that here we provide an initial seed pair , representing our target concept , while there the goal is grouping of as many words as possible into concept classes .
+the focus of our paper is on relations involving a specific concept .
+step 2 : for each concept word , collect instances of contexts in which the word appears together with one other content word .
+call this other word a target word for that concept word . ( for example , for france we might find paris is the capital of france .
+paris would be a target word for france . ) .
+collecting contexts step 3 : for each concept word , group the contexts in which it appears according to the target word that appears in the context . ( thus x is the capital of y would likely be grouped with ys capital is x. ) .
+for each concept word 5 , we search the corpus for distinct contexts in which 5 appears . ( for our purposes , a context is a window with exactly five words or punctuation marks before or after the concept word ; we choose 10,000 of these , if available . )
+we call the aggregate text found in all these context windows the s-corpus .
+step 4 : identify similar context groups that appear across many different concept words .
+merge these into a single concept-word-independent cluster . ( the group including the two contexts above would appear , with some variation , for other countries as well , and all these would be merged into a single cluster representing the relation capitalof ( x , y ) . ) .
+step 5 : for each cluster , output the relation consisting of all < concept word , target word > pairs that appear together in a context included in the cluster . ( the cluster considered above would result in a set of pairs consisting of a country and its capital .
+other clusters generated by the same seed might include countries and their languages , countries and the regions in which they are located , and so forth . ) .
+details of the method .
+in this section we consider the details of each of the above-enumerated steps .
+it should be noted that each step can be performed using standard web searches ; no special pre-processed corpus is required .
+x is a word that appears with frequency below f1 in the s-corpus and that has sufficiently high pointwise mutual information with s. we use these two criteria to ensure that x is a content word and that it is related to s. the lower the threshold f1 , the less noise we allow in , though possibly at the expense of recall .
+we used f1 = 1 , 000 occurrences per million words .
+h2 is a string of words each of which occurs with frequency above f2 in the s-corpus .
+we want h2 to consist mainly of words common in the context of s in order to restrict patterns to those that are somewhat generic .
+thus , in the context of countries we would like to retain words like capital while eliminating more specific words that are unlikely to express generic patterns .
+we used f2 = 100 occurrences per million words ( there is room here for automatic optimization , of course ) .
+h1 and h3 are either punctuation or words that occur with frequency above f3 in the s-corpus .
+this is mainly to ensure that x and s arent fragments of multi-word expressions .
+we used f3 = 100 occurrences per million words .
+we call these patterns , s -patterns and we call x the target of the s-pattern .
+the idea is that s and x very likely stand in some fixed relation to each other where that relation is captured by the s-pattern .
+grouping s-patterns .
+if s is in fact related to x in some way , there might be a number of s-patterns that capture this relationship .
+for each x , we group all the s-patterns that have x as a target . ( note that two s-patterns with two different targets might be otherwise identical , so that essentially the same pattern might appear in two different groups . )
+we now merge groups with large ( more than 2 / 3 ) overlap .
+we call the resulting groups , s-groups .
+identifying pattern clusters .
+if the s-patterns in a given s-group actually capture some relationship between s and the target , then one would expect that similar groups would appear for a multiplicity of concept words s. suppose that we have s-groups for three different concept words s such that the pairwise overlap among the three groups is more than 2 / 3 ( where for this purpose two patterns are deemed identical if they differ only at s and x ) .
+then the set of patterns that appear in two or three of these s-groups is called a cluster core .
+we now group all patterns in other s-groups that have an overlap of more than 2 / 3 with the cluster core into a candidate pattern pool p. the set of all patterns in p that appear in at least two s-groups ( among those that formed p ) pattern cluster .
+a pattern cluster that has patterns instantiated by at least half of the concept words is said to represent a relation .
+refining relations .
+a relation consists of pairs ( s , x ) where s is a concept word and x is the target of some s-pattern in a given pattern cluster .
+note that for a given s , there might be one or many values of x satisfying the relation .
+as a final refinement , for each given s , we rank all such x according to pointwise mutual information with s and retain only the highest 2 / 3 .
+if most values of s have only a single corresponding x satisfying the relation and the rest have none , we try to automatically fill in the missing values by searching the corpus for relevant s-patterns for the missing values of s. ( in our case the corpus is the web , so we perform additional clarifying queries . ) .
+finally , we delete all relations in which all concept words are related to most target words and all relations in which the concept words and the target words are identical .
+such relations can certainly be of interest ( see section 7 ) , but are not our focus in this paper .
+notes on required web resources .
+in our implementation we use the google search engine .
+google restricts individual users to 1,000 queries per day and 1,000 pages per query .
+in each stage we conducted queries iteratively , each time downloading all 1,000 documents for the query .
+in the first stage our goal was to discover symmetric relationships from the web and consequently discover additional concept words .
+for queries in this stage of our algorithm we invoked two requirements .
+first , the query should contain at least two concept words .
+this proved very effective in reducing ambiguity .
+thus of 1,000 documents for the query bass , 760 deal with music , while if we add to the query a second word from the intended concept ( e.g. , barracuda ) , then none of the 1,000 documents deal with music and the vast majority deal with fish , as intended .
+second , we avoid doing overlapping queries .
+to do this we used googles ability to exclude from search results those pages containing a given term ( in our case , one of the concept words ) .
+we performed up to 300 different queries for individual concepts in the first stage of our algorithm .
+in the second stage , we used web queries to assemble s-corpora .
+on average , about 1 / 3 of the concept words initially lacked sufficient data and we performed up to twenty additional queries for each rare concept word to fill its corpus .
+in the last stage , when clusters are constructed , we used web queries for filling missing pairs of one-to-one or several-to-several relationships .
+the total number of filling queries for a specific concept was below 1,000 , and we needed only the first results of these queries .
+empirically , it took between 0.5 to 6 day limits ( i.e. , 500 – 6,000 queries ) to extract relationships for a concept , depending on its size ( the number of documents used for each query was at most 100 ) .
+obviously this strategy can be improved by focused crawling from primary google hits , which can drastically reduce the required number of queries .
+evaluation .
+in this section we wish to consider the variety of relations that can be generated by our method from a given seed and to measure the quality of these relations in terms of their precision and recall .
+with regard to precision , two claims are being made .
+one is that the generated relations correspond to identifiable relations .
+the other claim is that to the extent that a generated relation can be reasonably identified , the generated pairs do indeed belong to the identified relation . ( there is a small degree of circularity in this characterization but this is probably the best we can hope for . )
+as a practical matter , it is extremely difficult to measure precision and recall for relations that have not been pre-determined in any way .
+for each generated relation , authoritative resources must be marshaled as a gold standard .
+for purposes of evaluation , we ran our algorithm on three representative domains – countries , fish species and star constellations – and tracked down gold standard resources ( encyclopedias , academic texts , informative websites , etc ) for the bulk of the relations generated in each domain .
+this choice of domains allowed us to explore different aspects of algorithmic behavior .
+country and constellation domains are both well defined and closed domains .
+however they are substantially different .
+country names is a relatively large domain which has very low lexical ambiguity , and a large number of potentially useful relations .
+the main challenge in this domain was to capture it well .
+constellation names , in contrast , are a relatively small but highly ambiguous domain .
+they are used in proper names , mythology , names of entertainment facilities etc .
+our evaluation examined how well the algorithm can deal with such ambiguity .
+the fish domain contains a very high number of members .
+unlike countries , it is a semi-open nonhomogenous domain with a very large number of subclasses and groups .
+also , unlike countries , it does not contain many proper nouns , which are empirically generally easier to identify in patterns .
+so the main challenge in this domain is to extract unblurred relationships and not to diverge from the domain during the concept acquisition phase .
+we do not show here all-to-all relationships such as fish parts ( common to all or almost all fish ) , because we focus on relationships that separate between members of the concept class , which are harder to acquire and evaluate .
+countries .
+our seed consisted of two country names .
+the intended result for the first stage of the algorithm was a list of countries .
+there are 193 countries in the world ( www.countrywatch.com ) some of which have multiple names so that the total number of commonly used country names is 243 .
+of these , 223 names ( comprising 180 countries ) are character strings with no white space .
+since we consider only single word names , these 223 are the names we hope to capture in this stage .
+using the seed words france and angola , we obtained 202 country names ( comprising 167 distinct countries ) as well as 32 other names ( consisting mostly of names of other geopolitical entities ) .
+using the list of 223 single word countries as our gold standard , this gives precision of 0.90 and recall of 0.86 . ( ten other seed pairs gave results ranging in precision : 0.86-0.93 and recall : 0.79-0.90 . )
+the second part of the algorithm generated a set of 31 binary relations .
+of these , 25 were clearly identifiable relations many of which are shown in table 1 .
+note that for three of these there are standard exhaustive lists against which we could measure both precision and recall ; for the others shown , sources were available for measuring precision but no exhaustive list was available from which to measure recall , so we measured coverage ( the number of countries for which at least one target concept is found as related ) .
+another eleven meaningful relations were generated for which we did not compute precision numbers .
+these include celebrity-from , animal-of , lakein , borders-on and enemy-of .
+fish species .
+in our second experiment , our seed consisted of two fish species , barracuda and bluefish .
+there are 770 species listed in wordnet of which 447 names are character strings with no white space .
+the first stage of the algorithm returned 305 of the species listed in wordnet , another 37 species not listed in wordnet , as well as 48 other names ( consisting mostly of other sea creatures ) .
+the second part of the algorithm generated a set of 15 binary relations all of which are meaningful .
+those for which we could find some gold standard are listed in table 2 .
+other relations generated include served-with , bait-for , food-type , spot-type , and gill-type .
+constellations .
+our seed consisted of two constellation names , orion and cassiopeia .
+there are 88 standard constellations ( www.astro.wisc.edu ) some of which have multiple names so that the total number of commonly used constellations is 98 .
+of these , 87 names ( 77 constellations ) are strings with no white space .
+the first stage of the algorithm returned 81 constellation names ( 77 distinct constellations ) as well as 38 other names ( consisting mostly of names of individual stars ) .
+using the list of 87 single word constellation names as our gold standard , this gives precision of 0.68 and recall of 0.93 .
+the second part of the algorithm generated a set of ten binary relations .
+of these , one concerned travel and entertainment ( constellations are quite popular as names of hotels and lounges ) and another three were not interesting .
+apparently , the requirement that half the constellations appear in a relation limited the number of viable relations since many constellations are quite obscure .
+the six interesting relations are shown in table 3 along with precision and coverage .
+discussion in this paper we have addressed a novel type of problem : given a specific concept , discover in fully unsupervised fashion , a range of relations in which it participates .
+this can be extremely useful for studying and researching a particular concept or field of study .
+as others have shown as well , two concept words can be sufficient to generate almost the entire class to which the words belong when the class is welldefined .
+with the method presented in this paper , using no further user-provided information , we can , for a given concept , automatically generate a diverse collection of binary relations on this concept .
+these relations need not be pre-specified in any way .
+results on the three domains we considered indicate that , taken as an aggregate , the relations that are generated for a given domain paint a rather clear picture of the range of information pertinent to that domain .
+moreover , all this was done using standard search engine methods on the web .
+no language-dependent tools were used ( not even stemming ) ; in fact , we reproduced many of our results using google in russian .
+the method depends on a number of numerical parameters that control the subtle tradeoff between quantity and quality of generated relations .
+there is certainly much room for tuning of these parameters .
+the concept and target words used in this paper are single words .
+extending this to multiple-word expressions would substantially contribute to the applicability of our results .
+in this research we effectively disregard many relationships of an all-to-all nature .
+however , such relationships can often be very useful for ontology construction , since in many cases they introduce strong connections between two different concepts .
+thus , for fish we discovered that one of the all-to-all relationships captures a precise set of fish body parts , and another captures swimming verbs .
+such relations introduce strong and distinct connections between the concept of fish and the concepts of fishbody-parts and swimming .
+such connections may be extremely useful for ontology construction .

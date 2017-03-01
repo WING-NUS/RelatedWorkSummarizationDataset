@@ -1,0 +1,176 @@
+topic detection and tracking in english and chinese .
+abstract .
+topic detection and tracking ( tdt ) refers to automatic techniques for discovering , threading , and retrieving topically related material in streams of data .
+newswire and broadcast news are the canonical sources .
+in 1999 , tdt research was extended from english to chinese , and carefully annotated multilingual corpora were created .
+researchers devised clever approaches to the cross-language challenge , and formal performance evaluations yielded very promising results .
+this paper outlines the 1999 research tasks , corpora , evaluation procedures , technical approaches , and results .
+the multilingual , multimedia research and evaluations are continuing in 2000 and 2001 under the darpa tides program .
+keywords : speech ; text ; topic ; segmentation ; tracking ; detection .
+introduction .
+the defense advanced research projects agency ( darpa ) has sponsored research on topic detection and tracking ( tm ) since 1997 and has increased the technical challenges each year .
+in the 1997 pilot study , systems attacked newswire and manually transcribed broadcast news .
+in 1998 , systems were exposed to the enrorful outputs of automatic speech recognition ( asr ) technology .
+in 1999 , systems started dealing with cross-language issues .
+this paper reports on the relevant corpora , research tasks , technical approaches , and results .
+it consolidates in one place work done at multiple sites and focuses especially on the issues involved in dealing with both english and chinese language data .
+topic detection and tracking .
+tdt encompasses a variety of automatic techniques for discovering and threading together topically related material in streams of data such as newswire and broadcast news .
+figure 1 illustrates the prototypical situation : horizontal lines represent incoming streams of news stories from different sources , media , and languages .
+each rectangle represents a single story , and each is about the same event .
+tdt aims to discover this kind of structure automatically , giving users timely and efficient access to large quantities of information and helping them to keep on top of developments around the world : systems could alert users to new events and to new information about old events ; by examining one or two stories , a user could decide whether to pay attention to the rest of an evolving thread .
+alternatively , a user could go into a large archive , find all the stories about a particular event , and see how it evolved .
+distinguishing features three things make tdt unique . 2.1.1 definition of " topic " . tdt defines " topic " to mean a specific event or activity plus directly related events or activities . ( for instance , the oklahoma city _ bombing topic includes the destruction of the federal building in 1995 , the memorial services , the state and federal investigations , the prosecution of timothy mcveigh , et cetera . )
+other topic-oriented research deals with categories of information ( e.g. , bombings in general or bombings in some geographical region ) .
+discovery of new events .
+tdt emphasizes the discovery of new events ( topics ) , which no one expected or knew to request .
+this capability could be quite useful in many applications .
+focus on linguistic content .
+tdt focuses on content in order to create broadly applicable language-based technology .
+algorithms are allowed to use information that is available in all applications ( source , date , and time ) ; but not the titles , keyword lists , et cetera that accompany newswire nor the closed captions that accompany some audio data . ( these items could be exploited in real applications , if available . )
+research tasks .
+the tdt 1999 research was factored into five complementary technical tasks : this paper concentrates on the first three , as they are the major tasks and have been done in both chinese and english .
+related technology .
+tdt intersects with , but goes well beyond the traditional concerns of information retrieval , information management , and data mining � particularly in tdt 's emphasis on discovering new information and its focus on specific events rather than subject matter categories .
+supporting technology .
+in addition to using the contents of the original data streams ( text or audio in english or chinese ) , tdt algorithms are permitted to utilize the outputs of automatic speech recognition ( asr ) and machine translation ( mt ) included in the corpora .
+corpora .
+in order to support tdt research and evaluation , the linguistic data consortium ( ldc ) produced two multimedia , multilingual corpora ( known as tdt2 and tdt3 ) and completely annotated them for specific , randomly chosen topics .
+the annotations facilitate frequent experimentation and make the corpora extremely valuable for research .
+sources .
+both corpora contain representative data in both chinese and english from both text and audio news sources .
+the tdt2 data are from january to june 1998 ; tdt3 , from october to december 1998 .
+the ldc sampled the various news streams ( if available ) several times every day in broadcast-size chunks � typically 30 minutes from audio sources or a corresponding number of stories from text sources .
+contents .
+tdt2 and tdt3 contain the following types of information : topic annotation .
+the ldc selected and annotated 100 topics in tdt2 , 60 in tdt3 .
+they chose topics ( events ) at random from the various sources , then read every story and labeled it yes , no , or brief with respect to each topic ( where brief signifies that a topic occupied less than 10 % of a story ) .
+for tdt2 , the ldc chose the topics from english sources only , then searched for them in both languages .
+for tdt3 , they chose the topics from both english and chinese sources and made sure that each topic appeared at least four times in each language .
+annotators worked in their native languages from text data or manual transcripts of audio data .
+automatic transcription .
+all of the audio files were automatically transcribed by dragon systems , using their software , or by nist , using bbn software .
+depending upon the data , the word error rates varied widely , averaging 25-30 % .
+the asr outputs were created both to save tdt researchers from having to create their own asr technology and to provide a common basis for comparing tdt algorithms .
+automatic translation .
+using systran mt software , the ldc automatically translated all of the chinese text and chinese asr outputs into some approximation of english .
+to illustrate the accuracy of this process , figure 2 shows part of a typical story ; figure 3 , its translation .
+despite the many virtues of these corpora , table 1 shows some limitations : there are a reasonable number and variety of english sources , but only three chinese sources .
+the english data contains more audio than text ; the chinese , more text than audio .
+the amounts of data from particular sources ( providers ) vary widely .
+consequently , one must be somewhat cautious in interpreting the test results .
+a new tdt4 corpus with more languages and more diverse sources will be collected this fall .
+more topics are being annotated within the tdt3 corpus .
+additional information .
+for more information about the contents or the creation of the tdt corpora , please see the ldc 's tdt web pages ( www.ldc.upenn.edu / projects / tdt ) .
+evaluation .
+process .
+in order to focus tdt research , calibrate progress , and provide diagnostic feedback , the national institute of standards and technology ( nist ) worked with the sponsor and the research community to define a set of objective performance measures that represented the essence of tdt .
+nist then created supporting software ( which they shared with the community to aid pre-evaluation research ) , administered a formal evaluation in december 1999 ( wherein sites processed data locally and submitted outputs to nist ) , and hosted a technical workshop in february 2000 .
+test corpus .
+tdt3 was used for the formal evaluation .
+tdt2 was available for pre-evaluation research and for learning parameters that would be useful in the test .
+sites could also use any other linguistic resources that predated october 1998 .
+formulation as statistical detection .
+to represent the research challenges crisply , nist formulated each task ( not just the detection task ) as a classical statistical detection problem .
+at every decision point ( story or potential boundary ) , a system had to output both a decision and a confidence score .
+calculations of performance .
+det curves .
+from the scores , nist software produces a detection error tradeoff ( de 't ) curve of the sort illustrated in figure 4 and figure 5 .
+det curves , nicely described in [ 1 ] , show miss and false alarm rates at multiple operating points , making it easy to compare results obtained with different algorithms or under different conditions . ( please note that desirable performance is in the lower left corner of the plot . )
+compared to traditional precision-recall ( pr ) curves , det curves have the advantage of avoiding the confounding effect of target richness in different corpora .
+this occurs because det curves are based on probability density functions ( of scores given target and non-target conditions ) and do not depend on the proportion of target and non- target material in a corpus .
+normalized costs .
+from the decisions , the software calculates a normalized cost that reflects both the overall strength of an algorithm and its ability to set thresholds correctly .
+while miss and false alarm characterize the accuracy of an algorithm in the abstract , cost reflects its utility in a ( hypothetical ) application and reduces everything to a single number .
+the basic cost function is given in equation ( 1 ) , where the target conditions are the presence of a story boundary or of an on-topic story , and their probabilities are a priori .
+a normalized cost of 0.00 represents perfect performance ; 1.00 indicates that no information has been extracted from the source data .
+the research challenge is to produce an algorithm that minimizes normalized cost .
+topic-weighted results .
+because topic difficulty is a major source of variability and the number of on-topic stories varies widely , the software computes the above as topic-weighted results ( with each topic contributing equally to the overall averages ) .
+this improves the reliability of the performance measures .
+additional information .
+for more information about the evaluation process , please see [ 2 ] , which spells out the research challenges and evaluation procedures clearly and in considerable detail .
+research .
+participants .
+in 1999 , eleven academic and industrial research groups ( including several volunteers ) participated in ' tdt research and submitted results for one or more of the tasks : approaches .
+the sites demonstrated considerable creativity , diversity , and sophistication in their approaches , advancing the state of the art in tdt technology in general and applying it ( for the first time ) to the cross-language challenge .
+due to space limitations , only brief descriptions of the approaches appear below .
+much more information can be found in the many papers [ 3 ] and presentations [ 4 ] given at the ' tdt workshop held in february 2000 .
+still more is appearing in papers that participants are writing for various conferences and journals .
+as these come out , nist will post citations at www.nist.gov / tdt / research _ linics .
+the segmentation task required systems to find story boundaries in audio sources .
+systems were given broadcast-sized files of data and had to produce outputs by the end of each broadcast .
+the most successful system ( described in [ 5 ] ) combined maximum entropy and decision tree models fed by various source-specific features , including speaking rate ( tv announcers speak faster at the beginning of stories than at the end ) , sentence length ( longer at the beginning of stories ) , position in the show ( when commercial breaks appear at predictable times ) , and word / character n-grams .
+other systems employed bayes classifiers , various lexical cues ( pre and post boundary trigger words plus words appearing on both sides of a boundary ) , pause durations , and changing energy levels .
+techniques developed primarily on english worked well ( in fact , better ) on chinese .
+one cannot draw strong conclusions about language differences , however , since the only chinese audio source , voa mandarin , was of very good quality .
+to help interpret these numbers , a system that is always off by 3.5 seconds ( for english ) or 3.4 seconds ( for chinese ) would produce the same normalized segmentation costs as shown in table 2 .
+tracking is essentially query-by-example in ir parlance .
+the official tracking task required systems to find all subsequent stories about the topic discussed in four example ( training ) stories .
+the four training stories were all in english ; the test stories , in both english and chinese .
+systems were given true boundary information and had to output decisions as they processed each test story .
+the most successful system ( described in [ 6 ] ) used logistic regression to combine probabilities obtained from a 2-state topic spotting technique ( with a language model built from concatenated training stories ) and from a complementary 2- state probabilisitic information retrieval technique ( in which the unknown story is assumed to produce the model ) .
+this was followed by normalization ( with thousands of known off-topic stories ) and adaptation ( with high scoring test documents added to the training set and the parameters re-estimated ) .
+other systems used cosine-vector similarity measures , word feature vectors ( with and without stop words , sometimes heavily pruned ) , name recognition , tf * idf weighting ( where idf may be adapted incrementally ) , rocchio classification ( with positive and negative examples ) , k-nearest neighbor ( cnn ) clustering , language models based on hidden markov models , source and language-dependent normalization , plus various score combination methods .
+the best system obtained a normalized tracking cost of 0.092 .
+figure 4 shows the corresponding det plot .
+figure 5 shows how the results depend on language and medium .
+within each language , the results on text test data ( thick lines ) are better than the results on audio test data ( thin lines ) .
+these differences could be due both to content differences ( since text stories are longer on average ) and / or to asr output errors .
+table 4 shows the associated cost figures .
+once again , we see that techniques work comparably well in monolingual tasks ( training and testing in the same language ) .
+however , we also see strong cross-language differences .
+topic detection was the most challenging task .
+it required systems to group incoming stories into topic clusters automatically ( i.e. , without supervision ) and to create new clusters ( topics ) as needed .
+like tracking , the detection task was cross-medium , cross-source , and cross-language .
+systems were given a stream of stories in english and chinese and could wait until the end of 10 files ( broadcasts or comparable amounts of text ) before announcing decisions .
+once made , decisions were irreversible .
+the most successful system ( described in [ 5 ] ) compared each incoming document with all existing clusters using a symmetric okapi formula and ( depending on a threshold ) either added the story to the closest cluster or started a new one .
+it took advantage of the 10-file deferral period to first form microclusters , calculate a source-dependent idf , and then rescore .
+other systems used other ir matching methods or topic spotting language models and normalized twice ( to make scores comparable across both documents and topics ) .
+the best system had a normalized detection cost of 0.26 .
+to provide some insight into the difficulty of doing detection across languages , table 5 shows the corresponding cost of 0.32 for the second best system � along with the results of unofficial , monolingual side experiments run on that system .
+as in monolingual segmentation or tracking , monolingual detection results are reassuringly similar .
+the official ( multilingual ) results are noticeably less good , as one might expect .
+since tdt techniques work comparably well on both chinese and english separately , why do they not work better across languages ?
+a large part of the reason must be translation accuracy , especially for names .
+another factor may be cross-language score normalization , which could be improved with more training data , inter alia .
+and there is certainly room for new ideas , such as symmetrical processing across languages .
+names provide a great deal of information for linking stories about a particular event .
+figure 6 lists all the names that appeared in the xinhua story ( including the portion that did not fit in figure 2 ) , showing how systran rendered those names and how an english newswire would have rendered them .
+it is significant that systran got only 5 of the 14 names correct .
+many of the errors illustrated can be attributed to systran 's incorrect segmentation of the hanzi character streams .
+normalization success varied considerably across sites .
+the best tracking results were obtained by a system [ 6 ] that normalized its scores using means and variances estimated separately for english and chinese on known off-topic stories .
+the same site achieved the second best normalized detection cost plus the most consistent detection costs within and across languages and media .
+all sites ended up using the systran translations , either because they provided the best results or because doing so was the path of least resistance .
+one site devised a relatively simple statistical translation system ( described in [ 6 ] ) and obtained tracking results almost as good as with the systran output .
+this suggests that tdt technology could be ported relatively easily to languages for which there is no good translation technology .
+on the other hand , better quality translations may be needed as tdt algorithms become more sophisticated .
+tdt represents an important avenue of research with broad application potential and interesting technical challenges .
+tdt algorithms provide unique capabilities that could be used jointly or separately in various applications and that could be combined with asr , information retrieval , summarization , and mt technology to satisfy a wide variety of user needs .
+tdt performance was quite good on the tracking task , respectable on the segmentation and detection tasks .
+systems made creative use of a variety of acoustic , lexical , prosodic , and structural features .
+they gained robustness by combining scores from different matching algorithms and by normalizing scores to account for source , medium , and language differences .
+with minor modifications , algorithms developed for english worked comparably well on monolingual tasks in chinese .
+this suggests that tdt technology could be ported to arbitrary languages .
+results were distinctly less good on cross-language tasks ( tracking topics in chinese given only english examples , or detecting that stories in english and chinese were on the same topic ) .
+to get creditable results , researchers found that cross-language normalization was essential ( just as cross-medium and / or cross-source normalization was critical within a single language ) .
+even with normalization , there is considerable room for improvement .
+accurate name translation would certainly be a fruitful avenue to explore .
+although a great deal of good research can and should be done within a language , there is no substitute for experiments involving multiple languages .
+this is especially true for tdt , where key applications are inherently cross-language .
+it was very fortunate that darpa insisted on this direction and that the ldc was able to create suitable corpora in english and chinese .
+tdt research will continue under the darpa tides program , with additional data , more languages , and evolving technical challenges .
+additional sites are welcome to participate in the annual evaluations as volunteers .
+interested parties are encouraged to contact nist ( jonathan.fiscus @ nist.gov ) . 10 acknowledgements darpa provided the key funding , vision , and encouragement that made this work possible .
+the ldc created the incredibly valuable corpora .
+nist provided the essential evaluation infrastructure .
+many researchers at many sites helped both to refine the tdt research challenges and to devise creative approaches for attacking them .
+it was a wonderfully collegial and cooperative venture .
+in the preparation of this paper , special thanks are due to jon fiscus , who analyzed the evaluation results and provided the cost figures and det curves used herein , and to shudong huang , who provided the mt examples .
+james allan , chris cieri , george doddington , and jon fiscus all provided helpful comments on portions of the text .
+in reading about tdt , one encounters some terminological variations : officially , the terms tdt1 , tdt2 , and tdt3 refer to corpora ; tdt 1997 , tdt 1998 , tdt 1999 , tdt 2000 , and tdt 2001 refer to research periods and associated evaluations .
+many authors use tdt1 to refer to tdt 1997 , tdt2 to refer to tdt 1998 , and tdt3 to refer to tdt 1999 � as those were the corpora used as test material in those years .
+in addition , groups that did not participate in the official evaluations and workshops sometime use terms like topic , detection , and tracking in non-standard ways .

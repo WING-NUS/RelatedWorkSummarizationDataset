@@ -1,0 +1,20 @@
+(claim)#there are several other useful approaches to scaling translation models .
+0.1#(zens and ney 2007)#$1 remove constraints imposed by the size of main memory by using an external data structure .
+0.1#(johnson et al. 2007)#$1 substantially reduce model size with a filtering method .
+(claim)#however , neither of these approaches addresses the preprocessing bottleneck .
+0.1#(callison-burch et al. 2005);(zhang and vogel 2005)#to our knowledge , the strand of research initiated by $1 and $2 and extended here is the first to do so .
+0.2#(dyer et al. 2008)#$1 address this bottleneck with a promising approach based on parallel processing , showing reductions in real time that are linear in the number of cpus .
+(claim)#however , they do not reduce the overall cpu time .
+(claim)#our techniques also benefit from parallel processing , but they reduce overall cpu time , thus comparing favorably even in this scenario. 
+(claim)#moreover , our method works even with limited parallel processing .
+(claim)#although we saw success with this approach , there are some interesting open problems .
+(claim)#as discussed in 4.2 , there are tradeoffs in the form of slower decoding and increased memory usage .
+0.3#(zhang and vogel 2005)#decoding speed might be partially addressed using a mixture of online and offline computation as in $1 , but faster algorithms are still needed .
+(claim)#memory use is important in nondistributed systems since our data structures will compete with the language model for memory .
+0.3#(navarro and makinen, 2007)#it may be possible to address this problem with a novel data structure known as a compressed selfindex $1 , which supports fast pattern matching on a representation that is close in size to the information-theoretic minimum required by the data .
+(claim)#our approach is currently limited by the requirement for very fast parameter estimation .
+(claim)#as we saw , this appears to prevent us from computing the target-to-source probabilities .
+(claim)#it would also appear to limit our ability to use discriminative training methods , since these tend to be much slower than the analytical maximum likelihood estimate .
+(claim)#discriminative methods are desirable for feature-rich models that we would like to explore with pattern matching .
+0.4#(chan et al. 2007);(carpuat and wu 2007)#for example , $1 and $2 improve translation accuracy using discriminatively trained models with contextual features of source phrases . their features are easy to obtain at runtime using our approach , which finds source phrases in context . however , to make their experiments tractable , they trained their discriminative models offline only for the specific phrases of the test set .
+(claim)#combining discriminative learning with our approach is an open problem .

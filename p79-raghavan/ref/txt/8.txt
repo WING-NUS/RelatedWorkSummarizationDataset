@@ -1,0 +1,238 @@
+constructing informative prior distributions from domain knowledge in text classification .
+abstract .
+supervised learning approaches to text classification are in practice often required to work with small and unsystematically collected training sets .
+the alternative is usually viewed as building classifiers by hand , using an expert s understanding of what features of the text are related to the class of interest .
+this is expensive , requires a degree of computational and linguistic sophistication , and makes it difficult to use combinations of weak predictors .
+we propose instead combining domain knowledge with training examples in a bayesian framework .
+domain knowledge is used to specify a prior distribution for parameters of a logistic regression model , and labeled training data is used to produce and find the mode of the posterior distribution .
+we show on three text categorization data sets that this approach can rescue what would otherwise be disastrously bad training situations , producing much more effective classifiers .
+introduction .
+numerous studies show that effective text classifiers can be produced by supervised learning methods , including support vector machines ( svms ) [ 11 , 14 , 33 ] , regularized logistic regression [ 9 , 33 ] , and other approaches [ 14 , 27 , 33 ] .
+most of these studies have used thousands to 10 s of thousands of randomly selected training examples .
+in operational text classification settings , however , small training sets are the rule , due to the expense and inconvenience of labeling , or skepticism that the effort will be adequately repaid .
+to learn from a handful of training examples , one must either use a sufficiently limited model class or some additional regularization penalty to effectively constrain the models learnable with a small amount of data .
+otherwise over- fitting ( learning accidental properties of the training data ) will yield poor effectiveness on future data .
+on the other hand , strong general constraints on the models themselves limit the effectiveness of learnable classifiers .
+this situation can be improved if one has advance knowledge of which classifiers are likely to be good for the class of interest .
+in text categorization , for instance , such knowledge might come from category descriptions meant for manual indexers , reference materials on the topics of interest , lists of features chosen by a domain expert , or many other sources .
+bayesian statistics provides a convenient framework for combining domain knowledge with training examples [ 3 ] .
+the approach produces a posterior distribution for the quantities of interest ( e.g. , regression coefficients ) .
+per bayes theorem , the posterior distribution is proportional to the product of a prior distribution and the likelihood function .
+in applications with large numbers of training examples , the likelihood dominates the prior .
+however , with small numbers of training examples , the prior is influential and priors that reflect appropriate knowledge can provide improved predictive performance .
+in what follows we apply this approach with logistic regression as our model and text classification ( in particular text categorization ) as our application .
+we begin by reviewing the use of logistic regression in text classification , and the bayesian approach in particular ( section 2 ) , then discuss previous approaches to integrating domain knowledge in text classification ( section 3 ) .
+section 4 presents our bayesian approach , which is simpler and more flexible .
+section 5 describes our experimental methods , while section 6 presents our results .
+we find on three test categorization test collections , using three diverse sources of domain knowledge , that domain-specific priors can yield large effectiveness improvements .
+bayesian logistic regression .
+a logistic regression training algorithm chooses a vector of model parameters / 3 that optimizes some appropriate criterion function on a set of training examples for which yi values are known .
+in the bayesian map ( maximum a posteriori ) approach to logistic regression [ 9 , 19 ] , the criterion function is the sum of the log likelihood of the data and the log of the prior distribution of the regression coefficients .
+the prior , p ( ) , can be any probability distribution over real-valued vectors .
+map estimation is neither necessarily superior or inferior to other bayesian approaches [ 28 ] .
+logistic regression [ 7 , 15 , 19 , 26 , 33 , 32 ] and , to a lesser degree , the similar probit regression [ 4 ] , has been widely used in text classification .
+regularization to avoid overfitting has been based on feature selection , early stopping of the fitting process , and / or a quadratic penalty on the size of regression coefficients .
+the last of these , sometimes called ridge logistic regression , can be interpreted as map estimation where p ( / 3 ) is a product of univariate gaussians with mean 0 and a shared variance [ 19 ] .
+recently , genkin et al. [ 9 ] showed map estimation with a product of univariate laplace priors , i.e. a lasso [ 29 ] version of logistic regression , was effective for text categorization .
+prior work .
+feature extraction is one use of domain knowledge ( most famously in spam filtering [ 18 ] ) .
+creating better features is good , but one would like to guide the learner to use them .
+domain knowledge can also be used to choose which features to use ( feature selection ) .
+an old example is stopwords [ 24 , 30 ] , often deleted in content-based text classification , but specifically included in authorship attribution .
+another is relevance feedback , where words from the user query are usually required to appear in the learned model [ 2 , 24 ] .
+the downside of feature selection is that it cannot reduce the impact of a term without discarding it entirely .
+relevance feedback may also use textual queries as artificial positive examples to supplement labeled training data .
+however , a query ( or in general a domain-informative text ) may have different length , non-domain vocabulary , and non- textual features than a training document , which poses risks for learning .
+finally , some relevance feedback algorithms ( e.g.
+rocchio [ 2 ] ) use a query to set initial values of some or all classifier parameters , which are then updated by training data .
+this is a more flexible approach , but past algorithms have not dealt with words that are negative predictors , strong predictors of uncertain polarity , or varying degrees of confidence in predictors .
+several recent papers have modified learning approaches naive bayes [ 13 , 16 ] , logistic regression ( fit with a boosting- style algorithm ) [ 25 ] , and svms [ 31 ] to use domain knowledge in text categorization .
+all modify the base learning algorithm , and require users to convert knowledge about words into weighted training examples .
+several heuristics are suggested for this weighting , but implicitly assume a substantial number of task documents ( at least unlabeled ones ) are available .
+a recent study [ 21 ] that upweights human- selected terms in svm learning ( by altering document vectors ) is similar in spirit to our work , though in an active learning context .
+closely related to using domain knowledge is mixing training data from different sources in supervised learning ( domain adaptation ) .
+gabrilovich and markovitch use a combination of feature generation , feature selection , and domain adaptation from a large web directory to improve classification of diverse documents [ 8 ] .
+chelba and acero [ 5 ] use out-of-task labeled examples in logistic regression training of a text capitalizer , and use the resulting map estimate as the mode vector of a bayesian prior for training with in-task examples .
+our work has similarities to chelba and acero s , as well as to non-textual uses of bayesian priors to incorporate knowledge ( [ 17 ] , and citations therein ) .
+using domain knowledge .
+given the wide use in text classification of gaussian priors , and the recent success of laplace priors , we take these as our starting point .
+the univariate gaussian and laplace distributions each have two parameters , so a product of such distributions for d features and an intercept gives 2d + 2 hyperparameters .
+the gaussian parameters are the mean j and the variance ^ 2 j .
+the laplace parameters are the mean j , and the scale parameter aj , corresponding to a variance of 2 / a2 j .
+for both distributions the mean j is also the mode , and in this paper we will refer to the mode and variance as the hyperparameters for both the gaussian and laplace distributions .
+the mode specifies the most likely value of , c3j , while the variance specifies how confident we are that , c3j is near the mode .
+as for domain knowledge , our interest is in a wide range of possible clues to which words are good predictors for a class .
+focused lists of words generated specifically for classification are of interest , but so are reference materials , such as encyclopedia entries , that provide noisier evidence .
+we refer to all these sources as domain knowledge texts , and assume for simplicity there is exactly one domain knowledge text for each class ( more can easily be used ) .
+we call a set of such texts a domain knowledge corpus .
+for a given class , we distinguish between two sets of words .
+knowledge words ( kws ) are all those that occur in the domain knowledge text for the class of interest .
+other words ( ows ) are all words that occur in the training documents for a particular run , but are not kws .
+table 1 summarizes the methods discussed in this section .
+baselines .
+text classification research using regularized logistic regression has usually set all prior modes to 0 , and all prior variances to a common value ( or do the equivalent nonbayesian regularization ) .
+some papers explore several values for the prior variance [ 15 , 33 ] , others use a single value but do not say how it was chosen [ 19 , 32 ] , and others choose the variance by cross-validation on the training set [ 9 ] .
+we used cross-validation ( section 5.1.1 ) to choose a common prior variance for ows .
+in our no dk baseline ( table 1 ) , all words are ows .
+another simple baseline is to create x copies of the prior knowledge text for a class and add these copies to the training data as additional positive examples ( dk examples in table 1 ) , as in some relevance feedback approaches .
+we applied the same tokenization and term weighting ( section 5.3 ) to these artificial documents as to the usual training documents .
+we tested a range of values for x , but include results only for the best value , x = 5 .
+priors from domain knowledge .
+our four methods for using domain knowledge to specify class-specific hyperparameters begin by giving ows a prior with i = 0 and a common variance v2 chosen by cross-validation .
+kws are then given more ability to affect classification by assigning them a larger prior mode or variance than ows .
+all four methods use a heuristic constant cdkrw , the domain knowledge relative weight , to control how much more influence kws have .
+this constant can be set manually or , as in our experiments , chosen by cross-validation on the training set ( section 5.1.1 ) .
+two of our methods look not just at the domain knowledge text for the target class , but at the texts for other classes , in order to determine how significant to the target class each word in its domain knowledge text is .
+as a heuristic measure of significance , we use tfidf weighting ( section 5.3 ) within the domain knowledge corpus : we now describe the methods .
+variance-setting methods .
+one view is that kws will have more influence ( i.e. parameter values farther from 0 ) than typical ows in a good logistic regression model for the class , but could be positive or negative predictors .
+that suggests the prior on a kw should usually have a larger variance than the prior on an ow .
+methods var and var / tfidf ( table 1 ) make the prior variances for kws a multiple of the variance for ows .
+mode-setting methods .
+another view of a domain knowledge text is that it contains words which are mostly positive predictors of class membership , i.e. that kws will tend to have parameter values greater than 0 in a good logistic regression model .
+along these lines , methods mode and mode / tfidf make the prior mode for a kw greater than 0 , in contrast to the mode of 0 used for ows .
+method mode gives the prior for every kw the same mode : both methods use a common variance chosen by cross-validation for both ows and kws .
+while mode-setting may seem more natural than variance- setting , it carries more risks .
+if a term does not occur in the training data , then the map estimate for the corresponding parameter is identically the prior mode .
+with nonzero prior modes and a tiny training set , we may be hardwire many untested parameter choices into the final classifier .
+experimental methods .
+in this section , we describe our experimental approach to studying the use of domain knowledge in logistic regression .
+software and algorithms .
+as discussed in section 3 , our interest was in domain knowledge techniques that can be used with existing supervised learning algorithms .
+here we discuss the particular implementations used in our experiments .
+logistic regression .
+we trained and applied all logistic regression models using version 2.04 of the bbr ( bayesian binary regression ) package [ 9 ] 1 .
+bbr supports gaussian and laplace priors with user-specified modes and variances .
+the bbr fitting algorithm chose the prior variance that maximized the cross-validated posterior predictive log-likelihood for each training set .
+for methods using class-specific priors , we used cross- validation external to bbr to choose a pair ( cdkrw , a2 ) from the cross product of a set of values for cdkrw and the above set of values for a2 .
+for methods var and var / tfidf , the cdkrw values tried were 2 , 5 , 10 , 20 , 50 , 100 , and 10000 .
+for methods mode and mode / tfidf , the cdkrw values were 0.5 , 1 , 2 , 3 , 4 , 5 , 10 , 20 , 50 , 100 , and 10000 .
+the pair was again chosen to maximize cross- validated posterior predictive log-likelihood on the training set .
+support vector machines .
+as a baseline to ensure that logistic regression was producing reasonable classifiers without domain knowledge , we trained support vector machine ( svm ) classifiers on all training sets .
+svms are one of the most robust and effective approaches to text categorization [ 11 , 12 , 14 , 27 ] .
+in our experiments , we used version 5.0 of svm light software [ 11 , 12 ] 2 .
+all options were kept at their default values .
+keeping the -c option at its default meant that svm light used the default choice ( c = 1.0 for our cosine normalized examples ) of the regularization parameter c. we also generated results with the regularization parameter chosen by cross-validation , but these were inferior and are not included here .
+datasets .
+our text classification experiments used three public text categorization datasets for which publicly available domain knowledge texts was available .
+we chose , as our binary classification tasks , categories with a moderate to large number of positive examples .
+this enabled experimentation with different training set sizes .
+bio articles .
+this collection of full text biomedical articles was used in the trec 2004 genomics track categorization experiments [ 10 ] .3 the genomics track itself featured a few , atypical categorization tasks .
+however , because all the articles are indexed in the national library of medicine s medline system , they have corresponding medline records with manually assigned mesh ( medical subject headings ) terms .
+we posed as our text classification tasks predicting the presence or absence of selected mesh headings .
+documents .
+we split the bio articles documents into three 8-month segments .
+we used the first segment for the training and the last segment for testing .
+the middle segment was reserved for future purposes and was not used in the experiments reported here .
+training sets of various sizes were drawn from the training population of 3,742 articles ( period : 2002-01-01 to 2002-08-31 ) , and classifiers were evaluated on the test set of 4,175 articles ( period : 2003-05- 01 to 2003-12-31 ) .
+categories .
+we wanted a set of categories that were closely related to each other ( to test the ability of domain knowledge to support fine distinctions ) and somewhat frequent on the particular biomedical journal articles we had available .
+mesh organizes its headings into multiple tree structures , and we choose the a11 subtree ( mesh descriptor : cells ) to work with .
+this subtree contains 310 distinct headings , and we chose to work with the 32 that were assigned to 100 or more of our documents .
+note that when deciding whether a mesh heading was assigned to a document , we stripped all subheadings from the category label .
+prior knowledge .
+each mesh heading has a detailed entry provided as an aid to both nlm manual indexers and users of medline .
+figure 1 shows a portion of one such entry .
+we used as our domain knowledge text for a category all words from the mesh heading , scope notes , entry terms , see also , and previous indexings fields .
+entries were taken from the 2005 mesh keyword hierarchy [ 1 ] , downloaded in november 2004 .
+modapte top 10 .
+our second dataset was the modapte subset of the reuters- 21578 test collection of newswire articles [ 14 ] .4 documents .
+the modapte subset contains 9603 and 3299 reuters news articles in the training set and test set , respectively .
+categories .
+following wu and srihari [ 31 ] ( see below ) we used the 10 topic categories with the largest number of positive training examples .
+prior knowledge .
+in their experiments on incorporating prior knowledge into svms , wu and srihari [ 31 ] manually specified short lists of high value terms for the top 10 .
+topic categories .
+we used those lists ( figure 2 ) as our domain knowledge texts .
+note that due to the small number of these texts and their highly focused nature , idf weights within the domain knowledge corpus had almost no impact , so methods var / tfidf and mode / tfidf behaved almost identically to methods var and mode .
+rcv1 a-b regions .
+the third dataset was drawn from rcv1-v2 , a test categorization test collection of 804,414 newswire articles [ 14 ] .
+documents .
+for efficiency reasons , we did not use the full set of 804 , 414 documents .
+our test set was the 120,076 documents dated 20-december-1996 to 19-february-1997 .
+for a large training set , we used the lyrl2004 ( [ 14 ] ) training set of 23,149 documents from 20-august-1996 to 31- august-1996 .
+small training sets were drawn from a training population of 264,569 documents ( 20-august-1996 to 19- december-1996 ) .
+the remaining documents was set aside for future use .
+categories .
+we selected a subset of the reuters region categories whose names exactly matched the names of geographical regions with entries in the cia world factbook ( see below ) and which had one or more positive examples in our large ( 23,149 document ) training set .
+there were 189 such matches , from which we chose the 27 with names beginning with the letter a or b to work with , reserving the rest for future use .
+prior knowledge .
+the domain knowledge text for each region category was the corresponding entry in the cia world factbook 1996.6 figure 3 shows a portion of the entry for afghanistan .
+the html source code of the cia wfb was downloaded in june 2004 .
+the formatting of the entries did not make it easy to omit field names and boilerplate text .
+we instead simply deleted ( in addition to html tags ) all terms that occurred in 10 % or more of the entries .
+text representation .
+text from each training and test document was converted to a sparse numeric vector in svm light format ( also used by bbr ) .
+the bio articles documents were in xml format .
+we concatenated the contents of the title ( < atl > ) , subject ( < docsubj > ) , and abstract ( < abs > ) elements and deleted all internal xml tags .
+for modapte , we used the concatenation of text from the title ( < title > ) and body ( < body > ) sgml elements of each article .
+for the rcv1 a-b regions collection , we concatenated the contents of the headline ( < headline > ) and text ( < text > ) xml element of each article .
+for all datasets , text processing used the lemur7 utility parsetofile .
+this performed case-folding , replaced punctuation with whitespace , and tokenized text at whitespace boundaries .
+the lemur index files were then converted to document vectors in svm light format .
+in processing text for the bio articles and the modapte datasets , the porter stemmer [ 20 ] supplied by lemur and the smart [ 22 ] stoplist were used in conjunction with the lemur utility parsetofile.a for the rcv1-v2 dataset we used a convenient pre-existing set of document vectors we had prepared using lemur without stemming or stopping. domain knowledge text corpora were processed in the same fashion as the corresponding task documents .
+within document weights were computed using cosine- normalized tfidf weighting [ 23 ] .
+the basic cellular units of nervous tissue .
+each neuron consists of a body , an axon , and dendrites .
+their purpose is to receive , conduct , and transmit impulses in the nervous system .
+here n is the number of documents in the training population , fij is the frequency of term tj in document di , and nj is the number of training population documents containing term tj .
+we use the lookahead idf variant of idf weighting [ 6 ] .
+cosine normalization was then applied to the tfidf values .
+evaluation and thresholding .
+we evaluated classification effectiveness using the f1 measure ( harmonic mean of recall and precision ) [ 14 , 30 ] , with macroaveraging ( average of per-category f1 values ) across categories .
+both bbr and svm light produce linear classifiers with thresholds intended to minimize error rate , so we retrained the thresholds to maximize observed f1 on the training data , while leaving other classifier parameters unchanged .
+results .
+our primary hypothesis was that using domain knowledge texts would greatly improve classifier effectiveness when few training examples are available , and not hurt effectiveness with large training sets .
+we also believed , given the diverse and non-document-like forms of the domain knowledge texts , that using them to specify prior distributions in a bayesian framework was not only more natural , but more effective , than pretending they were additional training examples .
+table 2 summarizes the types of domain knowledge used , and the number of domain knowledge texts used to compute significance values for the var / tfidf and mode / tfidf methods .
+the number of categories used in the experiments was 32 , 10 and 27 for the bio articles , modapte and rcv1 collections , respectively .
+large training sets .
+this experiment trained classifiers on each collection s large training set .
+table 3 presents macroaveraged f1 results for the three test collections .
+as found elsewhere [ 9 ] , svms and lasso logistic regression show similar effectiveness , and both dominate ridge logistic regression .
+we note that our macroaveraged f1 for svms on modapte top 10 ( 86.55 ) is similar to that found by wu & srihari ( approximately 83.5 on a non-random sample of 1,024 training examples , from the graph in figure 3 [ 31 ] ) and joachims ( 82.5 with all 9,603 training examples , computed from his figure 2 [ 11 ] ) .
+method dk examples ( using domain knowledge texts as artificial positive examples ) had little impact on any learning algorithm with these large training sets .
+the four meth ods using prior probability distributions had little impact on lasso logistic regression , but gave a substantial benefit to ridge logistic regression on the two datasets with the lowest frequency categories .
+small training sets .
+the small training sets available in practical text classification situations are produced in a variety of unsystematic ways , making it hard to define what a realistic small training set is .
+we present results on three definitions that exhibit the range of properties we have seen using other definitions . 500 random examples .
+in this experiment we selected random training sets of 500 examples from the training population .
+the resulting training sets had 2 to 139 positive examples for categories in the bio articles collection , 9 to 184 positive examples for categories in the modapte top 10 collection , and 0 to 22 positive examples for categories in the rcv1 a-b regions collection .
+table 4 provides the results .
+effectiveness is lower than with large training sets , and the effect of the differing class frequencies is obvious .
+lasso logistic regression is notably more effective on the small training sets than svms and ridge logistic regression .
+method dk examples gave improvements on two of three collections , but hurt the third .
+the bayesian prior based methods , in contrast , always improved logistic regression results .
+for ridge logistic regression , the improvement was up to 1500 % . 5 positive and 5 random examples .
+operational text classification tasks often originate with a handful of known positive examples .
+we simulated this by randomly selecting 5 positive examples of each class from the training population , and adding 5 additional examples randomly selected from the remainder without knowledge of class labels ( table 5 ) .
+since 5 positive examples is more than occurs in random samples of 500 examples for some classes , effectiveness is sometimes better and sometimes worse than in table 4 .
+method dk examples has a large impact with these tiny training sets , but the impact is sometimes good and sometimes bad .
+the prior based methods uniformly improve ridge regression ( up to 130 % ) and usually improve lasso regression , though the risky mode method hurts lasso substantially in two of the conditions . 5 positive and 5 closest negative examples .
+in a variation on the previous approach , we instead combined each of 5 random positive examples for each class with its nearest ( based on highest dot product ) negative neighbor .
+the theory was that someone attempting to quickly build a small training set might end up with positive and near miss examples .
+it is hard to know if this is true but , surprisingly , effectiveness ( table 6 ) was lower than when positives were supplemented with random examples ( table 5 ) .
+in any case , we again see dk examples having a large but unstable effect .
+the prior-based methods uniformly , sometimes greatly , improve ridge ( up to 127 % ) and give small decrements ( maximum 3.6 % ) to large improvements ( maximum 79.7 % ) for lasso .
+analysis .
+domain knowledge , in any form , generally had little effect with large training sets .
+the exception was ridge logistic regression , which was substantially improved on the two collections where some categories had few positives .
+overall , ridge performed poorly given its popularity .
+a caveat is that many modapte and rcv1 regions categories have a dominant single predictor , a situation that favors lasso .
+treating domain texts as artificial training examples had an erratic impact , sometimes improving and sometimes substantially harming effectiveness .
+converting domain texts to priors , on the other hand , almost always improved effectiveness ( 37 of 48 experimental conditions for lasso , and 48 of 48 for ridge from its poor baseline ) .
+as expected , mode-setting was risky , with method mode proving either the best or , usually , the worst of the four prior setting methods 21 of 24 times .
+where we had nontrivial domain corpus tfidf weights ( bio articles and rcv1 a-b regions ) , they proved surprisingly useful .
+var / tfidf beat var in 14 of 16 such conditions , and mode / tfidf beat mode in 16 of 16 .
+other source of term quality information , such as stoplists or task- document idfs , would likely prove useful as well .
+under a view that domain knowledge should do no harm we recommend either var / tfidf , which reduced effectiveness vs. no dk in only 1 of 24 conditions ( by 2.7 % ) , or mode / tfidf , which reduced effectiveness in only 3 of 24 conditions ( by a maximum of 1.7 % ) .
+both usually provided large improvements .
+summary and future work .
+we have presented an initial , but highly effective , strategy for combining domain knowledge with supervised learning for text classification using bayesian logistic regression .
+on three data sets , with three diverse sources of domain knowledge , we found large improvements in effectiveness , particularly when only small training sets are available .
+we are continuing this work in many directions , including exploring the impact of variability in the choice of both small training sets and domain knowledge texts .
+beyond that , our research program is to recast many ir heuristics ( stopword lists , stemming , term weighting , etc . ) as appropriate priors , with the goal of using simple binary text representations and priors for which a somewhat sophisticated user could have meaningful numeric intuitions .
+logistic regression is behind statements in medicine such as eating food x increases you change of heart disease by y % .
+it does not seem impossible to have similarly concrete prior knowledge of words in text classification .

@@ -1,0 +1,84 @@
+ucd-fc : deducing semantic relations using wordnet senses that occur frequently in a database of noun-noun compounds .
+abstract .
+this paper describes a system for classifying semantic relations among nominals , as in semeval task 4 .
+this system uses a corpus of 2,500 compounds annotated with wordnet senses and covering 139 different semantic relations .
+given a set of nominal pairs for training , as provided in the semeval task 4 training data , this system constructs for each training pair a set of features made up of relations and wordnet sense pairs which occurred with those nominals in the corpus .
+a naive bayes learning algorithm learns associations between these features and relation membership categories .
+the identification of relations among nominals in test items takes place on the basis of these associations .
+introduction .
+this paper describes a system for deducing the correct semantic relation between a pair of nominals in a sentence , as in semeval task 4 ( girju , hearst , nakov , nastase , szpakowicz , turney , & yuret , 2007 ) .
+this system is an adaptation of an existing system for deducing the correct semantic relation between the pair of words in a noun-noun compound .
+this compound disambiguation system ( named pro , for proportional relation occurrence ; see costello , veale , & dunne , 2006 ) makes use of a corpus of 2,500 compounds annotated with word- net senses and covering 139 different semantic relations , with each noun and each relation annotated with its correct wordnet sense.1 section 2 of the paper will describe the format and structure of this corpus , section 3 will describe the original pro compound disambiguation system , and section 4 will explain how the pro system was adapted to deduce the correct semantic relation between a pair of nominals , as in semeval task 4 .
+four different versions of the adapted system were produced ( versions a , b, c and d ) , either using or not using the wordnet labels and the query labels provided with training and test items in semeval task 4 .
+section 5 discusses the performance of these different versions of the system .
+finally , section 6 finishes the paper with some discussion and ideas for future work .
+a corpus of annotated compounds .
+using wordnet ( miller , 1995 ) , version 2.0 , a corpus of noun-noun compounds was constructed such that each compound was annotated with the correct wordnet noun senses for constituent words , the correct semantic relation between those words , and the correct wordnet verb sense for that relation , as described below .
+corpus procedure .
+the compounds used in this corpus were selected from the set of noun-noun compounds defined in wordnet .
+compounds from wordnet were used because each compound had an associated gloss or definition explaining the relation between the words in that compound ( compounds from other sources would not have such associated definitions ) .
+also , using compounds from wordnet guarantees that all constituent words of those compounds would also have entries in wordnet .
+an initial list of over 40,000 two-word noun-noun compounds was extracted from wordnet 2.0 .
+from this list a random subset was selected .
+from that set all compounds using scientific latin ( e.g. ocimum basilicum ) , idiomatic compounds ( e.g. zero hour ) , compounds containing proper nouns ( e.g.
+yangtze river ) , nonenglish compounds ( e.g. faux pas ) , and chemical terminology ( e.g. carbon dioxide ) were excluded .
+the remaining compounds were placed in random order , and a research assistant annotated each with the wordnet noun senses of the constituent words , the semantic relation between those words , and the wordnet verb sense of that relation .
+a web page was created for this annotation task , showing the annotator the compound to be annotated and the word- net gloss ( meaning ) for that compound .
+this page also showed the annotator the list of wordnet senses for the modifier noun and head noun in the compound , allowing the annotator to select the correct sense for each word .
+after word-sense selection another page was presented allowing the annotator to identify the correct semantic relation for that compound and to select the correct wordnet sense for the verb in that relation .
+corpus results .
+word sense , relation , and relation sense information was gathered for 2,500 compounds .
+relation occurrence was well distributed across these compounds : there were 139 different relations used in the corpus .
+note that in semeval task 4 , the number of relation categories available was much smaller than the set of relation categories available in our corpus ( just 7 relation categories in the semeval task ) .
+compound disambiguation algorithm .
+this section presents the proportional relation occurrence ( pro ) algorithm which makes use of the corpus results described above to deduce semantic relations for noun-noun compounds .
+in section 4 this algorithm is adapted to deduce relations between nominals in semeval task 4 .
+the approach to compound disambiguation taken here is similar to that taken by for example kim & baldwin ( 2005 ) and girju , moldovan , tatu , & antohe ( 2005 ) , and works by finding other compounds containing words from the same semantic categories as the words in the compound to be disambiguated : if a particular relation occurs frequently in those other compounds , that relation is probably also the correct relation for the compound in question .
+we take wordnet senses to represent semantic categories .
+once the correct wordnet sense for a word has been identified , that word can placed in a set of nested semantic categories : the category represented by that sense , by the parent sense ( or hypernym ) of that sense , the parent of that parent , and so on up to the ( notional ) root sense of wordnet .
+figure 1 shows the algorithm in pseudocode .
+the algorithm uses the corpus of annotated noun-noun compounds and , to disambiguate a compound , takes as input the correct wordnet sense for the modifier and head words of that compound ( if known ) plus all hypernyms of those senses .
+if modifier and head word senses are not known , the most frequent senses for those words are used , plus all hypernyms of those senses .
+the algorithm pairs each modifier sense with every head sense .
+for each sense-pair , the algorithm goes through the corpus of compounds and extracts every compound whose modifier sense ( or a hypernym of that sense ) is equal to the modifier sense in the current sense-pair , and whose head sense ( or a hypernym of that sense ) is equal to the head sense in that pair .
+the algorithm counts the number of times each relation occurs in that set of compounds , and assigns each relation a proportional relation occurrence ( pro ) score for that pair , equal to the conditional probability of relation r given sense-pair s. if the pro score for relation r in the current sense-pair is greater than the score obtained for r with some other pair , the current score is recorded for r. if the score for r for the current pair p is greater than any previous score obtained for p , that score is recorded for p. in this way the algorithm finds the maximum score for each relation r across all sense-pairs , and the maximum score for each pair p across all relations .
+the algorithm returns a list of relations and of sense-pairs for the compound , both sorted by score .
+the relations and sense-pairs with the highest scores are those most likely to be correct for that compound and to be most important for its relational meaning .
+in costello , veale and dunne ( 2006 ) , this algorithm was tested by applying it to the annotated corpus using a leave-one-out approach .
+these tests showed a reliable relationship between pro score and accuracy of response .
+at a pro level of 1 , the algorithm return a response ( selects a relation ) for just over 900 compounds , and approximately 850 of those responses are correct ( the algorithm s precision at this level is 0.92 ) .
+to apply the pro algorithm to the training and test sentences in semeval task 4 first required a mapping from the labels used to tag nominals in that task ( labels e1 and e2 ) to the modifier and head categories used by the pro algorithm .
+to carry out this mapping the nominal whose label appeared in the first position in a relation tag was taken to be the modifier for that relation , and that in the second position was taken to be the head ; for example , with the relation tag container-content ( e1 , e2 ) the nominal e1 would be taken to be the modifer and e2 to be the head .
+given this mapping the pro algorithm could be applied to sentences from semeval task 4 , taking modifier and head nominals as input and producing as output lists of candidate relations and relevant sense pairs ( sorted by pro score ) .
+the relations produced by the pro algorithm do not correspond to the 7 relations in semeval task 4 .
+to make predictions about the 7 semeval relations , the scored relation lists and sense-pair lists returned by the pro algorithm were used as features for a straightforward naive bayes learning algorithm , as implemented in the perl module algorithm : : naivebayes .
+for each sentence in a training set in semeval task 4 , the pro algorithm was applied to produce a list of relations and sense pairs describing that sentence .
+each relation and each sense pair in this list has an associated pro score , and naive bayes was trained on these features of all members of the training set , and then applied to test set sentences to produce predictions about each sentence s membership or non-membership in the relation in question .
+version a of the system used neither the wordnet sense tags nor the query labels provided with the 7 relation categories used .
+instead of using wordnet senses for the input words the system simply used the first ( most frequent ) noun senses for those words , and proceeded as described above .
+version b used wordnet sense tags .
+versions c and d of the system used either the first wordnet sense or the provided sense tags , coupled with the query terms used in the semeval task .
+an additional module in the system was intended to make use of these query terms in relation classification by comparing the query term of the sentence to be classified with query terms in positive or negative training examples of that relation , and making a decision based on that comparison .
+unfortunately , due to an error this query term module was not activated in the submitted runs , so the results from versions c and d are the same as from a and b. semeval 4 task results .
+table 1 shows the results returned for the pro system for training run 4 ( using all 140 training items in each relation ) for the four possible runs a , b , c and d. due to the error in activating the query term module , columns c4 and d4 are identical to columns a4 and b4 .
+there are two notable aspects of the results in table 1 .
+first , the system s performance was better for run a4 ( that did not use wordnet senses ) than for b4 ( using wordnet senses ) .
+indeed , the system came first out of 6 systems which took part in the a4 run .
+this was surprising : it had been expected that using the correct wordnet senses for nominals would improve the system s performance .
+analysis revealed that a4 runs using most frequent word- net senses provided more matches with entries in the compound corpus the b4 run using the correct wordnet senses .
+this may explain why the system gave a better performance for a4 than b4 .
+the second interesting aspect of table 1 is the variation of the system s responses across the different relation categories .
+for the two relations origin-entity and theme-tool the system has an f-score of 50 or less , while for the other five relations the system s f-score is around 70 .
+it is not as yet clear why the system performed so poorly for these relations : further investigation is needed to explain this curious pattern .
+conclusions .
+this paper has described a system for automatically seslecting relations between nominals which uses the pro algorithm and compound corpus to form features for pairs of nominals ( consisting of candidate relations and sense-pairs co-occurring with those relations ) , and uses a naive bayes algorithm to learn to identify relations between nominals from those features .
+the system performs best using the most frequent wordnet senses for those nominals , suggesting that the system may work usefully in deducing semantic relations between nominals without the need to deduce word senses .
+however , the system s performance does not seem particularly impressive or suitable for application to real-world tasks as yet .
+the system s best performance represents an accuracy of 66 % across relations : in other words , the system gets 1 in three relations wrong in the semeval task .
+there is one very obvious area for improvement in the system described here .
+currently the system uses a simple naive bayes algorithm for learning associations between features and relation categories .
+a more sophisticated approach ( using support vector machines , for example ) would be likely to improve the systsem s performance noticably .
+the conversion of the system to use some form of svm should not be difficult .
+a more difficult problem , however , is to address the system s poor performance on some relations .
+this is currently difficult to understand , and represents a serious flaw in the system .
+resolving this problem may reveal some useful aspects of the structure of different sorts of semantic relations between nominals .

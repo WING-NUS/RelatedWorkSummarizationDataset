@@ -1,0 +1,14 @@
+(claim)#to identify relevant answers from a list of extracted candidates , several answer selection approaches have used external semantic resources .
+0#(26);(17);(3);(6)#one of the most common approaches relies on wordnet , cyc and gazetteers for answer validation or answer reranking . in this approach , answer candidates are either removed or discounted if they are not found within the resource 's hierarchy corresponding to the expected answer type of the question $1 $2 $3 $4 .
+0#(15)#the web also has been used for answer reranking by exploiting search engine results produced by queries containing the answer candidate and question keywords $1 .
+0#(2)#wikipedia 's structured information has been used for answer type checking $1 .
+(claim)#although each of these approaches uses one or more semantic resources to independently support an answer , few have considered the potential benefits of combining resources together as evidence .
+0#(23)#there was an attempt to combine geographical databases with wordnet for type checking of location questions $1 . however , the experimental results show that the combination did not improve performance because of the increased semantic ambiguity which accompanies broader coverage of location names . this is evidence that the method of combining potential answers may matter as much as the choice of resources .
+(claim)#collecting evidence from similar answer candidates to boost the confidence of a specific answer candidate is also important for answer selection .
+(claim)#as answer candidates are extracted from different documents , they may contain identical , similar or complementary text snippets .
+0#(19);(11)#some previous work $1 $2 has used heuristic methods like manually compiled rules to cluster evidence from similar answer candidates .
+0#(11)#graph-based clustering was also used to consider non-transitiveness in similarity $1 .
+(claim)#similarity detection is more important in list questions which require a set of unique answers .
+0#(13);(27)#in many systems , cutoff threshold has been used to select the most probably top n answers $1 or exhaustive search to find all possible candidates has been applied $2 .
+(claim)#although previous work has utilized evidence from similar answer candidates for a specific answer candidate , the algorithms only modeled each answer candidate separately and did not consider both answer relevance and answer correlation to prevent the biased influence of incorrect similar answers .
+(claim)#as far as we know , no previous work has jointly modeled the correctness of available answer candidates in a formal probabilistic framework , which is very important for generating an accurate and comprehensive answer list .

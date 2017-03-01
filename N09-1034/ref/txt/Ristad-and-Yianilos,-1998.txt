@@ -1,0 +1,271 @@
+learning string-edit distance .
+abstract .
+in many applications , it is necessary to determine the similarity of two strings .
+a widely-used notion of string similarity is the edit distance : the minimum number of insertions , deletions , and substitutions required to transform one string into the other .
+in this report , we provide a stochastic model for string-edit distance .
+our stochastic model allows us to learn a string-edit distance function from a corpus of examples .
+we illustrate the utility of our approach by applying it to the difficult problem of learning the pronunciation of words in conversational speech .
+in this application , we learn a string-edit distance with nearly one-fifth the error rate of the untrained levenshtein distance .
+our approach is applicable to any string classification problem that may be solved using a similarity function against a database of labeled prototypes .
+introduction .
+in many applications , it is necessary to determine the similarity of two strings .
+a widely-used notion of string similarity is the edit distance : the minimum number of insertions , deletions , and substitutions required to transform one string into the other [ 14 ] .
+in this report , we provide a stochastic model for string-edit distance .
+our stochastic interpretation allows us to automatically learn a string-edit distance from a corpus of examples .
+it also leads to a variant of string-edit distance , that aggregates the many different ways to transform one string into another .
+we illustrate the utility of our approach by applying it to the difficult problem of learning the pronunciation of words in the switchboard corpus of conversational speech [ 8 ] .
+in this application , we learn a string-edit distance that reduces the error rate of the untrained levenshtein distance by a factor of 4.7 , to within 4 percent of the minimum error rate achievable by any classifier .
+many excellent reviews of the string-edit distance literature are available [ 10 ] , [ 13 ] , [ 20 ] , [ 28 ] .
+several variants of the edit distance have been proposed , including the constrained edit distance [ 18 ] and the normalized edit distance [ 16 ] .
+a stochastic interpretation of string-edit distance was first provided by bahl and jelinek [ 2 ] , but without an algorithm for learning the edit costs .
+the need for such a learning algorithm is widely acknowledged [ 10 ] , [ 19 ] , [ 28 ] .
+the principal contribution of this report is an efficient algorithm for learning the primitive edit costs from a corpus of examples .
+to the best of our knowledge , this is the first published algorithm to automatically learn the primitive edit costs .
+we initially implemented a two-dimensional variant of our approach in august 1993 for the problem of classifying greyscale images of handwritten digits .
+the remainder of this report consists of four sections .
+in section 2 , we define our stochastic model of string-edit distance and provide an efficient algorithm to learn the primitive edit costs from a corpus of string pairs .
+in section 3 , we provide a stochastic model for string classification problems , and provide an algorithm to estimate the parameters of this model from a corpus of labeled strings .
+our techniques are applicable to any string classification problem that may be solved using a string distance function against a database of labeled prototypes .
+in section 4 , we apply our modeling techniques to the difficult problem of learning the pronunciations of words in conversational speech .
+string distance .
+we model string-edit distance as a memoryless stochastic transduction between the underlying strings a and the surface strings b * .
+each step of the transduction generates either a substitution pair < a , b > , a deletion pair < a , e > , an insertion pair < e , b > , or the distinguished termination symbol # according to a probability function 8 : e u { # } > [ 0 , 1 ] .
+being a probability function , 8 ( ) satisfies the following constraints : note that the null operation < e , e > is not included in the alphabet e of edit operations .
+a memory less stochastic transducer 0 = < a , b , 8 > naturally induces a probability function p ( | 0 ) on the space of all terminated edit sequences .
+this probability function is defined by the following generation algorithm .
+in our intended applications , we require a probability function on string pairs rather than on edit sequences .
+in order to obtain such a probability function , we consider a string pair to be the equivalence class representative for all edit sequences whose yield is that pair .
+thus , the probability of a string pair is the sum of the probabilities of all edit sequences for that string pair .
+the use of a distinguished termination symbol # in a memoryless process entails that the probability of an edit sequence decays exponentially with its length .
+more importantly , the probability p ( n | 0 ) that an edit sequence will contain n operations must also decrease uniformly at an exponential rate .
+in many natural processes , such as those involving communication , the probability of an edit sequence does not decrease uniformly .
+more probability is assigned to the medium-length messages than to the very short messages .
+as formulated , the memoryless transducer is unable to accurately model such processes .
+in [ 26 , appendix b ] , we present an alternate parameterization of the transducer without a termination symbol .
+in the alternate parameterization , we directly model the probability p ( t , v ) that the underlying string contains t symbols and the surface string contains v symbols .
+as a result , the probability of the length n of the underlying edit sequence need not decrease exponentially .
+the remainder of this section explains how to use the memoryless stochastic transducer as a string-edit distance .
+first we use the stochastic transducer to define two string- edit distances : the viterbi edit distance and the stochastic edit distance .
+we show how to efficiently evaluate the joint probability of a string pair according to a given transducer edit distance between two strings .
+next , we explain how to optimize the parameters of a memoryless transducer on a corpus of similar string pairs .
+this computation is used to learn the primitive edit costs .
+finally , we present three variants on the memoryless transducer , which lead to three variants of the two string-edit distances .
+subsequently , section 3 explains how to solve string classification problems using a stochastic transducer .
+two distances .
+our interpretation of string-edit distance as a stochastic transduction naturally leads to the following two string distances .
+the first distance dv0 ~ , ~ is defined by the most likely transduction between the two strings , while the second distance ds0 ~ , ~ is defined by aggregating all transductions between the two strings .
+the first transduction distance dv0 , yv ) , which we call the viterbi edit distance , is the negative logarithm of the probability of the most likely edit sequence for the string pair < xt , yv > .
+this distance function is identical to the string-edit distance dc ( , ) where the edit costs are set to the negative logarithm of the edit probabilities .
+the second transduction distance d ' ( xt , yv ) , which we call the stochastic edit distance , is the negative logarithm of the probability of the string pair < x t , yv > according to the transducer 0 .
+this second distance differs from the first in that it considers the contribution of all ways to simultaneously generate the two strings .
+if the most likely edit sequence for < xt , yv > is significantly more likely than any of the other edit sequences , then the two transduction distances will be nearly equal .
+however , if a given string pair has many likely generation paths , then the stochastic distance ds0 ~ , ~ can be significantly less than the viterbi distance dv0 ~ , ~ .
+unlike the classic edit distance d c ( ^ , ^ ) , our two transduction distances are never zero unless they are infinite for all other string pairs .
+recall that the levenshtein distance assigns zero cost to all identity edit operations .
+therefore , an infinite number of identity edits is less costly than even a single insert , delete , or substitute .
+the only way to obtain this property in a transduction distance is to assign zero probability ( i.e. , infinite cost ) to all nonidentity operations , which would assign finite distance only to pairs of identical strings .
+note that such a transducer would still assign linearly increasing distance to pairs of identical strings , unlike the levenshtein distance .
+evaluation .
+our generative model assigns probability to terminated edit sequences and the string pairs that they yield .
+each pair of strings may be generated by many different edit sequences .
+therefore we must calculate the probability of a pair of strings by summing the probability p ( zn # | ^ ) over all the terminated edit sequences that yield the given string pair ( 2 ) .
+each string pair is generated by exponentially many edit sequences , and so it would not be feasible to evaluate the probability of a string pair by actually summing over all its edit sequences .
+the dynamic programming algorithm ( algorithm 1 ) , due to bahl and jelinek [ 2 ] , calculates the probability p ( xt , yv | ^ ) in o ( t ^ v ) time and space .
+at the end of the computation , the ^ t , v entry contains the probability p ( xt , yv | ^ ) of the prefix pair < xt , yv > and ^ t , v is the probability of the entire string pair .
+the space requirements of this algorithm may be reduced to o ( min ( t , v ) ) at some expense in clarity .
+estimation .
+under our stochastic model of string-edit distance , the problem of learning the edit costs reduces to the problem of estimating the parameters of a memoryless stochastic transducer .
+for this task , we employ the powerful expectation maximization ( em ) framework [ 3 ] , [ 4 ] , [ 6 ] .
+an em algorithm is an iterative algorithm that maximizes the probability of the training data according to the model .
+see [ 21 ] for a review .
+the applicability of em to the problem of optimizing the parameters of a memoryless stochastic transducer was first noted by bahl , jelinek , and mercer [ 2 ] , [ 11 ] , although they did not publish an explicit algorithm for this purpose .
+as its name suggests , an em algorithm consists of two steps .
+in the expectation step , we accumulate the expectation of each hidden event on the training corpus .
+in our case the hidden events are the edit operations used to generate the string pairs .
+in the maximization step , we set our parameter values to their relative expectations on the training corpus .
+the ^ ( z ) variable accumulates the expected number of times that the edit operation z was used to generate the string pairs in c. convergence is achieved when the total probability of the training corpus does not change on consecutive iterations .
+in practice , we typically terminate the algorithm when the increase in the total probability of the training corpus falls below a fixed threshold .
+alternately , we might simply perform a fixed number of iterations .
+let us now consider the details of the algorithm , beginning with the expectation step .
+first we define our forward and backward variables .
+the forward variable ^ t , v contains the probability p ( xt , yv | ^ ) of generating the pair < xt , yv > of string prefixes .
+these values are calculated by the forward-evaluate ( ) algorithm given in the preceding section .
+recall that y ( z ) accumulates the expected number of times the edit operation z was used to generate a given the string pair .
+these values are calculated by the expectation-step ( ) algorithm ( algorithm 4 ) , which assumes that the y accumulators have been properly initialized .
+the a argument weights the expectation accumulation ; it is used below when we learn a string classifier .
+for the purposes of this section , a is always unity .
+recall that at , v and 80,0 both contain p ( xt , yv | 0 ) after lines 1 and 2 , respectively .
+line 7 accumulates the posterior probability that we were in state < t - 1 , v > and emitted a < xt , e > deletion operation .
+similarly , line 8 accumulates the posterior probability that we were in state < t , v - 1 > and emitted a < e , yv > insertion operation .
+line 9 accumulates the posterior probability that we were in state < t - 1 , v - 1 > and emitted a < xt , yv > substitution operation .
+given the expectations y of our edit operations , the maximization-step ( ) algorithm ( algorithm 5 ) updates our model parameters 0 .
+the expectation-step ( ) algorithm accumulates the expectations of edit operations by considering all possible generation sequences .
+it is possible to replace this algorithm with the viterbi-expectation-step ( ) algorithm , which accumulates the expectations of edit operations by only considering the single most likely generation sequence for a given pair of strings .
+the only change to the expectation- step ( ) algorithm would be to replace the subroutine calls in lines 1 and 2 .
+although such a learning algorithm is arguably more appropriate to the original string-edit distance formulation , it is less suitable in our stochastic model of string-edit distance and so we do not pursue it here .
+the expectation-maximization ( ) algorithm is guaranteed to converge to a local maximum on a given corpus c , by a reduction to finite growth models [ 25 ] , [ 31 ] .
+there may be multiple local maxima , and only one of these need be a global maxima [ 26 ] .
+our experience suggests that such local maxima are not a limitation in practice , when the training corpus is sufficiently large .
+three variants .
+here we briefly consider three variants of the memoryless stochastic transducer .
+first , we explain how to reduce the number of free parameters in the transducer , and thereby simplify the corresponding edit cost function .
+next , we propose a way to combine different transduction distances using the technique of finite mixture modeling .
+finally , we suggest an even stronger class of string distances that are based on stochastic transducers with memory .
+a fourth variantthe generalization to k-way transduction appears in related work [ 25 ] , [ 31 ] .
+parameter tying .
+in many applications , the edit cost function is simpler than the one that we have been considering here .
+the most widely used edit distance has only four distinct costs : the insertion cost , the deletion cost , the identity cost , and the substitution cost.1 although this simplification may result in a weaker edit distance , it has the advantage of requiring less training data to accurately learn the edit costs .
+in the statistical modeling literature , the use of such parameter equivalence classes is dubbed parameter tying .
+it is straightforward to implement arbitrary parameter tying for memoryless stochastic transducers .
+let z ( z ) be the equivalence class of the edit operation z , z ( z ) a 2e , and let 8 ( z ( z ) ) = ~ z ^ ~ z ( z ) 8 ( z ^ ) be the total probability assigned to the equivalence class z ( z ) .
+after maximization , we simply set 8 ( z ) to be uniform within the total probability 8 ( z ( z ) ) assigned to z ( z ) .
+finite mixtures .
+a k-component mixture transducer 0 = < a , b , ,u , 8 > is a linear combination of k memoryless transducers defined on the same alphabets a and b. the mixing parameters form a probability function , where pi is the probability of choosing the ith memoryless transducer .
+therefore , the total probability assigned to a pair of strings by a mixture transducer is a weighted sum over all the component transducers .
+a mixture transducer combines the predictions of its component transducers in a surprisingly effective way .
+since the cost ^ log ^ i of selecting the ith component of a mixture transducer is insignificant when compared to the total cost ^ logp ( xt , yv | ^ i ) of the string pair according to the ith component , the string distance defined by a mixture transducer is effectively the minimum over the k distances defined by its k component transducers .
+choosing the components of a mixture transducer is more of an art than a science .
+one effective approach is to combine simpler models with more complex models .
+we would combine transducers with varying degrees of parameter tying , all trained on the same corpus .
+the mixing parameters could be uniform , i.e. , ^ i = 1 / k , or they could be optimized using withheld training data ( cross- estimation ) .
+another effective approach is to combine models trained on different corpora .
+this makes the most sense if the training corpus consists of naturally distinct sections .
+in this setting , we would train a different transducer on each section of the corpus , and then combine the resulting transducers into a mixture model .
+the mixing parameters could be set to the relative sizes of the corpus sections , or they could be optimized using withheld training data .
+for good measure , we could also include a transducer that was trained on the entire training corpus .
+memory .
+from a statistical perspective , the memoryless transducer is quite weak because consecutive edit operations are independent .
+a more powerful modelthe stochastic transducer with memorywould condition the probability b ( zt zt _ n ) of generating an edit operation zt on a finite suffix of the edit sequence that has already been generated .
+alternately , we might condition the probability of an edit operation zt on ( a finite suffix of ) the yield ^ ( zt ^ 1 ) of the past edit sequence .
+these stochastic transducers can be further strengthened with state-conditional interpolation [ 12 ] , [ 24 ] or by conditioning our edit probabilitiesb ( zt zt = , 1n , s ) on a hidden state s drawn from a finite state space .
+string classification .
+in the preceding section , we presented an algorithm to automatically learn a string-edit distance from a corpus of similar string pairs .
+unfortunately , this algorithm cannot be directly applied to solve string classification problems .
+in a string classification problem , we are asked to assign strings to a finite number of classes .
+to learn a string classifier , we are presented with a corpus of labeled strings , not pairs of similar strings .
+here we present a stochastic solution to the string classification problem that allows us to automatically and efficiently learn a powerful string classifier from a corpus of labeled strings .
+our approach is the stochastic analog of nearest-neighbor techniques .
+for string classification problems , we require a conditional probability p ( w | yv ) that the string yv belongs to the class w .
+this conditional may be obtained from the joint probability p ( w , yv ) by a straightforward application of bayes rule : p ( w | yv ) = p ( w , yv ) / p ( yv ) .
+in this section , we explain how to automatically induce a strong joint probability model p ( w , yv | l , ^ ) from a corpus of labeled strings , and how to use this model to optimally classify unseen strings .
+we begin by defining our model class in section 3.1 .
+in section 3.2 we explain how to use our stochastic model to optimally classify unseen strings .
+section 3.3 explains how to estimate the model parameters from a corpus of labeled strings .
+hidden prototype model .
+the prototype strings are drawn from the alphabet a while the observed strings are drawn from the alphabet b. next , we model the joint probability p ( w , xt , yv ) as a product of conditional probabilities , where the joint probability p ( xt , yv | ^ ) of a prototype xt and a string yv is determined by a stochastic transducer ^ , and the conditional probability p ( w | xt , l ) of a class w given a prototype xt is determined from the probabilities p ( w , xt | l ) of the labeled prototypes < w , x t > in the prototype dictionary l. we considered the alternate factorization p ( w , xt , yv | ^ , l ) = p ( yv | xt , ^ ) p ( w , xt | l ) but rejected it as being inconsistent with the main thrust of our paper , which is the automatic acquisition and use of joint probabilities on string pairs .
+we note , however , that this alternate factorization has a more natural generative interpretation as a giant finite mixture model with | l | components whose mixing parameters are the probabilities p ( w , xt | l ) of the labeled prototypes and whose component models are the conditional probabilities p ( yv | xt , ^ ) given by the transducer ^ in conjunction with the underlying form xt .
+this alternate factorization suggests a number of extensions to the model , such as the use of class-conditional transducers p ( yv | xt , ^ w ) and intraclass parameter tying schemes .
+optimal classifier .
+note that maximizing the joint probability p ( w , yv | 0 , l ) is not the same as maximizingthe conditional probability p ( w | yv , 0 , l ) .
+the algorithms presented here maximize the jointprobability , although theymaybe straightforwardly adapted to the later objective .
+unfortunately , neither objective is the same as minimizingthe error rate , although they are closely related inpractice .
+our approach to string classification has the additional virtue ofbeing able to learn a new class from only a single example ofthat class , without any retraining .
+we simply add the new class w with its observed string xt into the prototype dictionary l , and assign the new entrya probability p ( w , xt | l ) based on its observed frequency ofoccurrence .
+the old entries in the prototype dictionaryhave their probabilities scaled downby 1 p ( w , xt | l ) , and the memoryless transducer 0 remains constant . 4 an application inthis section , we apply our techniques to the problemof learningthe pronunciations ofwords .
+agiven word ofa natural language maybe pronounced in many different ways , dependingon suchfactors as the dialect , the speaker , and the linguistic environment .
+we describe one wayof modeling variation in the pronunciation ofwords .
+letwbe the set ofsyntactic words in a language , leta be the setof underlying phonological segments employed by the language , and letb be the setofobserved phonemes .
+the pronouncing lexiconl : w > 2a * assigns a small set ofunderlyingphonological forms to every syntactic word in the language .
+each underlying formin a * is then mapped to a surface form in b * by a stochastic process .
+our goal is to recognize phonetic strings , which will require us to map each surface form to the syntactic word for which it is a pronunciation .
+the pronunciation recognition problem may be reduced to the string classification problem : the syntactic words are the classes , the underlying forms are the prototype strings , and the surface forms are the surface strings in need of classification .
+so let us now apply our stochastic solution to the switchboard corpus of conversational speech .
+switchboard corpus .
+the switchboard corpus contains over 3 million words of spontaneous telephone speech conversations [ 8 ] .
+it is considered one of the most difficult corpora for speech recognition ( and pronunciation recognition ) because of the tremendous variability of spontaneous speech .
+as of summer 1996 , speech-recognition technology has a word error rate above 45 percent on the switchboard corpus .
+the same speech-recognition technology achieves a word error rate of less than 5 percent on read speech .
+over 200,000 words of switchboard have been manually assigned phonetic transcripts at icsi using a proprietary phonetic alphabet [ 9 ] .
+the switchboard corpus also includes a pronouncing lexicon with 71,100 entries using a modified pronlex phonetic alphabet ( long form ) [ 1 ] .
+in order to make the pronouncing lexicon compatible with the icsi corpus of phonetic transcripts , we removed 148 entries from the lexicon and 73,068 samples from the icsi corpus.3 after filtering , our pronouncing lexicon had 70,952 entries for 66,284 syntactic words over an alphabet of 42 phonemes .
+our corpus had 214,310 samplesof which 23,955 were distinctfor 9,015 syntactic words with 43 phonemes ( 42 pronlex phonemes plus a special silence symbol ) .
+five experiments .
+we conducted four sets of experiments using seven models .
+in all cases , we partitioned our corpus of 214,310 samples 9 : 1 into 192,879 training samples and 21,431 test samples .
+in no experiment did we adapt our probability model ( 5 ) to the test data .
+our seven models consist of levenshtein distance [ 14 ] as well as six variants resulting from our two interpretations of three models.4 our two interpretations are the stochastic edit distance ( 4 ) and the classic edit distance ( 3 ) , also called the viterbi edit distance .
+for each interpretation , we built a tied model with only four parameters , an untied model , and a mixture model consisting of a uniform mixture of the tied and untied models .
+the transducer parameters are initialized uniformly before training , as are the parameters of the word model p ( w | l ) and the conditional lexicon model p ( xt | w , l ) for all entries < w , xt > in l. note that a uniform p ( w | l ) and a uniform p ( xt | w , l ) are not equivalent to a uniform p ( w , xt | l ) because more frequent words tend to have more pronunciations in the lexicon .
+our five sets of experiments are determined by how we obtain our pronouncing lexicon .
+the first two experiments use the switchboard pronouncing lexicon .
+experiment e1 uses the full pronouncing lexicon for all 66,284 words while experiment e2 uses the subset of the pronouncing lexicon for the 9,015 words in the corpus .
+the second two experiments use a lexicon derived from the corpus .
+experiment e3 uses the training corpus only to construct the pronouncing lexicon , while experiment e4 uses the entire corpusboth training and testing portionsto construct the pronouncing lexicon .
+the test corpus has 512 samples whose words did not appear in the training corpus .
+experiment e5 merges the e1 and e3 lexicons .
+the principal difference among these five experiments is how much information the training corpus provides about the test corpus .
+in order of increasing information , we have e3 < e1 , e5 < e2 < e4 .
+in experiment e3 , the pronouncing lexicon is constructed from the training corpus only and therefore e3 provides no direct information about the test corpus .
+in experiment e1 , the pronouncing lexicon was constructed from the entire 3m word switchboard corpus , and therefore e1 provides weak knowledge of the set of syntactic words that appear in the test corpus .
+experiment e5 combines the e1 and e3 lexicons .
+in experiment e2 , the pruned pronouncing lexicon provides stronger knowledge of the set of syntactic words that actually appear in the test corpus , as well as their most salient phonetic forms .
+in experiment e4 , the pronouncing lexicon provides complete knowledge of the set of syntactic words paired with their actual phonetic forms in the test corpus .
+table 1 presents the essential characteristics of the lexicons used in the five experiments .
+the first four fields of the table pertain to the lexicon alone .
+entries is the number of entries in the lexicon , words is the number of unique words in the lexicon , forms is the number of unique phonetic forms in the lexicon , and entries / word is the mean number of entries per word .
+the final two fields characterize the relation between the lexicon and the test corpus. novel forms is the number of samples in the test corpus whose phonetic forms do not appear in the lexicon , and entries / sample is the mean number of lexical entries that exactly match the phonetic form of a sample in the test corpus .
+for each experiment , we report the fraction of misclassified samples in the testing corpus ( i.e. , the word error rate ) .
+note that the pronouncing lexicons have many homophones .
+our decision rule d : b * > 2l maps each test sample ys ' to a subset d ( ys ' ) c l of the lexical entries .
+accordingly , we calculate the fraction of correctly classified samples as the sum over all test samples of the ratio of the number of correct lexical entries in d ( ys ' ) to the total number of postulated lexical entries in d ( ys ' ) .
+the fraction of misclassified samples is one minus the fraction of correctly classified samples .
+results .
+our experimental results are summarized in table 2 .
+table 2 shows the word error rate for each model at the tenth em iteration .
+after training , the error rates of the transduction distances are from one half to one sixth the error rate of the untrained levenshtein distance .
+the stochastic and viterbi edit distances have comparable performance .
+the untied and mixed models perform better than the tied model in experiments e1 , e2 , e3 , and e5 .
+the test corpus contains 512 out-of-vocabulary samples in the e3 experiment .
+if we discard these samples , then the e3 error rate for the untied model would drop from 14.29 percent to 12.19 percent .
+by adding the e1 lexicon to the e3 lexicon , the error rate for the untied model drops from 14.29 percent to 12.63 percent .
+the minimum error rate achievable by any decision function on the test corpus is 7.55 percent .
+if the decision function must be optimal across the entire corpus , then the minimum error rate achievable on the test corpus is 8.65 percent .
+a sparser lexicon entails a more complex mapping between underlying forms and surface forms .
+the e3 and e4 lexicons have 2.6 entries per word , while the e1 and e2 lexicons have only 1.1 entries per word .
+consequently , the inferior performance of the transducer in e1 and e2 relative to e3 and e4 is best explained by the statistical weakness of a transducer without memory .
+the e1 lexicon has entries for 66,284 words while the e2 lexicon has entries only for the 9,015 words that appear in the corpus .
+as a result , a significant amount of the p ( w , xt | l ) probability mass is assigned to words that do not appear in either the training or testing data in experiment e1 .
+this accounts for the relative performance of the transducer in e1 and e2 .
+in experiment e4 , the lexicon contains an entry for every sample in the test corpus .
+since the levenshtein distance between a surface form ( in the test corpus ) and an underlying form ( in the lexicon ) is minimized when the two forms are identical , we might expect the levenshtein distance to achieve a perfect 0 percent error rate in experiment e4 , instead of its actual 56.35 percent error rate .
+the poor performance of the levenshtein distance in experiment e4 is due to the fact that the mapping from phonetic forms to syntactic words is many-to-many in the e4 lexicon .
+each phonetic form in the test corpus appears in 10.027 entries in the e4 lexicon , on average .
+the most ambiguous phonetic form in the test corpus , ah , appears 528 times in the test corpus and exactly matches entries for the following 62 words in the e4 lexicon .
+the great ambiguity of ah is due to transcription errors , segmentation errors , and the tremendous variability of spontaneous conversational speech .
+we believe that the superior performance of our statistical techniques in experiments e3 and e5 , when compared to experiments e1 and e2 , has two significant implications .
+firstly , it raises the possibility of obsoleting the costly process of making a pronouncing lexicon by hand .
+a pronouncing lexicon that is constructed directly from actual pronunciations offers the possibility of better performance than one constructed in traditional ways .
+secondly , it suggests that our approach may be able to accurately recognize the pronunciation of a new word from only a single example of the new words pronunciation , without any retraining .
+credit assignment .
+recall that our joint probability model p ( w , xt , yv | ^ , l ) is constructed from three separate models : the conditional probability p ( w | xt , l ) is given by the word model p ( w | l ) and the lexical entry model p ( xt | w , l ) , while the joint probability p ( xt , yv | ^ ) is given by the transducer ^ .
+our training paradigm simultaneously optimizes the parameters of all three models on the training corpus .
+in order to better understand the contribution of each model to the overall success of our joint model , we repeated our experiments while alternately holding the word and lexical entry models fixed .
+in all experiments the word model p ( w | l ) and the lexical entry model p ( xt | w , l ) are initialized uniformly .
+our results are presented in tables 3-6 and summarized in fig . 1 .
+fig . 1 .
+word error rate of the stochastic edit distance in five experiments for four different adaption schemes .
+adapting p ( w ) improves performance in all five experiments .
+adapting p ( xt | w ) improves performance in experiments e3-e5 , but not in e1 and e2 .
+adapting p ( w ) and p ( xt | w ) together yields an unexpectedly large improvement in experiments e3 and e4 , when compared to the improvement obtained by adapting each separately .
+the vertical line ( lower bound ) is the minimum error rate achievable on the test corpus by any decision function that is optimal across the entire corpus ( 8.65 percent ) .
+for experiment e1 , a uniform word model severely reduces recognition performance .
+we believe this is because 57,269 of the 66,284 the words in the e1 lexicon ( 84.4 percent ) do not appear in either the training or testing corpora .
+adapting the word model reduces the effective size of the lexicon to the 8,570 words that appear in the training corpora , which significantly improves performance .
+for experiments e1 and e2 , adapting the lexical entry model has almost no effect , simply because the average number of entries per word is 1.07 in the e1 and e2 lexicons .
+for experiments e3 and e4 , adapting the word model alone is only slightly more effective than adapting the lexical entry model alone .
+adapting either model alone reduces the error rate by nearly one-half when compared to keeping both models fixed .
+in contrast , adapting both models together reduces the error rate by one-fifth to one-sixth when compared to keeping both models fixed .
+thus , there is a surprising synergy to adapting both models together : the improvement is substantially larger than one might expect from the improvement obtained from adapting the models separately .
+current speech-recognition technology typically employs a sparse pronouncing lexicon of hand-crafted underlying forms and imposes a uniform distribution on the underlying pronunciations given the words .
+when the vocabulary is large or contains many proper nouns , then the pronouncing lexicon may be generated by a text-tospeech system [ 22 ] .
+our results suggest that a significant performance improvement is possible by employing a richer pronouncing lexicon , constructed directly from observed pronunciations , along with an adapted lexical entry model .
+this tentative conclusion is supported by riley and ljolje [ 23 ] , who show an improvement in speech recognizer performance by employing a richer pronunciation model than is customary .
+our approach differs from their approach in three important ways .
+firstly , our underlying pronouncing lexicon is constructed directly from the observed pronunciations , without any human intervention , while their underlying lexicon is obtained from a hand-built text-tospeech system .
+secondly , our probability model p ( yv i w ) assigns nonzero probability to infinitely many surface forms , while their network probability model assigns nonzero probability to only finitely many surface forms .
+thirdly , our use of the underlying form xt as a hidden variable means that our model can represent arbitrary ( nonlocal ) dependencies in the surface forms , which their probability model cannot .
+conclusion .
+we explain how to automatically learn a string distance directly from a corpus containing pairs of similar strings .
+we also explain how to automatically learn a string classifier from a corpus of labeled strings .
+we demonstrate the efficacy of our techniques by correctly recognizing over 87 percent of the unseen pronunciations of syntactic words in conversational speech , which is within 4 percent of the maximum success rate achievable by any classifier .
+the success of our approach on this difficult problem argues strongly for the use of stochastic models in pattern recognition systems .

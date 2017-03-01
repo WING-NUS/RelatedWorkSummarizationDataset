@@ -1,0 +1,352 @@
+a corpus-based investigation of definite description use .
+abstract .
+we present the results of a study of definite descriptions use in written texts aimed at assessing the feasibility of annotating corpora with information about definite description interpretation .
+we ran two experiments , in which subjects were asked to classify the uses of definite descriptions in a corpus of 33 newspaper articles , containing a total of 1412 definite descriptions .
+we measured the agreement among annotators about the classes assigned to definite descriptions , as well as the agreement about the antecedent assigned to those definites that the annotators classified as being related to an antecedent in the text .
+the most interesting result of this study from a corpus annotation perspective was the rather low agreement ( k = 0.63 ) that we obtained using versions of hawkins and princes classification schemes ; better results ( k = 0.76 ) were obtained using the simplified scheme proposed by fraurud that includes only two classes , first-mention and subsequent-mention .
+the agreement about antecedents was also not complete .
+these findings raise questions concerning the strategy of evaluating systems for definite description interpretation by comparing their results with a standardized annotation .
+from a linguistic point of view , the most interesting observations were the great number of discourse-new definites in our corpus ( in one of our experiments , about 50 % of the definites in the collection were classified as discourse-new , 30 % as anaphoric , and 18 % as associative / bridging ) and the presence of definites which did not seem to require a complete disambiguation .
+this paper will appear in computational linguistics .
+introduction .
+the work presented in this paper was inspired by the growing realization in the field of computational linguistics of the need for an experimental evaluation of linguistic theoriessemantic theories , in our case .
+the evaluation we are considering typically takes the form of experiments in which humans subjects are asked to annotate texts from a corpus ( or recordings of spoken conversations ) according to a certain classification scheme , and the agreement among their annotations is measured ( see , e.g. , ( passonneau and litman , 1993 ) or the papers in ( moore and walker , 1997 ) ) .
+these attempts at an evaluation are , in part , motivated by the desire to put these theories on a more scientific footing by ensuring that the semantic judgments on which they are based reflect the intuitions of a large number of speakers ; ~ but experimental evaluation is also seen as a necessary precondition for the kind of system evaluation done , e.g. , in the message understanding initiative ( muc ) , where the performance of a system is evaluated by comparing its output on a collection of texts with a standardized annotation of those texts produced by humans ( chinchor and sundheim , 1995 ) .
+clearly , a muc-style evaluation presupposes an annotation scheme on which all participants agree .
+our own concern are semantic judgments concerning the interpretation of noun phrases with the definite article the , that we will call definite descriptions , following ( russell , 1919 ) .
+theories of definite descriptions such as ( christophersen , 1939 ; hawkins , 1978 ; webber , 1979 ; prince , 1981 ; heim , 1982 ) identify two subtasks involved in the interpretation of a definite description : deciding whether the definite description is related to an antecedent in the text ~ which in turn may involve recognizing fairly fine-grained distinctionsand , if so , identifying this antecedent .
+some of these theories have been cast in the form of classification schemes ( hawkins , 1978 ; prince , 1992 ) , and have been used for corpus analysis ( prince and allen , 1995 ) .
+in the past two or three years , this kind of verification has been attempted for other aspects of semantic interpretation : e.g. , by ( passonneau and litman , 1993 ) for segmentation and by ( kowtko , isard , and doherty , 1992 ; carletta et al. , 1997 ) for dialogue act annotation .
+our intention was to do the same for definite descriptions .
+we ran two experiments to test how good are naive subjects at doing the form of linguistic analysis presupposed by current schemes for classifying definite descriptions . ( where byhow good here we meanhow much do they agree among themselves , as commonly assumed in work of this kind . )
+our subjects were asked to classify the definite descriptions found in a corpus of natural language texts according to classification schemes that we developed starting from the taxonomies proposed by hawkins ( 1978 ) and prince ( 1981 ; 1992 ) , but which took into account our intention of lettingnaive speakers perform the classification .
+our experiments were also designed to assess the feasibility of a system to process definite descriptions on unrestricted text and to collect data that could be used for this implementation .
+for both of these reasons , the classification schemes that we tried differ in several respects from those adopted in prior corpus-based studies such as ( prince , 1981 ; fraurud , 1990 ) .
+our study is also different from these previous ones in that measuring the agreement among annotators became an issue ( carletta , 1996 ) .
+we used for the experiments a set of randomly selected articles from the wall street journal contained in the acl / dci cd-rom , rather than a corpus of transcripts of spoken language corpora such as the hcrc maptask corpus ( anderson et al. , 1991 ) or the trains corpus ( heeman and allen , 1995 ) .
+the main reason for this choice was to avoid dealing with deictical uses of definite descriptions and with phenomena such as reference failure and repair .
+a second reason was that we intended to use computer simulations of the classification task to supplement the results of our experiments , and we needed a parsed corpus for this purpose ; the articles we chose were all part of the penn treebank ( marcus et al. , 1993 ) .
+the organization of the paper is as follows .
+we review two existing classification schemes in section x2 ; we then discuss our two classification experiments in sections x3 and x4 , respectively .
+when looking for an annotation scheme for definite descriptions , one is faced with a wide range of options .
+on the one end of the spectrum there are mostly descriptive lists of definite description uses such as those in ( christophersen , 1939 ; hawkins , 1978 ) , whose only goal is to assign a classification to all uses of definite descriptions .
+on the other end there are highly developed formal analyses such as ( russell , 1905 ; heim , 1982 ; lobner , 1985 ; kadmon , 1987 ; neale , 1990 ; barker , 1991 ; kamp and reyle , 1993 ) , in which the compositional contribution of definite descriptions to the meaning of an utterance , as well as their truth-conditional properties , are spelled out in detail .
+these more formal analyses are concerned with questions such as the quantificational or non-quantificational status of definite descriptions and the proper treatment of presuppositions , but tend to concentrate on a subset of the full range of definite description use .
+among the more developed semantic analyses , some identify uniqueness as the defining property of definite descriptions ( russell , 1905 ; neale , 1990 ) , whereas others take familiarity as the basis for the analysis ( christophersen , 1939 ; hawkins , 1978 ; heim , 1982 ; prince , 1981 ; kamp and reyle , 1993 ) .
+we will say more about some of these analyses below .
+our choice of a classification scheme was in part dictated by the intended use of the annotation , in part by methodological considerations .
+a crucial property of an annotation used to evaluate the performance of a system is that it ought to identify the anaphoric connections between discourse entities ; this makes familiarity-based analyses more attractive .
+from a methodological point of view , it was important to choose an annotation scheme that ( i ) would make the classification task doable by non-linguistically trained subjects , and ( ii ) had already been applied to the task of corpus analysis .
+we felt that we could ask naive subjects to assign each definite description to one of a few classes and to identify its antecedent when appropriate ; we also wanted an annotation scheme that would characterize the whole range of definite description use , so that we would not need to worry about eliminating definite descriptions from our texts because unclassifiable .
+for these reasons we chose hawkins list of definite description uses ( hawkins , 1978 ) and princes taxonomy ( prince , 1981 ; prince , 1992 ) as our starting point , and we developed from there two slightly different annotation schemes , which allowed us to see whether it was better to describe the classes to our annotators in a surface-oriented or a semantic fashion , and to evaluate the seriousness of the problems with these schemes identified in the literature ( see , e.g. , ( fraurud , 1990 ) ) .
+we discuss hawkins and princes taxonomies next .
+the christophersen / hawkins list of definite description uses .
+the wide range of uses of definite descriptions was already highlighted in ( christophersen , 1939 ) .
+in the third chapter of his book , hawkins ( 1978 ) further develops and extends christophersens list .
+he identifies the following classes , or uses , of definite descriptions : anaphoric use .
+these are definite descriptions that co-specify ' with a discourse entity already introduced in the discourse .
+the definite description may use the same descriptive predicate as its antecedent , or any other capable of indicating the same antecedent ( e.g. , a synonym , a hyponym , etc . ) .
+fred was discussing an interesting book in his class .
+i went to discuss the book with him afterwards .
+bill was working at a lathe the other day .
+all of a sudden the machine stopped turning .
+fred was wearing trousers .
+the pants had a big patch on them .
+mary travelled to paris .
+the journey lasted six hours .
+a man and a woman entered restaurant .
+the couple was received by a waiter .
+immediate situation uses .
+the next two uses of definite descriptions identified by hawkins are occurrences used to refer to an object in the situation of utterance .
+the referent may be visible , or its presence may be inferred .
+the visible situation use occurs when the object referred to is visible to both speaker and hearer , as in the following examples : please , pass me the salt .
+' there are some complex terminological problems when discussing anaphoric expressions .
+following standard terminology , we will use the term referent to indicate the object in the world that is contributed to the meaning of an utterance by a definite descriptione.g. , we will say that bill clinton is the referent of a referential use of the definite description the president of the usa in 1997 .
+we will then say , following sidners terminology ( sidner , 1979 ) , that a definite description co-specifies with its antecedent in a text , when such antecedent exists , if the definite description and its antecedent denote the same object .
+this is probably the most precise way of referring to the relation between an anaphoric expression and its antecedent ; note that two discourse entities can co-specify without referring to any object in the worlde.g. , in the ( current ) king offrance is bald .
+he has a double chin , as well . , he co-specifies with the ( current ) king of france , but this latter expression does not refer to anything .
+however , since we will mostly be concerned with referential discourse entities , we will often use the term co-refer instead of co-specify .
+apart from this , we have tried to avoid more complex issues of reference insofar as possible ( donnellan , 1972 ; kripke , 1977 ; barwise and perry , 1983 ; neale , 1990 ; kronfeld , 1990 ) .
+hawkins classifies as immediate situation uses those definite descriptions whose referent is a constituent of the immediate situation in which the use of the definite description is located , without necessarily being visible : hawkins lists then two uses of definite descriptions characteristic of situations in which the speaker appeals to the hearers knowledge of entities which exist in the non-immediate or larger situation of utteranceknowledge they share by being members of the same community , for instance .
+a definite description may rely on specific knowledge about the larger situation : this is the case in which both the speaker and the hearer know about the existence of the referent , as in the example below , in which it is assumed that speaker and hearer are both inhabitants of halifax , a town which has a gibbet at the top of gibbet street : specific knowledge is not , however , a necessary part of the meaning of larger situation uses of definite descriptions .
+while some hearers may have specific knowledge about the actual individuals referred to by a definite description , others may not .
+general knowledge about the existence of certain types of objects in certain types of situations is sufficient .
+hawkins classifies those definite descriptions which depend on this knowledge as instances of general knowledge in the larger situation use .
+an example is the following utterance in the context of a wedding : such a first-mention of the bridesmaids is possible on the basis of the knowledge that weddings typically have bridesmaids .
+in the same way , a first-mention of the bride , the church service , or the best man would be possible .
+associative anaphoric use .
+speaker and hearer may have ( shared ) knowledge of the relations between certain objects ( the triggers ) and their components or attributes ( the associates ) : associative anaphoric uses of definite descriptions exploit this knowledge .
+whereas in larger situation uses the trigger is the situation itself , in the associative anaphoric use the trigger is an np introduced in the discourse .
+the semantics of definite descriptions .
+some of the classes in the christophersen / hawkins classification are specified in a semantic fashion ; other classes are defined in purely syntactic terms .
+it is natural to ask what these uses of definite descriptions have in common from a semantic point of view : for example , is there a connection between the unfamiliar and the unexplanatory uses of definite descriptions and the other uses ? ( the unfamiliar uses with associative clauses seem related to the associative anaphoric ones , and both to the uses based on referent establishing relative clauses . )
+many authors , including hawkins himself , have attempted to go beyond the purely descriptive list just discussed .
+one group of authors have identified uniqueness as the defining property of definite descriptions .
+this idea goes back to ( russell , 1905 ) , and is motivated by larger situation definite descriptions such as the pope and by some cases of unexplanatory modifier use such as the first person to sail to america .
+the hypothesis was developed in recent years ( kadmon , 1987 ; neale , 1990 ; cooper , 1993 ) , in particular to address the problem of uniqueness within small situations . '
+another line of research is based on the observation that many of the uses of definite descriptions listed by hawkins have one property in common : the speaker / writer is making some assumptions about what the hearer already knows .
+speaking very loosely , we might say that the speaker assumes that the hearer is able to identify the referent of the definite description .
+this is also true of some of the uses hawkins classified as unfamiliar : for example , of his nominal modifiers and associative clause classes .
+attempts at making this intuition more precise include christophersens familiarity theory ( 1939 ) , strawsons presuppositional theory of definite descriptions ( strawson , 1950 ) , hawkins own location theory ( hawkins , 1978 ) and its revision , clark and marshalls theory of definite reference and mutual knowledge ( clark and marshall , 1981 ) , as well as more formal proposals such as ( heim , 1982 ) .
+neither the uniqueness nor the familiarity approach have yet succeeded in providing a satisfactory account of all uses of definite descriptions ( fraurud , 1990 ; birner and ward , 1994 ) .
+however , the theories based on familiarity address more directly the main concern of nlp system designers , which is to identify the connections between discourse entities .
+furthermore , the prior corpus-based studies of definite descriptions use that we are aware of ( prince , 1981 ; fraurud , 1990 ; prince , 1992 ) are based on theories of this type .
+for both of these reasons , we adopted semantic notions introduced in familiarity-style accounts in designing our experimentsin particular , distinctions introduced in princes taxonomy .
+princes classification of noun phrases .
+prince studied in detail the connection between a speaker / writers assumptions about the hearer or reader and the linguistic realization of noun phrases ( prince , 1981 ; prince , 1992 ) .
+she criticizes as too simplistic the binary distinction between given and new discourse entities that is at the basis of most previous work on familiarity , and proposes a much more detailed taxonomy ofgivennessor , as she calls it , assumed familiaritymeant to address this problem .
+also , princes analysis of noun phrases is closer than the christophersen / hawkins taxonomy to a classification of definite descriptions on purely semantic terms : e.g. , she relates unfamiliar definites based on referent- establishing relative clauses with hawkins associative clause and associative anaphoric uses .
+one factor affecting the choice of a noun phrase , according to prince , is whether a discourse entity is old or new with respect to the hearers knowledge .
+a speaker will use a proper name or a definite description when he or she assumes that the addressee already knows the entity whom the speaker is referring to , as in ( 12 ) and ( 13 ) .
+in addition , discourse entities can also be new or old with respect to the discourse model : an np may refer to an entity that has already been evoked in the current discourse , or it may evoke an entity which has not been previously mentioned .
+discourse novelty is distinct from hearer novelty : both sandy thompson in ( 12 ) and the someone in california mentioned in ( 14 ) may well be discourse-new even if only the second one will be hearer-new .
+on the other hand , for an entity being discourse old entails it being hearer old .
+in other words , in princes theory the notion of familiarity is split in two : familiarity with respect to the discourse , and familiarity with respect to the hearer .
+either type of familiarity can license the use of definites : hawkins anaphoric uses of definite descriptions are cases of noun phrases referring to discourse-old discourse entities , whereas his larger situation and immediate situation uses are cases of noun phrases referring to discourse-new , hearer-old entities .
+the uses of definite descriptions that hawkins called associative anaphoric , such as a book ... the author , are not discourse-old or even hearer-old , but they are not entirely new , either ; as hawkins pointed out , the hearer is assumed to be capable to infer their existence .
+prince called these discourse entities inferrables . ( this is the class of definite descriptions for which clark ( 1977 ) used the term bridging references . )
+containing inferrables .
+finally , prince proposes a category for noun phrases that are like inferrables , but whose connection with previous hearers knowledge is specified as part of the noun phrase itselfher example is the door of the bastille in the following example : some remarks about coverage .
+perhaps the most important question concerning a classification scheme is its coverage .
+the two taxonomies we have just seen are largely satisfactory in this respect , but a couple of issues are worth mentioning .
+first of all , princes taxonomy does not give us a complete account of the licensing conditions for definite descriptions .
+of the uses mentioned by hawkins , the unfamiliar definites with unexplanatory modifiers and np complements need not satisfy any of the conditions that license the use of definites according to prince : these definites are not necessarily discourse-old , hearer-old , inferrables , or containing inferrables .
+these uses fall outside of clark and marshalls classification , as well .
+secondly , none of the classification schemes just discussed , nor any of the alternatives proposed in the literature , consider so-called generic uses of definite descriptions , such as the use of the tiger in the generic sentence the tiger is a fierce animal that lives in the jungle .
+the problem with these uses is that the very question of whether the referent is familiar or not seems misplaced these uses are not referential .
+a problem related to the one just mentioned is that certain uses of definite descriptions are ambiguous between a referential and an attributive interpretation ( donnellan , 1972 ) .
+the sentence the first person to sail to america was an icelander , for example , can have two interpretations : the writer may either refer to a specific person , whose identity may be mutually known to both writer and reader ; or he / she may be simply expressing a property that is true of the first person to sail to america , whoever that person happened to be .
+this ambiguity does not seem to be possible with all uses of definite descriptions : e.g. , pass me the salt only seem to have a referential use .
+again , the schemes we have presented do not consider this issue .
+the question of how to annotate generic uses of definite descriptions or uses that are ambiguous between a referential and an attributive use will not be addressed in this paper .
+frauruds study .
+a second problem with the classification schemes we have discussed was raised by fraurud in her study of definite nps in a corpus of swedish text ( fraurud , 1990 ) .
+fraurud introduced a drastically simplified classification scheme based on two classes only : subsequent mention , corresponding to hawkins anaphoric definite descriptions and princes discourse-old , and first-mention , including all other definite descriptions .
+fraurud simplified matters in this way because she was primarily interested in verifying the empirical basis for the claim that familiarity is the defining property of definite descriptions ; she also observed , however , that some of the distinctions introduced by hawkins and prince led to ambiguities of classification .
+for example , she observed that the reader of a swedish newspaper can equally well interpret the definite description the king in an article about sweden by reference to the larger situation or to the content of the article .
+we took into account frauruds observations in designing our experiments , and we will compare our results to hers below .
+a first experiment in classification .
+for our first experiment at evaluating subjects performance at the classification task , we developed a taxonomy of definite description uses based on the schemes discussed in the previous section , preliminarily tested the taxonomy by annotating the corpus ourselves , and then asked two annotators to do the same task .
+this first experiment is described in the rest of this section .
+we explain , first , the classification we developed for this experiment , then the experimental conditions , and finally discuss the results .
+the first classification scheme .
+the annotation schemes for noun phrases proposed in the literature fall in one of two categories .
+on the one hand , we have what we might call labeling schemes , most typically used by corpus linguists , which involve assigning to each noun phrase a class such as those discussed in the previous section ; the schemes used by fraurud and prince fall in this category .
+on the other hand , there are what we might calllinking schemes , concerned with identifying the links between the discourse entity or entities introduced by a noun phrase and other entities in the discourse ; the scheme used in muc-6 is of this type .
+in our experiments , we tried both a purely labeling scheme and a mixture of a labeling and a linking scheme .
+we also tried two slightly different taxonomies of definite descriptions , and we varied the way membership in a class was defined to the subjects .
+both taxonomies were based on the schemes proposed by hawkins and prince , but we introduced some changes in order , first , to find a scheme that would be easily understood by individuals without previous linguistic training and would lead to maximum agreement among the classifiers ; and second , to make the classification more useful for our goal of feeding the results into an implementation .
+in the first experiment , we used a labeling scheme , and the classes were introduced to the subjects with reference to the surface characteristics of the definite descriptions . ( see below and appendix a. )
+the taxonomy we used in this experiment is a simplification of hawkins scheme , to which we made three main changes .
+first of all , we separated those anaphoric descriptions whose antecedents have the same descriptive content as their antecedent ( which we will call anaphoric ( same head ) ) from other cases of anaphoric descriptions in which the association is based on more complex forms of lexical or commonsense knowledge ( synonyms , hypernyms , information about events , etc . ) .
+we grouped these latter definite descriptions with hawkins associative descriptions in a class that we called associative .
+this was done in order to see how much need there is for complex lexical inferences in resolving anaphoric definite descriptions , as opposed to simple head matching .
+secondly , we grouped together all the definite descriptions which introduce a novel discourse entity not associated to some previously established object in the text , i.e. , that were discourse-new in princes sense .
+this class , that we will call larger situation / unfamiliar , includes both definite descriptions that exploit situational information ( hawkins larger situation uses ) and discourse- new definite descriptions introduced together with their links or referents ( unfamiliar ) .
+this was done becase of frauruds observation that distinguishing the two classes is generally difficult ( fraurud , 1990 ) .
+third , we did not include a class for immediate situation uses , since we assumed they would be rare in written text.1 ~ we also introduced a separate class of idioms including indirect references , idiomatic expressions and metaphorical uses , and we allowed our subjects to mark definite descriptions as doubts .
+to summarize , the classes used in this experiment were as follows .
+anaphoric same head .
+this class includes uses of definite descriptions which refer back to an antecedent introduced in discourse ; it differs from hawkins anaphoric use or princes textually evoked classes because it only includes definite-antecedent pairs with the same head noun .
+( 18 ) grace energy just two weeks ago hauled a rig here 500 miles from caspar , wyo . , to drill the bilbrey well , a 15,000-foot , $ 1-million-plus natural gas well .
+the rig was built around 1980 , but has drilled only two wells , the last in 1982 .
+associative .
+we assigned to this class those definite descriptions that stand in an anaphoric or associative anaphoric relation with an antecedent explicitly mentioned in the text , but that are not identified by the same head noun as their antecedent .
+this class includes hawkins associative anaphoric definite descriptions and princes inferrables , as well as some definite descriptions that would be classified as anaphoric by hawkins and as textually evoked in ( prince , 1981 ) . )
+recognizing the antecedent of these definite descriptions involves at least knowledge of lexical associations , and possibly general commonsense knowledge.1 1 1 ~ this was indeed the case , but we did observe a few instances of an interesting kind of immediate situation use .
+in these cases , the text is describing the immediate situation in which the writer is , and the writer apparently expects the reader to reconstruct this situation : larger situation / unfamiliar .
+this class includes hawkins larger situation uses of definite descriptions based on specific and general knowledge ( discourse-new , hearer-old in princes terms ) as well as his unfamiliar uses ( many of which correspond to princes containing inferrables ) .
+idiom .
+this class includes indirect references , idiomatic expressions and metaphorical uses .
+experimental conditions .
+first of all , we classified ourselves the definite descriptions included in 20 randomly chosen articles from the wall street journal contained in the subset of the penn treebank corpus included in the acl / dci cd-rom.12 all together , these articles contain 1040 instances of definite description use .
+the results of our analysis are summarized in table 1 .
+next , we asked 2 subjects to perform the same task .
+our two subjects in this first experiment were graduate students in linguistics .
+the two subjects were given the instructions in appendix a. they had to assign each definite description to one of the classes described in x3.1 : i. anaphoric ( same head ) , ii. associative , iii. larger situation / unfamiliar , and iv. idiom .
+the subjects could also express v. doubt about the classification of the definite description .
+since the classes i-iii are not mutually exclusive , we instructed the subjects to resolve conflicts according to a preference ranking , i.e. , to choose a class with higher preference when two classes seemed equally applicable .
+the ranking was ( from most preferred to least preferred ) : 1 ) anaphoric ( same head ) , 2 ) larger situation / unfamiliar , and 3 ) associative .
+the annotators were given one text to familiarize themselves with the task before starting with the annotation proper .
+results .
+the results of the first annotator ( henceforth , annotator a ) are shown in table 2 , and those of the second annotator ( henceforth , annotator b ) in table 3 .
+as the tables indicate , the annotators and us assigned approximately the same percentage of definite descriptions to each of the five classes ; however , the classes do not always include the same elements .
+this can be gathered by the confusion matrix in table 4 , where an entry mx ~ y indicates the number of definite descriptions assigned to class x by subject a and to class y by subject b. in order to measure the agreement in a more precise way , we used the so- called kappa statistic ( siegel and castellan , 1988 ) , recently proposed by carletta as a measure of agreement for discourse analysis ( carletta , 1996 ) .
+we also used a measure of per-class agreement that we introduced ourselves .
+we discuss these results below , after reviewing briefly how k is computed .
+the kappa statistic kappa is a test suitable for the cases when the subjects have to assign items to one of a set of non-ordered classes .
+the test computes a coefficient k of agreement among coders which takes into account the possibility of chance agreement .
+it is dependent on the number of coders , number of items being classified , and number of choices of classes to be ascribed to items .
+the kappa coefficient of agreement between k annotators is defined as where p ( a ) is the proportion of times the annotators agree and p ( e ) is the proportion of times that we would expect the annotators to agree by chance .
+when there is complete agreement among the raters , k = 1 ; if there is no agreement other than that expected by chance , k = 0 .
+according to carletta , in the field of content analysiswhere the kappa statistic originatedk > 0.8 is generally taken to indicate good reliability , whereas 0.68 < k < 0.8 allows tentative conclusions to be drawn .
+we will illustrate the method for computing k proposed in ( siegel and castellan , 1988 ) by means of an example from one of our texts , shown in table 5 .
+the first column in table 5 ( definite description ) shows the definite description being classified .
+the columns ash , ass , and lsu stand for the classification options presented to the subjects ( anaphoric ( same head ) , associative , and larger situation / unfamiliar , respectively ) .
+the numbers in each nij entry of the matrix indicate the number of classifiers that assigned the description in row i to the class in column j .
+the final column ( labelled s ) represents the percentage agreement for each definite description ; we explain below how this percentage agreement is calculated .
+the last row in the table shows the total number of descriptions ( n ) , the total number of descriptions assigned to each class and , finally , the total percentage agreement for all descriptions ( z ) .
+k gives a globalmeasure of agreement .
+we also wanted to measure the agreement per class , i.e. , to understand where annotators agreed the most and where they disagreed the most .
+the confusion matrix does this to some extent , but only works for two annotatorsand therefore , for example , we couldnt use it to measure agreement on classes between the two annotators and ourselves .
+we computed what we called per-class percentage of agreement for three coders ( the two annotators and ourselves ) by taking the proportion of pair- wise agreements relative to the number of pairwise comparisons , as follows : whenever all three coders ascribe a description to the same class , we count 6 pairwise agreements out of 6 pairwise comparisons for that class - 100 % .
+if two coders ascribe a description to class 1 and the other coder to class 2 , we count two agreements in four comparisons for class 1 ( 50 % ) and no agreement for class 2 ( 0 % ) .
+the rates of agreement for each class thus obtained are presented in table 7 .
+the figures indicate better agreement on anaphoric same- head and larger situation / unfamiliar definite descriptions , worse agreement on the other classes . ( in fact , the percentages for idioms and doubts are very low ; but these classes are also too small to allow us to draw any conclusions . )
+discussion of the results distribution .
+one of the most interesting results of this first experiment is that a large proportion of the definite descriptions in our corpus ( 48.37 % , according to our own annotation ; more , according to our two annotators ) are not related to an antecedent previously introduced in the text .
+surprising as it may seem , this finding is in fact just a confirmation of the results of other researchers . ( fraurud , 1990 ) reports that 60.9 % of definite descriptions in her corpus of 11 swedish texts are first-mention , i.e. , do not co-refer with an entity already evoked in the text ; " ( gallaway , 1996 ) found a distribution similar to ours in ( english ) spoken child language .
+disagreements among annotators .
+the second notable result was the relatively low agreement among annotators .
+the reason for this disagreement was not so much annotators errors as the fact , already mentioned , that the classes are not mutually exclusive .
+the confusion matrix in table 4 indicates that the major classes of disagreements were definite descriptions classified by annotator a as larger situation and by annotator b as associative , and viceversa .
+one such example is the government in ( 23 ) .
+this definite description could be classified as larger situation because it refers to the government of korea , and presumably the fact that korea has a government is shared knowledge ; but it could also be classified as being associative on the predicate koreans .
+we will analyze the reasons for the disagreement in more detail in relation to our second experiment , in which we also asked the annotators to indicate the antecedent of definite descriptions ( see below ) .
+surface indicators of discourse novelty .
+examining the annotations produced in this experiment , we were able to confirm the correlation observed by hawkins between the syntactic structure of certain definite descriptions and their classification as discourse-new .
+factors that strongly suggest that a definite description is discourse-new ( and in fact , presumably hearer-new as well ) include the presence of modifiers such as first or best , and of a complement for nps of the form the fact that ... or the conclusion that .... 15 post-nominal modification of any type is also a strong indicator of discourse novelty , suggesting that most post-nominal clauses serve to establish a referent in the sense discussed in the previous section .
+in addition , we observed a previously unreported ( to our knowledge ) correlation between discourse-novelty and syntactic constructions such as appositions , copular constructions , and comparatives .
+the following examples from our corpus illustrate the correlations just mentioned : in addition , we observed a correlation between larger situation uses of definite descriptions ( discourse-new , and often hearer-old ) and certain syntactic expressions and lexical items .
+for example , we noticed that a large number of uses of definite descriptions in the corpus used for this first experiment referred to temporal entities such as the year or the month , or included proper names in place of the head noun or in premodifier position , as in the querecho plains of new mexico and the iran-iraq war .
+although these definite descriptions would have been classified by hawkins as larger situation uses , in many cases they couldnt really be considered hearer-old or unused : what seems to be happening in these cases is that the writer assumed the reader would use information about the visual form of words , or perhaps lexical knowledge , to infer that an object of that name existed in the world .
+we evaluated the strength of these correlations by means of a computer simulation ( vieira and poesio , 1997 ) .
+the system attempts to classify the definite descriptions found in texts syntactically annotated according to the penn treebank format .
+the system classifies a definite description as unfamiliar using heuristics based on the syntactic and lexical correlations just observed , i.e. , if either ( i ) it includes an unexplanatory modifier , ( ii ) it occurs in an apposition or a copular construction , or ( iii ) it is modified by a relative clause or prepositional phrase .
+a definite description is classified as larger situation if its head noun is a temporal expression such as year or month , or if its head or premodifiers are head nouns .
+the implementation revealed that some of the correlations are very strong : for example , the agreement between the systems classification and the annotators on definite descriptions with a nominal complement , such as the fact that ... varied between 93 % and 100 % depending on the annotator ; and on average , 70 % of temporal expressions such as the year were interpreted as larger situation by the annotators .
+all of this suggests that in using definite descriptions , writers may not make just assumptions about their readerss knowledge ; they may also rely on their readers ability to use lexical or syntactic cues to classify a definite description as discourse-new even when these readers dont know about the particular object referred to already .
+this observation is consistent with frauruds hypothesis that interpreting definite descriptions involves two processes deciding whether a definite description related to some entity in the discourse or not , and searching the antecedentand that the two processes are fairly independent .
+our findings also suggest that the classification process may rely on more than just lexical cues , as fraurud seems to assume ( taking up a suggestion in ( lobner , 1985 ) , see below ) .
+second experiment .
+in order to address some of the questions raised by experiment 1 we set up a second experiment .
+in this second experiment we modified both the classification scheme and what we asked the annotators to do .
+revisions to the annotators task .
+one concern we had in designing this second experiment was to understand better the reasons for the disagreement among annotators observed in the first experiment .
+in particular , we wanted to understand whether the classification disagreements reflected disagreements about the final semantic interpretation .
+secondly , in this new experiment we structured the task of deciding on a classification for a definite description around a series of questions originating a decision tree , rather than giving our subjects an explicit preference ranking .
+a third aspect of the first experiment we wanted to study more carefully was the distribution of definite descriptions , in particular , the characteristics of the large number of definite descriptions in the larger situation / unfamiliar class .
+finally , we chose truly naive subjects to perform the classification task .
+in order to get a better idea of the extent of agreement among annotators about the semantic interpretation of definite descriptions , we asked our subjects to indicate the antecedent in the text for the definite descriptions they classified as anaphoric or associative .
+this would also allow us to test how well subjects did with a linking type of classification like the one used in muc-6 .
+we also replaced the anaphoric ( same head ) class we had in the first experiment with a broader co-referent class including all cases in which a definite description is co-referential with its antecedent , whether or not the head noun was the same : e.g. , we asked the subjects to classify as co-referent a definite like the house referring back to an antecedent introduced as a victorian home , which would not have counted as anaphoric ( same head ) in our first experiment .
+this resulted in a taxonomy which was at the same time more semantically oriented and closer to hawkins and princes classification schemes : our broadened co-referent class coincides with hawkinsanaphoric and princes textually evoked classes , whereas the resulting , narrower associative class ( that we called bridging references ) coincides with hawkins associative anaphoric and princes class of inferrables .
+our intention was to see whether the distinctions proposed by hawkins and prince would result in a better agreement among annotators than the taxonomy used in our first experiment , i.e. , whether the subjects would be more in agreement about the semantic relation between a definite description and its antecedent than they were about the relation between the head noun of the definite description and the head noun of its antecedent .
+the larger situation / unfamiliar class we had in the first experiment was split back in two classes , as in hawkins and princes schemes .
+we did this to see whether indeed these two classes were difficult to distinguish ; we also wanted to get a clearer idea of the relative importance of the two kinds of definites that we had grouped together in the first annotation .
+the two classes were called larger-situation and unfamiliar .
+experimental conditions .
+we used three subjects for experiment 2 .
+our subjects were english native speakers , graduate students of mathematics , geography and mechanical engineering at the university of edinburgh ; we will refer to them as c , d, and e below .
+they were asked to annotate 14 randomly selected wall street journal articles , all but one of them different from those used in experiment 1 , and containing 464 definite descriptions in total.1 ~ unlike in our first experiment , we did not suggest any relation between the classes and the syntactic form of the definite descriptions in the instructions .
+the subjects were asked to indicate whether the entity referred to by a definite description i ) had been mentioned previously in the text , else if ii ) it was new but related to an entity already mentioned in the text , else iii ) it was new but presumably known to the average reader , or finally iv ) it was new in the text and presumably new to the average reader .
+when the description was indicated as discourse-old ( i ) or related to some other entity ( ii ) , the subjects were asked to locate the previous mention of the related entity in the text .
+unlike the first experiment , the subjects did not have the option to classify a definite description as idiom ; we instructed them to make a choice and write down their doubts .
+the written instructions and the script given to the subjects can be found in appendix b. as in experiment 1 , the subjects were given one text to practice before starting with the analysis of the corpus .
+they took in average 8 hours to complete the task .
+results .
+the distribution of definite descriptions in the four classes according to the three coders is shown in table 8 .
+we counted all the cases of doubt separately .
+we had 283 cases of complete agreement among annotators on the classification ( 61 % ) : 164 cases of complete agreement on co-referential definite descriptions , 7 cases of complete agreement on bridging , 65 cases of complete agreement on larger situation , and 47 cases of complete agreement on the unfamiliar class .
+as in experiment 1 , we measured the k coefficient of agreement among annotators ; the result for annotators c , d and e is k = 0.58 if we consider the definite descriptions marked as doubts ( in which case we have 464 descriptions and five classes ) , k = 0.63 if we leave them out ( 430 descriptions and the four classes i-iv ) .
+we also measured the extent of agreement among subjects on the antecedents for co-referential and bridging definite descriptions . 164 descriptions were classified as co-referential by all three coders ; of these , 155 ( 95 % ) were taken by all coders to refer to the same entity ( although not necessarily to the same mention of that entity ) .
+there were only 7 definite descriptions classified by all three annotators as bridging reference ; in 5 of these cases ( 71 % ) the three annotators also agreed on a textual antecedent ( i.e. , on the discourse entity to which the bridging reference was related to ) .
+discussion distribution into classes .
+as shown in table 8 , the distribution of definite descriptions among discourse- new , on the one side , and co-referential with bridging references , one the other , is roughly the same in experiment 2 as in experiment 1 , and roughly the same among annotators .
+the average percentage of discourse-new descriptions ( larger situation and unfamiliar together ) is 46 % , against an average of 50 % in the first experiment .
+having split the discourse-new class in two in this experiment , we got an indication of the relative importance of the hearer-old and hearer-new subclassesabout half of the discourse-new uses fall in each of these classes but only very approximate , since the first two annotators classified the majority of these as larger-situation , whereas the last annotator classified the majority as unfamiliar .
+as expected , the broader definition of the co-referent class resulted in a larger percentage of definite descriptions being included in this class ( an average of 45 % ) , and a smaller percentage being included in the bridging reference class .
+considering the difference between the relative importance of the same- head anaphora class in the first experiment and of the co-referent class in the second experiment we can estimate that approximately 15 % of definite descriptions are co-referential and have a different head from their antecedents .
+agreement among annotators .
+the agreement among annotators in experiment 2 was not very high : 61 % total agreement , which gives k = 0.58 or k = 0.63 , depending on whether we consider doubts as a class . "
+this is worse than the one we obtained in experiment 1 ( k = 0.68 or k = 0.73 ) ; in fact , this value of k goes below the level at which we can tentatively assume agreement among the annotators .
+there could be several reasons for the fact that agreeement got worse in this second experiment .
+perhaps the simplest explanation is that we were just using more classes .
+in order to check whether this latter was the case , we merged back the classes larger situation and unfamiliar into one , as we had in the experiment 1 : that is , we recomputed k after counting all definite descriptions classified as either larger situation or unfamiliar as members of the same class .
+and indeed , the agreement figures went up from k = 0.63 to k = 0.68 ( ignoring doubts ) when we did so , i.e. , back within the tentative margins of agreement according to ( carletta , 1996 ) ( 0.68 < x < 0.8 ) .
+the remaining difference between the level of agreement obtained in this experiment and that obtained in the first one ( k = 0.73 , ignoring doubts ) might have to do with the annotators , with the difficulty of the texts , or with using a syntactic ( same head ) as opposed to a semantic notion of what counts as co-referential ; we are inclined to think that the last two explanations are more likely .
+for one thing , we found very few examples of true mistakes in the annotation , as discussed below .
+secondly , we observed that the coefficient of agreement changes dramatically from text to text : in this second experiment , it varies from k = 0.42 to k = 0.92 depending on the text , and if we do not count the worse 3 texts in the second experiment , we get again k = 0.73 .
+third , going from 17it is difficult to decide what is the best way to treat cases marked as doubtswhether to take them out or to include them as a separate classso we give both figures below .
+the good result obtained by reducing the number of classes led us to try to find a way of grouping definite descriptions into classes that would result in a better agreement .
+an obvious idea was too try with still fewer classes , i.e. , just two .
+we first tried the binary division suggested by fraurud : all co-referential definite descriptions on one side ( subsequent mention ) , and all other definite descriptions on the other ( first mention ) .
+splitting things this way did result in an agreement of k = 0.76 , i.e. , within the tentative margins of agreement , although not quite as strong an agreement as we would have expected .
+the alternative of putting in one class all discourse-related definite descriptions co-referential and bridging referencesand putting larger situation and unfamiliar definite descriptions in a second class resulted in a worse agreement , although by not much ( k = 0.73 ) .
+this suggests that our subjects did reasonably well at distinguishing first- mention from subsequent-mention entities , but not at drawing more complex distinctions .
+they were particularly bad at distinguishing bridging references from other definite descriptions : dividing the classifications into bridging definites , on the one hand , and all other definite descriptions , on the other , resulted in a very low agreement ( k = 0.24 ) .
+we obtained about the same results by computing theper-class percentage of agreement discussed in section x3 .
+the rates of agreement for each class thus obtained are presented in table 9 .
+again , we find that the annotators find it easier to agree on co-referential definite descriptions , harder to agree on bridging references ; the percentage agreement on the classes larger situation and unfamiliar taken individually is much lower than the agreement on the class larger situation / unfamiliar taken as a whole .
+the results in table 9 confirm the indications obtained by computing agreement for a smaller number of classes : our subjects agree pretty much on co referential definite descriptions , but bridging references are not a natural class .
+we discuss the cases of disagreement in more detail next .
+classification disagreements .
+there are two basic kinds of disagreements among annotators : about classification , and about the identification of an antecedent .
+there were 29 cases of complete classification disagreement among annotators , i.e. , cases in which no two annotators classified a definite description in the same way , and 144 cases of partial disagreement .
+all four of the possible combinations of total disagreement were observed , but the two most common combinations were bcu ( bridging , co-referential , and unfamiliar ) and blu ( bridging , larger situation , and unfamiliar ) ; all six combinations of partial disagreements were also observed .
+as we do not have the space for discussing each case in detail , we will concentrate on pointing out what we take to be the most interesting observations , especially from the perspective of designing a corpus annotation scheme for anaphoric expressions .
+we found very few true mistakes .
+we had some problems due to the presence of idioms such as they had to pick up the slack or on the whole the situation was better than expected .
+but in general , most of the disagreements were due to genuine problems in assigning a unique classification to definite descriptions .
+the mistakes that our annotators did make were of the form exemplified by ( 25 ) .
+in this case , all three annotators indicate the same antecedent ( the potential payoff ) for the definite description the rewards , but whereas two of them classify the rewards as co-referential , one of them classifies it as bridging .
+what seems to be happening here and in similar cases is that even though we asked the subjects to classify semantically , they ended up using a notion ofrelatedness which is more like the notion of associative in experiment 1 . ( we found 10 such cases of partial disagreement between bridging and co-referential in which all three subjects indicated the same antecedent for the definite description . )
+as could be expected by the discussion of the k results above , the most common disagreements ( 35 cases of partial disagreement out of 144 ) were between the classes larger situation and unfamiliar .
+one typical source of disagreement was theintroductory use of definite descriptions , common in newspapers : thus , for example , some of our annotators would classify the illinois commerce commission as larger situation , other as unfamiliar .
+in many cases in which this form of ambiguity was encountered , the definite description worked effectively as a proper name : the world-wide supercomputer law , the new us trade law , or the face of personal computing .
+rather surprisingly , from a semantic perspective , the second most common form of disagreement was between the co-referential and bridging classes .
+in this case , the problem typically was that different subjects would choose different antecedents for a certain definite description .
+thus , in example ( 26 ) , the third annotator indicated $ 250 million as the antecedent for the refund , and classified the definite description as co-referential .
+a similar example is ( 27 ) , in which two of the annotators classified the spinoff as bridging on spinoff cray computer corp. , whereas the third classified it as co-referential with the pending spinoff .
+in this case , we can see that all three interpretations are acceptable : we may take the definite description the government of president carlos menem , who took office july 8 , either as a case of bridging reference on the previously mentioned argentina , or as a larger situation use , or as a case of unfamiliar definite description , especially if we assume that this latter class coincides with princes containing inferrables .
+in conclusion , our figures can be seen as an empirical verification of frauruds and princes hypothesis that the classification disagreements among annotators depend to a large extent on the task they are asked to do , rather than reflecting true differences in semantic intuitions .
+antecedent disagreements .
+interestingly , we also found cases of disagreement about the antecedent of a definite description .
+we have already discussed the most common case of antecedent disagreement : this is the case in which a definite description could equally well be taken as co-referential with one discourse entity or as bridging to another : for example , in an article in which the writer starts discussing aetna life & casualty , and then goes on mentioning major insurers , either discourse entity could then serve as antecedent for the subsequent definite description the insurer , depending on whether the definite description is classified as co-referential or bridging .
+perhaps most interesting of all cases of disagreement about the antecedent are examples such as ( 29 ) .
+one subject indicated parts of the factory as the antecedent ; another indicated the factory ; and the third indicated areas of the factory .
+discussion and conclusions .
+some consequences of this research consequences for corpus annotation .
+this study raises the issue of how feasible it is to annotate corpora for anaphoric information .
+we observed two problems about the task of classifying definite descriptions : first , neither of the more complex classification schemes we tested resulted in a very good agreement among annotators ; and second , even the task of identifying the antecedent of discourse-related definite descriptions ( i.e. , co-referential and bridging ) is problematicwe only obtained an acceptable agreement in the case of co-referential definite descriptions , and it was difficult for our annotators to choose a single antecedent for a definite description when both bridging and co-reference are allowed .
+these results indicate that annotating corpora for anaphoric information may be more difficult than expected .
+the task of indicating a unique antecedent for bridging definite descriptions appears to be especially challenging , for the reasons discussed above ( multiple equally good antecedents and referential underspecification , for example ) .
+on the positive side , we have two positive observations : subjects do reasonably well at distinguishing first-mention from subsequent-mention antecedents , and at identifying the antecedent of a subsequent-mention definite description .
+a classification scheme based on this distinction ( such as frauruds ) and that just asked subjects to indicate an antecedent for subsequent-mention definite descriptions may have a chance of resulting in a standardized annotation .
+even in this case , however , the agreement we observed was not very high .
+the possibility we are exploring is that these results might get better if annotators are given computer support in the form of a semi-automatic classifier i.e. , a system capable of suggesting to annotators a classification for definite descriptions , including possibly an indication of how reliable the classification might be .
+we briefly discuss below our progress in this direction so far .
+consequences for linguistic theory .
+our study confirms the findings of previous work ( e.g. , ( fraurud , 1990 ) ) that a great number of the definite descriptions in texts are discourse-new : in our second experiment we found an equal number of discourse-new and discourse- related definite descriptions , although many of the definite descriptions classified as discourse new could be seen as associative in a loose sense .
+interestingly , this suggests that each of the competing hypotheses about the licensing conditions for definite descriptions the uniqueness and the familiarity theory accounts satisfactorily for about half of the data .
+of the existing theories of definite descriptions , the one that comes closest to accounting for all of the uses of definite descriptions that we observed is lobners ( 1985 ) .
+lobner proposes that the defining property of definite descriptions , from a semantic point of view , is that they indicate that the head noun complex denotes a functional concept , i.e. , a function ( which , according to lobner , can take one , two or three arguments ) .
+he argues that some head noun complexes denote such a function on purely lexical semantic grounds : this is the case , for example , of the head noun complexes in the father of mr. smith , the first man to sail to america and the fact that life started on earth ; he calls these definite descriptions semantic definites .
+in other cases , such as the dog , the head noun by itself would not denote a function , but a sort : in these cases , according to lobner , the use of a definite dscription is only felicitous if context indicates the function to be used .
+this latter class of pragmatic definites includes the best-known cases of familiar definitesanaphoric , immediate and visible situation , and larger situationas well as some cases classified by hawkins as unfamiliar and by prince as containing inferrables .
+lobner does not discuss the conditions under which a writer can assume that the reader can recognize that context creates a functional concept out of a sortal one , but his account could be supplemented by clark and marshalls theory of what may count as a basis for a mutual knowledge induction schema ( clark and marshall , 1981 ) .
+consequences for processing theories .
+given that first-mention definite descriptions are so numerous , and that recognizing them does not depend on commonsense knowledge alone , we conclude that any general theory of definite description interpretation should include methods for recognizing such definites .
+the architecture of our own classifier ( see below ) is also consistent with frauruds hypothesis that these methods are not just used when no suitable antecedent can be found , but more extensive investigations will be needed before we can conclude that this architecture significantly outperforms other ones .
+the presence of such a large number of discourse-new definite descriptions is also problematic for the idea that definite descriptions are interpreted with respect to the global focus ( grosz , 1977 ; grosz and sidner , 1986 ) .
+a significant percentage of the larger situation definite descriptions encountered in our corpus cannot be said to be in the global focus in any significant sense : as we observed above , in many of these cases the writer seems to rely on the readers capability to add a new object such as the illinois commerce commission to her / his model of the world , rather than expecting that object to be already present .
+a ( semi ) -automatic classifier .
+as already mentioned , we are in the course of implementing a system capable of performing the classification task semi-automatically ( vieira , 1998 ) .
+this system would help the human classifiers by suggesting possible classifications , and possible antecedents in the case of discourse-related definite descriptions .
+our system implements the dual-processing strategy discussed above .
+on the one hand , it attempts to resolve anaphoric same-head definite descriptions by maintaining a simple discourse model and searching back into this model to find all possible antecedents of a definite description ( using a special matching heuristic to deal with pre- and post-modification ) .
+on the other , it uses heuristics to identify unfamiliar and larger situation definite descriptions on the basis of syntactic information and very little lexical information about nouns that take complements .
+the current order of application of the resolution and classification steps has been determined by empirical testing , and has been compared with that suggested by decision-tree learning techniques .
+we trained a version of the system on the corpus used for the first experiment , and then compared its classification of the corpus used for the second experiment with that of our three subjects.19 we developed two versions of the system : one which only attempts to classify subsequent mention and discourse-new definite descriptions ( vieira and poesio , 1997 ) , and one which also attempts to classify bridging references ( poesio et al. , 1997 ) .
+the first version of the system finds a classification for 318 definite descriptions out of the 464 in our test data ( the articles used in the second experiment ) .
+the agreement between the system and the three annotators on the two classes first mention and subsequent mention is k = 0.70 overall ( k = 0.77 for the three annotators on the converted annotation ) , if all definite descriptions to which the system cant assign a classification are treated as first-mention ; the coefficient of agreement is k = 0.78 if we do not count the definite descriptions that the system cannot classify ( k = 0.81 for the annotators on just those definite descriptions ) .
+the version of the system that also attempts to recognize bridging references has a worse performance , which is not surprising given the problems our subjects had in classifying bridging descriptions .
+this version of the system finds a classification for 355 descriptions out of 464 , and its agreement with the three annotators is k = 0.63 if the cases that the system cannot classify are not counted ( k = 0.70 for the three annotators on 3 categories with just these definites ) ; k = 0.57 if we count the cases that the system does not classify as discourse-new ( for 447 descriptions ) ; and k = 0.63 again if we count the cases that the system does not classify as bridging ( again , 447 descriptions ) .
+we collected plenty of data about definite descriptions that we are still in the process of analyzing .
+one issue we are studying at the moment is what to do with bridging references : how to classify them if at all , and how to process them .
+we also intend to study loebners hypothesis about the role played by the distinction betweensortal and relational head nouns in determining the type of process involved in the resolution of a definite description , possibly by finding a way to ask our subjects to recognize these distinctions .
+and we plan to study the issue of generic definites .
+an obvious direction in which to extend this study is by looking at other kinds of anaphoric expressions such as pronouns and demonstratives .
+we are performing preliminary studies in this direction .
+finally , we would like to emphasize that although this study is the most extensive investigation of definite description use in a corpus that we know of ( we looked at a total of more than 1400 definite descriptions in 33 texts , i.e. , almost three times as many as in frauruds study ) , in practice we still got very little data on many of the uses of definite descriptions , so some caution is necessary in interpreting these results .
+the problem is that the kind of analysis we performed is extremely time consuming : it will be crucial in the future to find ways of performing this task that will allow us to analyze more data , possibly with the help of computer simulations .

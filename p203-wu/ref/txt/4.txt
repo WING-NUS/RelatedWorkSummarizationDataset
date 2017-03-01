@@ -1,0 +1,189 @@
+unsupervised and supervised clustering for topic tracking .
+abstract .
+we investigate important differences between two styles of document clustering in the context of topic detection and tracking .
+converting a topic detection system into a topic tracking system exposes fundamental differences between these two tasks that are important to consider in both the design and the evaluation of tdt systems .
+we also identify features that can be used in systems for both tasks .
+topic detection and tracking .
+the goal of darpa 's topic detection and tracking ( tdt ) project is to identify event-based topics and follow them across multilingual incoming streams of broadcast news and newswire documents .
+topics in tdt are somewhat narrower than traditional ir topics [ 1 ] : a topic is defined to be a seminal event or activity , along with all directly related events and activities .
+tdt contains several tasks designed to drive development of technologies to monitor incoming news streams .
+here we focus on two tdt tasks , tracking and detection .
+in tracking , a system is given 1-4 initial seed documents and asked to monitor the news stream for further documents on the same topic .
+in contrast , a detection system performs unsupervised clustering of the incoming news stream , forming clusters without reference to an initial set of on-topic seed documents .
+these tasks are superficially similar , and are sometimes loosely referred to with words like " clustering " and " classification . "
+three important aspects of detection control our system design decisions : training : detection is unsupervised ; that is there are no training documents or queries .
+the distinction between hard and soft decisions is a fundamental design consideration for designers of tdt systems .
+from a research perspective , this distinction strongly influences the operating points ( in terms of the miss vs. false alarm rate tradeoff ) that can be explored when evaluating these systems .
+naturally , it is also an important consideration in design of evaluation criteria for news monitoring systems .
+the tdt tasks differ from all trec tasks in intriguing ways .
+the trec adaptive filtering task focuses on performance improvements driven by feedback from real-time human relevance assessments .
+tdt systems , on the other hand , are designed to run autonomously without human feedback .
+they differ from the trec batch filtering and routing tasks in the very limited number of available training documents per topic . [ 2 ] furthermore , the annotated topics cover only a small fraction of the documents in the corpus , with more than 90 % of the documents known to be off-topic for all topics , in contrast to many standard document classification tasks .
+in this paper , we describe the construction of a tracking system based on a detection algorithm which was already known to produce excellent results , as seen in the tdt-2 [ 3 ] and tdt-3 [ 4 ] evaluations .
+the resulting tracking system was submitted to the tdt-2000 evaluation , with excellent results .
+tdt corpus .
+all calibration experiments presented here are based on the tdt-2 corpus .
+this corpus consists of approximately 80000 news documents from january-june 1998 , drawn from the new york times , associated press , cnn , abc world news tonight , voice of america , public radio international , xinhua , and zbn .
+audio sources were transcribed by nist using an automatic speech recognizer donated by bbn .
+chinese sources were automatically translated into english using systran .
+further details of the corpus and the exhaustive annotation of the documents with respect to approximately 100 topics are described in [ 5 ] .
+descriptions of the topics are also available at [ 6 ] .
+the tdt corpus is becoming an important testbed not only because of its use in tdt , but also because of its use in the spoken document retrieval track at trec . [ 7 ] we divided the corpus into two halves : the first half ( january , february , and march , 1998 ) was denoted jfm and the second half ( april , may , june ) was denoted amj .
+for each topic , the documents judged by the ldc as on-topic were divided into training and test sets with 4 documents in the training set ( although many of the tracking experiments presented here use only one document for training . )
+of the annotated topics , 47 were present in jfm .
+chronologically , the first on-topic training document of 20 of the topics were in amj ; 28 of the topics began in jfm and continued into amj ; there were separate training documents in both halves of the corpus for those topics that straddled the two halves .
+there are two motivations for splitting the corpus into two development-test sets : ( 1 ) a three month set of documents avoids any corpus-size dependencies that might be present and affect future comparisons with results from tdt-3 corpus ( which covers october , november , and december , 1998 ) and ( 2 ) having two development-test sets allows us to gauge the size of random variations between different collections of documents and / or topics .
+tracking performance : an alternative view .
+an important application of tracking systems is as a tool for analysts to filter a broad array of news sources .
+tdt system results are normally stated using performance measurements unfamiliar to the broader ir community .
+here , we begin our description of the tracking task with a nonstandard formulation of tracking results and measures chosen to reflect an analysts ' needs .
+we use these results to motivate the usual tdt cost-based metrics .
+an analyst begins tracking a new topic by giving the system a very small number of seed documents .
+the system then reports subsequent documents that appear to be on- topic according to the seed document , along with confidence scores .
+the analyst is assumed to have a single " knob " to control the system by thresholding the confidence scores : if the decision threshold ( od ) is too high the analyst may miss valuable on-topic documents ; if it is too low the analyst may be overwhelmed with too many off-topic documents .
+the news sources that the analyst monitors are not a slowly growing corpus , as in traditional ir ( search engine ) applications ; rather they are streaming sources of real-time information , which we take to have a roughly constant rate of production .
+in other words , the size scale with which a tracking system must contend is not the size of the corpus , but the growth rate of the corpus .
+to evaluate the quality of a tracking system , reference must be made to a ground truth , documents which we call on-topic .
+now , as is familiar from ir , different topics are associated with different numbers of on-topic documents .
+however , it is the rate at which on-topic documents appear that concerns us .
+furthermore , this rate is non-uniform : for a widely reported topic , 20 on-topic documents may appear on the first day when it is " breaking news , " with this number decaying to 1 per day and then zero after the event has played out .
+on the other hand , for topics of less widespread interest , on-topic documents may be scarce from the outset , with one or two appearing per day initially , but with this rate continuing over a course of months .
+we can avoid making assumptions about the structure of the topic by plotting the system 's performance as a function of the rate at which on-topic documents appear .
+we form bins that associate daily installments of the corpus with the number of on-topic documents contained in that day 's installment .
+in other words , each bin represents a daily rate of on-topic documents .
+we have described the bins as if only one topic is being tracked .
+if there are multiple topics , we form the bins separately for each topic and average over all topics .
+one measure of tracking quality appropriate for an analyst interested in complete coverage is recall .
+in fig . ( 2 ) we plot recall as a function of the rate of incoming on-topic documents .
+we see that the recall is very high for low rates of on-topic documents , and appears to decay slightly as the rate of on-topic documents increases .
+statistical fluctuations increase with increasing rate because there are fewer topics and days with large numbers of on-topic documents on that day .
+given that only one seed document was used in this example a sharp decay in recall as the rate of on-topic documents increased would not be surprising since many of the on-topic documents would almost certainly have come from different sources than the training documents , as well as different conditions ( machine translation output compared to clean text . )
+since the graph is somewhat flat , it is reasonable to average over rates and describe the recall of the system by a single number r. recall can always be increased at the expense of an increased rate of false alarms , rendering the system useless by overwhelming the analyst with a large number of false alarms .
+thus , we take as our second error measure the number of false alarms per topic per day .
+we do not compute precision ; our intuition is that the user loses interest after some number of off-topic documents on a given day and this number is probably not proportional to the number of on- topic documents .
+as above , we present this false alarm rate as a function of the number of on-topic documents per day ( figure 3 ) for the same tracking system and operating point .
+the rate is well under 10 false alarms per topic per day for topics and days in which on-topic documents are scarce , and increases somewhat as the number on-topic documents per day increases .
+as before , fluctuations increase with increasing rate , because there are fewer topics and days with large numbers of on-topic documents on that day .
+the correlation is probably due to narrow definitions of topics : on-topic documents may be associated with documents about related events which are not necessarily on-topic themselves .
+we regard this operating point of recall and false alarm rate as indicative that our system is usable for some practical applications .
+the recall and false alarm rates presented above are directly related to the standard official cost-based measures of the tdt evaluation .
+since cost-based measures estimate the total cost of all errors , tdt uses the probability of a miss , p.i , , = 1 r , instead of recall .
+tdt 's analog of precision is the false alarm probability , pfa , which is the false alarm rate divided by corpus size and averaged over all rates of on-topic documents .
+the official single-number tdt metric , cost of tracking ( ctrack ) is a linear combination of these two .
+the coefficients in the linear combination are chosen to emphasize recall and are normalized so that a perfect tracking system has ctra , k = 0 , and random performance results in ctrack = 1 .
+most tracking systems can be tuned along an operating curve by varying a threshold od .
+since the tracking system assigns a confidence score to each decision about whether a document is on-topic or not , the entire operating curve can calculated from a single tracking run by sweeping a threshold through a range of confidence scores .
+the resulting operating curve ( see fig . ( 4 ) ) is traditionally plotted on a gaussian deviate scale , and is called a det curve .
+a particularly clear exposition of the properties of det curves is contained in [ 8 ] .
+for low values of od ( the lower right section of the curve ) many documents are labeled as on-topic , resulting in a low pmiss and a high pfa , whereas at high values of od ( upper left section of the curve ) fewer documents are labeled as on-topic , resulting in a higher p.i , , and lower pfa .
+for reference to future det curves , the tracking system results shown in figs . ( 2 ) , ( 3 ) , and ( 4 ) correspond to p.i = 0.065 and pfa = 0.0087 , for a cost of ctra , k = 0.1074 on the official tdt metric .
+baseline detection system .
+we begin describing the implementation of our detection and tracking systems by describing a document-document similarity function based on a symmetrized version of the okapi formula [ 9 ] which is at the core of both the detection system with which we start and the tracking system we will describe .
+the document length normalization is needed to ensure performance stability over a wide range of topics .
+other tdt researchers have explored different normalization approaches involving the l2 norm implicit in cosine-like metrics [ 10 ] and gaussian modeling of scores [ 11 , 12 ] .
+our scoring formula is cluster dependent because of the " dynamic word-weight " where idf0 ( w ) is the traditional okapi inverse document frequence , nw is the number of documents ( so far ) that contain word w , and ncl is the number of documents ( so far ) in cluster cl and nw , ,l is the number of documents in the cluster which contain the word ; the a is an adjustable parameter .
+the scoring formula is also time dependent : the contents of a cluster changes over the course of time , and thus does ok ( d ' , d2 ; cl ) .
+the dynamic word weight was an important improvement in the performance of the topic detection system discussed in [ 13 ] and [ 14 ] .
+other approaches to document-document similarity within the tdt community include estimators for the conditional probabilities of a generating a document ( generating both seed documents and test-set documents are covered by [ 11 , 12 ] ) along with careful consideration of the smoothing of such models [ 15 ] and more flexible models of term-counts [ 16 ] .
+other tracking systems have borrowed similarity functions and term weightings from such well-known ir systems as inquery [ 17 ] , smart [ 18 ] , and prise [ 19 ] .
+more linguistically motivated features , such as noun phrase heads and proper names have been incorporated by [ 20 ] .
+that is , we represent a cluster by its centroid .
+centroid representations have been extensively discussed in [ 21 ] .
+other cluster representations in the literature include single-link clustering [ 20 ] and multiple centroids .
+to use our scoring formula for the one-pass unsupervised clustering entailed by the topic detection task , each document is compared with all existing clusters ' .
+if the best- scoring cluster with that document exceeds a threshold 0. then the document is merged into that cluster and the cluster 's centroid is updated .
+if the score is below the threshold for all clusters , then another cluster is created with that document as a seed2 .
+detection as tracking .
+previously , promising initial results have been reported [ 22 ] based on converting a detection run into a tracking run .
+however , this paper represents the first full conversion of a detection system into a tracking system of which we are aware .
+superficially , a detection system is very different from a tracking system .
+a detection system clusters the documents in an unsupervised manner .
+no query , sample document , or statement of topic is available to the detection system .
+furthermore , detectors are typically implemented as a one-pass algorithm : a decision is rendered for each document as soon as it is encountered , and that decision cannot be changed later .
+and finally , a detection system can only render one decision per topic , whereas a tracking system renders one decision for every document and topic .
+nevertheless , since the underlying processes ultimately involve deciding if one document is similar to another , there are good reasons to believe that much of the same technology can be used for both task .
+the basic idea behind converting a detection system to a tracking system is that as each document is initially considered by the detection system , the system also notes whether it is one of the seed documents of a tracking topic .
+if it is , then the cluster into which it is placed is also noted .
+then any subsequent document that is placed into that cluster is a candidate for labelling as on-topic for that topic , and the tracking system 's confidence score for labeling on-topic can be equated to the detection system 's confidence score for placing the document in that cluster .
+in a sense , this is the absolute minimal and most superficial use of the knowledge provided by the training documents .
+it is not a conversion of a detection system into a tracking system ; it is the conversion of the output of a detection system into the output of a tracking system .
+the core of the system , functions such as document-document similarity are untouched .
+in general the tracking confidence score may be a function both of the detection confidence score , as well as of how many of the seed documents were placed in the same cluster .
+although our detection system is a high performance one , the above naive detection-based approach to tracking is not well suited for the requirements of the tracking task .
+as a starting point we present the det curve of a detection system which had excellent performance in the tdt-2 [ 3 ] and tdt-3 [ 4 ] evaluations , converted to a naive tracking system as described above .
+if we examine the det curve for such a system ( see fig . 5 ) we note that the curve has a sharp elbow and becomes immediately horizontal .
+curves of constant ctra , k are also indicated in this figure as a guide to the appropriate operating point on the det curve .
+the flatness of these curves as p.i , , increases clearly indicate that the tracking metric favors systems whose operating point has low p. i ~ ~ , or high recall .
+clearly , the elbow in the curve prevents this system from entering into the low- miss region favored by the cost metric .
+the explanation for this behavior is that the detection system maintains many clusters which compete with the actual topical cluster .
+furthermore , the detection system makes a sharp decision ( with respect to a threshold ) and places the candidate document in exactly one cluster .
+thus documents whose score with respect to the on-topic cluster fall below the detection system 's clustering threshold cannot be tracked .
+this leads us to make two observations : ( 1 ) a topic detection system well- optimized to the tdt detection task converts into a naive tracking system that does not probe the area of interest to the tdt tracking task , and ( 2 ) in order to convert a detection system into a tracking system , it is necessary to record the scores of all documents with respect to the topical cluster , not merely those documents that are merged into it .
+in frameworks of unsupervised clustering which assume that a document belongs to only one topic , this assumption represent a fundamental limit in the system 's performance when used directly as a tracking system .
+it is also a fundamental limit to the parts of operating curve probed by the system .
+breaking this assumption , and thus changing the clustering strategy is essential to obtaining acceptable performance .
+thus , in order to convert a detection system into a tracking system , the scoring function must report decisions and confidence scores across all topics , not simply the best available cluster .
+thus the tracking system must , for each document , score all available clusters .
+if the score exceeds the merging threshold 0 . , then that cluster 's centroid is updated .
+note that more than one cluster may be updated by a single document .
+furthermore , if the score exceeds a decision threshold od the system declares that the document is on-topic for that topic .
+generally od < 0 . , ( meaning that the system will declare many documents on-topic but is cautios about updating the cluster centroid ) but this inequality is not strictly required .
+otherwise the document is declared not on-topic for that topic .
+we emphasize that 0 . , not od is the threshold that is the tracking system 's correct analog of the detection system 's threshold 0 ..
+the distinction between rendering ( for each document ) judgements on every cluster rather than rendering judgements on the best- scoring cluster may seem trivial .
+however , we remind the reader that this distinction influences whether certain parts of the miss / false-alarm operating curve can be probed by the system .
+experiments .
+in this section , we present results of the tracking system on the two halves of the tdt-2 corpus .
+these results were obtained in preparation for the tdt-2000 evaluation .
+these results highlight some of the important features of our detection and tracking systems .
+in fig . ( 6 ) we show the det curves of our baseline tracking system on the two development-test sets . ( our baseline is that a = 0 , only the okapi-like portion of the document-document similarity function is used , and that 0 . = co , the cluster centroid is determined only by the training documents and is never updated . )
+unless otherwise indicated , all results presented here were obtained with only one seed document .
+points of corresponding decision threshold od on the two det curves are connected by crossbars .
+we note that od , the tracking system 's decision threshold is not a particularly interesting parameter here , and can be tuned very successfully .
+virtually all of the tracking systems evaluated in tdt-2000 had correctly tuned decision thresholds ( meaning that only negligible changes in ctra , k were possible by further tuning [ 23 ] . )
+thus we typically present either the appropriate range of the det curve , or else we assume that od is correctly tuned , and refer to the resulting cost as the od-optimal ctra ~ k .
+in fig . ( 7 ) we compare to a different , more familiar , baseline : a simple cosine-metric system acting on word stems [ 24 ] .
+this system is similar in spirit to the system described in [ 10 ] .
+both of these systems represent the centroid of the cluster only by training document .
+the centroid is frozen and never updated .
+both systems exhibit similar performance .
+in the limiting case on the righthand side of the graph , the system never merges a document into a cluster .
+we observe a significant performance gain when some merging occurs .
+this effect is somewhat similar to query expansion in ir .
+however , if the threshold is lowered too much ( thus merging too many documents into the cluster ) , then a sudden loss in performance occurs .
+the optimal behavior of detection and tracking systems with respect to this parameter is strikingly different .
+in detection , most or all of the documents are used to update the centroid of some cluster .
+in contrast , for the optimal tracking system , only a few of the highest-confidence documents are used to update cluster 's centroid , and performance decays catastrophically if too many are used .
+the tracking system is operating at a point in miss / false-alarm space where the scoring function is much more sensitive to impurities in cluster statistics than the detection system is .
+next , in fig . ( 9 ) we show od-optimal performance of our tracking system as a function of the dynamic weight a , the cluster-dependent component of our document-document sim ilarity function .
+this parameter , which produced a dependable gain in detection performance in tdt-2 and tdt-3 , has a much more ambiguous effect in tracking .
+nevertheless , inspection of the det curves ( fig . ( 10 ) ) of the system with a = 4 and a = 0 shows a significant gain in performance at very low p.i , , .
+this gain occurs at too low of p.i , , to affect our system in the cost-metric-optimal part of the det curve , but may nevertheless contribute some stability .
+we also vary the weight that is assigned to the seed document for the topic , i.e. that is we can treat it as 5 or 10 identical documents rather than just one .
+increasing this weight produces a significant performance gain on both development-test sets .
+this parameter interacts strongly with the merging threshold ( no merging ) then seed weight is irrelevant , whereas if seed weight becomes infinite , then 0 is irrelevant .
+we also incorporated named-entity type features into our tracking system .
+we built a classifier that discovers eleven different types of named entity in the text , and labels them as well as their extents .
+the classifier was maximum-entropy model with features taken from a five word local context window .
+the features include words , morphological root words , and part-of-speech tags .
+we built a tracking system based entirely on constituent text of named entities .
+its performance , illustrated in the upper right curve of fig . ( 12 ) was very poor .
+however , when the named-entity tracker was combined with our full-text tracker , the system performance significantly improved , as shown in the figure .
+finally , we investigate a different approach to the application of unsupervised clustering to tracking in the case when there are four seed documents , rather than just one .
+here we contrast three different approaches to forming the initial cluster ( s ) based on the four seed documents .
+in one approach , all four seed documents are placed in the same cluster .
+in another approach , the four seed documents are placed in four different clusters .
+subsequent documents are compared against all four clusters , and the confidence of an on-topic decision is the maximum of the four document- cluster scores .
+finally , we allow the four seed documents to form a variable number of initial clusters , according to our document-document scoring formula .
+an equivalent view is that we perform unsupervised clustering on the four seed documents using our previous year 's detection system .
+we see in fig . ( 13 ) that placing all of the documents in one cluster is significantly better than placing them in separate clusters , but forming a variable number of clusters is slightly better still .
+we also note the considerable improvement in performance ( reduction in tracking cost ) obtained by using four seed documents instead of one .
+conclusion .
+we have described the construction of a tracking system for darpa 's topic detection and tracking effort .
+the system uses many of the underlying algorithms of a previous topic detection system .
+we also show performance improvements in tracking resulting from a range of novel features , including named entities .
+the transformation of our detection system into a tracking system exposed subtle differences between the two tasks .
+the difference between hard decisions and soft decisions has important effects not only on the resulting clustering of the documents , but also on the type of behavior that can be investigated by these systems , that is which operating points in miss / false-alarm space can be experimentally probed .
+we further observe that merging documents into a cluster to update its centroid must be approached with more caution in tracking than in detection .
+even though tracking probes a different regime of the miss / false alarm space than detection , the transfer of the document scoring formula is still relatively successful .
+by viewing the resulting system 's performance in terms of recall and number of false alarms per topic , binned by the rate at which on-topic documents appear , we observe that current topic tracking technology is likely good enough for some applications .

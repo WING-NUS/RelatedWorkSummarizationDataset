@@ -1,0 +1,21 @@
+(claim)#automatic image annotation is a popular task in computer vision .
+0.1#(vailaya et al., 2001);(smeulders et al., 2000)#the earliest approaches are closely related to image classification $1 $2 , where pictures are assigned a set of simple descriptions such as indoor , outdoor , landscape , people , animal . a binary classifier is trained for each concept , sometimes in a " one vs all " setting .
+(claim)#the focus here is mostly on image processing and good feature selection ( e.g. , colour , texture , contours ) rather than the annotation task itself .
+(claim)#recently , much progress has been made on the image annotation task thanks to three factors .
+(claim)#the availability of the corel database , the use of unsupervised methods and new insights from the related fields of natural language processing and information retrieval .
+0.2#(mori et al., 1999)#the co-occurrence model $1 collects co-occurrence counts between words and image features and uses them to predict annotations for new images .
+0.2#(duygulu et al. 2002)#$1 improve on this model by treating image regions and keywords as a bi-text and using the em algorithm to construct an image region-word dictionary .
+(claim)#another way of capturing co-occurrence information is to introduce latent variables linking image features with words .
+(claim)#standard latent semantic analysis ( lsa ) and its probabilistic variant ( plsa ) have been applied to this task $1 .
+(claim)#$1 propose a hierarchical latent model in order to account for the fact that some words are more general than others .
+0.2#(blei and jordan, 2003)#more sophisticated graphical models $1 have also been employed including gaussian mixture models ( gmm ) and latent dirichlet allocation ( lda ) .
+0.2#(lavrenko et al., 2003);(feng et al., 2004)#finally , relevance models originally developed for information retrieval , have been successfully applied to image annotation $1 $2 .
+(claim)#a key idea behind these models is to find the images most similar to the test image and then use their shared keywords for annotation .
+(claim)#our approach differs from previous work in two important respects .
+(claim)#firstly , our ultimate goal is to develop an image annotation model that can cope with real-world images and noisy data sets .
+(claim)#to this end we are faced with the challenge of building an appropriate database for testing and training purposes .
+(claim)#our solution is to leverage the vast resource of images available on the web but also the fact that many of these images are implicitly annotated .
+(claim)#for example , news articles often contain images whose captions can be thought of as annotations .
+(claim)#secondly , we allow our image annotation model access to knowledge sources other than the image and its keywords .
+(claim)#this is relatively straightforward in our case ; an image and its accompanying document have shared content , and we can use the latter to glean information about the former .
+(claim)#but we hope to illustrate the more general point that auxiliary linguistic information can indeed bring performance improvements on the image annotation task .

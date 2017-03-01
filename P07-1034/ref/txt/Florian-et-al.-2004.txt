@@ -1,0 +1,175 @@
+a statistical model for multilingual entity detection and tracking .
+abstract .
+entity detection and tracking is a relatively new addition to the repertoire of natural language tasks .
+in this paper , we present a statistical language-independent framework for identifying and tracking named , nominal and pronominal references to entities within unrestricted text documents , and chaining them into clusters corresponding to each logical entity present in the text .
+both the mention detection model and the novel entity tracking model can use arbitrary feature types , being able to integrate a wide array of lexical , syntactic and semantic features .
+in addition , the mention detection model crucially uses feature streams derived from different named entity classifiers .
+the proposed framework is evaluated with several experiments run in arabic , chinese and english texts ; a system based on the approach described here and submitted to the latest automatic content extraction ( ace ) evaluation achieved top-tier results in all three evaluation languages .
+introduction .
+detecting entities , whether named , nominal or pronominal , in unrestricted text is a crucial step toward understanding the text , as it identifies the important conceptual objects in a discourse .
+it is also a necessary step for identifying the relations present in the text and populating a knowledge database .
+this task has applications in information extraction and summarization , information retrieval ( one can get all hits for washington / person and not the ones for washington / state or washington / city ) , data mining and question answering .
+the entity detection and tracking task ( edt henceforth ) has close ties to the named entity recognition ( ner ) and coreference resolution tasks , which have been the focus of attention of much investigation in the recent past ( bikel et al. , 1997 ; borthwick et al. , 1998 ; mikheev et al. , 1999 ; miller et al. , 1998 ; aberdeen et al. , 1995 ; ng and cardie , 2002 ; soon et al. , 2001 ) , and have been at the center of several evaluations : muc-6 , muc-7 , conll02 and conll03 shared tasks .
+usually , in computational linguistic literature , a named entity represents an instance of a name , either a location , a person , an organization , and the ner task consists of identifying each individual occurrence of such an entity .
+we will instead adopt the nomenclature of the automatic content extraction program ' ( nist , 2003a ) : we will call the instances of textual references to objects or abstractions mentions , which can be either named ( e.g.
+john mayor ) , nominal ( e.g. the president ) or pronominal ( e.g. she , it ) .
+an entity consists of all the mentions ( of any level ) which refer to one conceptual entity .
+for instance , in the sentence president john smith said he has no comments. there are two mentions : john smith and he ( in the order of appearance , their levels are named and pronominal ) , but one entity , formed by the set { john smith , he } .
+in this paper , we present a general statistical framework for entity detection and tracking in unrestricted text .
+the framework is not language specific , as proved by applying it to three radically different languages : arabic , chinese and english .
+we separate the edt task into a mention detection part the task of finding all mentions in the text and an entity tracking part the task of combining the detected mentions into groups of references to the same object .
+the work presented here is motivated by the ace evaluation framework , which has the more general goal of building multilingual systems which detect not only entities , but also relations among them and , more recently , events in which they participate .
+the edt task is arguably harder than traditional named entity recognition , because of the additional complexity involved in extracting non-named mentions ( nominals and pronouns ) and the requirement of grouping mentions into entities .
+we present and evaluate empirically statistical models for both mention detection and entity tracking problems .
+for mention detection we use approaches based on maximum entropy ( maxent henceforth ) ( berger et al. , 1996 ) and robust risk minimization ( rrm henceforth ) ( zhang et al. , 2002 ) .
+the task is transformed into a sequence classification problem .
+we investigate a wide array of lexical , syntactic and semantic features to perform the mention detection and classification task including , for all three languages , features based on pre-existing statistical semantic taggers , even though these taggers have been trained on different corpora and use different semantic categories .
+moreover , the presented approach implicitly learns the correlation between these different semantic types and the desired output types .
+we propose a novel maxent-based model for predicting whether a mention should or should not be linked to an existing entity , and show how this model can be used to build entity chains .
+the effectiveness of the approach is tested by applying it on data from the above mentioned languages arabic , chinese , english .
+the framework presented in this paper is language- universal the classification method does not make any assumption about the type of input .
+most of the feature types are shared across the languages , but there are a small number of useful feature types which are language- specific , especially for the mention detection task .
+the paper is organized as follows : section 2 describes the algorithms and feature types used for mention detection .
+section 3 presents our approach to entity tracking .
+section 4 describes the experimental framework and the systems results for arabic , chinese and english on the data from the latest ace evaluation ( september 2003 ) , an investigation of the effect of using different feature types , as well as a discussion of the results .
+mention detection .
+the mention detection system identifies the named , nominal and pronominal mentions introduced in the previous section .
+similarly to classical nlp tasks such as base noun phrase chunking ( ramshaw and marcus , 1994 ) , text chunking ( ramshaw and marcus , 1995 ) or named entity recognition ( tjong kim sang , 2002 ) , we formulate the mention detection problem as a classification problem , by assigning to each token in the text a label , indicating whether it starts a specific mention , is inside a specific mention , or is outside any mentions .
+the statistical classifiers .
+good performance in many natural language processing tasks , such as part-of-speech tagging , shallow parsing and named entity recognition , has been shown to depend heavily on integrating many sources of information ( zhang et al. , 2002 ; jing et al. , 2003 ; ittycheriah et al. , 2003 ) .
+given the stated focus of integrating many feature types , we are interested in algorithms that can easily integrate and make effective use of diverse input types .
+we selected two methods which satisfy these criteria : a linear classifier the robust risk minimization classifier and a log-linear classifier the maximum entropy classifier .
+both methods can integrate arbitrary types of information and make a classification decision by aggregating all information available for a given classification .
+before formally describing the methods2 , we introduce some notations : let be the set of predicted classes , be the example space and be the feature space .
+each example has associated a vector of binary features .
+we also assume the existence of a training data set and a test set .
+the rrm algorithm ( zhang et al. , 2002 ) constructs linear classifiers ( one for each predicted class ) , each predicting whether the current example belongs to the class or not .
+every such classifier has an associated feature weight vector , , which is learned during the training phase so as to minimize the classification error rate3 .
+at test time , for each example , the model computes a score and labels the example with either the class corresponding to the classifier with the highest score , if above 0 , or outside , otherwise .
+the full decoding algorithm is presented in algorithm 1 .
+this algorithm can also be used for sequence classification ( williams and peng , 1990 ) , by converting the activation scores into probabilities ( through the soft-max function , for instance ) and using the standard dynamic programing search algorithm ( also known as viterbi search ) .
+algorithm 1 the rrm decoding algorithm .
+somewhat similarly , the maxent algorithm has an associated set of weights , which are estimated during the training phase so as to maximize the likelihood of the data ( berger et al. , 1996 ) .
+given these weights , the model computes the probability distribution of a particular example as follows : after computing the class probability distribution , the assigned class is the most probable one a posteriori .
+the sketch of applying maxent to the test data is presented in algorithm 2 .
+similarly to the rrm model , we use the model to perform sequence classification , through dynamic programing .
+within this framework , any type of feature can be used , enabling the system designer to experiment with interesting feature types , rather than worry about specific feature interactions .
+in contrast , in a rule based system , the system designer would have to consider how , for instance , a wordnet ( miller , 1995 ) derived information for a particular example interacts with a part-of-speech-based information and chunking information .
+that is not to say , ultimately , that rule-based systems are in some way inferior to statistical models they are built using valuable insight which is hard to obtain from a statistical-modelonly approach .
+instead , we are just suggesting that the output of such a system can be easily integrated into the previously described framework , as one of the input features , most likely leading to improved performance .
+the combination hypothesis .
+in addition to using rich lexical , syntactic , and semantic features , we leveraged several pre-existing mention taggers .
+these pre-existing taggers were trained on datasets outside of ace training data and they identify types of mentions different from the ace types of mentions .
+for instance , a pre-existing tagger may identify dates or occupation mentions ( not used in ace ) , among other types .
+it could also have a class called person , but the annotation guideline of what represents a person may not match exactly to the notion of the person type in ace .
+our hypothesis the combination hypothesis is that combining pre-existing classifiers from diverse sources will boost performance by injecting complementary information into the mention detection models .
+hence , we used the output of these pre-existing taggers and used them as additional feature streams for the mention detection models .
+this approach allows the system to automatically correlate the ( different ) mention types to the desired output .
+language-independent features .
+even if the three languages ( arabic , chinese and english ) are radically different syntacticly , semantically , and even graphically , all models use a few universal types of features , while others are language-specific .
+let us note again that , while some types of features only apply to one language , the models have the same basic structure , treating the problem as an abstract classification task .
+the following is a list of the features that are shared across languages ( is considered by default the current token ) : tokens4 in a window of : ; the part-of-speech associated with token dictionary information ( whether the current token is part of a large collection of dictionaries - one boolean value for each dictionary ) the output of named mention detectors trained on different style of entities. the previously assigned classification tags5 .
+the following sections describe in detail the language- specific features , and table 1 summarizes the feature types used in building the models in the three languages .
+finally , the experiments in section 4 detail the performance obtained by using selected combinations of feature subsets .
+arabic mention detection .
+arabic , a highly inflected language , has linguistic peculiarities that affect any mention detection system .
+an important aspect that needs to be addressed is segmentation : which style should be used , how to deal with the inherent segmentation ambiguity of mention names , especially persons and locations , and , finally , how to handle the attachment of pronouns to stems .
+arabic blank-delimited words are composed of zero or more prefixes , followed by a stem and zero or more suffixes .
+each prefix , stem or suffix will be called a token in this discussion ; any contiguous sequence of tokens can represent a mention .
+pragmatically , we found segmenting arabic text to be a necessary and beneficial process due mainly to two facts : some prefixes / suffixes can receive a different mention type than the stem they are glued to ( for instance , in the case of pronouns ) ; keeping words together results in significant data sparseness , because of the inflected nature of the language .
+given these observations , we decided to condition the output of the system on the segmented data : the text is first segmented into tokens , and the classification is then performed on tokens .
+the segmentation model is similar to the one presented by lee et al. ( 2003 ) , and obtains an accuracy of about 98 % .
+in addition , special attention is paid to prefixes and suffixes : in order to reduce the number of spurious tokens we re-merge the prefixes or suffixes to their corresponding stem if they are not essential to the classification process .
+for this purpose , we collect the following statistics for each prefix / suffix from the ace training data : the frequency of occurring as a mention by itself ( ) and the frequency of occurring as a part of mention ( ) .
+if the ratio is below a threshold ( estimated on the development data ) , is re-merged with its corresponding stem .
+only few prefixes and suffixes were merged using these criteria .
+this is appropriate for the ace task , since a large percentage of prefixes and suffixes are annotated as pronoun mentions 6 .
+in addition to the language-general features described in section 2.3 , the arabic system implements a feature specifying for each token its original stem .
+for this system , the gazetteer features are computed on words , not on tokens ; the gazetteers consist of 12000 person names and 3000 location and country names , all of which have been collected by few man-hours web browsing .
+the system also uses features based on the output of three additional mention detection classifiers : a rrm model predicting 48 mention categories , a rrm model and a hmm model predicting 32 mention categories .
+chinese mention detection .
+in chinese text , unlike in indo-european languages , words neither are white-space delimited nor do they have capitalization markers .
+instead of a word-based model , we build a character-based one , since word segmentation errors can lead to irrecoverable mention detection errors ; jing et al. ( 2003 ) also observe that character-based models are better performing than word-based ones for chinese named entity recognition .
+although the model is character-based , segmentation information is still useful and is integrated as an additional feature stream .
+some more information about additional resources used in building the system : gazetteers include dictionaries of 10k person names , 8k location and country names , and 3k organization names , compiled from annotated corpora .
+there are four additional classifiers whose output is used as features : a rrm model which outputs 32 named categories , a rrm model identifying 49 categories , a rrm model identifying 45 mention categories , and a rrm model that classifies whether a character is an english character , a numeral or other .
+english mention detection .
+the english mention detection model is similar to the system described in ( ittycheriah et al. , 2003 ) 7.the following is a list of additional features ( again , is the current token ) : a capitalization / word-type flag ( similar to the ones described by bikel et al. ( 1997 ) ) ; gazetteer information : a handful of location ( 55k entries ) person names ( 30k ) and organizations ( 5k ) dictionaries ; a combination of gazetteer , pos and capitalization information , obtained as follows : if the word is a closed-class word select its class , else if its in a dictionary select that class , otherwise back-off to its capitalization information ; we call this feature gap ; wordnet information ( the synsets and hypernyms of the two most frequent senses of the word ) ; the outputs of three systems ( hmm , rrm and maxent ) trained on a 32-category named entity data , the output of an rrm system trained on the muc-6 data , and the output of rrm model identifying 49 categories .
+entity tracking .
+this section introduces a novel statistical approach to entity tracking .
+we choose to model the process of forming entities from mentions , one step at a time .
+the process works from left to right : it starts with an initial entity consisting of the first mention of a document , and the next mention is processed by either linking it with one of the existing entities , or starting a new entity .
+the process could have as output any one of the possible partitions of the mention set.8 two separate models are used to score the linking and starting actions , respectively .
+tracking algorithm .
+at training time , the action is known to us , and at testing time , both hypotheses will be kept during search .
+notice that a sequence of such actions corresponds uniquely to an entity outcome ( or a partition of mentions ) .
+therefore , the problem of coreference resolution is equivalent to ranking the action sequences .
+this number is very large even for a document with a moderate number of mentions : about trillion for a 20-mention document .
+for practical reasons , the search space has to be reduced to a reasonably small set of hypotheses .
+that is , the starting probability is just one minus the maximum linking probability .
+training directly the model is difficult since it depends on all partial entities .
+as a first attempt of modeling the process from mentions to entities , we make the following modeling assumptions : entity tracking features .
+another category of features is created by taking conjunction of the atomic features .
+for example , the model can capture how far a pronoun mention is from a named mention when the distance feature is used in conjunction with mention information feature .
+as it is the case with with mention detection approach presented in section 2 , most features used here are language-independent and are instantiated from the training data , while some are language-specific , but mostly because the resources were not available for the specific language .
+for example , syntactic features are not used in the arabic system due to the lack of an arabic parser .
+simple as it seems , the mention-pair model has been shown to work well ( soon et al. , 2001 ; ng and cardie , 2002 ) .
+as will be shown in section 4 , the relatively knowledge-lean feature sets work fairly well in our tasks .
+although we also use a mention-pair model , our tracking algorithm differs from soon et al. ( 2001 ) , ng and cardie ( 2002 ) in several aspects .
+first , the mention-pair model is used as an approximation to the entity-mention model ( 3 ) , which itself is an approximation of .
+second , instead of doing a pick-first ( soon et al. , 2001 ) or best-first ( ng and cardie , 2002 ) selection , the mention-pair linking model is used to compute a starting probability .
+the starting probability enables us to score the action of creating a new entity without thresholding the link probabilities .
+third , this probabilistic framework allows us to search the space of all possible entities , while soon et al. ( 2001 ) , ng and cardie ( 2002 ) take the best local hypothesis .
+experimental results .
+the data used in all experiments presented in this section is provided by the linguistic data consortium and is distributed by nist to all participants in the ace evaluation .
+in the comparative experiments for the mention detection and entity tracking tasks , the training data for the english system consists of the training data from both the 2002 evaluation and the 2003 evaluation , while for arabic and chinese , new additions to the ace task in 2003 , consists of 80 % of the provided training data .
+table 2 shows the sizes of the training , development and evaluation test data for the 3 languages .
+the data is annotated with five types of entities : person , organization , geo-political entity , location , facility ; each mention can be either named , nominal or pronominal , and can be either generic ( not referring to a clearly described entity ) or specific .
+the models for all three languages are built as joint models , simultaneously predicting the type , level and genericity of a mention basically each mention is labeled with a 3-pronged tag .
+to transform the problem into a classification task , we use the iob2 classification scheme ( tjong kim sang and veenstra , 1999 ) .
+the ace value .
+a gauge of the performance of an edt system is the ace value , a measure developed especially for this purpose .
+it estimates the normalized weighted cost of detection of specific-only entities in terms of misses , false alarms and substitution errors ( entities marked generic are excluded from computation ) : any undetected entity is considered a miss , system-output entities with no corresponding reference entities are considered false alarms , and entities whose type was mis-assigned are substitution errors .
+the ace value computes a weighted cost by applying different weights to each error , depending on the error type and target entity type ( e.g.
+person-names are weighted a lot more heavily than facility-pronouns ) ( nist , 2003a ) .
+the cumulative cost is normalized by the cost of a ( hypothetical ) system that outputs no entities at all which would receive an ace value of .
+finally , the normalized cost is subtracted from 100.0 to obtain the ace value ; a value of 100 % corresponds to perfect entity detection .
+a system can obtain a negative score if it proposed too many incorrect entities .
+in addition , for the mention detection task , we will also present results by using the more established f-measure , computed as the harmonic mean of precision and recall this measure gives equal importance to all entities , regardless of their type , level or genericity .
+edt results .
+as described in section 2.6 , the mention detection systems make use of a large set of features .
+to better assert the contribution of the different types of features to the final performance , we have grouped them into 4 categories : surface features : lexical features that can be derived from investigating the words : words , morphs , prefix / suffix , capitalization / word-form flags .
+features derived from processing the data with nlp techniques : pos tags , text chunks , word segmentation , etc .
+gazetteer / dictionary features features obtained by running other named-entity classifiers ( with different tag sets ) : hmm , maxent and rrm output on the 32-category , 49-category and muc data sets.9 table 3 presents the mention detection comparative results , f-measure and ace value , on arabic and chinese data .
+the arabic and chinese models were built using the rrm model .
+there are some interesting observations : first , the f-measure performance does not correlate well with an improvement in ace value small improvements in f-measure sometimes are paired with large relative improvements in ace value , fact due to the different weighting of entity types .
+second , the largest single improvement in ace value is obtained by adding dictionary features , at least in this order of adding features .
+for english , we investigated in more detail the way features interact .
+figure 1 presents a hierarchical direct comparison between the performance of the rrm model and the maxent model .
+we can observe that the rrm model makes better use of gazetteers , and manages to close the initial performance gap to the maxent model .
+table 4 presents the results obtained by running the entity tracking algorithm on true mentions .
+it is interesting to compare the entity tracking results with inter-annotator agreements .
+ldc reported ( nist , 2003b ) that the inter- annotator agreement ( computed as ace-values ) between annotators are % , % and % for arabic , chinese and english , respectively .
+the system performance is very close to human performance on this task ; this small difference in performance highlights the difficulty of the entity tracking task .
+finally , table 5 presents the results obtained by running both mention detection followed by entity tracking on the ace03 evaluation data .
+our submission in the evaluation performed well relative to the other participating systems ( contractual obligations prevent us from elaborating further ) .
+discussion .
+the same basic model was used to perform edt in three languages .
+our approach is language-independent , in that the fundamental classification algorithm can be applied to every language and the only changes involve finding appropriate and available feature streams for each language .
+the entity tracking system uses even fewer language- specific features than the mention detection systems .
+one limitation apparent in our mention detection system is that it does not model explicitly the genericity of a mention .
+deciding whether a mention refers to a specific entity or a generic entity requires knowledge of substantially wider context than the window of 5 tokens we currently use in our mention detection systems .
+one way we plan to improve performance for such cases is to separate the task into two parts : one in which the mention type and level are predicted , followed by a genericitypredicting model which uses long-range features , such as sentence or document level features .
+our entity tracking system currently cannot resolve the coreference of pronouns very accurately .
+although this is weighted lightly in ace evaluation , good anaphora resolution can be very useful in many applications and we will continue exploring this task in the future .
+the arabic and chinese edt tasks were included in the ace evaluation for the first time in 2003 .
+unlike the english case , the systems had access to only a small amount of training data ( 60k words for arabic and 90k characters for chinese , in contrast with 340k words for english ) , which made it difficult to train statistical models with large number of feature types .
+future ace evaluations will shed light on whether this lower performance , shown in table 3 , is due to lack of training data or to specific language-specific ambiguity .
+the final observation we want to make is that the systems were not directly optimized for the ace value , and there is no obvious way to do so .
+as table 3 shows , the f-measure and ace value do not correlate well : systems trained to optimize the former might not end up optimizing the latter .
+it is an open research question whether a system can be directly optimized for the ace value .
+conclusion .
+this paper presents a language-independent framework for the entity detection and tracking task , which is shown to obtain top-tier performance on three radically different languages : arabic , chinese and english .
+the task is separated into two sub-tasks : a mention detection part , which is modeled through a named entity-like approach , and an entity tracking part , for a which a novel modeling approach is proposed .
+this statistical framework is general and can incorporate heterogeneous feature types the models were built using a wide array of lexical , syntactic and semantic features extracted from texts , and further enhanced by adding the output of pre-existing semantic classifiers as feature streams ; additional feature types help improve the performance significantly , especially in terms of ace value .
+the experimental results show that the systems perform remarkably well , for both well investigated languages , such as english , and for the relatively new additions arabic and chinese .

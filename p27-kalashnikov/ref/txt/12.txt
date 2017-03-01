@@ -1,0 +1,108 @@
+psnus : web people name disambiguation by simple clustering with rich features .
+abstract .
+we describe about the system description of the psnus team for the semeval-2007 web people search task .
+the system is based on the clustering of the web pages by using a variety of features extracted and generated from the data provided .
+this system achieves fa = 0.5 = 0.75 and fa = 0.2 = 0.78 for the final test data set of the task .
+introduction .
+we consider the problem of disambiguating person names in a web searching scenario as described by the web people search task in semeval 2007 ( artiles et al. , 2007 ) .
+here , the system receives as input a set of web pages retrieved from a search engine using a given person name as a query .
+the goal is to determine how many different people are represented for that name in the input web pages , and correctly assign each namesake to its corresponding subset of web pages .
+there are many challenges towards an effective solution .
+we are to correctly estimate the number of namesakes for a given person name and group documents referring to the same individual .
+moreover , the information sources to be processed are unstructured web pages and there is no certain way of correctly establishing a relation between any two web pages belonging to the same or different individuals .
+we have taken several approaches to analyze different sources of information provided with the input data , and also compared strategies to combine these individual features together .
+the configuration that achieved the best performance ( which were submitted for our run ) used a single named entity feature as input to clustering .
+in the remainder of this paper , we first describe our system in terms of the clustering approach used and alternative features investigated .
+we then analyze the results on the training set before concluding the paper .
+clustering algorithm .
+clustering is the key part for such a task .
+we have chosen to view the problem as an unsupervised hard clustering problem .
+first , we view the problem as unsupervised , using the training data for parameter validation , to optimally tune the parameters in the clustering algorithm .
+secondly , we observed that the majority of the input pages reference a single individual , although there are a few that reference multiple individuals sharing the same name .
+hence , we view the problem as hard clustering , assigning input pages to exactly one individual , so that the produced clusters do not overlap .
+hard clustering algorithms can be classified as either partitive or hierarchical .
+agglomerative hierarchical clustering generates a series of nested clusters by merging simple clusters into larger ones , while partitive methods try to find a pre-specified number of clusters that best capture the data .
+as the correct number of clusters is not given a priori , we chose a method from the second group .
+we use the hierarchical agglomerative clustering ( hac ) algorithm ( jain et al. , 1999 ) for all experiments reported in this paper .
+hac views each input web page as a separate cluster and iteratively combines the most similar pair of clusters to form a new cluster that replaces the pair .
+features .
+as input to the clustering , we consider several different representations of the input documents .
+each representation views the input web pages as a vector of features .
+hac then computes the cosine similarity between the feature vectors for each pair of clusters to determine which clusters to merge .
+we now review the inventory of features studied in our work .
+tokens ( t ) .
+identical to the task baseline by ( artiles et al. , 2005 ) , we stemmed the words in the web pages using the porter stemmer ( porter , 1980 ) , to conflate semantically similar english words with the stem .
+each stemmed word is considered to be a feature and weighted by its term frequency x inverse document frequency ( tf x idf ) .
+named entities ( ne ) .
+we extract the named entities from the web pages using the stanford named entity recognizer ( finkel et al. , 2005 ) .
+this tagger identifies and labels names of places , organizations and people in the input .
+each named entity token is treated as a separate feature , again weighted by tf x idf .
+we do not perform stemming for ne features .
+we also consider a more target-centric form of the ne feature , motivated by the observation that person names can be differentiated using their middle names or titles .
+we first discard all named entities that do not contain any token of the search target , and then discard any token from the remaining named entities that appears in the search target .
+the remaining tokens are then used as features , and weighted by their tf x idf .
+for example , for the search target edward fox , the features generated from the name edward charles morrice fox are charles and morrice .
+we call this variation ne targeted ( ne-t ) .
+hostnames and domains ( h and d ) .
+if two web pages have links pointing to the exact same url , then there is a good chance that these two web pages refer the same person .
+however , we find such exact matches of urls are rare , so we relax the condition and consider their host- names or domain names instead .
+for example , the url http : / / portal.acm.org / guide.cfm has host- name portal.acm.org and domain name acm.org.
+as such , for each web page , we can extract the list of hostnames from the links in this page .
+we observe that some host / domain names serve as more discriminative evidence than others ( e.g. , a link to a university homepage is more telling than a link to the list of publications page of google scholar when disambiguating computer science scholars ) .
+to model this , we weight each host / domain name by its idf .
+note that we do not use tf as web pages often contain multiple internal links in the form of menus or navigation bars .
+using idf and cosine similarity has been proven effective for disambiguating bibliographic citation records sharing a common author name ( tan et al. , 2006 ) .
+we also considered a variant where we include the url of the input web page itself as a link .
+we tried this variation only with hostnames , calling this host with self url ( h-s ) .
+we used the meurlin system ( kan and nguyen thi , 2005 ) to segment the url of each web page into tokens as well as to generate additional features .
+these features include ( a ) segmentation of tokens such as www.allposters.com to www , all , posters and com ; ( b ) the parts in the url where the tokens occur , e.g. , protocol , domain name , and directory paths ; ( c ) length of the tokens ; ( d ) orthographic features ; ( e ) sequential n-grams ; and ( f ) sequential bigrams .
+as each of these features can be seen as a token , the output of the meurlin segmenter for a web page can be seen as a document , and hence it is possible to compute the tf x idf cosine similarity between two such documents .
+feature combination .
+the features described above represent largely orthogonal sources of information in the input : input content , hyperlinks , and source location .
+we hypothesize that by combining these different features we can obtain better performance .
+to combine these features for use with hac , we consider simply concatenating individual feature vectors together to create a single feature vector , and compute cosine similarity .
+we used this method in two configurations : namely , ( t + ne + h-s ) , ( t + d + ne + ne-t + u ) .
+we also tried using the maximum and average component-wise similarities of individual features . ( max ( ne , h-s ) ) uses the maximum value of the named entity and host with self features .
+for the ( avg ( t , h-s ) ) and ( avg ( t , d , ne , ne-t , u ) ) runs , we compute the average similarity over the two and five sets of individual features , respectively .
+results .
+we present the clustering performances of the various methods in our system based on the different features that we extracted .
+each experiment uses hac with single linkage clustering .
+since the number of clusters is not known , when to terminate the agglomeration process is a crucial point and significantly affects the quality of the clustering result .
+we empirically determine the best similarity thresholds to be 0.1 and 0.2 for all the experiments on the three different data sets provided .
+we found that larger values for these data sets do not allow the hac algorithm to create enough clustering hierarchy by causing it to terminate early , and therefore result in many small clusters increasing purity but dramatically suffering from inverse purity performance .
+table 1 shows the results of our experiments on the training data sets ( ecdl , wikipedia and census ) .
+two different evaluation measures are reported as described by the task : fa = 0.5 is a harmonic mean of purity and inverse purity of the clustering result , and fa = 0.2 is a version of f that gives more importance to inverse purity ( artiles et al. , 2007 ) .
+among the individual features , tokens and named entity features consistently show close to best performance for all training data sets .
+in most cases , ne is better than tokens because some web pages contain lots of irrelevant text for this task ( e.g. , headers and footers , menus etc ) .
+also , we found that the nes have far more discriminative power than most other tokens in determining similarity between web pages .
+the ne variation , ne targeted , performs worse among the token based methods .
+although ne targeted aims for highly precise disambiguation , it seems that it throws away too much information so that inverse purity is very much reduced .
+the other nes , such as locations and organizations are also very helpful for this task .
+for example , the organization may indicate the affiliation of a particular name .
+this explains the superiority of ne over ne targeted for all three data sets .
+among the link based features , domain gives better performance over host as it leads to better inverse purity .
+the reason is that there are usually many pages on different hosts from a single domain for a given name ( e.g. , the web pages belonging to a researcher from university domain ) .
+this greatly helps in resolving the name while results in a slight drop in purity .
+using a web pages url itself in the features host + self and domain + self shows a larger increase in inverse purity at a smaller decrease in purity , hence these have improved f-measure in comparison to domain and host .
+not surprisingly , these link based features perform very well for the ecdl data set , compared to the other two .
+a significant portion of the people in the ecdl data set are most likely present-day computer scientists , likely having extensive an web presence , which makes the task much easier .
+although the other two data sets may have popular people with many web pages , their web presence are usually created by others and often scatter across many domains with little hyperlinkage between them .
+this explains why our link based methods are not very effective for such data sets .
+our final individual feature url performs worst among all .
+although highly precise , its resulting inverse purity is poor .
+while the features generated by meurlin do improve the performance over pure host name and domain on the page urls , its incorporation in a richer feature set does not lead to better results , as the other features which have richer information to process .
+each of the individual features has different degree of discriminative power in many different cases .
+by combining them , we expect to get better performance than individually .
+however , we do not obtain significant improvement in any of the data sets .
+furthermore , in the census data set , the combined features fail to outperform the individual ne and tokens features .
+the relatively poor performance of the remaining features also degrades the performance of tokens and ne when combined .
+considering the performances using the harmonic mean , we do not see any clear winner in all of three training data sets .
+in addition , the method showing the best performance does not result in a win with a large margin in each data set .
+relatively complicated methods do not always perform better over simpler , single featured based methods on all training data sets .
+considering the results and occams razor ( thorburn , 1915 ) , we conclude that a simple method should most likely work relatively well in many other different settings as well .
+therefore , we selected the method based on the individual ne feature with the similarity threshold value of 0.2 for the final test submission run .
+conclusion .
+we described our psnus system that disambiguates people mentions in web pages returned by a web search scenario , as defined in the inaugural web people search task .
+as such , we mainly focus on extracting various kinds of information from web pages and utilizing them in the similarity computation of the clustering algorithm .
+the experimental results show that a simple hierarchical agglomerative clustering approach using a single named entity feature seems promising as a robust solution for the various datasets .
+

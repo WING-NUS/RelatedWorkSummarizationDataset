@@ -1,0 +1,327 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 11 (filtered)">
+<title>Dataset for Related Work Summarization Task (RWSData)</title>
+
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+p.MsoCaption, li.MsoCaption, div.MsoCaption
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+
+</head>
+
+<body lang=EN-US link=blue vlink=purple>
+
+<div class=Section1>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:20.0pt'>Data</span></b><span style='font-size:20.0pt'>set for <b>R</b>elated
+<b>W</b>ork <b>S</b>ummarization Task </span></p>
+
+<p class=MsoNormal align=center style='text-align:center'><span
+style='font-size:20.0pt'>(<b>RWSData</b>)</span></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt'>Introduction</span></b></p>
+
+<p class=MsoNormal style='text-align:justify;text-autospace:none'><span
+style='font-size:13.0pt'>In scientific research, a scholar needs to show an
+understanding of the context of his problem and relate his work to prior
+community knowledge. A related work section is often the vehicle for this
+purpose; it contextualizes the scholar’s contribution and helps the reader
+understand the critical aspects of the previous works that the current work  addresses.
+Creating such a related work summary requires the author to understand the nuances
+of his own work, and to manipulate the contextual research to support the  advantages
+of his method.</span></p>
+
+<p class=MsoNormal style='text-align:justify;text-autospace:none'><span
+style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify;text-autospace:none'><span
+style='font-size:13.0pt'>We now envision an NLP application that assists the
+scholar in creating his related work summary. We propose <b>related work
+summarization task</b> as a challenge to the automatic summarization community.
+Given  multiple articles (e.g. conference or journal papers) as input, and a
+set of keywords that describe the topics of interest presented in a
+hierarchical fashion, the output goal is to create a related work section that
+finds the relevant related works and contextually describes them in relationship
+to the topics given.</span></p>
+
+<p class=MsoNormal style='text-align:justify;text-autospace:none'><span
+style='font-size:4.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal align=center style='text-align:center;page-break-after:avoid'><img
+width=582 height=319 src="RWSData_files/image002.jpg"></p>
+
+<p class=MsoCaption align=center style='text-align:center'><span
+style='font-size:11.0pt'>Figure </span><span
+style='font-size:11.0pt'>1</span><span style='font-size:11.0pt'>: Overview of
+Related Work Summarization Task</span></p>
+
+<p class=MsoNormal><span style='font-size:11.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>We
+now release our dataset (namely <b>RWSData</b>) used in our initial experiments
+for the task (see our papers in Publications for further details). We are
+welcome to use our dataset for any future research.</span></p>
+
+<p class=MsoNormal><span style='font-size:11.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt'>Dataset</span></b></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>This
+dataset contains a collection of <b>20</b> article sets. Each set has an ID
+name (set as folder name), including:</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-indent:-.25in'><span
+style='font-size:13.0pt'>A.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><b><span style='font-size:13.0pt'>ref (folder)</span></b><span
+style='font-size:13.0pt'>: includes two sub-folders:</span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-indent:
+-.25in'><span style='font-size:13.0pt;font-family:Symbol'><img width=15
+height=15 src="RWSData_files/image001.gif" alt="*"><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-size:13.0pt'>pdf:  original PDF files of
+referenced articles</span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-indent:
+-.25in'><span style='font-size:13.0pt;font-family:Symbol'><img width=15
+height=15 src="RWSData_files/image001.gif" alt="*"><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-size:13.0pt'>txt: text files extracted PDF
+files (pre-processed, cleaned, error-fixed)</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-indent:-.25in'><span
+style='font-size:13.0pt'>B.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b><span style='font-size:13.0pt'>&lt;ID name&gt;.pdf</span></b><span
+style='font-size:13.0pt'>: original PDF file of the article which contains the
+related work section to be extracted.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-indent:-.25in'><span
+style='font-size:13.0pt'>C.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b><span style='font-size:13.0pt'>&lt;ID name&gt;.rws</span></b><span
+style='font-size:13.0pt'>: raw texts of related work section extracted from <b>&lt;ID
+name&gt;.pdf</b></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-indent:-.25in'><span
+style='font-size:13.0pt'>D.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><b><span style='font-size:13.0pt'>&lt;ID name&gt;.rws.seg</span></b><span
+style='font-size:13.0pt'>: sentence by sentence texts from <b>&lt;ID
+name&gt;.rws</b>. Additionally, each sentence is annotated with topical and reference
+information, following the formats:</span></p>
+
+<p class=MsoNormal><span style='font-size:13.0pt;background:#FFCC99'>a)<span
+style='color:red'> &lt;topic index&gt;</span>#<span style='color:fuchsia'>&lt;list
+of names of references separated by semi-colons ‘;’&gt;</span>#<span
+style='color:blue'>&lt;sentence&gt;</span></span></p>
+
+<p class=MsoNormal><span style='font-size:13.0pt;background:#FFCC99'>b)<span
+style='color:red'> claim</span>#<span style='color:blue'>&lt;sentence&gt;</span></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>For
+the format a), each reference in <span style='color:blue'>&lt;sentence&gt; </span>is
+replaced by numbers referring to the order (left-to-right) of that reference in
+<span style='color:fuchsia'>&lt;list of names of references separated by
+semi-colons ‘;’&gt;</span>. The <span style='color:red'>&lt;topic index&gt;</span>
+is mentioned in <b>&lt;ID name&gt;.topic</b>. Further, the format b) is
+simpler, just mentions that current sentence is the authors’ <b>claim</b> about
+their own work related to previous works. Such a sentence may not be used in our
+reported related work summarization process.</span></p>
+
+<p class=MsoNormal align=center style='text-align:center'><span
+style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><i><u><span style='font-size:
+13.0pt'>For example</span></u></i><span style='font-size:13.0pt'>:</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt;
+color:red'>0.1</span><span style='font-size:13.0pt'>#<span style='color:fuchsia'>(barzilay
+and mckeown 2001)</span>#<span style='color:blue'>for example , $1 evaluated
+their paraphrases by asking judges whether paraphrases were &quot;
+approximately conceptually equivalent . &quot;</span></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt;
+color:red'>0</span><span style='font-size:13.0pt'>#<span style='color:fuchsia'>(griffiths
+et al., 2005);(wallach, 2006);(purver et al., 2006);(gruber et al., 2007)</span>#
+<span style='color:blue'>more recent work has attempted to adapt the concepts
+of topic modeling to more sophisticated representations than a bag of words ;
+they use these representations to impose stronger constraints on topic
+assignments $1 $2 $3 $4 .</span></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt;
+color:red'>(claim)</span><span style='font-size:13.0pt'>#<span
+style='color:blue'>from the methodological side , that body of prior work is
+largely driven by local pairwise constraints , while we aim to encode global
+constraints .</span></span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt;
+color:blue'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-align:justify;text-indent:-.25in'><span
+style='font-size:13.0pt'>E.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b><span style='font-size:13.0pt'>&lt;ID name&gt;.topic</span></b><span
+style='font-size:13.0pt'>: the details of the topic hierarchy tree (manually
+annotated). It has a XML-like format with tags: </span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-indent:
+-.25in'><span style='font-size:13.0pt;font-family:Symbol'><img width=15
+height=15 src="RWSData_files/image001.gif" alt="*"><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-size:13.0pt'>&lt;topic index&gt; &lt;/topic
+index&gt;: indicates the position of current topic in topic tree</span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-indent:
+-.25in'><span style='font-size:13.0pt;font-family:Symbol'><img width=15
+height=15 src="RWSData_files/image001.gif" alt="*"><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-size:13.0pt'>&lt;title&gt; &lt;/title&gt;:
+describe the title of current topic</span></p>
+
+<p class=MsoNormal style='margin-left:1.0in;text-align:justify;text-indent:
+-.25in'><span style='font-family:Symbol'><img width=13 height=13
+src="RWSData_files/image001.gif" alt="*"><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-size:13.0pt'>&lt;keywords&gt; &lt;/keywords&gt;:
+a list of key word/phrases describing current topic</span> </p>
+
+<p class=MsoNormal style='text-align:justify'><i><u><span style='font-size:
+11.0pt'><span style='text-decoration:none'>&nbsp;</span></span></u></i></p>
+
+<p class=MsoNormal style='text-align:justify'><i><u><span style='font-size:
+13.0pt'>For example</span></u></i><span style='font-size:13.0pt'>:</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:4.0pt'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=915
+ style='width:686.5pt;border-collapse:collapse;border:none'>
+ <tr style='height:17.35pt'>
+  <td width=454 valign=top style='width:340.3pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;height:17.35pt'>
+  <p class=MsoNormal align=center style='text-align:center'><b><span
+  style='font-size:13.0pt;background:silver'>XML-like format of topic tree</span></b></p>
+  </td>
+  <td width=462 valign=top style='width:346.2pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;height:17.35pt'>
+  <p class=MsoNormal align=center style='text-align:center'><b><span
+  style='font-size:13.0pt;background:silver'>Visual format of topic tree</span></b></p>
+  </td>
+ </tr>
+ <tr style='height:228.8pt'>
+  <td width=454 valign=top style='width:340.3pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;height:228.8pt'>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;topic index&gt; 0
+  &lt;/topic index&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;title&gt; paraphrase
+  evaluation methods &lt;/title&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;keywords&gt;
+  paraphrase;evaluation;quality; &lt;/keywords&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&nbsp;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;topic index&gt; 0.1
+  &lt;/topic index&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;title&gt; subjective
+  manual evaluation &lt;/title&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;keywords&gt; judge;judgment;judgement;assess;human;subjective;manual;
+  &lt;/keywords&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&nbsp;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;topic index&gt; 0.2
+  &lt;/topic index&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;title&gt; improving
+  performance on particular tasks &lt;/title&gt;</span></p>
+  <p class=MsoNormal><span style='font-size:11.0pt'>&lt;keywords&gt; improve;gain;quality;performance;translation;answering;SMT;statistical
+  machine translation;machine translation;QA;question answering;
+  &lt;/keywords&gt;</span></p>
+  </td>
+  <td width=462 valign=top style='width:346.2pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;height:228.8pt'>
+  <p class=MsoNormal align=center style='text-align:center'><img width=650
+  height=187 src="RWSData_files/image003.jpg"></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:11.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>Further,
+a detailed statistics of the RWSData dataset is provided in the <b>DataStatistics.xls</b>
+file (Excel file). Also, an additional log file (<b>Logs.txt</b>) which
+describes the progression of the creation of the RWSData dataset is also
+attached.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>In
+particular, you can download this dataset from the following URL: <a
+href="http://www.comp.nus.edu.sg/~hcdvu/RWSData/RWSData_1.10.zip">Dataset for Related
+Work Summarization (Zip file, ~73MB)</a>. </span></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt'>Publications</span></b></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>Cong
+Duy Vu Hoang (2010). Towards Automated Related Work Summarization. MSc Thesis.
+Department of Computer Science, School of Computing, National University of Singapore.</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span style='font-size:13.0pt'>Cong
+Duy Vu Hoang &amp; Min-Yen Kan (2010). Towards Automated Related Work
+Summarization. In <i>Proceedings of the 23rd International Conference on
+Computational Linguistics (COLING 2010)</i>. Beijing, China.</span></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt'>Group Members</span></b></p>
+
+<p class=MsoNormal><span style='font-size:13.0pt'><a
+href="http://www.comp.nus.edu.sg/~hcdvu">Cong Duy Vu Hoang</a> (NUS) – <a
+href="mailto:hcdvu@comp.nus.edu.sg">hcdvu@comp.nus.edu.sg</a> or <a
+href="mailto:duyvuleo@gmail.com">duyvuleo@gmail.com</a> </span></p>
+
+<p class=MsoNormal><span style='font-size:13.0pt'><a
+href="http://www.comp.nus.edu.sg/~kanmy">Min-Yen Kan</a> (NUS) – <a
+href="mailto:kanmy@comp.nus.edu.sg">kanmy@comp.nus.edu.sg</a> </span></p>
+
+</div>
+
+</body>
+
+</html>

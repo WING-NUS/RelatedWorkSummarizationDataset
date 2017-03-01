@@ -1,0 +1,85 @@
+using the penn treebank to evaluate non-treebank parsers .
+abstract .
+this paper describes a method for conducting evaluations of treebank and non-treebank parsers alike against the english language u. penn treebank ( marcus et al. , 1993 ) using a metric that focuses on the accuracy of relatively non-controversial aspects of parse structure .
+our conjecture is that if we focus on maximal projections of heads ( mph ) , we are likely to find much broader agreement than if we try to evaluate based on order of attachment .
+we hope that this method may find wider acceptance and be useful in establishing a generally applicable framework for evaluation in natural language parsing .
+we employ this method in an evaluation of nlpwin ( heidorn , 2000 ) , a parser developed at microsoft research without reference to the penn treebank , and , for comparison , the well-known statistical treebank parser of charniak ( 2000 ) .
+introduction .
+in recent years , the literature includes compelling evaluation results for several natural language parsers that train and test on the u. penn treebank ( marcus et al. , 1993 ) , including the work of magerman ( 1995 ) , collins ( 1999 ) , collins & duffy ( 2002 ) , charniak ( 2000 ) , and klein & manning ( 2003 ) .
+since the publication of the treebank , published evaluations of non-treebank parsers ( i.e. , parsers not designed with the conventions of the english language u. penn treebank in mind ) are rarely encountered ; recent exceptions include an evaluation of the xerox lfg f- structure parser ( riezler , 2002 ) and the dependency parser of lin ( 1995 , 1998 ) .
+when such evaluations do appear , the community does not regularly cite them and appears to be at a loss as to how to compare these results with the results published for the well-known treebank parsers .
+we introduce a method for conducting evaluations of both treebank and nontreebank parsers using a metric that focuses on the accuracy of relatively non-controversial aspects of parse structure .
+data .
+we are using the english language university of pennsylvania treebank v.3 from the ldc .
+the treebank contains parse trees annotated according to the treebank annotation guidelines ( bies et al. , 1995 ) .
+included in the treebank are two datasets of interest to us : the wall street journal ( wsj ) and the brown corpus .
+the former has been divided by the parsing community into a standard training set ( sections 02-21 ) , a development test set ( section 24 ) , a blind test set ( section 23 ) , and some remainder sections .
+charniak ( 2000 ) , collins ( 1997 ) , and others use this standard division .
+to date , there is no standard division of the brown corpus treebank , so we have provided one for this evaluation .
+we will elaborate on the division of the brown corpus treebank after discussing the metric .
+non-treebank parsers .
+natural language parsers not explicitly designed or trained to follow the conventions of the penn treebank may differ from the treebank in any number of ways .
+differences such as tokenization , part-of-speech labels , granularity of non-terminal constituents , and non- terminal constituent labels can usually be handled by ignoring labels and resorting to the crossing brackets metric , one of the parseval metrics ( black , 1991 ) .
+however , irreconcilable differences often remain , particularly with respect to whether left or right modifiers should attach to heads first .
+in situations where a parser has been designed to make attachments in an order different from that of the treebank , large numbers of apparent crossing-bracket errors can result .
+consider an example from nlpwin , a parser developed at microsoft research ( heidorn , 2000 ) and the treebank .
+figure 1 is a tree produced by nlpwin , where each non-terminal represents a maximal projection of a single head , and each non-punctuation terminal is the immediate daughter of a non-terminal for which it is the head .
+figure 2 contains the corresponding tree for the same sentence from the treebank .
+there are several differences in tokenization , part-of speech tags , non-terminal constituents , and non- terminal labels .
+maximal projections of heads .
+faced with this lack of comparability between nontreebank parses and treebank parses , how can we proceed ?
+our conjecture is that if we focus on maximal projections of heads ( mph ) , we are likely to find much broader agreement than if we try to evaluate based on order of attachment or on the granularity of intermediate projections .
+while there are some theoretical differences that are not normalized by looking only at mph brackets ( e.g. , whether small clauses exist or not ) , we proceed under the assumption that if only mph brackets are evaluated , the remaining systematic differences are few enough to be dealt with on a case-by-case basis .
+in particular , to address tokenization issues , we added a post-process to nlpwin to tokenize in the manner of the treebank , and we exclude part-of-speech tags and constituent labels from our evaluation .
+differences with regard to the granularity of constituents , as well as order of attachment issues , are handled by focusing on maximal projections of heads .
+a challenge posed by focusing on maximal projections of heads is the absence of annotations of heads and head inheritance in the treebank itself.1 to rectify this , we will employ a set of head-labeling rules and compute maximal projections of heads for the reference or gold treebank trees .
+we can then have a comparable reference set containing only maximal projections against which to compute bracket precision .
+to compute mph trees from the treebank , we use a three-step process .
+first , we employ charniaks head- labeling rules .
+there will inevitably be discrepancies between the resulting heads and the heads chosen by the parser to be evaluated .
+in general , one head assignment or the other produces strictly fewer mph brackets ; therefore , we always resolve such disagreements in favor of the head choice leading to fewer brackets , because the more detailed bracketing is not necessarily recoverable from the other source .
+we construct a small set of additional rules capturing the regularities in head reassignment .
+after heads are assigned , we compute the mph brackets .
+when evaluating a treebank-style parser , we employ that parsers choice of heads , or if the parser does not produce head annotations , we can employ charniaks rules .
+to facilitate a comparison with a non-treebank parser , we then complete the annotation by applying the set of additional head reassignment rules constructed above .
+it is worth noting that in computing maximal projections of heads for a given tree , no brackets are added ; we keep only the brackets that enclose maximal projections of the specified heads .
+in fact , when changing head choices , we are simply focusing on a set of brackets that allows for a more direct comparison between a treebank-style parser and a non-treebank parser .
+after computation of mph , to avoid giving credit for trivially recoverable brackets , we ignore brackets containing only a single terminal ( as is standard ) as well as the top level brackets around the entire sentence .
+in addition , in order to avoid free credit for re-labeling non-terminals , we flatten all non-branching non- terminals .
+it is standard to eliminate punctuation from the hypothesis and reference trees just before evaluating .
+consequently , we ignore terminals with punctuation tags by employing the appropriate options in the evalb evaluation tool ( sekine & collins , 1997 ) .
+with these refinements , our metrics are , therefore , precision and recall of unlabeled brackets enclosing maximal projections of heads ( mph ) , defined as follows : the set of additional head reassignment rules for one nontreebank parser is likely to be different than the rule set for another such parser .
+a comparison between two nontreebank parsers would thus require constructing a set of head reassignment rules capturing the common-ground among the charniak-head-labeled treebank and the two parsers .
+we recommend a comparison of our approach with the proposals of gaizauskas et al. ( 1998a , 1998b ) ; the principal contrast lies in our employment of head labeling rules and mph .
+comparison system .
+as a point of comparison with nlpwin and to provide a connection with past treebank evaluations , we use eugene charniaks state of the art statistical treebankstyle parser ( charniak , 2000 ) .
+charniak 's head-driven parser produces trees with heads .
+figure 3 depicts the tree from charniak 's parser for the sentence used in the example trees above .
+asterisks ( * ) mark the heads or daughters through which heads are inherited .
+for the sake of a direct comparison with nlpwin , we apply the set of head reassignment rules ( found as the common- ground between nlpwin and the charniak-headlabeled treebank ) and compute the mph trees using the process defined in section 2 to arrive at the tree in figure 4 .
+the primary changes are in the structure of the pp in narrowing the trade gap and in the head for the final s constituent ... have already been made .
+evaluation results .
+wsj treebank .
+we evaluated nlpwin mph trees and mph trees from charniaks parser side-by-side .
+for each result , we include the statistics listed in the first column of table 1 , most of them computed by evalb in the standard ways .
+columns 2-3 contain the primary results on the wsj development test set ( section 24 ) , and columns 4-5 are the blind test set ( section 23 ) results .
+every sentence is included in these results without regard to sentence length .
+the number of nlpwin hyp brackets and the number of charniak hyp brackets are quite close to one another and to the number of ref brackets , which is one source of our confidence that we are indeed evaluating the two different systems in a comparable way against comparable reference brackets .
+restricted brown corpus treebank .
+the standard wsj sections provide a benchmark , but since charniaks parser was trained on wsj material and nlpwin was not , we sought a data set that was equally novel to both parsers .
+we are using part of the brown corpus section of the treebank ( hereafter the brown corpus treebank or bctb ) to play this role .
+a small amount of the original brown corpus ( francis & kucera , 1967 ) material had been used in developing nlpwin , so we removed that subset from the bctb , calling the remainder the restricted bctb .
+we randomized the restricted bctb3 , divided it into sections of 2000 sentences , and named a development test section ( sec .
+br0 ) and a blind test section ( sec .
+br1 ) .
+the data that had been used in development of nlpwin was provided to charniak , and he retrained his parser incorporating the used data .
+the results of evaluating both nlpwin and charniaks parser on br0 are in columns 6-7 , and results on br1 are in columns 8-9 of table 1 .
+as before , every sentence is included in these results without regard to sentence length .
+the randomized , restricted , brown corpus ( rrbc ) treebank is the data set we are truly interested in for our evaluation .
+this set consists of 22,021 sentences from the 24,243 sentences in the brown corpus treebank .
+briefly , for the blind test section ( br1 ) , the two systems scored as follows : for nlpwin : p = 69.54 , r = 70.56 ; for charniak : p = 77.71 , r = 77.73 , a narrower performance gap than we observed on the wsj .
+unlike the wsj results , the number of nlpwin hyp brackets in column 6 is somewhat larger than both the number of ref brackets in that column and the number of hyp brackets in column 7 ; we do not observe a regular trend responsible for this difference .
+conclusions .
+we have introduced a method for conducting evaluations of both treebank and non-treebank parsers using a metric that focuses on the accuracy of relatively non-controversial aspects of parse structure , namely unlabeled precision and recall of maximal projections of heads .
+we hope that this method may find wider acceptance and be useful in establishing a generally applicable framework for evaluation in natural language parsing .
+note that since a simple dependency tree ( with ordered dependents ) is isomorphic to an mph tree ( with heads labeled ) , this work also opens the door to evaluating dependency parsers ( such as those described in the work of riezler and of lin cited above ) against the treebank .

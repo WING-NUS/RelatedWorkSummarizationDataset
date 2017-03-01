@@ -1,0 +1,183 @@
+a re-examination of text categorization methods .
+abstract .
+this paper reports a controlled study with statistical significance tests on five text categorization methods : the support vector machines ( svm ) , a k-nearest neighbor ( knn ) classifier , a neural network ( nnet ) approach , the linear least-squares fit ( llsf ) mapping and a naive bayes ( nb ) classifier .
+we focus on the robustness of these methods in dealing with a skewed category distribution , and their performance as function of the training-set category frequency .
+our results show that svm , knn and llsf significantly outperform nnet and nb when the number of positive training instances per category are small ( less than ten ) , and that all the methods perform comparably when the categories are sufficiently common ( over 300 instances ) .
+introduction .
+automated text categorization ( tc ) is a supervised learning task , defined as assigning category labels ( pre-defined ) to new documents based on the likelihood suggested by a training set of labelled documents .
+it has raised open challenges for statistical learning methods , requiring empirical examination of their effectiveness in solving real-world problems which are often high-dimensional , and have a skewed category distribution over labelled documents .
+topic spotting for newswire stories , for example , is one the most commonly investigated application domains in the tc literature .
+an increasing number of learning approaches have been applied , including regression models [ 9 , 32 ] , nearest neighbor classification [ 17 , 29 , 33 , 31 , 14 ] , bayesian probabilistic approaches [ 25 , 16 , 20 , 13 , 12 , 18 , 3 ] , decision trees [ 9 , 16 , 20 , 2 , 12 ] , inductive rule learning [ 1 , 5 , 6 , 21 ] , neural networks [ 28 , 22 ] , on-line learning [ 6 , 15 ] and support vector machines [ 12 ] .
+while the rich literature provides valuable information about individual methods , clear conclusions about cross-method comparison have been difficult because often the published results are not directly comparable .
+for example , one cannot tell whether the performance of nnet by wiener et al. [ 28 ] is statistically significantly better or worse than the performance of svm by joachims [ 12 ] because different data collections were used in the evaluations of those methods , and no statistical significance analysis was conducted to verify the impact of the difference in data on the performance variation of these classifiers .
+naive bayes classifiers have exhibited relatively poor performance in previous studies [ 16 , 20 , 12 ] ; on the other hand , some recent papers have claimed that nb methods " perform surprisingly well " and are " gaining popularity lately " [ 13 , 18 , 3 ] .
+it is difficult to understand the claimed strengths of those naive bayes methods because the evaluations either used non-comparable performance measures , or were tested only on selected subsets of benchmark collections ( e.g. , the top ten most common categories over the total of ninety ) .
+it is not even clear what has been claimed precisely ; does " surprisingly well " mean statistically significant better than other methods , or not statistically different from the top-performing classifiers ever published , or worse than the best ones but still better than the expectation of the authors ?
+if the claims were specified , then what empirical evidence has been found so far ?
+these questions have not been addressed well .
+another open question for tc research is how robust methods are in solving problems with a skewed category distribution .
+since categories typically have an extremely nonuniform distribution in practice [ 30 ] , it would be meaningful to compare the performance of different classifiers with respect to category frequencies , and to measure how much the effectiveness of each method depends on the amount of data available for training .
+evaluation scores of specific categories have been often reported [ 28 , 5 , 15 , 13 , 12 ] ; however , performance analysis as a function of the rareness of categories has been seldom seen in the tc literature .
+most commonly , methods are compared using a single score , such as the accuracy , error rate , or averaged fi measure ( see section 2 for definition ) over all category assignments to documents .
+a single-valued performance measure can be either dominated by the classifier 's performance on common categories or rare categories , depending on how the average performance is computed ( e.g. , " micro-averaging " versus " macro-averaging " ) . nevertheless , no matter how the performance average is computed , a single score prohibits fine-grained analysis with respect the training-set frequencies of categories .
+in this paper we address the above evaluation problems by conducting a controlled study on five well-known text categorization methods : nnet , svm , nb , knn and llsf .
+all of these methods were published with relatively strong performance scores in previous evaluations and a partial comparison of some of them has been made [ 12 , 31 ] , but they have not been directly compared together in a controlled study with thorough statistical significance analysis , which is the focus of this paper .
+specifically , this paper contains the following new contributions : provides directly comparable results of the five methods on the new benchmark corpus , reuters-21578 .
+currently , published results of llsf , nnet and nb on this corpus ( with the full set of categories ) are not available .
+for knn , published results [ 12 , 14 ] are available but are " mysteriously " lower than the results by others on a previous version of this collection [ 31 ] .
+as for svm , the published results do not contain sufficient details for statistical significance analysis .
+proposes a variety of statistical significance tests for different standard performance measures ( including f , measures for category assignments and average precision for category ranking ) , and suggests a way to jointly use these tests for cross-method comparison .
+observes the performance of each classifier as a function of the training-set category frequency , and analyzes the robustness of classifiers in dealing with a skewed category distribution .
+task , corpus and performance measures .
+to make our evaluation results comparable to most of the published results in tc evaluations , we chose topic spotting of newswire stories as the task and the reuters-21578 corpus for the data .
+this corpus has become a new benchmark lately in tc evaluations , and is the refined version of several older versions , namely reuters-22173 and reuters-21450 , on which many tc methods were evaluated [ 10 , 16 , 1 , 28 , 6 , 33 , 22 , 31 ] , but the results on the older versions may not be directly comparable to the results on the new version .
+for this paper we use the aptemod version of reuters-21578 , which was obtained by eliminating unlabelled documents and selecting the categories which have at least one document in the training set and the test set .
+this process resulted in 90 categories in both the training and test sets .
+after eliminating documents which do not belong to any of these 90 categories , we obtained a training set of 7769 documents , a test set of 3019 documents , and a vocabulary 24240 unique words after stemming and stop word removal .
+the number of categories per document is 1.3 on average .
+the category distribution is skewed ; the most common category has a training-set frequency of 2877 , but 82 % of the categories have less than 100 instances , and 33 % of the categories have less than 10 instances .
+figure 1 shows the category distribution in this training set .
+for evaluating the effectiveness of category assignments by classifiers to documents , we use the standard recall , precision and f , measure .
+recall is defined to be the ratio of correct assignments by the system divided by the total number of correct assignments .
+precision is the ratio of correct assignments by the system divided by the total number of the system 's assignments .
+the f , measure , initially introduced by van rijsbergen [ 26 ] , combines recall ( r ) and precision ( p ) with an equal weight in the following form : these scores can be computed for the binary decisions on each individual category first and then be averaged over categories .
+or , they can be computed globally over all the n x m binary decisions where n is the number of total test documents , and m is the number of categories in consideration .
+the former way is called macro-averaging and the latter way is called micro-averaging .
+the micro-averaged f , have been widely used in cross-method comparisons while macro-averaged f , was used in some cases [ 15 ] .
+it is understood that the micro-averaged scores ( recall , precision and f , ) tend to be dominated by the classifier 's performance on common categories , and that the macro-averaged scores are more influenced by the performance on rare categories .
+providing both kinds of scores is more informative than providing either alone , as we show in our evaluation and cross method comparison ( section 5 ) .
+we also use error as an additional measure , which is defined to be the ratio of wrong assignments by the system divided by the total number of the system 's assignments ( n x m ) .
+support vector machines ( svm ) is a relatively new learning approach introduced by vapnik in 1995 for solving two-class pattern recognition problems [ 27 ] .
+it is based on the structural risk minimization principle for which error-bound analysis has been theoretically motivated [ 27 , 7 ] .
+the method is defined over a vector space where the problem is to find a decision surface that " best " separates the data points in two classes .
+in order to define the " best " separation , we need to introduce the " margin " between two classes .
+figures 2 and 3 illustrate the idea .
+for simplicity , we only show a case in a two-dimensional space with linearly separable data points , but the idea can be generalized to a high dimensional space and to data points that are not linearly separable .
+a decision surface in a linearly separable space is a hyperplane .
+the solid lines in figures 2 and 3 show two possible decision surfaces , each of which correctly separates the two groups of data .
+the dashed lines parallel to the solid ones show how much one can move the decision surface without causing misclassification of the data .
+the distance between each set of those parallel lines are referred to as " the margin " .
+the svm problem is to find the decision surface that maximizes the margin between the data points in a training set .
+the svm problem can be solved using quadratic programming techniques [ 27 , 7 , 23 ] .
+the algorithms for solving linearly separable cases can be extended for solving linearly non-separable cases by either introducing soft margin hyper-planes , or by mapping the original data vectors to a higher dimensional space where the new features contains interaction terms of the original features , and the data points in the new space become linearly separable [ 27 , 7 , 23 ] .
+relatively efficient implementations of svm include the svmlight system by joachims [ 12 ] and the sequential minimal optimization ( smo ) algorithm by platt [ 24 ] .
+an interesting property of svm is that the decision surface is determined only by the data points which have exactly the distance 1 k ~ wk from the decision plane .
+those points are called the support vectors , which are the only effective elements in the training set ; if all other points were removed , the algorithm will learn the same decision function .
+this property makes svm theoretically unique and different from many other methods , such as knn , llsf , nnet and nb where all the data points in the training set are used to optimize the decision function .
+it would be interesting to know whether or not this theoretical distinction leads to significant performance differences between svm and other methods in practice .
+joachims recently applied svm to text categorization , and compared its performance with other classification methods using the reuters-21578 corpus .
+his results show that svm outperformed all the other methods tested in his experiments and the results published by that time1 .
+while this comparison is quite informative , several points are missing or questionable : thorough statistical significance tests were lacking .
+performance analysis with respective to category distribution , especially on rare categories , was not provided .
+the knn result reported by him is lower than the knn results by others [ 31 ] .
+for addressing the above points , we decided to re-test svm using the svmlight system by joachims2 and our own version of knn. knn. knn stands for k-nearest neighbor classification , a well-known statistical approach which has been intensively studied in pattern recognition for over four decades [ 8 ] . knn has been applied to text categorization since the early stages of the research [ 17 , 29 , 11 ] .
+it is one of the the top-performing methods on the benchmark reuters corpus ( the 21450 version , apte set ) ; the other top-performing methods include llsf by yang , decision trees with boosting by apte et al. , and neural networks by wiener et al. [ 2 , 12 , 14 , 31 , 28 ] .
+the knn algorithm is quite simple : given a test document , the system finds the k nearest neighbors among the training documents , and uses the categories of the k neighbors to weight the category candidates .
+the similarity score of each neighbor document to the test document is used as the weight of the categories of the neighbor document .
+if several of the k nearest neighbors share a category , then the per-neighbor weights of that category are added together , and the resulting weighted sum is used as the likelihood score of that category with respect to the test document .
+by sorting the scores of candidate categories , a ranked list is obtained for the test document .
+by thresholding on these scores , binary category assignments are obtained .
+the decision rule in knn can be written as : " x " and the training document ji ; and bj is the category-specific threshold for the binary decisions .
+for convenience , we use the cosine value of two vectors to measure the similarity between of the two documents , although other similarity measures are possible .
+the category-specific threshold bj is automatically learned using a " validation set " of documents .
+that is , we used a subset of the training documents ( not used the test documents ) to learn the optimal threshold for each category .
+by optimal , we mean the threshold that yielded the best f1 score on the validation documents .
+note that there is a difference between the thresholding method above and the thresholding method used by joachims in his knn experiment .
+joachims simply sorted the confidence scores per test document and assigned the top-ranking category as the correct category .
+this simple method does not allow the system to assign multiple categories to any document and is not necessarily the optimal strategy for knn , or any classifier , because documents often have more than one category [ 31 ] .
+we suspect this simplification by joachims is the reason for the low performance of his knn ; this assertion was confirmed by our experiments with both versions of knn on reuters-21578 ( see the results in section 5 ) .
+llsf stands for linear least squares fit , a mapping approach developed by yang [ 32 ] .
+a multivariate regression model is automatically learned from a training set of documents and their categories .
+the training data are represented in the form of input / output vector pairs where the input vector is a document in the conventional vector space model ( consisting of words with weights ) , and output vector consists of categories ( with binary weights ) of the corresponding document .
+by solving a linear least-squares fit on the training pairs of vectors , one can obtain a matrix of word-category regression coefficients : although llsf and knn differ statistically , we have found these two methods had similar performance in all the applications where we compared these two methods , including the categorization of reuters news stories , medline bibliographical abstracts and mayo clinic patient-record diagnoses [ 32 , 29 , 31 ] .
+what we have not compared yet is their robustness in dealing with rare categories ; this is the one of the main foci in this study .
+neural network ( nnet ) techniques have been intensively studied in artificial intelligence [ 19 ] .
+nnet approaches to text categorization were evaluated on the reuters-21450 corpus by wiener et al. [ 28 ] and ng. et al. [ 22 ] , respectively .
+wiener et al. tried both a perceptron approach ( without a hidden layer ) and three-layered neural networks ( with a hidden layer ) .
+ng et al. only uses perceptrons .
+both systems use a separate neural network per category , learning a non-linear mapping from input words ( or more complex features such as singular vectors of a document space ) to a category .
+wiener 's experiments suggested some advantage for combining a multiple-class nnet ( for higher-level categories ) and many two-class networks ( for lowest-level categories ) , but they did not compare the performance of using a multiple-class nnet alone to using a two-class nnet for each category .
+in our experiments with nnet on reuters 21578 , a practical consideration is the training cost .
+that is , training nnet is usually much more time consuming than the other classifiers .
+it would be too costly to train one nnet per category , we then decided to train one nnet on all the 90 categories of reuters .
+in this sense , our nnet approach is not exactly the same as the previous reported ones ( we will leave the comparison for future research ) .
+we also decided to use a hidden layer with k nodes , where k is empirically chosen ( section 5 ) .
+we implemented our own nnet system for efficient handling of sparse document vectors .
+naive bayes ( nb ) probabilistic classifiers are commonly studied in machine learning [ 19 ] .
+an increasing number of evaluations of nb methods on reuters have been published [ 16 , 20 , 13 , 3 , 18 ] .
+the basic idea in nb approaches is to use the joint probabilities of words and categories to estimate the probabilities of categories given a document .
+the naive part of nb methods is the assumption of word independence , i.e. , the conditional probability of a word given a category is assumed to be independent from the conditional probabilities of other words given that category .
+this assumption makes the computation of the nb classifiers far more efficient than the exponential complexity of non-naive bayes approaches because it does not use word combinations as predictors .
+there are several versions of the nb classifiers .
+recent studies on a multinomial mixture model have reported improved performance scores for this version over some other commonly used versions of nb on several data collections , including reuters-21578 [ 18 , 3 ] .
+this improved model , however , was only evaluated on a few common categories ( the 10 most common ones out of the total of 90 categories ) of reuters ; its results therefore do not allow a complete comparison to those previously reported for nb methods or other methods on the full set of reuters categories .
+another confusing aspect of the recent evaluations with nb is a non-conventional " accuracy " measure the proportion of the correct category assignments among the total of n assignments ( n is the number of test documents ) where each document is assigned to one and only one category [ 13 , 3 , 18 ] .
+this narrowly defined " accuracy " is indeed equivalent to the standard precision under the one-category-per-document assumption on classifiers , and also equivalent to the standard recall assuming that each document has one and only one correct category .
+it is not equivalent , however , to the standard definition for accuracy in text categorization literature , which is the proportion of correct assignments among the binary decisions over all category / document pairs [ 26 , 16 ] .
+the standard accuracy measure is well-defined for documents with multiple categories ; the narrowly defined " accuracy " is not .
+the latter leads to confusion and non-comparable performance measures in text categorization evaluations on several collections , contributing to the difficulty of cross-method and / or cross-collection comparisons .
+to provide comparable results of nb on reuters-21578 , we ran the multinomial mixture model of nb by mccallum3 , and evaluated its output using the standard performance measures introduced in section 2 .
+significance tests .
+we designed a set of significance tests for comparing two systems using various performance measures .
+we will define the tests first , and then discuss their suitability with respect to the performance measures .
+micro sign test ( s-test ) .
+this is a sign test designed for comparing two systems , a and b , based on their binary decisions on all the document / category pairs .
+we use the following notation : the null hypothesis is k = 0.5n , or k has a binomial distribution of bin ( n , p ) where p = 0.5 .
+the alternative hypothesis is that k has a binomial distribution of bin ( n , p ) where p > .5 , meaning that system a is better than system b. if n < 12 and k > = 0.5n , the p-value ( 1-sided ) is computed using the binomial distribution under the null hypothesis : the p-value indicates the significance level of the observed evidence against the null hypothesis , i.e. , system a is better ( or worse ) than system b. macro sign test ( s-test ) .
+the test hypotheses and the p-value ( 1-sided ) computation are the same as those as in the micro s-test .
+this is a t-test for comparing two systems , a and b , using the paired f1 values for individual categories .
+for this we use the same notation as defined for s-test , and add the following items : to compare systems a and b based on the f1 values after rank transformation [ 4 ] , in which the f1 values of the two systems on individual categories are pooled together and sorted , then these values are replaced by the corresponding ranks .
+to make a distinction from the t-test above , we refer to this test as t ' -test .
+we use the following the notation : the null hypothesis is ~ d ' = 0 .
+the alternative hypothesis is ~ d ' > 0 .
+if n < 40 , compute the p-value ( 1-sided ) for using the t-distribution with a degree of freedom ( d.f. ) of n 1 ; otherwise , the standard normal distribution is used instead .
+comparing proportions ( p-test ) .
+for the performance measures which are proportions , such as recall , precision , error or accuracy , we compare the performance scores of systems a and b as below .
+among the testing methods described above , s-test and p-test are designed to evaluate the performance of systems at a micro level , i.e. , based on the pooled decisions on individual document / category pairs .
+on the other hand , s-test , t-test and t ' -test are designed to evaluate at a macro level , using the performance scores on each category as the unit measure .
+among these three macro tests , s-test may be more robust for reducing the influence of outliers , but risks being insensitive ( or not sufficiently sensitive ) in performance comparison because it ignores the absolute differences between f1 values .
+the t-test is sensitive to the absolute values , but could be overly sensitive when f1 scores are highly unstable , e.g. , those for low-frequency categories .
+the t ' -test is a compromise between the two extremes ; it is less sensitive than t-test to outliers , but more sensitive than the sign test because it reserve the order of distinct f1 values .
+none of the tests is " perfect " for all the performance measures , or for performance analysis with respect to a skewed category distribution , so using them jointly instead using one test alone would be a better choice .
+in related literature , sign tests were reported by cohen for method comparison based on micro-level category assignments [ 5 ] , and by lewis et al. for a comparison based on paired f1 values of individual categories [ 15 ] .
+we applied statistical feature selection at a preprocessing stage for each classifier , using either a x2 statistic or information gain criterion to measure the word-category associations , and the predictiveness of words ( features ) .
+different feature-set sizes were tested , and the size that optimized the global f1 score for a classifier was chosen for that classifier .
+as a result , we selected 1000 features for nnet , 2000 features for nb , 2415 features for knn and llsf , and 10000 features for svm .
+other empirical settings were : the k in knn was set to 45 .
+this choice was based on our previous parameter optimization ( learned from training data ) on reuters-21450 [ 31 ] .
+the number of singular value used for llsf computation was set to 500 , which is also based on previous parameter optimization ( learned from training data ) on reuters-21450 [ 31 ] .
+the number of hidden units in the middle layer of nnet was set to 64 .
+this choice produces the best f1 score for nnet on a validation set ( a part of the training data ) of reuters-21578 when we varied the number of the hidden units between 16 , 64 and 160 .
+for svm we tested the linear and non-linear models offered by svmlight , and obtained a slightly better result with the linear svm than with the non-linear models .
+we use the linear version as the representative for svm in the cross-method comparison .
+table 1 summarizes the global performance scores .
+several points in this table are worth discussion .
+the micro-averaged f1 score ( .8599 ) of svm is slightly lower than the best of the svm scores reported by joachims , possibly because of a difference in our term weighting scheme for document presentation , or due to minor differences in data preparation .
+joachims used the within-document frequency of terms ( t f ) directly , while we used log ( t f ) instead .
+this difference is not significant .
+our micro-averaged f1 score ( .8567 ) for knn is noticeably higher than the knn score ( 0.823 ) reported by joachims .
+we also tested the simplified knn ( following joachims ) which assign only the top-ranking category to each document , and obtained a f1 score of .8140 .
+these contrasting tests suggest that this simplification is neither optimal nor necessary for knn .
+our micro-averaged f1 score ( .7956 ) for nb is significantly higher than the nb score ( 0.720 ) obtained by joachims .
+according to the analysis by mccallum at al. [ 18 ] who implemented both models , the multinomial mixture model which we tested is better than the multivariate bernoulli model which joachims tested .
+so our experiment confirmed mccallum 's conclusion .
+however , the better model of nb still underperforms svm , knn and llsf .
+cross-classifier comparison .
+these inconsistent grouping and orderings of classifiers reflect the biases in the performance measures .
+the micro-level significance test is dominated by the performance of the classifiers on common categories , while the macro-level significance tests are more reflective of the performance of the classifiers on rare categories .
+this does not necessarily mean that the significance tests are invalid ; on the contrary , p-test outcomes on recall and precision are not in agreement .
+figures 4 and 5 compare the performance curves of the five classifiers with respect to the training-set frequency of categories .
+these curves are obtained by dividing the horizontal axis into equal-sized intervals , averaging the per-category fi scores per interval for each classifier , and interpolating the per-interval average scores .
+figure 4 focuses on the training set frequency in the range from 1 to 60 ( covering 67 % of the total unique categories ) , where nnet and nb are clearly worse than the other three , but these three are less easy to rank .
+figure 5 shows the performance curves on the full range of training-set frequencies of categories , where the effectiveness of all the classifiers are more similar to each other on common categories ( with a training-set frequency of 300 or higher ) , compared to their relative performance on rare categories .
+it means that those different tests provide complementary analyses about the classifiers .
+moreover , one can combine evidence from different tests .
+for example , when the s-test , t-test and t ' -test all agree on a p-value range ( e.g. , ) , one can be more confident about the suggested significance than the case when they do not agree .
+the order among classifiers suggested by the error-based tests is similar to the one observed in the micro-level sign tests , except that svm and knn are grouped together here , and that llsf and nnet are no longer grouped .
+p-test on recall ( mir ) and precision ( mip ) can also be informative when the observations are jointly used .
+conclusions .
+in this paper we presented a controlled study with significance analyses on five well-known text categorization methods .
+our main conclusions are : significance analyses can be applied to both a micro-level and macro-level evaluation of text categorization systems , and jointly used for cross-method comparison .
+the outcome of a significance test depends on the choice of performance measure , the sensitivity of the test , and the training-set frequency of categories being tested .
+for the micro-level performance on pooled category assignments , both a sign test and an error-based proportion test suggest that svm and knn significantly outperform the other classifiers , while nb significantly underperforms all the other classifiers .
+with respect to the macro-level ( category-level ) performance analysis using f1 , all the significance tests we conducted suggest that svm , knn and llsf belong to the same class , significantly outperforming nb and nnet .

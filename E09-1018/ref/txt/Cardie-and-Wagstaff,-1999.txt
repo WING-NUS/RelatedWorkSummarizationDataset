@@ -1,0 +1,170 @@
+noun phrase coreference as clustering .
+abstract .
+this paper introduces a new , unsupervised algorithm for noun phrase coreference resolution .
+it differs from existing methods in that it views coreference resolution as a clustering task .
+in an evaluation on the muc-6 coreference resolution corpus , the algorithm achieves an f-measure of 53.6 % , placing it firmly between the worst ( 40 % ) and best ( 65 % ) systems in the muc-6 evaluation .
+more importantly , the clustering approach outperforms the only muc-6 system to treat coreference resolution as a learning problem .
+the clustering algorithm appears to provide a flexible mechanism for coordinating the application of context-independent and context-dependent constraints and preferences for accurate partitioning of noun phrases into coreference equivalence classes .
+introduction .
+many natural language processing ( nlp ) applications require accurate noun phrase coreference resolution : they require a means for determining which noun phrases in a text or dialogue refer to the same real-world entity .
+the vast majority of algorithms for noun phrase coreference combine syntactic and , less often , semantic cues via a set of hand-crafted heuristics and filters .
+all but one system in the muc-6 coreference performance evaluation ( muc , 1995 ) , for example , handled coreference resolution in this manner .
+this same reliance on complicated hand-crafted algorithms is true even for the narrower task of pronoun resolution .
+some exceptions exist , however .
+ge et al. ( 1998 ) present a probabilistic model for pronoun resolution trained on a small subset of the penn treebank wall street journal corpus ( marcus et al. , 1993 ) .
+dagan and itai ( 1991 ) develop a statistical filter for resolution of the pronoun " it " that selects among syntactically viable antecedents based on relevant subject-verb-object cooccurrences .
+aone and bennett ( 1995 ) and mccarthy and lehnert ( 1995 ) employ decision tree algorithms to handle a broader subset of general noun phrase coreference problems .
+this paper presents a new corpus-based approach to noun phrase coreference .
+we believe that it is the first such unsupervised technique developed for the general noun phrase coreference task .
+in short , we view the task of noun phrase coreference resolution as a clustering task .
+first , each noun phrase in a document is represented as a vector of attribute-value pairs .
+given the feature vector for each noun phrase , the clustering algorithm coordinates the application of context-independent and context-dependent coreference constraints and preferences to partition the noun phrases into equivalence classes , one class for each real-world entity mentioned in the text .
+context-independent coreference constraints and preferences are those that apply to two noun phrases in isolation .
+context-dependent coreference decisions , on the other hand , consider the relationship of each noun phrase to surrounding noun phrases .
+in an evaluation on the muc-6 coreference resolution corpus , our clustering approach achieves an f-measure of 53.6 % , placing it firmly between the worst ( 40 % ) and best ( 65 % ) systems in the muc6 evaluation .
+more importantly , the clustering approach outperforms the only muc-6 system to view coreference resolution as a learning problem : the resolve system ( mccarthy and lehnert , 1995 ) employs decision tree induction and achieves an f- measure of 47 % on the muc-6 data set .
+furthermore , our approach has a number of important advantages over existing learning and non-learning methods for coreference resolution : the approach is largely unsupervised , so no annotated training corpus is required .
+although evaluated in an information extraction context , the approach is domain- independent .
+as noted above , the clustering approach provides a flexible mechanism for coordinating context-independent and context-dependent coreference constraints and preferences for partitioning noun phrases into coreference equivalence classes .
+as a result , we believe that viewing noun phrase coreference as clustering provides a promising framework for corpus-based coreference resolution .
+the remainder of the paper describes the details of our approach .
+the next section provides a concrete specification of the noun phrase coreference resolution task .
+section 3 presents the clustering algorithm .
+evaluation of the approach appears in section 4 .
+qualitative and quantitative comparisons to related work are included in section 5 .
+noun phrase coreference .
+it is commonly observed that a human speaker or author avoids repetition by using a variety of noun phrases to refer to the same entity .
+while human audiences have little trouble mapping a collection of noun phrases onto the same entity , this task of noun phrase ( np ) coreference resolution can present a formidable challenge to an nlp system .
+figure 1 depicts a typical coreference resolution system , which takes as input an arbitrary document and produces as output the appropriate coreference equivalence classes .
+the subscripted noun phrases in the sample output constitute two noun phrase coreference equivalence classes : class js contains the five noun phrases that refer to john simon , and class pc contains the two noun phrases that represent prime corp.
+the figure also visually links neighboring coreferent noun phrases .
+the remaining ( unbracketed ) noun phrases have no coreferent nps and are considered singleton equivalence classes .
+handling the js class alone requires recognizing coreferent nps in appositive and genitive constructions as well as those that occur as proper names , possessive pronouns , and definite nps .
+coreference as clustering .
+our approach to the coreference task stems from the observation that each group of coreferent noun phrases defines an equivalence classl .
+therefore , it is natural to view the problem as one of partitioning , or clustering , the noun phrases .
+intuitively , all of the noun phrases used to describe a specific concept will be " near " or related in some way , i.e. their conceptual " distance " will be small .
+given a description of each noun phrase and a method for measuring the distance between two noun phrases , a clustering algorithm can then group noun phrases together : noun phrases with distance greater than a clustering radius r are not placed into the same partition and so are not considered coreferent .
+the subsections below describe the noun phrase representation , the distance metric , and the clustering algorithm in turn .
+instance representation .
+given an input text , we first use the empire noun phrase finder ( cardie and pierce , 1998 ) to locate all noun phrases in the text .
+note that empire identifies only base noun phrases , i.e. simple noun phrases that contain no other smaller noun phrases within them .
+for example , chief financial officer of prime corp. is too complex to be a base noun phrase .
+it contains two base noun phrases : chief financial officer and prime corp.
+each noun phrase in the input text is then represented as a set of 11 features as shown in table 1 .
+this noun phrase representation is a first approximation to the feature vector that would be required for accurate coreference resolution .
+all feature values are automatically generated and , therefore , are not always perfect .
+in particular , we use very simple heuristics to approximate the behavior of more complex feature value computations : individual words .
+the words contained in the noun phrase are stored as a feature .
+head noun .
+the last word in the noun phrase is considered the head noun .
+position .
+noun phrases are numbered sequentially , starting at the beginning of the document .
+article .
+each noun phrase is marked indefinite ( contains a or an ) , definite ( contains the ) , or none .
+appositive .
+here we use a simple , overly restrictive heuristic to determine whether or not the noun phrase is in a ( post-posed ) appositive construction : if the noun phrase is surrounded by commas , contains an article , and is immediately preceded by another noun phrase , then it is marked as an appositive .
+number .
+if the head noun ends in an ' s ' , then the noun phrase is marked plural ; otherwise , it is considered singular .
+expressions denoting money , numbers , or percentages are also marked as plural .
+proper name .
+proper names are identified by looking for two adjacent capitalized words , optionally containing a middle initial .
+semantic class .
+here we use wordnet ( fellbaum , 1998 ) to obtain coarse semantic information for the head noun .
+the head noun is characterized as one of time , city , animal , human , or object .
+if none of these classes pertains to the head noun , its immediate parent in the class hierarchy is returned as the semantic class , e.g.
+payment for the head noun pay in np6 of table 1 .
+a separate algorithm identifies numbers , money , and companys .
+gender .
+gender ( masculine , feminine , either , or neuter ) is determined using wordnet and ( for proper names ) a list of common first names .
+animacy .
+noun phrases classified as human or animal are marked anim ; all other nps are considered inanim .
+when computing a sum that involves both oo and oo , we choose , the more conservative route , and the oo distance takes precedence ( i.e. the two noun phrases are not considered coreferent ) .
+an example of where this might occur is in the following sentence : the coreference distance metric is largely context- independent in that it determines the distance between two noun phrases using very little , if any , of their intervening or surrounding context .
+the clustering algorithm described below is responsible for coordinating these local coreference decisions across arbitrarily long contexts and , thus , implements a series of context-dependent coreference decisions .
+clustering algorithm .
+the clustering algorithm is given in figure 2 .
+because noun phrases generally refer to noun phrases that precede them , we start at the end of the document and work backwards .
+each noun phrase is compared to all preceding noun phrases .
+if the distance between two noun phrases is less than the clustering radius r , then their classes are considered for possible merging .
+two coreference equivalence classes can be merged unless there exist any incompatible nps in the classes to be merged .
+it is useful to consider the application of our algorithm to an excerpt from a document : the noun phrase instances for this fragment are shown in table 3 .
+initially , npi , np2 , and np3 are all singletons and belong to coreference classes c2 , and c3 , respectively .
+we begin by considering n p3 .
+dist ( n p2 , n p3 ) = oo due to a mismatch on gender , so they are not considered for possible merging .
+next , we calculate the distance from npi to np3 .
+pronouns are not expected to match when the words of two noun phrases are compared , so there is no penalty here for word ( or head noun ) mismatches .
+the penalty for their difference in position is dependent on the length of the document .
+for illustration , assume that this is less than r .
+thus , dist ( npi , np3 ) < r .
+their coreference classes , c1 and c3 , are then considered for merging .
+because they are singleton classes , there is no additional possibility for conflict , and both noun phrases are merged into cl .
+we developed and evaluated the clustering approach to coreference resolution using the " dry run " and " formal evaluation " muc-6 coreference corpora .
+each corpus contains 30 documents that have been annotated with np coreference links .
+we used the dryrun data for development of the distance measure and selection of the clustering radius r and reserved the formal evaluation materials for testing .
+all results are reported using the standard measures of recall and precision or f-measure ( which combines recall and precision equally ) .
+they were calculated automatically using the muc-6 scoring program ( vilain et al. , 1995 ) .
+table 4 summarizes our results and compares them to three baselines .
+for each algorithm , we show the f-measure for the dryrun evaluation ( column 2 ) and the formal evaluation ( column 4 ) . ( the " adjusted " results are described below . )
+for the dryrun data set , the clustering algorithm obtains 48.8 % recall and 57.4 % precision .
+the formal evaluation produces similar scores : 52.7 % recall and 54.6 % precision .
+both runs use r 4 , which was obtained by testing different values on the dryrun corpus .
+table 5 summarizes the results on the dryrun data set for r values from 1.0 to 10.0.3 as expected , increasing r also increases recall , but decreases precision .
+subsequent tests with different values for r on the formal evaluation data set also obtained optimal performance with r = 4 .
+this provides partial support for our hypothesis that r need not be recalculated for new corpora .
+the remaining rows in table 4 show the performance of the three baseline algorithms .
+the first baseline marks every pair of noun phrases as coreferent , i.e. all noun phrases in the document form one class .
+this baseline is useful because it establishes an upper bound for recall on our clustering algorithm ( 67 % for the dryrun and 69 % for the formal evaluation ) .
+the second baseline marks as coreferent any two noun phrases that have a word in common .
+the third baseline marks as coreferent any two noun phrases whose head nouns match .
+although the baselines perform better one might expect ( they outperform one muc-6 system ) , the clustering algorithm performs significantly better .
+in part because we rely on base noun phrases , our recall levels are fairly low .
+the " adjusted " figures of table 4 reflect this upper bound on recall .
+considering only coreference links between base noun phrases , the clustering algorithm obtains a recall of 72.4 % on the dryrun , and 75.9 % on the formal evaluation .
+another source of error is inaccurate and inadequate np feature vectors .
+our procedure for computing semantic class values , for example , is responsible for many errors - it sometimes returns incorrect values and the coarse semantic class distinctions are often inadequate .
+without a better named entity finder , computing feature vectors for proper nouns is difficult .
+other errors result from a lack of thematic and grammatical role information .
+the lack of discourse-related topic and focus information also limits system performance .
+in addition , we currently make no special attempt to handle reflexive pronouns and pleonastic " it " . lastly , errors arise from the greedy nature of the clustering algorithm .
+noun phrase np linked to every preceding noun phrase n13 , that is compatible and within the radius r , and that link can never be undone .
+we are considering three possible ways to make the algorithm less aggressively greedy .
+first , for each np3 , instead of considering every previous noun phrase , the algorithm could stop on finding the first compatible antecedent .
+second , for each npj , the algorithm could rank all possible antecedents and then choose the best one and link only to that one .
+lastly , the algorithm could rank all possible coreference links ( all pairs of noun phrases in the document ) and then proceed through them in ranked order , thus progressing from the links it is most confident about to those it is less certain of .
+future work will include a more detailed error analysis .
+related work .
+existing systems for noun phrase coreference resolution can be broadly characterized as learning and non-learning approaches .
+all previous attempts to view coreference as a learning problem treat coreference resolution as a classification task : the algorithms classify a pair of noun phrases as coreferent or not .
+both mlr ( aone and bennett , 1995 ) and resolve ( mccarthy and lehnert , 1995 ) , for example , apply the c4.5 decision tree induction algorithm ( quinlan , 1992 ) to the task .
+as supervised learning algorithms , both systems require a fairly large amount of training data that has been annotated with coreference resolution information .
+our approach , on the other hand , uses unsupervised learning ' and requires no training data.5 in addition , both mlr and resolve require an additional mechanism to coordinate the collection of pairwise coreference decisions .
+without this mechanism , it is possible that the decision tree classifies np i and np i as coreferent , and np i and npk as coreferent , but np i and npk as not coreferent .
+in an evaluation on the muc-6 data set ( see table 6 ) , resolve achieves an f-measure of 47 % .
+the muc-6 evaluation also provided results for a large number of non-learning approaches to coreference resolution .
+table 6 provides a comparison of our results to the best and worst of these systems .
+most implemented a series of linguistic constraints similar in spirit to those employed in our system .
+the main advantage of our approach is that all constraints and preferences are represented neatly in the distance metric ( and radius r ) , allowing for simple modification of this measure to incorporate new knowledge sources .
+in addition , we anticipate being able to automatically learn the weights used in the distance metric .
+there is also a growing body of work on the narrower task of pronoun resolution .
+azzam et al. ( 1998 ) , for example , describe a focus-based approach that incorporates discourse information when resolving pronouns .
+lappin and leass ( 1994 ) make use of a series of filters to rule out impossible antecedents , many of which are similar to our ooincompatibilities .
+they also make use of more extensive syntactic information ( such as the thematic role each noun phrase plays ) , and thus require a fuller parse of the input text .
+ge et al. ( 1998 ) present a supervised probabilistic algorithm that assumes a full parse of the input text .
+dagan and itai ( 1991 ) present a hybrid full-parse / unsupervised learning approach that focuses on resolving " it " . despite a large corpus ( 150 million words ) , their approach suffers from sparse data problems , but works well when enough relevant data is available .
+lastly , cardie ( 1992a ; 1992b ) presents a case-based learning approach for relative pronoun disambiguation .
+our clustering approach differs from this previous work in several ways .
+first , because we only require the noun phrases in any input text , we do not require a full syntactic parse .
+although we would expect increases in performance if complex noun phrases were used , our restriction to base nps does not reflect a limitation of the clustering algorithm ( or the distance metric ) , but rather a self-imposed limitation on the preprocessing requirements of the approach .
+second , our approach is unsupervised and requires no annotation of training data , nor a large corpus for computing statistical occurrences .
+finally , we handle a wide array of noun phrase coreference , beyond just pronoun resolution .
+conclusions and future work .
+we have presented a new approach to noun phrase coreference resolution that treats the problem as a clustering task .
+in an evaluation on the muc6 coreference resolution data set , the approach achieves very promising results , outperforming the only other corpus-based learning approach and producing recall and precision scores that place it firmly between the best and worst coreference systems in the evaluation .
+in contrast to other approaches to coreference resolution , ours is unsupervised and offers several potential advantages over existing methods : no annotated training data is required , the distance metric can be easily extended to account for additional linguistic information as it becomes available to the nlp system , and the clustering approach provides a flexible mechanism for combining a variety of constraints and preferences to impose a partitioning on the noun phrases in a text into coreference equivalence classes .
+nevertheless , the approach can be improved in a number of ways .
+additional analysis and evaluation on new corpora are required to determine the generality of the approach .
+our current distance metric and noun phrase instance representation are only first , and admittedly very coarse , approximations to those ultimately required for handling the wide variety of anaphoric expressions that comprise noun phrase coreference .
+we would also like to make use of cues from centering theory and plan to explore the possibility of learning the weights associated with each term in the distance metric .
+our methods for producing the noun phrase feature vector are also overly simplistic .
+nevertheless , the relatively strong performance of the technique indicates that clustering constitutes a powerful and natural approach to noun phrase coreference resolution .

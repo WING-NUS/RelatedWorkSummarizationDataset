@@ -1,0 +1,191 @@
+investigating a generic paraphrase-based approach for relation extraction .
+abstract .
+unsupervised paraphrase acquisition has been an active research field in recent years , but its effective coverage and performance have rarely been evaluated .
+we propose a generic paraphrase-based approach for relation extraction ( re ) , aiming at a dual goal : obtaining an applicative evaluation scheme for paraphrase acquisition and obtaining a generic and largely unsupervised configuration for re .
+we analyze the potential of our approach and evaluate an implemented prototype of it using an re dataset .
+our findings reveal a high potential for unsupervised paraphrase acquisition .
+we also identify the need for novel robust models for matching paraphrases in texts , which should address syntactic complexity and variability .
+introduction .
+a crucial challenge for semantic nlp applications is recognizing the many different ways for expressing the same information .
+this semantic variability phenomenon was addressed within specific applications , such as question answering , information extraction and information retrieval .
+recently , the problem was investigated within generic application-independent paradigms , such as paraphrasing and textual entailment .
+eventually , it would be most appealing to apply generic models for semantic variability to concrete applications .
+this paper investigates the applicability of a generic paraphrase-based approach to the relation extraction ( re ) task , using an available re dataset of protein interactions .
+re is highly suitable for such investigation since its goal is to exactly identify all the different variations in which a target semantic relation can be expressed .
+taking this route sets up a dual goal : ( a ) from the generic paraphrasing perspective - an objective evaluation of paraphrase acquisition performance on a concrete application dataset , as well as identifying the additional mechanisms needed to match paraphrases in texts ; ( b ) from the re perspective - investigating the feasibility and performance of a generic paraphrase-based approach for re .
+our configuration assumes a set of entailing templates ( non-symmetric paraphrases ) for the target relation .
+for example , for the target relation x interact with y we would assume a set of entailing templates as in tables 3 and 7 .
+in addition , we require a syntactic matching module that identifies template instances in text .
+first , we manually analyzed the protein- interaction dataset and identified all cases in which protein interaction is expressed by an entailing template .
+this set a very high idealized upper bound for the recall of the paraphrase-based approach for this dataset .
+yet , obtaining high coverage in practice would require effective paraphrase acquisition and lexical-syntactic template matching .
+next , we implemented a prototype that utilizes a state-of-the-art method for learning entailment relations from the web ( szpektor et al. , 2004 ) , the minipar dependency parser ( lin , 1998 ) and a syntactic matching module .
+as expected , the performance of the implemented system was much lower than the ideal upper bound , yet obtaining quite reasonable practical results given its unsupervised nature .
+the contributions of our investigation follow the dual goal set above .
+to the best of our knowledge , this is the first comprehensive evaluation that measures directly the performance of unsupervised paraphrase acquisition relative to a standard application dataset .
+it is also the first evaluation of a generic paraphrase-based approach for the standard re setting .
+our findings are encouraging for both goals , particularly relative to their early maturity level , and reveal constructive evidence for the remaining room for improvement .
+background .
+unsupervised information extraction .
+information extraction ( ie ) and its subfield relation extraction ( re ) are traditionally performed in a supervised manner , identifying the different ways to express a specific information or relation .
+given that annotated data is expensive to produce , unsupervised or weakly supervised methods have been proposed for ie and re .
+yangarber et al. ( 2000 ) and stevenson and greenwood ( 2005 ) define methods for automatic acquisition of predicate-argument structures that are similar to a set of seed relations , which represent a specific scenario .
+yangarber et al. ( 2000 ) approach was evaluated in two ways : ( 1 ) manually mapping the discovered patterns into an ie system and running a full muc-style evaluation ; ( 2 ) using the learned patterns to perform document filtering at the scenario level .
+stevenson and greenwood ( 2005 ) evaluated their method through document and sentence filtering at the scenario level .
+sudo et al. ( 2003 ) extract dependency subtrees within relevant documents as ie patterns .
+the goal of the algorithm is event extraction , though performance is measured by counting argument entities rather than counting events directly .
+hasegawa et al. ( 2004 ) performs unsupervised hierarchical clustering over a simple set of features .
+the algorithm does not extract entity pairs for a given relation from a set of documents but rather classifies all relations in a large corpus .
+this approach is more similar to text mining tasks than to classic ie problems .
+to conclude , several unsupervised approaches learn relevant ie templates for a complete scenario , but without identifying their relevance to each specific relation within the scenario .
+accordingly , the evaluations of these works either did not address the direct applicability for re or evaluated it only after further manual postprocessing .
+paraphrases and entailment rules .
+a generic model for language variability is using paraphrases , text expressions that roughly convey the same meaning .
+various methods for automatic paraphrase acquisition have been suggested recently , ranging from finding equivalent lexical elements to learning rather complex paraphrases at the sentence level1 .
+more relevant for re are atomic paraphrases between templates , text fragments containing variables , e.g.
+x buy y q x purchase y. under a syntactic representation , a template is a parsed text fragment , e.g.
+x s + interact md ^ with ~ n y ( based on the syntactic dependency relations of the minipar parser ) .
+the parses include part-ofspeech tags , which we omit for clarity .
+dagan and glickman ( 2004 ) suggested that a somewhat more general notion than paraphrasing is that of entailment relations .
+these are directional relations between two templates , where the meaning of one can be entailed from the meaning of the other , e.g.
+x bind to y = = > .
+x interact with y. for re , when searching for a target relation , it is sufficient to identify an entailing template since it implies that the target relation holds as well .
+under this notion , paraphrases are bidirectional entailment relations .
+several methods extract atomic paraphrases by exhaustively processing local corpora ( lin and pantel , 2001 ; shinyama et al. , 2002 ) .
+learning from a local corpus is bounded by the corpus scope , which is usually domain specific ( both works above processed news domain corpora ) .
+to cover a broader range of domains several works utilized the web , while requiring several manually provided examples for each input relation , e.g. ( ravichandran and hovy , 2002 ) .
+taking a step further , the tease algorithm ( szpektor et al. , 2004 ) provides a completely unsupervised method for acquiring entailment relations from the web for a given input relation ( see section 5.1 ) .
+most of these works did not evaluate their results in terms of application coverage .
+lin and pantel ( 2001 ) compared their results to human- generated paraphrases .
+shinyama et al. ( 2002 ) measured the coverage of their learning algorithm relative to the paraphrases present in a given corpus .
+szpektor et al. ( 2004 ) measured yield , the number of correct rules learned for an input relation .
+ravichandran and hovy ( 2002 ) evaluated the performance of a qa system that is based solely on paraphrases , an approach resembling ours .
+however , they measured performance using mean reciprocal rank , which does not reveal the actual coverage of the learned paraphrases .
+assumed configuration for re .
+the general configuration assumed in this paper for re is based on two main elements : a list of lexical-syntactic templates which entail the relation of interest and a syntactic matcher which identifies the template occurrences in sentences .
+the set of entailing templates may be collected either manually or automatically .
+we propose this configuration both as an algorithm for re and as an evaluation scheme for paraphrase acquisition .
+the role of the syntactic matcher is to identify the different syntactic variations in which templates occur in sentences .
+table 1 presents a list of generic syntactic phenomena that are known in the literature to relate to linguistic variability .
+a phenomenon which deserves a few words of explanation is the transparent head noun ( grishman et al. , 1986 ; fillmore et al. , 2002 ) .
+a transparent noun n1 typically occurs in constructs of the form n1 preposition n2 for which the syntactic relation involving n1 , which is the head of the np , applies to n2 , the modifier .
+in the example in table 1 , fragment is the transparent head noun while the relation activate applies to y as object .
+manual data analysis .
+protein interaction dataset .
+bunescu et al. ( 2005 ) proposed a set of tasks regarding protein name and protein interaction extraction , for which they manually tagged about 200 medline abstracts previously known to contain human protein interactions ( a binary symmetric relation ) .
+here we consider their re task of extracting interacting protein pairs , given that the correct protein names have already been identified .
+all protein names are annotated in the given gold standard dataset , which includes 1147 annotated interacting protein pairs .
+protein names are rather complex , and according to the annotation adopted by bunescu et al. ( 2005 ) can be substrings of other protein names ( e.g. , < prot > < prot > gitr < / prot > ligand < / prot > ) .
+in such cases , we considered only the longest names and protein pairs involving them .
+we also ignored all reflexive pairs , in which one protein is marked as interacting with itself .
+altogether , 1052 interactions remained .
+all protein names were transformed into symbols of the type protn , where n is a number , which facilitates parsing .
+for development purposes , we randomly split the abstracts into a 60 % development set ( 575 interactions ) and a 40 % test set ( 477 interactions ) .
+dataset analysis .
+in order to analyze the potential of our approach , two of the authors manually annotated the 575 interacting protein pairs in the development set .
+for each pair the annotators annotated whether it can be identified using only template-based matching , assuming an ideal implementation of the configuration of section 3 .
+if it can , the normalized form of the template connecting the two proteins was annotated as well .
+the normalized template form is based on the active form of the verb , stripped of the syntactic phenomena listed in table 1 .
+additionally , the relevant syntactic phenomena from table 1 were annotated for each template instance .
+table 2 provides several example annotations .
+a kappa value of 0.85 ( nearly perfect agreement ) was measured for the agreement between the two annotators , regarding whether a protein pair can be identified using the template-based method .
+additionally , the annotators agreed on 96 % of the normalized templates that should be used for the matching .
+finally , the annotators agreed on at least 96 % of the cases for each syntactic phenomenon except transparent heads , for which they agreed on 91 % of the cases .
+this high level of agreement indicates both that template- based matching is a well defined task and that normalized template form and its syntactic variations are well defined notions .
+several interesting statistics arise from the annotation .
+first , 93 % of the interacting protein pairs ( 537 / 575 ) can be potentially identified using the template-based approach , if the relevant templates are provided .
+this is a very promising finding , suggesting that the template-based approach may provide most of the requested information .
+we term these 537 pairs as template-based pairs .
+the remaining pairs are usually expressed by complex inference or at a discourse level .
+second , for 66 % of the template-based pairs at least one syntactic phenomenon was annotated .
+table 4 contains the occurrence percentage of each phenomenon in the development set .
+these results show the need for a powerful syntactic matcher on top of high performance template acquisition , in order to correctly match a template in a sentence .
+third , 175 different normalized templates were identified .
+for each template we counted its template instances , the number of times the template occurred , counting only occurrences that express an interaction of a protein pair .
+in total , we counted 341 template instances for all 175 templates .
+interestingly , 50 % of the template instances ( 184 / 341 ) are instances of the 21 most frequent templates .
+this shows that , though protein interaction can be expressed in many ways , writers tend to choose from among just a few common expressions .
+table 3 presents the most frequent templates .
+table 5 presents the minimal number of templates required to obtain the range of different recall levels .
+furthermore , we grouped template variants that are based on morphological derivations ( e.g.
+x interact with y and x y interaction ) and found that 4 groups , x interact with y , x bind to y , x associate with y and x complex with y , together with their morphological derivations , cover 45 % of the template instances .
+this shows the need to handle generic lexical- syntactic phenomena , and particularly morphological based variations , separately from the acquisition of normalized lexical syntactic templates .
+to conclude , this analysis indicates that the template-based approach provides very high coverage for this re dataset , and a small number of normalized templates already provides significant recall .
+however , it is important to ( a ) develop a model for morphological-based template variations ( e.g. as encoded in nomlex ( macleod et al. , ) ) , and ( b ) apply accurate parsing and develop syntactic matching models to recognize the rather complex variations of template instantiations in text .
+finally , we note that our particular figures are specific to this dataset and the biological abstracts domain .
+however , the annotation and analysis methodologies are general and are suggested as highly effective tools for further research .
+implemented prototype .
+this section describes our initial implementation of the approach in section 3 .
+tease .
+the tease algorithm ( szpektor et al. , 2004 ) is an unsupervised method for acquiring entailment relations from the web for a given input template .
+in this paper we use tease for entailment relation acquisition since it processes an input template in a completely unsupervised manner and due to its broad domain coverage obtained from the web .
+the reported percentage of correct output templates for tease is 44 % .
+the tease algorithm consists of 3 steps , demonstrated in table 6 .
+tease first retrieves from the web sentences containing the input template .
+from these sentences it extracts variable instantiations , termed anchor-sets , which are identified as being characteristic for the input template based on statistical criteria ( first column in table 6 ) .
+characteristic anchor-sets are assumed to uniquely identify a specific event or fact .
+thus , any template that appears with such an anchor-set is assumed to have an entailment relationship with the input template .
+next , tease retrieves from the web a corpus s of sentences that contain the characteristic anchor-sets ( second column ) , hoping to find occurrences of these anchor-sets within templates other than the original input template .
+finally , tease parses s and extracts templates that are assumed to entail or be entailed by the input template .
+such templates are identified as maximal most general sub-graphs that contain the anchor sets positions ( third column in table 6 ) .
+each learned template is ranked by number of occurrences in s. transformation-based graph matcher .
+in order to identify instances of entailing templates in sentences we developed a syntactic matcher that is based on transformations rules .
+the matcher processes a sentence in 3 steps : 1 ) parsing the sentence with the minipar parser , obtaining a dependency graph 2 ; 2 ) matching each template against the sentence dependency graph ; 3 ) extracting candidate term pairs that match the template variables .
+a template is considered directly matched in a sentence if it appears as a sub-graph in the sentence dependency graph , with its variables instantiated .
+to further address the syntactic phenomena listed in table 1 we created a set of hand-crafted parser-dependent transformation rules , which account for the different ways in which syntactic relationships may be realized in a sentence .
+a transformation rule maps the left hand side of the rule , which strictly matches a sub-graph of the given template , to the right hand side of the rule , which strictly matches a sub-graph of the sentence graph .
+if a rule matches , the template sub-graph is mapped accordingly into the sentence graph .
+for example , to match the syntactic template x ( n ) s ~ ~ ~ activate ( v ) o ~ ~ ~ y ( n ) ( pos tags are in parentheses ) in the sentence prot ] detected and activated prot2 ( see figure 1 ) we should handle the coordination phenomenon .
+the matcher uses the transformation rule var ] ( v ) = = > .and ( u ) mod word ( v ) con ~ ~ var ] ( v ) to overcome the syntactic differences .
+in this example var ] matches the verb activate , word matches the verb detect and the syntactic relations for word are mapped to the ones for var ] .
+thus , we can infer that the subject and object relations of detect are also related to activate .
+experiments .
+experimental settings .
+tease learned 118 templates for this relation .
+table 7 lists the top 18 learned templates that we considered as correct ( out of the top 30 templates in tease output ) .
+we then extracted interacting protein pair candidates by applying the syntactic matcher to the 119 templates ( the 118 learned plus the input template ) .
+candidate pairs that do not consist of two proteins , as tagged in the input dataset , were filtered out ( see section 4.1 ; recall that our experiments were applied to the dataset of protein interactions , which isolates the re task from the protein name recognition task ) .
+in a subsequent experiment we iteratively executed tease on the 5 top-ranked learned templates to acquire additional relevant templates .
+in total , we obtained 1233 templates that were likely to imply the original input relation .
+the syntactic matcher was then reapplied to extract candidate interacting protein pairs using all 1233 templates .
+we used the development set to tune a small set of 10 generic hand-crafted transformation rules that handle different syntactic variations .
+to handle transparent head nouns , which is the only phenomenon that demonstrates domain dependence , we extracted a set of the 5 most frequent transparent head patterns in the development set , e.g. fragment of x. in order to compare ( roughly ) our performance with supervised methods applied to this dataset , as summarized in ( bunescu et al. , 2005 ) , we adopted their recall and precision measurement .
+their scheme counts over distinct protein pairs per abstract , which yields 283 interacting pairs in our test set and 418 in the development set .
+manual analysis of tease recall .
+before evaluating the system as a whole we wanted to manually assess in isolation the coverage of tease output relative to all template instances that were manually annotated in the development set .
+we considered a template as covered if there is a tease output template that is equal to the manually annotated template or differs from it only by the syntactic phenomena described in section 3 or due to some parsing errors .
+counting these matches , we calculated the number of template instances and distinct interacting protein pairs that are covered by tease output .
+table 8 presents the results of our analysis .
+the 1st line shows the coverage of the 119 templates learned by tease for the input template x interact with y. it is interesting to note that , though we aim to learn relevant templates for the specific domain , tease learned relevant templates also by finding anchor-sets of different domains that use the same jargon , such as particle physics .
+we next analyzed the contribution of the iterative learning for the additional 5 templates to recall ( 2nd line in table 8 ) .
+with the additional learned templates , recall increased by about 25 % , showing the importance of using the iterative steps .
+finally , when allowing matching between a tease template and a manually annotated template , even if one is based on a morphological derivation of the other ( 3rd line in table 8 ) , tease recall increased further by about 30 % .
+we conclude that the potential recall of the current version of tease on the protein interaction dataset is about 60 % .
+this indicates that significant coverage can be obtained using completely unsupervised learning from the web , as performed by tease .
+however , the upper bound for our current implemented system is only about 50 % because our syntactic matching does not handle morphological derivations .
+system results .
+first , the texts from the biology domain presented quite a challenge for the minipar parser .
+for example , in the sentences containing the phrase x bind specifically to y the parser consistently attaches the pp to to specifically instead of to bind .
+thus , the template x bind to y cannot be directly matched .
+second , we manually created a small number of transformation rules that handle various syntactic phenomena , since we aimed at generic domain in- dependent rules .
+the most difficult phenomenon to model with transformation rules is transparent heads .
+for example , in the dimerization of prot1 interacts with prot2 , the transparent head dimerization of x is domain dependent .
+transformation rules that handle such examples are difficult to acquire , unless a domain specific learning approach ( either supervised or unsupervised ) is used .
+finally , we did not handle co-reference resolution in the current implementation .
+bunescu et al. ( 2005 ) and bunescu and mooney ( 2005 ) approached the protein interaction re task using both handcrafted rules and several supervised machine learning techniques , which utilize about 180 manually annotated abstracts for training .
+our results are not directly comparable with theirs because they adopted 10-fold cross- validation , while we had to divide the dataset into a development and a test set , but a rough comparison is possible .
+for the same 30 % recall , the rule- based method achieved precision of 62 % and the best supervised learning algorithm achieved precision of 73 % .
+comparing to these supervised and domain-specific rule-based approaches our system is noticeably weaker , yet provides useful results given that we supply very little domain specific information and acquire the paraphrasing templates in a fully unsupervised manner .
+still , the matching models need considerable additional research in order to achieve the potential performance suggested by tease .
+conclusions and future work .
+we have presented a paraphrase-based approach for relation extraction ( re ) , and an implemented system , that rely solely on unsupervised paraphrase acquisition and generic syntactic template matching .
+two targets were investigated : ( a ) a mostly unsupervised , domain independent , configuration for re , and ( b ) an evaluation scheme for paraphrase acquisition , providing a first evaluation of its realistic coverage .
+our approach differs from previous unsupervised ie methods in that we identify instances of a specific relation while prior methods identified template relevance only at the general scenario level .
+we manually analyzed the potential of our approach on a dataset annotated with protein interactions .
+the analysis shows that 93 % of the interacting protein pairs can be potentially identified with the template-based approach .
+additionally , we manually assessed the coverage of the tease acquisition algorithm and found that 63 % of the distinct pairs can be potentially recognized with the learned templates , assuming an ideal matcher , indicating a significant potential recall for completely unsupervised paraphrase acquisition .
+finally , we evaluated our current system performance and found it weaker than supervised re methods , being far from fulfilling the potential indicated in our manual analyses due to insufficient syntactic matching .
+but , even our current performance may be considered useful given the very small amount of domain-specific information used by the system .
+most importantly , we believe that our analysis and evaluation methodologies for an re dataset provide an excellent benchmark for unsupervised learning of paraphrases and entailment rules .
+in the long run , we plan to develop and improve our acquisition and matching algorithms , in order to realize the observed potential of the paraphrase- based approach .
+notably , our findings point to the need to learn generic morphological and syntactic variations in template matching , an area which has rarely been addressed till now .

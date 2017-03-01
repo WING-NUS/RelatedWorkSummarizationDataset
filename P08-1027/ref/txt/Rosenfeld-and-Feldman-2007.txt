@@ -1,0 +1,184 @@
+clustering for unsupervised relation identification .
+abstract .
+unsupervised relation identification is the task of automatically discovering interesting relations between entities in a large text corpora .
+relations are identified by clustering the frequently co- occurring pairs of entities in such a way that pairs occurring in similar contexts end up belonging to the same clusters .
+in this paper we compare several clustering setups , some of them novel and others already tried .
+the setups include feature extraction and selection methods and clustering algorithms .
+in order to do the comparison , we develop a clustering evaluation metric , specifically adapted for the relation identification task .
+our experiments demonstrate significant superiority of the single- linkage hierarchical clustering with the novel threshold selection technique over the other tested clustering algorithms .
+also , the experiments indicate that for successful relation identification it is important to use rich complex features of two kinds : features that test both relation slots together ( relation features ) , and features that test only one slot each ( entity features ) .
+we have found that using both kinds of features with the best of the algorithms produces very high-precision results , significantly improving over the previous work .
+introduction .
+information extraction ( ie ) is the task of extracting factual assertions from text .
+most ie systems rely on knowledge engineering or on machine learning to generate the task model , which is subsequently used for extracting instances of entities and relations from new text .
+in the knowledge engineering approach the model ( usually in the form of extraction rules ) is created manually , and in the machine learning approach the model is learned automatically from a manually labeled training text .
+both approaches require substantial human effort , particularly when applied to the broad range of documents , entities , and relations existing in the web .
+in order to minimize the manual effort necessary to build ie systems , semi-supervised systems were developed , able to learn the task model using only a large unlabeled corpus and a small set of seeds known true instances of the target entity or relation .
+even semi-supervision can be costly for relation extraction at web scale , because of a large number of different domains and possible relation types .
+prevemptive information extraction approach was introduced in [ 10 ] as a remedy to this problem .
+under this approach , there is a preparation stage , during which the ie system automatically discovers all relations , extracts their instances , and puts them into tables , which can be mined later , in response to the user queries or for other purposes .
+this preemptive ie approach relies on unsupervised relation identification ( uri ) an automatic discovery of all interesting relations in a large body of text .
+any relation can be identified by a representative subset of its instances .
+thus , the task of uri is to provide such representative set of instances for each of the relations it discovers .
+uri systems usually work in the following way : first , the set of candidate relationships is generated .
+it may simply consist of all pairs of entities that frequently co-occur in same sentences .
+then , the system analyzes the sentences in which the candidates occur , and produces a measure of similarity between the candidates , based on similarity of the contexts in which they appear .
+then , the candidates are clustered using some general-purpose clustering algorithm .
+finally , the clusters are pruned , and poor clusters are discarded .
+in [ 8 ] we had shown that the clusters discovered by uri can be successfully used for seeding a semi-supervised relation extraction system , producing performance comparable to the performance of human-selected seeds .
+thus , it makes sense to separate the tasks of relation identification and actual relation extraction .
+the relation identification stage should find frequent high-precision seeds for the relations , while the extraction stage should extract many more relation instances , gaining recall and balancing it against required precision .
+in this paper we focus on the uri task .
+we compare several clustering algorithms , and several feature extraction and selection methods , evaluating them using a novel evaluation metric , which is adapted for evaluating precision-oriented uri clustering results .
+our findings demonstrate : effectiveness of the single-linkage hac ( hierarchical agglomerative clustering ) algorithm with our novel threshold-selection technique , and its superiority over the other common clustering algorithms average- linkage hac , complete-linkage hac , and k-means even when using the best possible thresholds for the hac-s , and the best number of clusters for the k-means .
+importance of the complexity of the context features that are used for representing the candidates .
+we show that only sufficiently powerful context patterns produce good results .
+importance of using both the features that test individual entities in the candidate pairs ( entity features ) , and the features that relate the entities inside pairs to each other ( relation features ) .
+effectiveness of the separability-based feature selection method , which allows to reduce the dimensionality of the feature space by two orders of magnitude , with little or no deterioration of clustering quality .
+in our experiments we consistently avoid using supervised named entity recognition ( ner ) systems .
+good ner components only exist for common and very general entity types , such as person , organization , and location .
+for some relations , the types of attributes are less common , and no ready ner components ( or labeled training sets ) are available .
+also , some web relation extraction systems ( e.g. , knowitall [ 3 ] ) do not use supervised ner components even for known entity types , because such components are usually domain-specific and may perform poorly on cross-domain text collections extracted from the web .
+consequently , the entities in our candidate pairs are simply proper noun phrase heads , extracted by a general-purpose noun phrase chunker ( trained on a dataset from the conll-2000 shared task [ 11 ] ) , with the entity boundaries fixed by corpus statistics-based methods ( [ 9 ] ) .
+nevertheless , we show that the clusterings produced by the best of the strategies approach perfect precision , sufficient for seeding the semi-supervised relation extraction systems .
+the rest of the paper is structured as follows : in the next section we describe the related work .
+then we present the details of the architecture of our uri system , and its various components .
+then we describe our experiments , discuss their results , and conclude .
+related work .
+the field of uri is very recent , and there is only a small number of works available .
+discovering relations by clustering pairs of co-occuring entities represented as vectors of context features was introduced by hasegawa , sekine et al. [ 6 ] .
+they used a complete-linkage hierarchical clustering algorithm , with a very simple representation of contexts the features were the words that appear in sentences between the entities of the candidate pairs .
+consequently , their results had a relatively low precision and were unsuitable for bootstrapping , which usually amplifies any noise in the set of seeds .
+chen , ji et al. [ 1 ] used the same context representation , but added an entropy-based feature ranking and selection step .
+they also used the k-means algorithm instead of hac , introducing a stability-based criterion for estimating the number of clusters .
+shinyama and sekine [ 10 ] used simple predicate-argument patterns around the entities of candidate pairs .
+their system works on news articles , and improves its accuracy by looking at multiple news sources describing the same event .
+the authors in [ 8 ] first attempted to use the results of uri for seeding a semi-supervised relation extraction system .
+using rich surface patterns for representing the context features we achieved a limited success in discovering and subsequently extracting a small number of relations in the financial news domain .
+in this paper we build upon our previous work , experimenting with different clustering algorithms and representations , comparing them to each other using a novel evaluation metric , and producing an uri system that substantially outperforms all of the mentioned systems .
+uri framework .
+in this work we are primarily concerned with the part of a uri system that does clustering , and we do not deal with candidate selection , nor with complex post-processing such as generation of names for the discovered relations .
+the output of the system is a partitioning of the candidates into disjoint clusters c = c1 ^ c2 ... ^ cn ^ g , where the clusters ci identify the discovered relations , and the special cluster g ( for garbage ) gathers all unclassified candidates .
+the garbage cluster is an essential element of the scheme , since usually many of the candidate pairs do not belong to any well-defined general relation .
+the uri process consists of three main stages : ( 1 ) feature extraction representing the candidates as vectors in some feature space , ( 2 ) clustering of vectors , and ( 3 ) pruning of the resulting clusters .
+these stages and the various components performing them are described below .
+feature extraction .
+the goal of this stage is to prepare the information necessary for the clustering algorithms : a representation of the candidates as vectors in some feature space , with a suitable measure of distance between vectors .
+the representation and the distance ( or similarity measure ) must be chosen in such a way that under this measure the candidates that often appear in similar contexts would be close to each other , and conversely , the candidates that rarely appear in similar contexts would be far apart .
+consequently , we base the representation directly on features of the contexts , which can abstractly be defined as follows : each such function can be thought of as checking for presence or absence of some feature in the contexts of entities and pairs .
+a family of such functions defines some measure of similarity between contexts two contexts are more similar when the values of more functions coincide on them .
+we extend this similarity to similarity between candidates by defining their representation as follows : for similarity between two vectors in the feature space we use the common cosine measure which ignores the relative lengths of vectors .
+naturally , the utility of such representation depends on the quality of the context features .
+for our features we use surface patterns , similar to the ones we used in [ 8 ] .
+each such pattern is a sequence of tokens ( including the special slot-mark tokens ) , and skips , which indicate gaps in the pattern .
+a pattern p matches the context s iff all of the tokens of p appear in s in the correct order .
+the tokens of p must also be adjacent to each other inside s , except where gaps in the pattern are allowed ( by skips in p ) , and where arbitrary sequences of tokens may appear between the tokens of p .
+as an example to the concepts defined above , consider the sentence ibm , based in armonk , new york , said it would finance the acquisition of lotus .
+this sentence would belong to the context sets se of the entities e = ' ibm , ' armonk , ' new york , and ' lotus , and to the context sets of all candidate pairs built from these entities .
+if we 1-slot-mark the entity ' ibm inside the sentence , we get < 1 > , based in armonk , new york , said it would finance the acquisition of lotus .
+we generate the set of surface patterns by a suitable modification of the apriori association mining algorithm .
+first we extract all sequences of tokens ( without gaps ) that appear in the set m of all contexts with frequency greater than a given minimal support value .
+then we mine the contexts ( as ordered sets of such sequences ) for frequent itemsets .
+the result is the set of all surface patterns sufficiently supported by the set of contexts .
+despite their simplicity , the surface patterns are sufficiently general to capture many recurring properties of contexts , and are sufficient to produce good-quality clusterings , as our experiments demonstrate .
+they are also more general than all the context features used in the works mentioned in the related work section , and this allows us to simulate their performance by suitably restricting the form of our patterns .
+for example , the bag-of-words feature space of [ 6 ] and [ 1 ] can be simulated using patterns of the form individual entities .
+feature selection .
+the number of surface patterns generated at the feature extraction step can be very large .
+in order to reduce the computation costs of the clustering stage , it is beneficial to remove the useless features .
+we cannot use the common classification feature ranking measures such as information gain or ^ 2 for the clustering task , since these measures rely on knowledge of the classification of the training set .
+however , following [ 1 ] , we can use a feature ranking based on the observation of [ 2 ] that good clustering features should improve the separability of the dataset make points that are close together still closer , and points that are far from each other still farther apart .
+given a ranking of features , we can select n top-scoring ones and remove the rest .
+in the experimental section we demonstrate that it is sometimes possible to reduce the number of features by a factor of 100 without losing the quality of clustering .
+as defined , the merit of the feature selection scheme is questionable , since its computational complexity can be greater than the complexity of actual clustering .
+however , dash and liu argue in [ 2 ] that separability-based scores of features can be approximated well by calculating them over small samples of the whole dataset .
+we do not test this hypothesis in this work , leaving it for further research .
+clustering .
+we test and compare two common general-purpose clustering algorithms in our experiments : the hierarchical agglomerative clustering ( hac ) algorithm , and the partitioning k-means algorithm .
+the hac algorithm starts with all datapoints in separate clusters , and proceeds to iteratively merge the most similar clusters , until all pairwise distances between the clusters become greater than a prespecified threshold .
+there are three common ways of calculating the distance ( or similarity ) between clusters in terms of pairwise distances between their datapoints : single linkage , average linkage and complete linkage .
+using these three linkages , the similarity between two clusters is , respectively , the maximum , the average , and the minimum of the similarities between their datapoints .
+the k-means algorithm starts with a set of k seed datapoints that define the initial clusters .
+at each iteration until convergence , the algorithm calculates the centroid of each one of the k clusters , and reassigns every datapoint to the cluster that has the closest centroid .
+both the hac and the k-means algorithms have parameters that significantly affect the quality of clustering .
+hac has the linkage type parameter and the similarity threshold parameter , which specifies when to stop merging the clusters .
+in all previous works , the hac was always used with a complete linkage , and with a small fixed threshold .
+k-means , on the other hand , depends on the choice of the seeds and on the number k of clusters , which must be known in advance .
+usually , the problem of seeds dependence is solved by running the algorithm several times with different random choice of seeds , and then selecting the best clustering among the results , according to some internal consistency measure .
+as for estimating the number of clusters , chen , et al [ 1 ] advocate using stability-based criterions .
+in our experiments we surprisingly found that the single linkage hac not only outperforms both the hac with other linkage types and the k-means , but also has a natural stopping criterion : stop merging the clusters when the average similarity between the datapoints of the clusters being merged becomes smaller than ^ times the maximal similarity between them , where ^ < 1 is a constant , for which we use 1 / 2 .
+although this stopping criterion does not always find the best clustering possible for the single linkage hac , it usually finds a clustering within a small margin of the best .
+and in almost all cases , the clustering it generates is better than the ones produced by the hac with other linkage types , or by the k- means , even with the best choice of their parameters . ( see the experimental section for the details ) .
+pruning the clusters .
+in this paper we are primarily concerned with the clustering task .
+thus , we utilize a simple and crude method of pruning : we disband all clusters that contain less than a given number of candidates , 4 in our experiments .
+the released candidates are put into the garbage cluster .
+this method of pruning makes sense for the uri task , which after all attempts to discover relatively common and open-ended relations .
+experiments .
+we performed a set of experiments to compare the feature extraction and selection methods and the clustering algorithms described above .
+we shall first describe our evaluation criterion , and then proceed to the actual experiments .
+evaluation .
+there are various methods for evaluating clustering results [ 5 ] .
+for the uri task we have to use an external criterion , since we would like the clusters to agree with human intuition as to what constitutes an interesting relation .
+consequently , in order to score a given clustering x of a set of candidates , we first manually cluster the candidates into a model clustering mx .
+however , the uri task is different from other clustering tasks , because of the existence of a large number of unclassified datapoints , gathered into a single specially designated garbage cluster .
+the garbage cluster contains the entity pairs that do not belong to any recognizable relation , which happens either if the co-occurrence of the entities is accidental , or if the relation between them is too idiosyncratic .
+since the uri task places much higher value on precision than on recall , the garbage cluster must be evaluated separately from the other clusters , which represent actual relations .
+in particular , it should be less costly to put a candidate belonging to a relation into the garbage cluster , than to allow a wrong candidate to get in .
+thus , the garbage cluster is treated differently in two ways : first , the definition of co-occurrence does not include the garbage cluster the candidates inside the garbage cluster are considered not co-occuring .
+and second , pairs of candidates that co-occur in mx , but at least one one of which is in the garbage in x , are counted in sd not as 1-s , but as smaller constants a .
+we experimentally found that the precise value of a does not matter for qualitative ordering of performance of various clustering setups , as long as the value is noticeably smaller than one .
+for the experiments we used three different text corpora .
+one of them is the corpus that was used for evaluating the semi- supervised sres [ 4 ] and knowitall [ 3 ] systems .
+the corpus consists of a concatenation of four separate corpora , for the acquisition , merger , mayor _ of , and ceo _ of relations .
+each sentence in the corpus contains at least one keyword related to one of the four relations .
+although the four corpora were processed separately by the semi-supervised systems , we combined them together for evaluating uri , in order to see how well the system is able to find the relations and to distinguish between them .
+this corpus is denoted acmm .
+the second corpus is a subset of the rcv1 corpus of reuters news [ 7 ] , which included news articles on various economics- related topics .
+the third corpus is a one year ( 1995 ) of the new york times , which was also used in the original work of hasegawa , sekine et al. [ 6 ] .
+the corpora were processed by a general-purpose noun phrase chunker , trained on the labeled data for the conll-2000 shared task [ 11 ] .
+all pairs of proper noun phrases that co-occurred sufficiently frequently ( 30 times or more ) were processed by a corpus statistics-based boundary fixing component ( described in [ 9 ] ) in order to reduce the noise and the amount of garbage , and the results were placed into the initial sets of candidates .
+this process produced several thousands of candidate pairs for each of the corpus , which is currently beyond the computing capabilities of our system , due to space problems appearing because of a huge number of features .
+therefore , we randomly selected a thousand of candidates from each of the initial sets , and put them into the working candidate sets , on which the actual clustering experiments were performed .
+since it is too costly to manually cluster even one thousand candidates , we further randomly selected a subset of 200 candidates from each of the working sets , and manually clustered these subsets .
+during the experiments , the clustering algorithms were run over the full working sets of candidates , but only the selected 200 candidates were used for scoring the results .
+experiment 1 : comparing the algorithms and the feature sets .
+in the first series of experiments we compared the performance of various clustering algorithms and various feature sets described above .
+the results are shown in the table 1 .
+and in the table 2 we list the number of features the system extracted in each of the setups .
+the k-means results are the best scores from a large number of runs five runs for each different k , where in each run the first seed was selected randomly , and the subsequent k-1 seeds were selected by maximizing the distances between them . ( random selection of all seeds produced worse results ) .
+all hac results , except for the hac single * , are the best- scoring results among all possible settings of the threshold parameter .
+the hac single * denotes the hac with the single linkage and with the average / max similarity < 1 / 2 " stopping criterion .
+several conclusions can be drawn from the results .
+first , we can see that the extent and the generality of features are very important .
+the bag-of-words representation is clearly poor and insufficient .
+both argument-only ( context features related to one of the entities in a pair , as in [ 10 ] ) and combination only ( context features related to both entities together , as in [ 8 ] ) perform reasonably well , but still worse than the full-featured setting .
+regarding the algorithms , the hac with single linkage outperforms both k-means and the other variants of hac in almost all cases .
+also , we can see that the average / max similarity < 1 / 2 " stopping criterion , which is extremely simple and needs no additional computation , performs surprisingly well , always producing results within a very small margin of the best possible .
+experiment 2 : feature selection .
+in this series of experiments we test the separability-based feature selection scheme .
+the results are summarized in the table 3 .
+we show only the results for the hac with single-linkage and as / ms stopping criterion , as this is the best-performing complete algorithm : as can be seen , the separability-based feature selection is very effective , reducing the dimensionality of the feature space by a factor of 20 with no deterioration in results , and by a factor of 100 with only a very slight deterioration .
+identified relations .
+in the table 4 we list cluster-by-cluster the relations identified by the system in the new york times 1995 corpus , together with their sizes and the number of mistakes .
+as can be seen , the system is very precise , introducing almost no wrong candidates into the relations .
+the two mistakes , each by 4 wrong candidates , come from incorrect merging of correct clusters .
+the system also produced several closed clusters , which list the same pair of candidates in different wordings and / or in a different order .
+for example , the cluster finministry-japan contains pairs ( finance ministry , japan ) , and ( ministry of finance , japan ) .
+the system of course has no knowledge that the entities finance ministry and ministry of finance are actually the same .
+finally , there are four garbage clusters of various sizes , which include pairs unrelated to each other and pairs that do not belong to any well-defined relation .
+however , we believe that the closed clusters and the garbage clusters do not significantly harm the intended use of the system , which is identification of relations for further extraction by semi- supervised systems .
+if these clusters are excluded , the precision of the system is nearly perfect .
+in table 5 we show further details for several top clusters : we list two candidate pairs ( alphabetically first ) placed into the cluster , and a single context ( chronologically first ) extracted for each listed candidate .
+as can be seen from this table , the generated clusters are semantically reasonable .
+conclusions and future research .
+we have presented the results of several experiments , comparing different clustering algorithms and different feature extraction and selection methods for unsupervised relation identification , using an evaluation metric adapted for the task .
+the experiments demonstrate superior performance of the single linkage hac clustering algorithm with the average / maximal similarity stopping criterion .
+we also demonstrated the importance of using complex features , and relying on features that are based both on individual entities and on combination of entities within pairs .
+unlike most of the previous works , our system performs without a separate named-entity recognition component , using only a general-purpose noun phrase chunker .
+thus , all of the entities initially belong to the same large set .
+nevertheless , there are almost no argument type mistakes in the final clusters .
+also , although the general-purpose noun phrase chunker makes many mistakes , candidate pairs containing bad entities end up placed into the garbage cluster .
+in the future research we plan to test the sample-based feature selection , which if successful would allow us to use much bigger initial sets of features , and thus to work with bigger candidate sets .
+currently , very big candidate sets are inaccessible to our system , because the number of features that need to be extracted is too large .
+we also plan to test our clustering scheme in other unsupervised clustering settings , such as clustering of relations between individual words , for the field of unsupervised language acquisition .

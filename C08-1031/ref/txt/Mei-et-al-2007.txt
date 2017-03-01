@@ -1,0 +1,299 @@
+modeling facets and opinions in weblogs abstract .
+in this paper , we define the problem of topic-sentiment analysis on weblogs and propose a novel probabilistic model to capture the mixture of topics and sentiments simultaneously .
+the proposed topic-sentiment mixture ( tsm ) model can reveal the latent topical facets in a weblog collection , the subtopics in the results of an ad hoc query , and their associated sentiments .
+it could also provide general sentiment models that are applicable to any ad hoc topics .
+with a specifically designed hmm structure , the sentiment models and topic models estimated with tsm can be utilized to extract topic life cycles and sentiment dynamics .
+empirical experiments on different weblog datasets show that this approach is effective for modeling the topic facets and sentiments and extracting their dynamics from weblog collections .
+the tsm model is quite general ; it can be applied to any text collections with a mixture of topics and sentiments , thus has many potential applications , such as search result summarization , opinion tracking , and user behavior prediction .
+introduction .
+more and more internet users now publish online dairies and express their opinions with weblogs ( i.e. , blogs ) .
+the wide coverage of topics , dynamics of discussion , and abundance of opinions in weblogs make blog data extremely valuable for mining user opinions about all kinds of topics ( e.g. , products , political figures , etc . ) , which in turn would enable a wide range of applications , such as opinion search for ordinary users , opinion tracking for business intelligence , and user behavior prediction for targeted advertising .
+technically , the task of mining user opinions from weblogs boils down to sentiment analysis of blog data identifying and extracting positive and negative opinions from blog articles .
+although much work has been done recently on blog mining [ 11 , 7 , 6 , 15 ] , most existing work aims at extracting and analyzing topical contents of blog articles without any analysis of sentiments in an article .
+the lack of sentiment analysis in such work often limits the effectiveness of the mining results .
+for example , in [ 6 ] , a burst of blog mentions about a book has been shown to be correlated with a spike of sales of the book in amazon.com.
+however , a burst of criticism of a book is unlikely to indicate a growth of the book sales .
+similarly , a decrease of blog mentions about a product might actually be caused by the decrease of complaints about its defects .
+thus understanding the positive and negative opinions about each topic / subtopic of the product is critical to making more accurate predictions and decisions .
+there has also been some work trying to capture the positive and negative sentiments in weblogs .
+for example , opinmind [ 20 ] is a commercial weblog search engine which can categorize the search results into positive and negative opinions .
+mishne and others analyze the sentiments [ 18 ] and moods [ 19 ] in weblogs , and use the temporal patterns of sentiments to predict the book sales as opposed to simple blog mentions .
+however , a common deficiency of all this work is that the proposed approaches extract only the overall sentiment of a query or a blog article , but can neither distinguish different subtopics within a blog article , nor analyze the sentiment of a subtopic .
+since a blog article often covers a mixture of subtopics and may hold different opinions for different subtopics , it would be more useful to analyze sentiments at the level of subtopics .
+for example , a user may like the price and fuel efficiency of a new toyota camry , but dislike its power and safety aspects .
+indeed , people tend to have different opinions about different features of a product [ 28 , 13 ] .
+as another example , a voter may agree with some points made by a presidential candidate , but disagree with some others .
+in reality , a general statement of good or bad about a query is not so informative to the user , who usually wants to drill down in different facets and explore more detailed information ( e.g. , price , battery life , warranty of a laptop ) .
+in all these scenarios , a more in-depth analysis of sentiments in specific aspects of a topic would be much more useful than the analysis of the overall sentiment of a blog article .
+to improve the accuracy and utility of opinion mining from blog data , we propose to conduct an in-depth analysis of blog articles to reveal the major topics in an article , associate each topic with sentiment polarities , and model the dynamics of each topic and its corresponding sentiments .
+such topic-sentiment analysis can potentially support many applications .
+for example , it can be used to generate a more detailed topic-sentiment summary of weblog search results as shown in figure 1 .
+in figure 1 , given a query word representing a users ad hoc information need ( e.g. , a product ) , the system extracts the latent facets ( subtopics ) in the search results , and associates each subtopic with positive and negative sentiments .
+from the example sentences on the left , which are organized in a two dimensional structure , the user can understand the pros and cons of each facet of the product , or what are its best and worst aspects .
+from the strength dynamics of a topic and its associated sentiments on the right , the user can get deeper understanding of how the opinions about a specific facet change over time .
+to the best of our knowledge , no existing work could simultaneously extract multiple topics and different sentiments from weblog articles .
+in this paper , we study the novel problem of modeling subtopics and sentiments simultaneously in weblogs .
+we formally define the topic-sentiment analysis ( tsa ) problem and propose a probabilistic mixture model called topic- sentiment mixture ( tsm ) to model and extract the multiple subtopics and sentiments in a collection of blog articles .
+specifically , a blog article is assumed to be generated by sampling words from a mixture model involving a background language model , a set of topic language models , and two ( positive and negative ) sentiment language models .
+with this model , we can extract the topic / subtopics from blog articles , reveal the correlation of these topics and different sentiments , and further model the dynamics of each topic and its associated sentiments .
+we evaluate our approach on different weblog data sets .
+the results show that our method is effective for all the tasks of the topic-sentiment analysis .
+the proposed approach is quite general and has many potential applications .
+the mining results are quite useful for summarizing search results , monitoring public opinions , predicting user behaviors , and making business decisions .
+our method requires no prior knowledge about a domain , and can extract general sentiment models applicable to any ad hoc queries .
+although we only tested the tsm on weblog articles , it is applicable to any text data with mixed topics and sentiments , such as customer reviews and emails .
+the rest of the paper is organized as follows .
+in section 2 , we formally define the problem of topic-sentiment analysis .
+in section 3 , we present the topic-sentiment mixture model and discuss the estimation of its parameters .
+we show how to extract the dynamics of topics and sentiments in section 4 , and present our experiment results in section 5 .
+in sections 6 and 7 , we discuss the related work and conclude . 2 .
+problem formulation .
+in this section , we formally define the general problem of topic-sentiment analysis .
+let c = { d1 , d2 , ... , dm } be a set of documents ( e.g. , blog articles ) .
+we assume that c covers a number of topics , or subtopics ( also known as themes ) and some related sentiments .
+following [ 9 , 1 , 16 , 17 ] , we further assume that there are k major topics ( subtopics ) in the documents , { 01 , 02 , ... , 0k } , each being characterized by a multinomial distribution over all the words in our vocabulary ( also known as a unigram language model ) .
+following [ 23 , 21 , 13 ] , we assume that there are two sentiment polarities in weblog articles , the positive and the negative sentiment .
+the two sentiments are associated with each topic in a document , representing the positive and negative opinions about the topic .
+definition 1 ( topic model ) a topic model 0 in a text collection c is a probabilistic distribution of words { p ( w | 0 ) } wev and represents a semantically coherent topic .
+clearly , we have pwevp ( w | 0 ) = 1 .
+intuitively , the high probability words of a topic model often suggest what theme the topic captures .
+for example , a topic about the movie da vinci code may assign a high probability to words like movie , tom and hanks this definition can be easily extended to a distribution of multi- word phrases .
+we assume that there are k such topic models in the collection .
+definition 2 ( sentiment model ) a sentiment model in a text collection c is a probabilistic distribution of words representing either positive opinions ( { p ( w | 0p ) } wev ) or negative opinions ( { p ( w | 0n ) } wev ) .
+we have pwevp ( w | 0p ) = 1 and pwevp ( w | 0n ) = 1 .
+sentiment models are orthogonal to topic models in the sense that they would assign high probabilities to general words that are frequently used to express sentiment polarities whereas topical models would assign high probabilities to words representing topical contents with neutral opinions .
+definition 3 ( sentiment coverage ) a sentiment coverage of a topic in a document ( or a collection of documents ) is the relative coverage of the neurtral , positive , and negative opinions about the topic in the document ( or the collection of documents ) .
+formally , we define a sentiment coverage of topic 0i in document d as ci , d = { si , d,f , si , d,p , si , d,n } .
+si , d,f , si , d,p , si , d,n are the coverage of neutral , positive , and negative opinions , respectively ; they form a probability distribution and satisfy si , d,f + si , d,p + si , d, n = 1 .
+in many applications , we also want to know how the neutral discussions , the positive opinions , and the negative opinions about the topic ( subtopic ) change over time .
+for this purpose , we introduce two additional concepts , topic life cycle and sentiment dynamics as follows .
+definition 4 ( topic life cycle ) a topic life cycle , also known as a theme life cycle in [ 16 ] , is a time series representing the strength distribution of the neutral contents of a topic over the time line .
+the strength can be measured based on either the amount of text which a topic can explain [ 16 ] or the relative strength of topics in a time period [ 15 , 17 ] .
+in this paper , we follow [ 16 ] and model the topic life cycles with the amount of document content that is generated with each topic model in different time periods .
+definition 5 ( sentiment dynamics ) the sentiment dynamics for a topic b is a time series representing the strength distribution of a sentiment s g { p , ni associated with b. the strength can indicate how much positive / negative opinion there is about the given topic in each time period .
+being consistent with topic life cycles , we model the sentiment dynamics with the amount of text associated with topic b that is generated with each sentiment model .
+based on the concepts above , we define the major tasks of topic-sentiment analysis ( tsa ) on weblogs as : ( 1 ) learning general sentiment models : learn a sentiment model for positive opinions and a sentiment model for negative opinions , which are general enough to be used in new unlabeled collections .
+( 2 ) extracting topic models and sentiment coverages : given a collection of weblog articles and the general sentiment models learnt , customize the sentiment models to this collection , extract the topic models , and extract the sentiment coverages .
+( 3 ) modeling topic life cycle and sentiment dynamics : model the life cycles of each topic and the dynamics of each sentiment associated with that topic in the given collection .
+this problem as defined above is more challenging than many existing topic extraction tasks and sentiment classification tasks for several reasons .
+first , it is not immediately clear how to model topics and sentiments simultaneously with a mixture model .
+no existing topic extraction work [ 9 , 1 , 16 , 15 , 17 ] could extract sentiment models from text , while no sentiment classification algorithm could model a mixture of topics simultaneously .
+second , it is unclear how to obtain sentiment models that are independent of specific contents of topics and can be generally applicable to any collection representing a users ad hoc information need .
+most existing sentiment classification methods overfit to the specific training data provided .
+finally , computing and distinguishing topic life cycles and sentiment dynamics is also a challenging task .
+in the next section , we will present a unified probabilistic approach to solve these challenges .
+a mixture model for theme and sentiment analysis .
+the generation process .
+a lot of previous work has shown the effectiveness of mixture of multinomial distributions ( mixture language models ) in extracting topics ( themes , subtopics ) from either plain text collections or contextualized collections [ 9 , 1 , 16 , 15 , 17 , 12 ] .
+however , none of this work models topics and sentiments simultaneously ; if we apply an existing topic model on the weblog articles directly , none of the topics extracted with this model could capture the positive or negative sentiment well .
+to model both topics and sentiments , we also use a mixture of multinomials , but extend the model structure to include two sentiment models to naturally capture sentiments .
+in the previous work [ 15 , 17 ] , the words in a blog article are classified into two categories : ( 1 ) common english words ( e.g. , the , a , of ) and ( 2 ) words related to a topical theme ( e.g. , nano , price , mini in the documents about ipod ) .
+the common english words are captured with a background component model [ 28 , 16 , 15 ] , and the topical words are captured with topic models .
+in our topic-sentiment model , we extend the categories for the topical words in existing approaches .
+specifically , for the words related to a topic , we further categorize them into three sub-categories : ( 1 ) words about the topic with neutral opinions ( e.g. , nano , price ) ; ( 2 ) words representing the positive opinions of the topic ( e.g. , awesome , love ) ; and ( 3 ) words representing the negative opinions about the topic ( e.g. , hate , bad ) .
+correspondingly , we introduce four multinomial distributions : ( 1 ) bb is a background topic model to capture common english words ; ( 2 ) o = { b1 , , bki are k topic models to capture neutral descriptions about k global subtopics in the collection ; ( 3 ) bp is a positive sentiment model to capture positive opinions ; and ( 4 ) bn is a negative sentiment model to capture negative opinions for all the topics in the collection .
+according to this mixture model , an author would write a weblog article by making the following decisions stochastically and sampling each word from the component models : ( 1 ) the author would first decide whether the word will be a common english word .
+if so , the word would be sampled according to bb .
+( 2 ) if not , the author would then decide which of the k subtopics the word should be used to describe .
+( 3 ) once the author decides which topic the word is about , the author will further decide whether the word is used to describe the topic neutrally , positively , or negatively .
+( 4 ) let the topic picked in step ( 2 ) be the j-th topic b ; .
+the author would finally sample a word using b ; , bp or bn , according to the decision in step ( 3 ) .
+this generation process is illustrated in figure 2 .
+figure 2 : the generation process of the topic- sentiment mixture model we now formally present the topic-sentiment mixture model and the estimation of parameters based on blog data .
+the topic-sentiment mixture model .
+let c = { d1 , ... , dm } be a collection of weblog articles , o = { ^ 1 , ... , ^ k } be k topic models , ^ p and ^ n be a positive and negative sentiment model respectively .
+the log likelihood of the whole collection c according to the tsm model is topic probabilities ; and ( 4 ) the sentiment coverage for each document , { sj , d,f , sj , d,p , sj , d,n } .
+we denote the whole set of free parameters as a. without any prior knowledge , we may use the maximum likelihood estimator to estimate all the parameters .
+specifically , we can use the expectation-maximization ( em ) algorithm [ 3 ] to compute the maximum likelihood estimate iteratively ; the updating formulas are shown in figure 3 .
+in these formulas , { zd , w,j , 3 } is a set of hidden variables ( s e { f , p , n } ) , and p ( zd , w,j , 3 ) is the probability that word w in document d is generated from the j-th topic , using topic / sentiment model s .
+however , in reality , if we do not provide any constraint on the model , the sentiment models estimated from the em algorithm will be very biased towards specific contents of the collection , and the topic models will also be contaminated with sentiments .
+this is because the opinion words and topical words may co-occur with each other , thus they will not be separated by the em algorithm .
+this is unsatisfactory as we want our sentiment models to be independent of the topics , while the topic models should be neutral .
+in order to solve this problem , we introduce a regularized two-phase estimation framework , in which we first learn a general prior distribution on the sentiment models and then combine this prior with the data likelihood to estimate the parameters using the maximum a posterior ( map ) estimator .
+defining model priors .
+the prior distribution should tell the tsm what the sentiment models should look like in the working collection .
+this knowledge may be obtained from domain specific lexicons , or training data in this domain as in [ 23 ] .
+however , it is impossible to have such knowledge or training data for every ad hoc topics , or queries .
+therefore , we want the prior sentiment models to be general enough to apply to any ad hoc topics .
+in this section , we show how we may exploit an online sentiment retrieval service such as opinmind [ 20 ] to induce a general prior on the sentiment models .
+when given a query , opinmind can retrieve positive sentences and negative sentences , thus we can obtain examples with sentiment labels for a topic ( i.e. , the query ) from opinmind .
+the query can be regarded as a topic label .
+to ensure diversity of topics , we can submit various queries to opinmind and mix all the results to form a training collection .
+presumably , if the topics in this training collection are diversified enough , the sentiment models learnt would be very general .
+with such a training collection , we have topic labels and sentiment labels for each document .
+formally , we have c = { ( d , td , sd ) } , where td indicates which topics the document is about , and sd indicates whether d holds positive or negative opinions about the topics .
+we then use the topic-sentiment model presented in section 3.2 to fit the training data and estimate the sentiment models .
+since we have topic and sentiment labels , we impose the following constraints : ( 1 ) 7rdj = 1 if td = j and 7rdj = 0 otherwise ; ( 2 ) sj , d,p = 0 if sd is negative and sj , d,n = 0 if sd is positive .
+in section 5 , we will show that this estimation method is effective for extracting general sentiment models and the diversity of topics helps improve the generality of the sentiment models learnt .
+rather than directly using the learnt sentiment models to analyze our target collection , we use them to define a prior on the sentiment models and estimate sentiment models ( and the topic models ) using the maximum a posterior estimator .
+this way would allow us to adapt the general sentiment models to our collection and further improve the accuracy of the sentiment models , which is traditionally done in a domain dependent way .
+specifically , let ~ ^ p and ~ ^ n be the positive and negative sentiment models learnt from some training collections .
+we define the following two conjugate dirichlet priors for the sentiment model ^ p and ^ n , respectively : dir ( { 1 + pp ( wi ^ p ) } wev ) and dir ( { 1 + np ( wi ~ ^ n ) } wev ) , where the parameters p and n indicate how strong our confidence is on the sentiment model prior .
+since the prior is conjugate , p ( or n ) can be interpreted as equivalent sample size , which means that the impact of adding the prior would be equivalent to adding pp ( w i ~ ^ p ) ( or np ( wi ~ ^ n ) ) pseudo counts for word w when estimating the sentiment model p ( wi ^ p ) ( or p ( wi ^ n ) ) .
+if we have some prior knowledge on the topic models , we can also define them as conjugate prior for some ^ j .
+indeed , given a topic , a user often has some knowledge about what aspects are interesting .
+for example , when the user is searching for laptops , we know that he is very likely interested in price and configuration .
+it will be nice if we guide the model to enforce two of the topic models to be as close as possible to the predefined facets .
+utilizing the model .
+once the parameters in the model are estimated , many tasks can be done by utilizing the model parameters .
+rank sentences for topics : given a set of sentences and a theme j , we can rank the sentences according to a topic j with the score .
+sentiment dynamics analysis .
+while the tsm model can be directly used to analyze topics and sentiments in many ways , it does not directly model the topic life cycles or sentiment dynamics .
+in addition to associating the sentiments with multiple subtopics , we would also like to show how the positive / negative opinions about a given subtopic change over time .
+the comparison of such temporal patterns ( i.e. , topic life cycles and corresponding sentiment dynamics ) could potentially provide more in-depth understanding of the public opinions than [ 20 ] , and yield more accurate predictions of user behavior than using the methods proposed in [ 6 ] and [ 19 ] .
+to achieve this goal , we can approximate these temporal patterns by partitioning documents into their corresponding time periods and computing the posterior probability of p ( t10j ) , p ( t10j , 0p ) and p ( t10j , 0n ) , where t is a time period .
+this approach has the limitation that these posterior distributions are not well defined , because the time variable t is nowhere involved in the original model .
+an alternative approach would be to model the time variable t explicitly in the model as in [ 15 , 17 ] , but this would bring in many more free parameters to the model , making it harder to estimate all the parameters reliably .
+defining a good partition of the time line is also a challenging problem , since too coarse a partition would miss many bursting patterns , while too fine granularity a time period may not be estimated reliably because of data sparseness .
+in this work , we present another approach to extract topic life cycles and sentiment dynamics , which is similar to the method used in [ 16 ] .
+specifically , we use a hidden markov model ( hmm ) to tag every word in the collection with a topic and sentiment polarity .
+once all words are tagged , the topic life cycles and sentiment dynamics could be extracted by counting the words with corresponding labels .
+we first sort the documents with their time stamps , and convert the whole collection into a long sequence of words .
+on the surface , it appears that we could follow [ 16 ] and construct an hmm with each state corresponding to a topic model ( including the background model ) , and set the output probability of state j to p ( w | 0j ) .
+a topic state can either stay on itself or transit to some other topic states through the background state .
+the system can learn ( from our collection ) the transition probabilities with the baum-welch algorithm [ 24 ] and decode the collection sequence with the viterbi algorithm [ 24 ] .
+we can easily model sentiments by adding two sentiment states to the hmm .
+unfortunately , this structure cannot decode which sentiment word is about which topic .
+below , we present an alternative hmm structure ( shown in figure 4 ) that can better serve our purpose. life cycles and sentiment dynamics by counting the number of words labeled with the corresponding state over time .
+experiments and results .
+data sets .
+we need two types of data sets for evaluation .
+one is used to learn the general sentiment priors , thus should have labels for positive and negative sentiments .
+in order to extract very general sentiment models , we want the topics in this data set to be as diversified as possible .
+we construct this training data set by leveraging an existing weblog sentiment retrieval system ( i.e. , opinmind.com [ 20 ] ) , i.e. , we submit different queries to opinmind and mix the downloaded classified results .
+this also gives us natural boundaries of topics in the training collection .
+the composition of this training data set ( denotated as opin ) is shown in table 1 .
+in figure 4 , state e controls the transitions between topics .
+in addition to e , there are a series of pseudo states , each of which corresponds to a subtopic .
+these pseudo states can only transit from each other through state e. a pseudo state is not a real single state , but a substructure of states and transitions .
+for example , pseudo state t1 consists of four real states , three of them correspond to the topic model 01 , the positive sentiment model , and the negative sentiment model .
+the remaining state corresponds to the background model .
+the four states in each pseudo state are fully connected , except that there is no direct transition between two sentiment states .
+the output probabilities of all states ( except for state e ) are fixed according to the corresponding topic or sentiment models .
+this hmm structure can decode both topic segments ( with pseudo state tj ) and sentiment segments associated with each topic ( with states inside tj ) .
+we force the model to start with state e , and use the baum-welch algorithm to learn the transition probabilities and the output probability for e. once all the parameters are estimated , we use the viterbi algorithm to decode the collection sequence .
+for all the weblog collections , krovetz stemmer [ 10 ] is used to stem the text .
+sentiment model extraction .
+our first experiment is to evaluate the effectiveness of learning the prior models for sentiments .
+as discussed in section 3.3 , a good ~ 0s should not be dependent with the specific features of topics , and be general enough to be used to guild the learning of sentiment models for unseen topics .
+the more diversified the topics of the training set are , the more general the sentiment models estimated should be .
+to evaluate the effectiveness of our tsm model on this task , we collect labeled results of 10 different topics from opinmind , each of which consists of an average of 5 queries .
+we then construct a series of training data sets , such that for any k ( 1 < k < 9 ) , there are 10 training data sets , each of which is a mixture of k topics .
+the left two columns in table 3 present the two sentiment models extracted from the 10-topic-mixture dataset , which is more general than the right two columns and two in the middle , which are extracted from two single-topic data sets ( movies and cities ) respectively .
+in the two columns in the middles , we see terms like harry , pot , brokeback , mountain ranked highly in the sentiment models .
+these words are actually part of our query terms .
+we also see other domain specific terms such as movie , series , gay , and watch .
+in the sentiment models from cities dataset , we remove all query terms from the top words .
+however , we could still notice words like night , air in the positive model , and traffic , weather , transport in the negative model .
+this indicates that the sentiment models are highly biased towards the specific features of the topic , if the training data set only contains one topic .
+to evaluate this in a more principled way , we conduct a 10-fold cross validation , which numerically measures the closeness of the sentiment models learnt from a mixture of topics ( k = 1 9 ) , and those from an unseen topic ( i.e. , a topic not in the mixture ) .
+intuitively , a sentiment model is less biased if it is closer to unseen topics .
+the closeness of two sentiment models is measured with the kullback-leibler ( kl ) divergence , divergence between the positive ( negative ) sentiment model learnt from a k-topicmixture dataset and the positive ( negative ) sentiment model learnt from an unseen single-topic dataset .
+we notice that when k is larger , where the topics in the training dataset are more diversified , the sentiment models learnt from the collection are closer to the sentiment models of unseen topics .
+this validates our assumption that a more diversified training collection could provide more general sentiment prior models for new topics .
+the sentiment models ( ~ bp and ~ bn ) estimated from the 10-topic-mixture collection are used as the prior sentiment models in the following experiments .
+topic model extraction .
+our second experiment is to fit the tsm to ad hoc weblog collections and extract the topic models and sentiment coverage .
+as discussed in section 3.3 , the general sentiment models learnt from the opin data set will be used as a strong prior for the sentiment models in a given collection .
+we expect the topic models extracted be unbiased towards sentiment polarities , which simply represent the neutral contents of the topics .
+in the experiments , we set the initial values of ' s reasonably large ( > 10,000 ) , and use the regularized estimation strategy in [ 25 ] to gradually decay the ' s. as is empirically set between 0.85 0.95 .
+some informative topic models extracted from the test data sets are shown in table 4 , 5 .
+as discussed in section 3.4 , we can either extract topic models in a completely unsupervised way , or base on some prior of what the topic models should look like .
+in table 4 , 5 , the left three columns are topic models extracted without prior knowledge , and the right columns are those extracted with the bold titles as priors .
+we see that the topics extracted in either way are informative and coherent .
+the ones extracted with priors are extremely clear and distinctive , such as nano and battery for the query ipod .
+this is quite desirable in summarizing search results , where the system could extract topics in an interactive way with the user .
+for example , the user can input several words as expected facets , and the system uses these words ( e.g. , movie , book , history for the query da vinci code and battery , price for the query ipod ) as prior on some topic models , and let the remaining to be extracted in the unsupervised way .
+with the topic models and sentiment models extracted , we can summarize the sentences in blog search results , by first ranking sentences according to different topics , and then assigning them into sentiment categories .
+table 6 shows the summarized results for the query da vinci code .
+we show two facets of the results : movie and book .
+although both the movie and the book are named as the da vinci code , many people hold different opinions about them .
+table 6 well organizes sentences retrieved for the query da vinci code by the relevance to each facets , and the categorization as positive , negative , and neutral opinions .
+the sentences do not have to contain the facet name , such as tom hanks stars in the movie .
+the bolded sentence clearly presents an example of mixed topics .
+we also notice that the system sometimes make the wrong classifications .
+for example , the sentence anybody is interested in it ? is misclassified as positive .
+this is because we rely on a unigram language model for the sentiments , and the bag of words assumption does not consider word dependency and linguistics .
+this problem can be tackled when phrases are used as the bases of the sentiment models .
+in table 7 , we compare the query summarization of our model to that of opinmind .
+the left two columns are summarized search results with tsm and right two columns are top results from opinmind , with the same query ipod .
+we see that opinmind tends to rank sentences with strongest sentiments to the top , but many of which are not very informative .
+for example , although the sentences i love ipod and i hate ipod do reflect strong attitudes , they do not give the user as useful information as out of battery again .
+our system , on the other hand , reveals the hidden facets of peoples opinions .
+in the results from opinmind , we do notice that some sentences are about specific aspects of ipod , such as battery , video , microsoft ( indicating marketing ) .
+unfortunately , these useful information are mixed together .
+our system organizes the sentences according to the hidden aspects , which provides the user a deeper understanding of the opinions about the query .
+topic life cycle and sentiment dynamics .
+based on the topic models and sentiment models learnt from the test collections , we evaluate the effectiveness of the hmm based method presented in section 4 , on extraction of topic life cycles and sentiment dynamics .
+intuitively , we expect the sentiment models to explain as much information as possible , since the most useful patterns are sentiment dynamics .
+in our experiments , we force the transition probability from topic states to sentiment states , and those from sentiment models to themselves to be reasonably large ( e.g. , > 0.25 ) .
+the results of topic life cycles and sentiment dynamics are selectively presented in figure 6 .
+in figure 6 ( a ) and ( b ) , we present the dynamics of two facets in the da-vinci-code collection : book and religion , belief .
+the neutral line in each plot corresponds to the topic life cycle .
+in both plots , we see a significant burst in may , 2006 , which was caused by the release of the movie da vinci code .
+however , before the movie , we can still notice some bursts of discussions about the book .
+in the plot of the book facet , the positive sentiments consistently dominates the opinions during the burst .
+for the religion issues and the conflicts of the belief , however , the negative opinions are stronger than the positive opinions during the burst , which is consistent with the heated debates about the movie around that period of time .
+in fact , the book and movie are boycotted or even banned in some countries because of the confliction to their religious belief .
+in figure 6 ( c ) and ( d ) , we present the topic life cycle and the sentiment dynamics of the subtopic nano for ipod .
+in figure 6 ( c ) , we see that both the neutral topic and the positive sentiment about nano burst around early september , 2005 .
+that is consistent with the time of the official introduction of ipod nano .
+the negative sentiment , however , does not burst until several weeks later .
+this is reasonable , since people need to experience the product for a while before discovering its defects .
+in figure 6 ( d ) , we alternatively plot the relative strength of positive ( negative ) sentiment over the negative ( positive ) sentiment .
+this relative strength clearly reveals which sentiment dominates the opinions , and the trend of this domination .
+since there are generally less negative opinions , we plot the neg / pos line with a different scale .
+again , we see that around the time that the ipod nano was introduced , the positive sentiments dominate the opinions .
+however , in october 2005 , the negative sentiments shows a sudden increase of coverage .
+this overlaps with the time period in which there was a bursting of complaints , followed by a lawsuit about the scratch problem of ipod nano .
+we also plot the pos / neg dynamics of the overall sentiments about ipod .
+we see that its shape is much different than the pos / neg plot of nano .
+the positive sentiment holds a larger proportion of opinions , but this domination is getting weaker .
+this also suggests that it is not reasonable to use the overall blog mentions ( not distinguishing subtopics or sentiments ) , or the general sentiment dynamics ( not distinguishing subtopics ) , to predict the user behavior ( e.g. , buying a nano ) .
+all these results show that our method is effective to extract the dynamics of topics and the sentiments .
+related work .
+to the best of our knowledge , modeling the mixture of topics and sentiments has not been addressed in existing work .
+however , there are several lines of related work .
+weblogs have been attracting increasing attentions from researchers , who consider weblogs as a suitable test bed for many novel research problems and algorithms [ 11 , 7 , 6 , 15 , 19 ] .
+much new research work has found applications to weblog analysis , such as community evolution [ 11 ] , spatiotemporal text mining [ 15 ] , opinion tracking [ 20 , 15 , 19 ] , information propagation [ 7 ] , and user behavior prediction [ 6 ] .
+mei and others introduced a mixture model to extract the subtopics in weblog collections , and track their distribution over time and locations [ 16 ] .
+gruhl and others [ 7 ] proposed a model for information propagation and detect spikes in the diffusing topics in weblogs , and later use the burst of blog mentions to predict spikes of sales of this book in the near future [ 6 ] .
+however , all these models tend to ignore the sentiments in the weblogs , and only capture the general description about topics .
+this may limit the usefulness of their results .
+mishne and others instead used the temporal pattern of sentiments to predict the book sales .
+opinmind [ 20 ] summarizes the weblog search results with positive and negative categories .
+on the other hand , researchers also use facets to categorize the latent topics in search results [ 8 ] .
+however , all this work ignores the correlation between topics and sentiments .
+this limitation is shared with other sentiment analysis work such as [ 18 ] .
+sentiment classification has been a challenging topic in natural language processing ( see e.g. , [ 26 , 2 ] ) .
+the most common definition of the problem is a binary classification task of a sentence to either the positive or the negative polarity [ 23 , 21 ] .
+since traditional text categorization methods perform poorly on sentiment classification [ 23 ] , pang and lee proposed a method using mincut algorithm to extract sentiments and subjective summarization for movie reviews [ 21 ] .
+in some recent work , the definition of sentiment classification problem is generalized into a rating scale [ 22 ] .
+the goal of this line of work is to improve the classification accuracy , while we aim at mining useful information ( topic / sentiment models , sentiment dynamics ) from weblogs .
+these methods do not either consider the correlation of sentiments and topics or model sentiment dynamics .
+some recent work has been aware of this limitation .
+engstrom studied how the topic dependence influences the accuracy of sentiment classification and tried to reduce this dependence [ 5 ] .
+in a very recent work [ 4 ] , the author proposed a topic dependent method for sentiment retrieval , which as- sumed that a sentence was generated from a probabilistic model consisting of both a topic language model and a sentiment language model .
+a similar approach could be found in [ 27 ] .
+their vision of topic-sentiment dependency is similar to ours .
+however , they do not consider the mixture of topics in the text , while we assume that a document could cover multiple subtopics and different sentiments .
+their model requires that a set of topic keywords is given by the user , while our method is more flexible , which could extract the topic models in an unsupervised / semi-supervised way with an em algorithm .
+they also requires sentiment training data for every topic , or manually input sentiment keywords , while we can learn general sentiment models applicable to ad hoc topics .
+most opinion extraction work tries to find general opinions on a given topic but did not distinguish sentiments [ 28 , 15 ] .
+liu and others extracted product features and opinion features for a product , thus were able to provide sentiments for different features of a product .
+however , those product opinion features are highly dependent on the training data sets , thus are not flexible to deal with ad hoc queries and topics .
+the same problem is shared with [ 27 ] .
+they also did not provide a way to model sentiment dynamics .
+there is yet another line of research in text mining , which tries to model the mixture of topics ( themes ) in documents [ 9 , 1 , 16 , 15 , 17 , 12 ] .
+the mixture model we presented is along this line .
+however , none of this work has tried to model the sentiments associated with the topics , thus can not be applied to our problem .
+however , we do notice that the tsm model is a special case of some very general topic models , such as the cplsa model [ 17 ] , which mixes themes with different views ( topic , sentiment ) and different coverages ( sentiment coverages ) .
+the generation structure in figure 2 is also related to the general dag structure presented in [ 12 ] .
+conclusions .
+in this paper , we formally define the problem of topic- sentiment analysis and propose a new probabilistic topic- sentiment mixture model ( tsm ) to solve this problem .
+with this model , we could effectively ( 1 ) learn general sentiment models ; ( 2 ) extract topic models orthogonal to sentiments , which can represent the neutral content of a subtopic ; and ( 3 ) extract topic life cycles and the associated sentiment dynamics .
+we evaluate our model on different weblog collections ; the results show that the tsm model is effective for topic-sentiment analysis , generating more useful topic- sentiment result summaries for blog search than a state-of- the-art blog opinion search engine ( opinmind ) .
+there are several interesting extensions to our work .
+in this work , we assume that the content of sentiment models is the same for all topics in a collection .
+it would be interesting to customize the sentiment models according to each topic and obtain different contextual views [ 17 ] of sentiments on different facets .
+another interesting future direction is to further explore other applications of the tsm , such as user behavior prediction .

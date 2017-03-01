@@ -1,0 +1,40 @@
+(claim)#numerous methods have been devised for classification of semantic relationships , among which those holding between nominals constitute a prominent category .
+(claim)#major differences between these methods include available resources , degree of preprocessing , features used , classification algorithm and the nature of training / test data .
+(claim)#available resources .
+0.1#(beamer et al., 2007)#many relation classification algorithms utilize wordnet . among the 15 systems presented by the 14 semeval teams , some utilized the manually provided wordnet tags for the dataset pairs ( e.g. $1 ) . in all cases , usage of wn tags improves the results significantly .
+0.1#(costello,2007);(nakov and hearst, 2007);(kim and baldwin, 2007)#some other systems that avoided using the labels used wn as a supporting resource for their algorithms $1 $2 $3 .
+0.1#(hendrickx et al., 2007);(bedmar et al., 2007);(aramaki et al., 2006)#only three avoided wn altogether $1 $2 $3 .
+0.1#(strube and ponzetto, 2006);(turney, 2005);(rosario and hearst, 2001)#other resources used for relationship discovery include wikipedia $1 , thesauri or synonym sets $2 and domain specific semantic hierarchies like mesh $3 .
+(claim)#while usage of these resources is beneficial in many cases , high quality word sense annotation is not easily available .
+(claim)#besides , lexical resources are not available for many languages , and their coverage is limited even for english when applied to some restricted domains .
+(claim)#in this paper we do not use any manually annotated resources apart from the classification training set .
+(claim)#degree of preprocessing .
+0.2#(pantel et al., 2004)#many relationship classification methods utilize some language-dependent preprocessing , like deep or shallow parsing , part of speech tagging and named entity annotation $1 . while the obtained features were shown to improve classification performance , they tend to be language dependent and error-prone when working on unusual text domains and are also highly computationally intensive when processing large corpora .
+(claim)#to make our approach as language independent and efficient as possible , we avoided using any such preprocessing techniques .
+(claim)#classification features .
+0.3#(moldovan et al., 2004)#a wide variety of features are used by different algorithms , ranging from simple bag-of-words frequencies to wordnet-based features $1 .
+(claim)#several studies utilize syntactic features . 
+0.3#(bedmar et al., 2007);(aramaki et al., 2006)#many other works manually develop a set of heuristic features devised with some specific relationship in mind , like a wordnet-based meronymy feature $1 or size-of feature $2 .
+(claim)#however , the most prominent feature type is based on lexico-syntactic patterns in which the related words co-appear .
+0.3#(hearst, 1992);(girju et al., 2006);(snow et al., 2006);(banko et al, 2007)#since $1 , numerous works have used patterns for discovery and identification of instances of semantic relationships ( e.g. , $2 $3 $4 ) .
+0.3#(rosenfeld and feldman 2007)#$1 discover relationship instances by clustering entities appearing in similar contexts .
+0.3#(pantel and pennacchiotti, 2006);(turney, 2006)#strategies were developed for discovery of multiple patterns for some specified lexical relationship $1 and for unsupervised pattern ranking $2 .
+0.3#(davidov et al. 2007)#$1 use pattern clusters to define general relationships , but these are specific to a given concept .
+(claim)#no study so far has proposed a method to define , discover and represent general relationships present in an arbitrary corpus .
+0.3#(davidov and rappoport, 2008)#in $1 we present an approach to extract pattern clusters from an untagged corpus .
+(claim)#each such cluster represents some unspecified lexical relationship .
+(claim)#in this paper , we use these pattern clusters as the ( only ) source of machine learning features for a nominal relationship classification problem .
+(claim)#unlike the majority of current studies , we avoid using any other features that require some language-specific information or are devised for specific relationship types .
+(claim)#classification algorithm .
+0.4#(girju et al., 2004);(nastase et al., 2006)#various learning algorithms have been used for relation classification . common choices include variations of svm $1 $2 , decision trees and memory-based learners .
+0.4#(witten, h., frank, e., 1999);(hendrickx et al., 2007)#freely available tools like weka $1 allow easy experimentation with common learning algorithms $2 .
+0.4#(hendrickx et al., 2007)#in this paper we did not focus on a single ml algorithm , letting algorithm selection be automatically based on cross-validation results on the training set , as in $1 but using more algorithms and allowing a more flexible parameter choice .
+(claim)#training data .
+(claim)#as stated above , several categorization schemes for nominals have been proposed .
+0.5#(nastase and szpakowicz 2003)#$1 proposed a two-level hierarchy with 5 ( 30 ) classes at the top ( bottom ) levels 3 .
+0.5#(turney, 2005)#(turney, 2006);(nastase et al., 2006)#this hierarchy and a corresponding dataset were used in $1 , $2 , and $3 for evaluation of their algorithms .
+0.5#(moldovan et al., 2004)#$1 proposed a different scheme with 35 classes .
+0.5#(girju et al., 2007)#the most recent dataset has been developed for semeval 07 task 4 $1 .
+(claim)#this manually annotated dataset includes a representative rather than exhaustive list of 7 important nominal relationships .
+(claim)#we have used this dataset , strictly following the evaluation protocol .
+(claim)#this made it possible to meaningfully compare our method to state-oftheart methods for relation classification .

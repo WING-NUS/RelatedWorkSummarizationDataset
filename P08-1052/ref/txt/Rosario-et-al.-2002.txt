@@ -1,0 +1,228 @@
+the descent of hierarchy , and selection in relational semantics .
+abstract .
+in many types of technical texts , meaning is embedded in noun compounds .
+a language understanding program needs to be able to interpret these in order to ascertain sentence meaning .
+we explore the possibility of using an existing lexical hierarchy for the purpose of placing words from a noun compound into categories , and then using this category membership to determine the relation that holds between the nouns .
+in this paper we present the results of an analysis of this method on two- word noun compounds from the biomedical domain , obtaining classification accuracy of approximately 90 % .
+since lexical hierarchies are not necessarily ideally suited for this task , we also pose the question : how far down the hierarchy must the algorithm descend before all the terms within the subhierarchy behave uniformly with respect to the semantic relation in question ?
+we find that the topmost levels of the hierarchy yield an accurate classification , thus providing an economic way of assigning relations to noun compounds .
+introduction .
+a major difficulty for the interpretation of sentences from technical texts is the complex structure of noun phrases and noun compounds .
+consider , for example , this title , taken from a biomedical journal abstract : open-labeled long-term study of the subcutaneous sumatriptan efficacy and tolerability in acute migraine treatment .
+an important step towards being able to interpret such technical sentences is to analyze the meaning of noun compounds , and noun phrases more generally .
+with apologies to charles darwin .
+interpretation of noun compounds ( ncs ) is highly dependent on lexical information .
+thus we explore the use of a large corpus ( medline ) and a large lexical hierarchy ( mesh , medical subject headings ) to determine the relations that hold between the words in noun compounds .
+surprisingly , we find that we can simply use the juxtaposition of category membership within the lexical hierarchy to determine the relation that holds between pairs of nouns .
+for example , for the ncs leg paresis , skin numbness , and hip pain , the first word of the nc falls into the mesh a01 ( body regions ) category , and the second word falls into the c10 ( nervous system diseases ) category .
+from these we can declare that the relation that holds between the words is located in .
+similarly , for influenza patients and aids survivors , the first word falls under c02 ( virus diseases ) and the second is found in m01.643 ( patients ) , yielding the afflicted by relation .
+using this technique on a subpart of the category space , we obtain 90 % accuracy overall .
+in some sense , this is a very old idea , dating back to the early days of semantic nets and semantic grammars .
+the critical difference now is that large lexical resources and corpora have become available , thus allowing some of those old techniques to become feasible in terms of coverage .
+however , the success of such an approach depends on the structure and coverage of the underlying lexical ontology .
+in the following sections we discuss the linguistic motivations behind this approach , the characteristics of the lexical ontology mesh , the use of a corpus to examine the problem space , the method of determining the relations , the accuracy of the results , and the problem of ambiguity .
+the paper concludes with related work and a discussion of future work .
+linguistic motivation .
+one way to understand the relations between the words in a two-word noun compound is to cast the words into a head-modifier relationship , and assume that the head noun has an argument structure , much the way verbs do , as well as a qualia structure in the sense of pustejovsky ( 1995 ) .
+then the meaning of the head noun determines what kinds of things can be done to it , what it is made of , what it is a part of , and so on .
+some relationships apply to only certain classes of nouns ; the semantic structure of the head noun determines the range of possibilities .
+thus if we can capture regularities about the behaviors of the constituent nouns , we should also be able to predict which relations will hold between them .
+we propose using the categorization provided by a lexical hierarchy for this purpose .
+using a large collection of noun compounds , we assign semantic descriptors from the lexical hierarchy to the constituent nouns and determine the relations between them .
+this approach avoids the need to enumerate in advance all of the relations that may hold .
+rather , the corpus determines which relations occur .
+the lexical hierarchy : mesh .
+mesh ( medical subject headings ) 1 is the national library of medicine 's controlled vocabulary thesaurus ; it consists of set of terms arranged in a hierarchical structure .
+there are 15 main sub-hierarchies ( trees ) in mesh , each corresponding to a major branch of medical terminology .
+the longer the id of the mesh term , the longer the path from the root and the more precise the description .
+there are over 35,000 unique ids in mesh 2001 .
+many words are assigned more than one mesh id and so occur in more than one location within the hierarchy ; thus the structure of mesh can be interpreted as a network .
+some of the categories are more homogeneous than others .
+the tree a ( anatomy ) for example , seems to be quite homogeneous ; at level 0 , the nodes are all part of ( meronymic to ) anatomy : the digestive ( a03 ) , respiratory ( a04 ) and the urogenital ( a05 ) systems are all part of anatomy ; at level 1 , the biliary tract ( a03.159 ) and the esophagus ( a03.365 ) are part of the digestive system ( level 0 ) and so on .
+thus we assume that every node is a ( body ) part of the parent node ( and all the nodes above it ) .
+tree c for diseases is also homogeneous ; the child nodes are a kind of ( hyponym of ) the disease at the parent node : neoplasms ( c04 ) is a kind of disease c and hamartoma ( c04.445 ) is a kind ofneoplasms .
+other trees are more heterogeneous , in the sense that the meanings among the nodes are more diverse .
+information science ( l01 ) , for example , contains , among others , communications media ( l01.178 ) , computer security ( l01.209 ) and pattern recognition ( l01.725 ) .
+another heterogeneous sub-hierarchy is natural science ( h01 ) .
+among the children of h01 we find chemistry ( parent of biochemistry ) , electronics ( parent of amplifiers and robotics ) , mathematics ( fractals , game theory and fourier analysis ) .
+in other words , we find a wide range of concepts that are not described by a simple relationship .
+these observations suggest that once an algorithm descends to a homogeneous level , words falling into the subhierarchy at that level ( and below it ) behave similarly with respect to relation assignment .
+counting noun compounds .
+the kinds of relations we found are similar to those described in section 2 .
+note that , in this analysis we focused on determining which sets ofncs fall into the same relation , without explicitly assigning names to the relations themselves .
+furthermore , the same relation may be described by many different category pairs ( see section 5.5 ) .
+first , we extracted two-word noun compounds from approximately 1m titles and abstracts from the medline collection of biomedical journal articles , resulting in about 1m ncs .
+the ncs were extracted by finding adjacent word pairs in which both words are tagged as nouns by a tagger and appear in the mesh hierarchy , and the words preceding and following the pair do not appear in mesh2 of these two-word noun compounds , 79,677 were unique .
+next we used mesh to characterize the ncs according to semantic category ( ies ) .
+for example , the ncfibroblast growth was categorized into a1 1.329.228 ( fibroblasts ) and g07.553.481 ( growth ) .
+note that the same words can be represented at different levels of description .
+for example , fibroblast growth can be described by the mesh descriptors a1 1.329.228 g07.553.481 ( original level ) , but also by a1 1 g07 ( cell and physiological processes ) or a1 1.329 g07.553 ( connective tissue cells and growth and embryonic development ) .
+if a noun fell under more than one mesh id , we made multiple versions of this categorization .
+we refer to the result of this renaming as a category pair ( cp ) .
+we placed these cps into a two-dimensional table , with the mesh category for the first noun on the x axis , and the mesh category for the second noun on the y axis .
+each intersection indicates the number of ncs that are classified under the corresponding two mesh categories .
+a visualization tool ( ahlberg and shneiderman , 1994 ) allowed us to explore the dataset to see which areas of the category space are most heavily populated , and to get a feeling for whether the distribution is uniform or not ( see figure 1 ) .
+if our hypothesis holds ( that ncs that fall within the same category pairs are assigned the same relation ) , then if most of the ncs fall within only a few category pairs then we only need to determine which relations hold between a subset of the possible pairs .
+thus , the more clumped the distribution , the easier ( potentially ) our task is .
+figure 1 shows that some areas in the cp space have a higher concentration of unique ncs ( the anatomy , and the e through n sub-hierarchies , for example ) , especially when we focus on those for which at least 50 unique ncs are found .
+labeling nc relations .
+given the promising nature of the nc distributions , the question remains as to whether or not the hypothesis holds .
+to answer this , we examined a subset of the cps to see if we could find positions within the sub-hierarchies for which the relation assignments for the member ncs are always the same .
+method .
+we first selected a subset of the cps to examine in detail .
+for each of these we examined , by hand , 20 % of the ncs they cover , paraphrasing the relation between the nouns , and seeing if that paraphrase was the same for all the ncs in the group .
+if it was the same , then the current levels of the cp were considered to be the correct levels of description .
+if , on the other hand , several different paraphrases were found , then the analysis descended one level of the hierarchy .
+this repeated until the resulting partition of the ncs resulted in uniform relation assignments .
+on the other hand , the following ncs , having the cp a01 ( body regions ) and m01 ( persons ) , do not have the same relationship between the component words : abdomen patients , arm amputees , chest physicians , eye patients , skin donor .
+the relationships are different depending on whether the person is a patient , a physician or a donor .
+in other words , to correctly assign a relationship to these ncs , we needed to descend one level for the second word .
+the resulting rules in this case are ( a01 m01.643 ) , ( a01 , m01.150 ) etc .
+figure 2 shows one cp for which we needed to descend 3 levels .
+in our collection , a total of 2627 cps at level 0 have at least 10 unique ncs .
+of these , 798 ( 30 % ) are classified with a ( anatomy ) for either the first or the second noun .
+we randomly selected 250 of such cps for analysis .
+we also analyzed 21 of the 90 cps for which the second noun was h01 ( natural sciences ) ; we decided to analyze this portion of the mesh hierarchy because the ncs with h01 as second noun are frequent in our collection , and because we wanted to test the hypothesis that we do indeed need to descend farther for heterogeneous parts of mesh .
+finally , we analyzed three cps in category c ( diseases ) ; the most frequent cp in terms of the total number of non-unique ncs is c04 ( neoplasms ) a1 1 ( cells ) , with 30606 ncs ; the second cp was a10 c04 ( 27520 total ncs ) and the fifth most frequent , a01 c04 , with 20617 total ncs ; we analyzed these cps .
+we started with the cps at level 0 for both words , descending when the corresponding clusters of ncs were not homogeneous and stopping when they were .
+we did this for 20 % of the ncs in each cp .
+the results were as follows .
+for 187 of 250 ( 74 % ) cps with a noun in the anatomy category , the classification remained at level 0 for both words ( for example , a01 a07 ) .
+for 55 ( 22 % ) of the cps we had to descend 1 level ( e.g. , a01 m01 : a01 m01.898 , a01 m01.643 ) and for 7 cps ( 2 % ) we descended two levels .
+we descended one level most of the time for the sub-hierarchies e ( analytical , diagnostic and therapeutic techniques ) , g ( biological sciences ) and n ( health care ) ( around 50 % of the time for these categories combined ) .
+we never descended for b ( organisms ) and did so only for a13 ( animal structures ) in a. this was to be able to distinguish a few non-homogeneous subcategories ( e.g. , milk appearing among body parts , thus forcing a distinction between buffalo milk and catforelimb ) .
+for cps with h01 as the second noun , of the 21 cps analyzed , we observed the following ( level number , count ) pairs : ( 0 , 1 ) ( 1 , 8 ) ( 2 , 12 ) .
+in all but three cases , the descending was done for the second noun only .
+this may be because the second noun usually plays the role of the head noun in two-word noun compounds in english , thus requiring more specificity .
+alternatively , it may reflect the fact that for the examples we have examined so far , the more heterogeneous terms dominate the second noun .
+further examination is needed to answer this decisively .
+accuracy .
+we tested the resulting classifications by developing a randomly chosen test set ( 20 % of the ncs for each cp ) , entirely distinct from the labeled set , and used the classifications ( rules ) found above to automatically predict which relations should be assigned to the member ncs .
+an independent evaluator with biomedical training checked these results manually , and found high accuracies : for the cps which contained a noun in the anatomy domain , the assignments of new ncs were 94.2 % accurate computed via intra-category averaging , and 91.3 % accurate with extra-category averaging .
+for the cps in the natural sciences ( h01 ) we found 81.6 % accuracy via intra-category averaging , and 78.6 % accuracy with extra- category averaging .
+for the three cps in the c04 category we obtained 100 % accuracy .
+the total accuracy across the portions of the a , h01 and c04 hierarchies that we analyzed were 89.6 % via intra-category averaging , and 90.8 % via extra-category averaging .
+the lower accuracy for the natural sciences category illustrates the dependence of the results on the properties of the lexical hierarchy .
+we can generalize well if the sub-hierarchies are in a well-defined semantic relation with their ancestors .
+if they are a list of unrelated topics , we cannot use the generalization of the higher levels ; most of the mistakes for the natural sciences cps occurred in fact when we failed to descend for broad terms such as physics .
+performing this evaluation allowed us to find such problems and update the rules ; the resulting categorization should now be more accurate .
+generalization .
+an important issue is whether this method is an economic way of classifying the ncs .
+the advantage of the high level description is , of course , that we need to assign by hand many fewer relationships than if we used all cps at their most specific levels .
+our approach provides generalization over the training examples in two ways .
+first , we find that we can use the juxtaposition of categories in a lexical hierarchy to identify semantic relationships .
+second , we find we can use the higher levels of these categories for the assignments of these relationships .
+to assess the degree of this generalization we calculated how many cps are accounted for by the classification rules created above for the anatomy categories .
+in other words , if we know that a01 a07 unequivocally determines a relationship , how many possible ( i.e. , present in our collection ) cps are there that are covered by a01 a07 and that we do not need to consider explicitly ?
+it turns out that our 415 classification rules cover 46001 possible cp pairs3 .
+this , and the fact that we achieve high accuracies with these classification rules , show that we successfully use mesh to generalize over unique ncs .
+ambiguity .
+a common problem for nlp tasks is ambiguity .
+in this work we observe two kinds : lexical and relationship ambiguity .
+as an example of the former , mortality can refer to the state of being mortal or to death rate .
+as an example of the latter , bacteria mortality can either mean death of bacteria or death caused by bacteria .
+in some cases , the relationship assignment method described here can help disambiguate the meaning of an ambiguous lexical item .
+milk for example , can be both animal structures ( a13 ) and food and beverages ( j02 ) .
+consider the ncs chocolate milk , coconut milk that fall under the cps ( b06 -plants- , j02 ) and ( b06 , a13 ) .
+the cp ( b06 , j02 ) contains 180 ncs ( other examples are berry wines , cocoa beverages ) while ( b06 , a13 ) has only 6 ncs ( 4 of which with milk ) .
+assuming then that ( b06 , a13 ) is wrong , we will assign only ( b06 , j02 ) to chocolate milk , coconut milk , therefore disambiguating the sense for milk in this context ( beverage ) .
+analogously , for buffalo milk , caprine milk we also have two cps ( b02 , j02 ) ( b02 , a13 ) .
+in this case , however , it is easy to show that only ( b02 -vertebrates- , a13 ) is the correct one ( i.e. yielding the correct relationship ) and we then assign the mesh sense a13 to milk .
+nevertheless , ambiguity may be a problem for this method .
+single mesh senses for the nouns in the nc ( no lexical ambiguity ) and only one possible relationship which can predicted by the cp ; that is , no ambiguity .
+for instance , in abdomen radiography , abdomen is classified exclusively under body regions and radiography exclusively under diagnosis , and the relationship between them is unambiguous .
+other examples include aciclovir treatment ( heterocyclic compounds , therapeutics ) and adenocarcinoma treatment ( neoplasms , therapeutics ) .
+single mesh senses ( no lexical ambiguity ) but multiple readings for the relationships that therefore cannot be predicted by the cp .
+it was quite difficult to find examples of this case ; disambiguating this kind of nc requires looking at the context of use .
+the examples we did find include hospital databases which can be databases regarding ( topic ) hospitals , databases found in ( location ) or owned by hospitals .
+education efforts can be efforts done through ( education ) or done to achieve education .
+kidney metabolism can be metabolism happening in ( location ) or done by the kidney .
+immunoglobulin staining , ( d12 -amino acids , peptides- , and proteins , e05 - investigative techniques- ) can mean either staining with immunoglobulin or staining of immunoglobulin .
+multiple mesh mappings but only one possible relation .
+one example of this case is alcoholism treatment where treatment is therapeutics ( e02 ) and alcoholism is both disorders of environmental origin ( c21 ) and mental disorders ( f03 ) .
+for this nc we have therefore 2 cps : ( c21 , e02 ) as in wound treatments , injury rehabilitation and ( f03 , e02 ) as in delirium treatment , schizophrenia therapeutics .
+the multiple mappings reflect the conflicting views on how to classify the condition of alcoholism , but the relationship does not change .
+multiple mesh mappings and multiple relations that can be predicted by the different cps .
+for example , bread diet can mean either that a person usually eats bread or that a physician prescribed bread to treat a condition .
+this difference is reflected by the different mappings : diet is both investigative techniques ( e05 ) and metabolism and nutrition ( g06 ) , bread is food and beverages ( j02 ) .
+in these cases , the category can help disambiguate the relation ( as opposed to in case 5 below ) ; word sense disambiguation algorithms that use context may be helpful .
+multiple mesh mappings and multiple relations that cannot be predicted by the different cps .
+as an example of this case , bacteria mortality can be both death of bacteria or death caused by bacteria .
+the multiple mapping for mortality ( public health , information science , population characteristics and investigative techniques ) does not account for this ambiguity .
+similarly , for inhibin immunization , the first noun falls under hormones and amino acids , while immunization falls under environment and public health and investigative techniques .
+the meanings are immunization against inhibin or immunization using inhibin , and they cannot be disambiguated using only the mesh descriptors .
+we currently do not have a way to determine how many instances of each case occur .
+cases 2 and 5 are the most problematic ; however , as it was quite difficult to find examples for these cases , we suspect they are relatively rare .
+a question arises as to if representing nouns using the topmost levels of the hierarchy causes a loss in information about lexical ambiguity .
+in effect , when we represent the terms at higher levels , we assume that words that have multiple descriptors under the same level are very similar , and that retaining the distinction would not be useful for most computational tasks .
+reducing these descriptors to level 0 retains the two distinct senses .
+to determine how often different senses are grouped together , we calculated the number of mesh senses for words at different levels of the hierarchy .
+table 1 shows a histogram of the number of senses for the first noun of all the unique ncs in our collection , the average degree of ambiguity and the average description lengths .4 the average number of mesh senses is always less than two , and increases with length of description , as is to be expected .
+we observe that 3.6 % of the lexical ambiguity is at levels higher that 2 , 16 % at l2 , 21.4 % at l1 and 59 % at l0 .
+level 1 and 2 combined account for more than 80 % of the lexical ambiguity .
+this means that when a noun has multiple senses , those senses are more likely to come from different main subtrees of mesh ( a and b , for example ) , than from different deeper nodes in the same subtree ( h01.671.538 vs. h01.671.252 ) .
+this fits nicely with our method of describing the ncs with the higher levels of the hierarchy : if most of the ambiguity is at the highest levels ( as these results show ) , information about lexical ambiguity is not lost when we describe the ncs using the higher levels of mesh .
+ideally , however , we would like to reduce the lexical ambiguity for similar senses and to retain it when the senses are semantically distinct ( like , for example , for diet in case 4 ) .
+in other words , ideally , the ambiguity left at the levels of our rules accounts for only ( and for all ) the semantically different senses .
+further analysis is needed , but the high accuracy we obtained in the classification seems to indicate that this indeed is what is happening .
+table 1 : the number of mesh senses for n1 when truncated to different levels of mesh .
+original refers to the actual ( non- truncated ) mesh descriptor .
+avg # senses is the average number of senses computed for all first nouns in the collection .
+avg desc len is the average description length ; the value for level 1 is less than 2 and for level 2 is less that 3 , because some nouns are always mapped to higher levels ( for example , cell is always mapped to a1 1 ) .
+multiple occurrences of semantic relations because we determine the possible relations in a data-driven manner , the question arises of how often does the same semantic relation occur for different category pairs .
+to determine the answer , we could ( i ) look at all the cps , give a name to the relations and merge the cps that have the same relationships ; or ( ii ) draw a sample of nc examples for a given relation , look at the cps for those examples and verify that all the ncs for those cps are indeed in the same relationship .
+we may not be able to determine the total number of relations , or how often they repeat across different cps , until we examine the full spectrum of cps .
+however , we did a preliminary analysis to attempt to find relation repetition across category pairs .
+this relation also applies to some of the f category ( psychiatry ) , as in delirium ( f03 ) patients , anxiety ( f01 ) patient .
+it becomes a judgement call whether to also include ncs such as eye ( a01 ) patient , gallbladder ( a03 ) patients , and more generally , all the ( anatomy , patients ) pairs .
+the question is , is afflicted-by ( unspecified ) disease in anatomy part equivalent to afflicted by disease ?
+the answer depends on ones theory of relational semantics .
+another quandary is illustrated by the ncs adolescent cancer , child tumors , adult dementia ( in which adolescent , child and adult are age groups ) and the heads are diseases .
+should these fall under the afflicted by relation , given the references to entire groups ?
+related work .
+noun compound relation assignment .
+several approaches have been proposed for empirical noun compound interpretation .
+lauer & dras ( 1994 ) point out that there are three components to the problem : identification of the compound from within the text , syntactic analysis of the compound ( left versus right association ) , and the interpretation of the underlying semantics .
+several researchers have tackled the syntactic analysis ( lauer , 1995 ) , ( pustejovsky et al. , 1993 ) , ( liberman and church , 1992 ) , usually using a variation of the idea of finding the subconstituents elsewhere in the corpus and using those to predict how the larger compounds are structured .
+we are interested in the third task , interpretation of the underlying semantics .
+most related work relies on handwritten rules of one kind or another .
+finin ( 1980 ) examines the problem of noun compound interpretation in detail , and constructs a complex set of rules .
+vanderwende ( 1994 ) uses a sophisticated system to extract semantic information automatically from an on-line dictionary , and then manipulates a set of hand-written rules with hand- assigned weights to create an interpretation .
+rindflesch et al. ( 2000 ) use hand-coded rule-based systems to extract the factual assertions from biomedical text .
+lapata ( 2000 ) classifies nominalizations according to whether the modifier is the subject or the object of the underlying verb expressed by the head noun .
+barker & szpakowicz ( 1998 ) describe noun compounds as triplets of information : the first constituent , the second constituent , and a marker that can indicate a number of syntactic clues .
+relations are initially assigned by hand , and then new ones are classified based on their similarity to previously classified ncs .
+however , similarity at the lexical level means only that the same word occurs ; no generalization over lexical items is made .
+the algorithm is assessed in terms of how much it speeds up the hand-labeling of relations .
+barrett et al. ( 2001 ) have a somewhat similar approach , using wordnet and creating heuristics about how to classify a new nc given its similarity to one that has already been seen .
+in previous work ( rosario and hearst , 2001 ) , we demonstrated the utility of using a lexical hierarchy for assigning relations to two-word noun compounds .
+we use machine learning algorithms and mesh to successfully generalize from training instances , achieving about 60 % accuracy on an 18-way classification problem using a very small training set .
+that approach is bottom up and requires good coverage in the training set ; the approach described in this paper is top-down , characterizing the lexical hierarchies explicitly rather than implicitly through machine learning algorithms .
+using lexical hierarchies .
+many approaches attempt to automatically assign semantic roles ( such as case roles ) by computing semantic similarity measures across a large lexical hierarchy ; primarily using wordnet ( fellbaum , 1998 ) .
+budanitsky & hirst ( 2001 ) provide a comparative analysis of such algorithms .
+however , it is uncommon to simply use the hierarchy directly for generalization purposes .
+many researchers have noted that wordnets words are classified into senses that are too fine-grained for standard nlp tasks .
+for example , buitelaar ( 1997 ) notes that the noun book is assigned to seven different senses , including fact and section , subdivision .
+thus most users of wordnet must contend with the sense disambiguation issue in order to use the lexicon .
+the most closely related use of a lexical hierarchy that we know of is that of li & abe ( 1998 ) , which uses an information-theoretic measure to make a cut through the top levels of the noun portion of wordnet .
+this is then used to determine acceptable classes for verb argument structure , and for the prepositional phrase attachment problem and is found to perform as well as or better than existing algorithms .
+additionally , boggess et al. ( 1991 ) tag veterinary text using a small set of semantic labels , assigned in much the same way a parser works , and describe this in the context of prepositional phrase attachment .
+conclusions and future work .
+we have provided evidence that the upper levels of a lexical hierarchy can be used to accurately classify the relations that hold between two-word technical noun compounds .
+in this paper we focus on biomedical terms using the biomedical lexical ontology mesh .
+it may be that such technical , domain-specific terminology is better behaved than ncs drawn from more general text ; we will have to assess the technique in other domains to fully assess its applicability .
+several issues need to be explored further .
+first , we need to ensure that this technique works across the full spectrum of the lexical hierarchy .
+we have demonstrated the likely usefulness of such an exercise , but all of our analysis was done by hand .
+it may be useful enough to simply complete the job manually ; however , it would be preferable to automate some or all of the analysis .
+there are several ways to go about this .
+one approach would be to use existing statistical similarity measures ( budanitsky and hirst , 2001 ) to attempt to identify which subhierarchies are homogeneous .
+another approach would be to see if , after analyzing more cps , those categories found to be heterogeneous should be assumed to be heterogeneous across classifications , and similarly for those that seem to be homogeneous .
+the second major issue to address is how to extend the technique to multi-word noun compounds .
+we will need to distinguish between ncs such as acute migraine treatment and oral migraine treatment , and handle the case when the relation must first be found between the leftmost words .
+thus additional steps will be needed ; one approach is to compute statistics to indicate likelihood of the various cps .
+finding noun compound relations is part of our larger effort to investigate what we call statistical semantic parsing ( as in ( burton and brown , 1979 ) ; see grishman ( 1986 ) for a nice overview ) .
+for example , we would like to be able to interpret titles in terms of semantic relations , for example , transforming congenital anomalies of tracheobronchial branching patterns into a form that allows questions to be answered such as what kinds of irregularities can occur in lung structure ?
+we hope that by compositional application of relations to entities , such inferences will be possible .

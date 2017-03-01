@@ -1,0 +1,181 @@
+a model for learning the semantics of pictures .
+abstract .
+we propose an approach to learning the semantics of images which allows us to automatically annotate an image with keywords and to retrieve images based on text queries .
+we do this using a formalism that models the generation of annotated images .
+we assume that every image is divided into regions , each described by a continuous-valued feature vector .
+given a training set of images with annotations , we compute a joint probabilistic model of image features and words which allow us to predict the probability of generating a word given the image regions .
+this may be used to automatically annotate and retrieve images given a word as a query .
+experiments show that our model significantly outperforms the best of the previously reported results on the tasks of automatic image annotation and retrieval .
+introduction .
+historically , librarians have retrieved images by first manually annotating them with keywords .
+given a query , these annotations are used to retrieve appropriate pictures .
+underlying this approach is the belief that the words associated ( manually ) with a picture essentially capture the semantics of the picture and any retrieval based on these keywords will , therefore , retrieve relevant pictures .
+since manual image annotation is expensive , there has been great interest in coming up with automatic ways to retrieve images based on content .
+queries based on image concepts like color or texture have been proposed for retrieving images by content but most users find it difficult to query using such visual attributes .
+most people would prefer to pose text queries and find images relevant to those queries .
+for example , one should be able to pose a query like � find me cars on a race track � .
+this is difficult if not impossible with many of the current image retrieval systems and hence has not led to widespread adoption of these systems .
+we propose a model which looks at the probability of associating words with image regions .
+single pixels and regions are often hard to interpret .
+the surrounding context often simplifies the interpretation of regions as a specific objects .
+for example , the association of a region with the word tiger is increased by the fact that there is a grass region and a water region in the same image and should be decreased if instead there is a region corresponding to the interior of an aircraft .
+thus the association of different regions provides context while the association of words with image regions provides meaning .
+our model computes a joint probability of image features over different regions in an image using a training set and uses this joint probability to annotate and retrieve images .
+more formally , we propose a statistical generative model to automatically learn the semantics of images - that is , for annotating and retrieving images based on a training set of images .
+we assume that an image is segmented into regions ( although the regions could simply be a partition of the image ) and that features are computed over each of these regions .
+given a training set of images with annotations , we show that probabilistic models allow us to predict the probability of generating a word given the features computed over different regions in an image .
+this may be used to automatically annotate and retrieve images given a word as a query .
+we show that the continuous relevance model - a statistical generative model related to relevance models in information retrieval - allows us to derive these probabilities in a natural way .
+the model proposed here directly associates continuous features with words and does not require an intermediate clustering stage .
+experiments show that the annotation performance of this continuous relevance model is substantially better than any other model tested on the same data set .
+it is almost an order of magnitude better ( in terms of mean precision ) than a model based on word-blob co-occurrence model , more than two and a half times better than a state of the art model derived from machine translation and 1.6 times as good as a discrete version of the relevance model .
+the model also allows ranked retrieval in response to a text query and again performs much better than any other model in this regard .
+our model permits us to automatically associate semantics ( in terms of words ) with pictures and is an important building step in performing automatic object recognition .
+related work .
+recently , there has been some work on automatically annotating images by looking at the probability of associating words with image regions .
+mori et al. [ 9 ] proposed a co- occurrence model in which they looked at the co-occurrence of words with image regions created using a regular grid .
+duygulu et al [ 4 ] proposed to describe images using a vocabulary of blobs .
+first , regions are created using a segmentation algorithm like normalized cuts .
+for each region , features are computed and then blobs are generated by clustering the image features for these regions across images .
+each image is generated by using a certain number of these blobs .
+their translation model applies one of the classical statistical machine translation models to translate from the set of keywords of an image to the set of blobs forming the image .
+jeon et al [ 5 ] instead assumed that this could be viewed as analogous to the cross-lingual retrieval problem and used a cross-media relevance model ( cmrm ) to perform both image annotation and ranked retrieval .
+they showed that the performance of the model on the same dataset was considerably better than the models proposed by duygulu et al [ 4 ] and mori et al. [ 9 ] .
+blei and jordan [ 3 ] extended the latent dirichlet allocation ( lda ) model and proposed a correlation lda model which relates words and images .
+this model assumes that a dirichlet distribution can be used to generate a mixture of latent factors .
+this mixture of latent factors is then used to generate words and regions .
+em is again used to estimate this model .
+blei and jordan show a few examples for labeling specific regions in an image .
+the model proposed in this paper is called continuous-space relevance model ( crm ) .
+the model is closely related to models proposed by [ 3 , 5 ] , but there are several important differences which we will highlight in the remainder of this section .
+on the surface , crm appears to be very similar to one of the intermediate models considered by blei and jordan [ 3 ] .
+specifically , their gm-mixture model employs a nearly identical dependence structure among the random variables involved .
+however , the topological structure of crm is quite different from the one employed by [ 3 ] .
+gm-mixture assumes a low-dimensional topology , leading to a fully-parametric model where 200 or so � latent aspects � are estimated using the em algorithm .
+to contrast that , crm makes no assumptions about the topological structure , and leads to a doubly non-parametric approach , where expectations are computed over every individual point in the training set .
+in that regard , crm appears very similar to the cross-media relevance model ( cmrm ) [ 5 ] , which is also doubly non-parametric .
+there are two significant differences between crm and cmrm .
+first , cmrm is a discrete model and cannot take advantage of continuous features .
+in order to use cmrm for image annotation we have to quantize continuous feature sampled from the underlying multinomial .
+image pixels are produced by first picking a set of i.i.d. feature vectors , then generating image regions from the feature vectors , and finally stacking the regions on top of each other. vectors into a discrete vocabulary ( similarly to the co-ocurrence and translation [ 4 ] models ) .
+crm , on the other hand , directly models continuous features .
+the second difference is that cmrm relies on clustering of the feature vectors into blobs .
+annotation quality of the cmrm is very sensitive to clustering errors , and depends on being able to a-priori select the right cluster granularity : too many clusters will result in exptreme sparseness of the space , while too few will lead us to confuse different objects in the images .
+crm does not rely on clustering and consequently does not suffer from the granularity issues .
+we would like to stress that the difference between crm and previously discussed models is not merely conceptual .
+in section 4 we will show that crm performs significantly better than all previosly proposed models on the tasks of image annotation and retrieval .
+to ensure a fair comparison , we use exactly the same data set and same feature representations as were used in [ 3 , 4 , 5 , 9 ] .
+a model of annotated images .
+the purpose of this section is to introduce a statistical formalism that will allow us to model a relationship between the contents of a given image and the annotation of that image .
+we will describe an approach to learning a joint probability disdribution over the regions of some image and the words in its annotation .
+knowing the joint distribution is the key to solving two important real-world problems : image annotation .
+suppose we are given a new image for which no annotation is provided .
+that is , we know , but do not know .
+having a joint distribution allows us to compute a conditional likelihood which can then be used to guess the most likely annotation for the image in question .
+the new annotation can be presented to a user , indexed , or used for retrieval purposes .
+image retrieval .
+suppose we are given a collection of un-annotated images and a text query consisting of a few keywords .
+knowing the joint model of images and annotations , we can compute the query likelihood for every image in the dataset .
+we can then rank images in the collection according to their likelihood of having the query as annotation , resulting in a special case of the popular language modeling approach to information retrieval [ 6 ] .
+the remainder of this section is organized as follows .
+in section 3.1 we discuss our choice of representation for images and their annotations .
+section 3.2 presents a generative framework for relating image regions with image annotations .
+section 3.3 provides detailed estimates for the components of our model .
+representation of images and annotations .
+let denote the finite set of all possible pixel colors .
+we assume that includes one � transparent � color , which will be handy when we have to layer image regions .
+as a matter of convenience , we assume that all images are of a fixed size .
+this assumption allows us to represent any image as an element of a finite set .
+we assume that each image contains several distinct regions .
+each region is itself an element of and contains the pixels of some prominent object in the image , all pixels around the object are set to be transparent .
+for example , in figure 1 we have a hypothetical picture containing three prominent objects : a tiger , the sun and some grass .
+each object is represented by its own region : for the sun , for the grass , and for the tiger .
+the final image is the result of stacking or layering the regions on top of each other , as shown on the right side of figure 1 .
+in our model of images , a central part will be played by a special function which maps image regions to real-valued vectors .
+the value represents a set of features , or characteristics of an image region .
+the features could reflect the position of an object region , its relative size , a crude reflection of shape , as well as predominant colors and textures .
+for example , in figure 1 the region ( sun ) is a round object , located in the upper-right portion of the image , yellowish in color with a smooth texture .
+when we model image generation we will treat the output of as a generator or a � recipe � for producing a certain type of image .
+for example , a feature vetor can be thought of as a generator for any image region resembling a sun-like object in the upper-left corner .
+finally , an annotation for a given image is a set of words drawn from some finite vocabulary .
+we assume that the annotation describes the objects represented by regions .
+however , contrary to prior work [ 4 , 3 ] we do not assume an underlying one-to-one correspondence between the objects in the image annotation and words in the annotation .
+instead , we are interested in modeling a joint probability for observing a set of image regions together with the set of annotation words .
+a model for generating annotated images .
+suppose is the training set of annotated images , and let be an element of .
+according to the previous section is represented as a set of image regions along with the corresponding annotation .
+we assume that the process that generated is based on three distinct probability distributions .
+first , we assume that the words in are an i.i.d. random sample from some underlying multinomial distribution .
+second , the regions are produced from a corresponding set of generator vectors according to a process which is independent of .
+finally , the generator vectors are themselves an i.i.d. random sample from some underlying multi-variate density function .
+now let denote the regions of some image , which is not in the training set .
+similarly , let be some arbitrary sequence of words .
+we would like to model , the joint probability of observing an image defined by together with annotation words .
+we hypothesize that the observation came from the same process that generated one of the images in the training set .
+however , we don � t know which process that was , and so we compute an expectation over all images .
+the overall process for jointly generating and is as follows : estimating parameters of the model .
+we use a bayesian framework for estimating .
+let be the simplex of all multinomial distributions over .
+we assume a dirichlet prior over that has parameters .
+here is a constant , selected empirically , and is the relative frequency of observing the word in the training set .
+introducing the observation results in a dirichlet posterior over with parameters .
+here is the number of times occurs in the observation .
+experimental results .
+to provide a meaningful comparison with previously-reported results , we use , without any modification , the dataset provided by duygulu et al. [ 4 ] 2 .
+this allows us to compare the performance of models in a strictly controlled manner .
+the dataset consists of 5,000 images from 50 corel stock photo cds .
+each cd includes 100 images on the same topic .
+each image contains an annotation of 1-5 keywords .
+overall there are 371 words .
+prior to modeling , every image in the dataset is pre-segmented into regions using general-purpose algorithms , such as normalized cuts [ 11 ] .
+we use pre-computed feature vector for every segmented region .
+the feature set consists of 36 features : 18 color features , 12 texture features and 6 shape features .
+for details of the features refer to [ 4 ] .
+since we directly model the generation of feature vectors , there is no need to quantize feature data , as was done in [ 1 , 4 , 5 ] .
+we divided the dataset into 3 parts - with 4,000 training set images , 500 evaluation set images and 500 images in the test set .
+the evaluation set is used to find system parameters .
+after fixing the parameters , we merged the 4,000 training set and 500 evaluation set images to make a new training set .
+this corresponds to the training set of 4500 images and the test set of 500 images used by duygulu et al [ 4 ] .
+results .
+automatic image annotation .
+in this section we evaluate the performance of our model on the task of automatic image annotation .
+we are given an un-annotated image and are asked to automatically produce an annotation .
+the automatic annotation is then compared to the held-out human annotation .
+we follow the experimental methodology used by [ 4 , 5 ] .
+given a set of image regions we use equation ( 1 ) to arrive at the conditional distribution .
+we take the top 5 words from that distribution and call them the automatic annotation of the image in question .
+then , following [ 4 ] , we compute annotation recall and precision for every word in the testing set .
+recall is the number of images correctly annotated with a given word , divided by the number of images that have that word in the human annotation .
+precision is the number of correctly annotated images divided by the total number of images annotated with that particular word ( correctly or not ) .
+recall and precision values are averaged over the set of testing words .
+we compare the annotation performance of the four models : the co-occurrence model [ 9 ] , the translation model [ 4 ] , cmrm [ 5 ] and the model proposed in this paper ( crm ) .
+we report the results on two sets of words : the subset of 49 best words which was used by [ 4 , 5 ] , and the complete set of all 260 words that occur in the testing set .
+table 1 shows the performance on both word sets .
+the figures clearly show that the model presented here ( crm ) substabtially outperforms the other models and is the only one of the four capable of producing reasonable mean recall and mean precision numbers when every word in the test set is used .
+in figure2 we provide sample annotations for the two best models in the table , cmrm and crm , showing that the model in this paper is considerably more accurate .
+results : ranked retrieval of images .
+in this section we turn our attention to the problem of ranked retrieval of images .
+in the retrieval setting we are given a text query and a testing collection of un-annotated images .
+for each testing image we use equation ( 1 ) to get the conditional probability .
+all images in the collection are ranked according to the conditional likelihood .
+this can be thought of as a special case of the popular langauge modeling approach to information retrieval , proposed by ponte and croft [ 6 ] .
+in our retrieval experiments we do our best to reproduce the same settings that were used by jeon et.al [ 5 ] in their work .
+following [ 5 ] , we use four sets of queries , constructed from all 1- , 2- , 3- and 4-word combinations of words that occur at least twice in the testing set .
+an image is considered relevant to a given query if its manual annotation contains all of the query words .
+as our evaluation metrics we use precision at 5 retrieved images and non-interpolated average precision3 , averaged over the entire query set .
+precision at 5 documents is a good measure of performance for a casual user who is interested in retrieving a couple of relevant items without looking at too much junk .
+average precision is more appropriate for a professional user who wants to find a large proportion of relevant items .
+table 2 shows the performance of our model on the four query sets , contrasted with performance of the cmrm [ 5 ] baseline on the same data .
+baseline performance figures are quoted directly from the tables in [ 5 ] .
+we observe that our model substantially outperforms the cmrm baseline on every query set .
+improvements in average precision are particularly impressive , our model outperforms the baseline by 40 - 60 percent .
+all improvements on 1- , 2- and 3-word queries are statistically significant based on a sign test with a value of 0.01 .
+we are also very encouraged by the precision our model shows at 5 retrieved images : precision values around 0.2 suggest that an average query always has a relevant image in the top 5 .
+figure 3 shows top 5 images retrieved in response to the text query � cars track � .
+conclusions and future work .
+we have proposed a new statistical generative model for learning the semantics of images .
+we showed that this model works significantly better than a number of other models for image annotation and retrieval .
+our model works directly on the continuous features .
+future work will include the extension of this work to larger datasets ( both training and test data ) .
+we believe this is needed both for better coverage and an evaluation of how such algorithms extend to large data sets .
+improved feature sets may also lead to substantial improvements in performance .

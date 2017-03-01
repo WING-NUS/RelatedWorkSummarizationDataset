@@ -1,0 +1,147 @@
+a better -best list : practical determinization of weighted finite tree automata .
+abstract .
+ranked lists of output trees from syntactic statistical nlp applications frequently contain multiple repeated entries .
+this redundancy leads to misrepresentation of tree weight and reduced information for debugging and tuning purposes .
+it is chiefly due to nondeterminism in the weighted automata that produce the results .
+we introduce an algorithm that determinizes such automata while preserving proper weights , returning the sum of the weight of all multiply derived trees .
+we also demonstrate our algorithm � s effectiveness on two large-scale tasks .
+introduction .
+a useful tool in natural language processing tasks such as translation , speech recognition , parsing , etc . , is the ranked list of results .
+modern systems typically produce competing partial results internally and return only the top-scoring complete result to the user .
+they are , however , also capable of producing lists of runners-up , and such lists have many practical uses : the lists may be inspected to determine the quality of runners-up and motivate model changes .
+the lists may be re-ranked with extra knowledge sources that are difficult to apply during the main search .
+the lists may be used with annotation and a tuning process , such as in ( collins and roark , 2004 ) , to iteratively alter feature weights and improve results .
+figure 1 shows the best 10 english translation parse trees obtained from a syntax-based translation system based on ( galley , et. al. , 2004 ) .
+notice that the same tree occurs multiple times in this list .
+this repetition is quite characteristic of the output of ranked lists .
+it occurs because many systems , such as the ones proposed by ( bod , 1992 ) , ( galley , et. al. , 2004 ) , and ( langkilde and knight , 1998 ) represent their result space in terms of weighted partial results of various sizes that may be assembled in multiple ways .
+there is in general more than one way to assemble the partial results to derive the same complete result .
+thus , the -best list of results is really an -best list of derivations .
+when list-based tasks , such as the ones mentioned above , take as input the top results for some constant , the effect of repetition on these tasks is deleterious .
+a list with many repetitions suffers from a lack of useful information , hampering diagnostics .
+repeated results prevent alternatives that would be highly ranked in a secondary reranking system from even being considered .
+and a list of fewer unique trees than expected can cause overfitting when this list is used to tune .
+furthermore , the actual weight of obtaining any particular tree is split among its repetitions , distorting the actual relative weights between trees . ( mohri , 1997 ) encountered this problem in speech recognition , and presented a solution to the problem of repetition in -best lists of strings that are derived from finite-state automata .
+that work described a way to use a powerset construction along with an innovative bookkeeping system to determinize the automaton , resulting in an automaton that preserves the language but provides a single , properly weighted derivation for each string in it .
+put another way , if the input automaton has the ability to generate the same string with different weights , the output automaton generates that string with weight equal to the sum of all of the generations of that string in the input automaton .
+in ( mohri and riley , 2002 ) this technique was combined with a procedure for efficiently obtaining -best ranked lists , yielding a list of string results with no repetition .
+in this paper we extend that work to deal with grammars that produce trees .
+regular tree grammars ( brainerd , 1969 ) , which subsume the tree substitution grammars developed in the nlp community ( schabes , 1990 ) , are of particular interest to those wishing to work with additional levels of structure that string grammars cannot provide .
+the application to parsing is natural , and in machine translation tree grammars can be used to model syntactic transfer , control of function words , reordering , and target-language well-formedness .
+in the world of automata these grammars have as a natural dual the finite tree recognizer ( doner , 1970 ) .
+like tree grammars and packed forests , they are compact ways of representing very large sets of trees .
+we will present an algorithm for determinizing weighted finite tree recognizers , and use a variant of the procedure found in ( huang and chiang , 2005 ) to obtain -best lists of trees that are weighted correctly and contain no repetition .
+section 2 describes related work .
+in section 3 , we introduce the formalisms of tree automata , specifically the tree-to-weight transducer .
+in section 4 , we present the algorithm .
+finally , in section 5 we show the results of applying weighted determinization to recognizers obtained from the packed forest output of two natural language tasks .
+previous work .
+the formalisms of tree automata are summarized well in ( gecseg and steinby , 1984 ) .
+bottom-up tree recognizers are due to ( thatcher and wright , 1968 ) , ( doner , 1970 ) , and ( magidor and moran , 1969 ) .
+top-down tree recognizers are due to ( rabin , 1969 ) and ( magidor and moran , 1969 ) . ( comon , et. al. , 1997 ) show the determinization of unweighted finite-state tree automata , and prove its correctness . ( borchardt and vogler , 2003 ) present determinization of weighted finite-state tree automata with a different method than the one we present here .
+while our method is applicable to finite tree sets , the previous method claims the ability to determinize some classes of infinite tree sets .
+however , for the finite case the previous method produces an automaton with size on the order of the number of derivations , so the technique is limited when applied to real world data .
+as described in ( gecseg and steinby , 1984 ) , tree automata may be broken into two classes , recognizers and transducers .
+recognizers read tree input and decide whether the input is in the language represented by the recognizer .
+formally , a bottom-up tree recognizer is defined by : as with string automata , it is helpful to have a visualization to understand what the recognizer is recognizing .
+figure 2 provides a visualization of the recognizer above .
+notice that some members of are drawn as arcs with multiple ( and ordered ) tails .
+this is the key difference in visualization between string and tree automata � to capture the arity of the symbol being read we must visualize the automata as an ordered hypergraph .
+the function of the members of in the hyper- graph visualization leads us to refer to the vector of states as an input vector of states , and the single state as an output state .
+we will refer to as the transition set of the recognizer .
+in string automata , a path through a recognizer consists of a sequence of edges that can be followed from a start to an end state .
+the concatenation of labels of the edges of a path , typically in a left-to-right order , forms a string in the recognizer � s language .
+in tree automata , however , a hyperpath through a recognizer consists of a sequence of hyperedges that can be followed , sometimes in parallel , from a start to an end state .
+we arrange the labels of the hyperedges to form a tree in the recognizer � s language but must now consider proper order in two dimensions .
+the proper vertical order is specified by the order of application of transitions , i.e. , the labels of transitions followed earlier are placed lower in the tree than the labels of transitions followed later .
+the proper horizontal order within one level of the tree is specified by the order of states in a transition � s input vector .
+in the example recognizer , the trees and are valid .
+notice that may be recognized in two different hyperpaths .
+like tree recognizers , tree transducers read tree input and decide whether the input is in the language , but they simultaneously produce some output as well .
+since we wish to associate a weight with every acceptable tree in a language , we will consider transducers that produce weights as their output .
+note that in transitioning from recognizers to transducers we are following the convention established in ( mohri , 1997 ) where a transducer with weight outputs is used to represent a weighted recognizer .
+one may consider the determinization of tree-to-weight transducers as equivalent to the determinization of weighted tree recognizers .
+we must also specify a convention for propagating the weight calculated in every transition .
+this can be explicitly defined for each transition but we will simplify matters by defining the propagation of the weight to a destination state as the multiplication of the weight at each source state with the weight of the production .
+we modify the previous example by adding weights as follows : as an example , consider the following tree-to-weight transducer ( , , , and are as before ) : figure 3 shows the addition of weights onto the automata , forming the above transducer .
+this transducer is an example of a nonsubsequential transducer .
+a tree transducer is subsequential if for each vector v of states and each there is at most one transition in with input vector v and label .
+these restrictions ensure a subsequential transducer yields a single output for each possible input , that is , it is deterministic in its output .
+because we will reason about the destination state of a transducer transition and the weight of a transducer transition separately , we make the following definition . 4 determinization .
+the determinization algorithm is presented as algorithm 1 .
+it takes as input a bottom-up tree-to-weight transducer and returns as output a subsequential bottom-up tree-to-weight transducer such that the tree language recognized by is equivalent to that of and the output weight given input tree on is equal to the sum of all possible output weights given algorithm will terminate for automata that recognize finite tree languages .
+it may terminate on some automata that recognize infinite tree languages , but we do not consider any of these cases in this work .
+determinizing a tree-to-weight transducer can be thought of as a two-stage process .
+first , the structure of the automata must be determined such that a single hyperpath exists for each recognized input tree .
+this is achieved by a classic powerset construction , i.e. , a state must be constructed in the output transducer that represents all the possible reachable destination states given an input and a label .
+because we are working with tree automata , our input is a vector of states , not a single state .
+a comparable power- set construction on unweighted tree automata and a proof of correctness can be found in ( comon , et. al. , 1997 ) .
+the second consideration to weighted determinization is proper propagation of weights .
+for this we will use ( mohri , 1997 ) � s concept of the residual weight .
+we represent in the construction of states in the output transducer not only a subset of states of the input transducer , but also a number associated with each of these states , called the residual .
+since we want � s hyperpath of a particular input tree to have as its associated weight the sum of the weights of the all of � s hyperpaths of the input tree , we replace a set of hyperedges in that have the same input state vector and label with a single hyperedge in bearing the label and the sum of � s hyper- edge weights .
+the destination state of the hyper- edge represents the states reachable by � s applicable hyperedges and for each state , the proportion of the weight from the relevant transition .
+figure 4 shows the determinization of a portion of the example transducer .
+note that the hyperedge leading to state in the input transducer contributes of the weight on the output transducer hyperedge and the hyperedge leading to state in the input transducer contributes the remaining .
+this is reflected in the state construction in the output transducer .
+the complete determinization of the example transducer is shown in figure 5 .
+to encapsulate the representation of states from the input transducer and associated residual weights , we define a state in the output transducer as a set of tuples , where and .
+since the algorithm builds new states progressively , we will need to represent a vector of states from the output transducer , typically depicted as v. we may construct the vector pair q w from v , where q is a vector of states of the input transducer and w is a vector of residual weights , by choosing a ( state , weight ) pair from each output state in v. v is the set of vector pairs q w constructed from v where each q is an input vector in a transition with label . v is the set of unique transitions paired with the appropriate pair for each q w in v . v is the set of states reachable from the transitions in v .
+the consideration of vectors of states on the incident edge of transitions effects two noticeable changes on the algorithm as it is presented in ( mohri , 1997 ) .
+the first , relatively trivial , change is the inclusion of the residual of multiple states in the calculation of weights and residuals on lines 16 and 17 .
+the second change is the production of vectors for consideration .
+whereas the string-based algorithm considered newly-created states in turn , we must consider newly-available vectors .
+for each newly created state , newly available vectors can be formed by using that state with the other states of the output transducer .
+this operation is performed on lines 7 and 22 of the algorithm .
+empirical studies .
+we now turn to some empirical studies .
+we examine the practical impact of the presented work by showing : that the multiple derivation problem is pervasive in practice and determinization is effective at removing duplicate trees .
+that duplication causes misleading weighting of individual trees and the summing achieved from weighted determinization corrects this error , leading to re-ordering of the best list .
+that weighted determinization positively affects end-to-end system performance .
+machine translation .
+we obtain packed-forest english outputs from 116 short chinese sentences computed by a string-totree machine translation system based on ( galley , et. al. , 2004 ) .
+the system is trained on all chinese- english parallel data available from the linguistic data consortium .
+the decoder for this system is a cky algorithm that negotiates the space described in ( deneefe , et. al. , 2005 ) .
+no language model was used in this experiment .
+the effects of weighted determinization on an -best list are obvious to casual inspection .
+figure 7 shows the improvement in quality of the top 10 trees from our example translation after the application of the determinization algorithm .
+the improvement observed circumstantially holds up to quantitative analysis as well .
+the forests obtained by the determinized grammars have between 1.39 % and 50 % of the number of trees of their undeterminized counterparts .
+on average , the determinized forests contain 13.7 % of the original number of trees .
+since a determinized forest contains no repeated trees but contains exactly the same unique trees as its undeterminized counterpart , this indicates that an average of 86.3 % of the trees in an undeterminized mt output forest are duplicates .
+weighted determinization also causes a surprisingly large amount of -best reordering .
+in 77.6 % of the translations , the tree regarded as � best � is different after determinization .
+this means that in a large majority of cases , the tree with the highest weight is not recognized as such in the undeterminized list because its weight is divided among its multiple derivations .
+determinization allows these instances and their associated weights to combine and puts the highest weighted tree , not the highest weighted derivation , at the top of the list .
+we can compare our method with the more commonly used methods of � crunching � -best lists , where .
+the duplicate sentences in the trees are combined , hopefully resulting in at least unique members with an estimation of the true tree weight for each unique tree .
+our results indicate this is a rather crude estimation .
+when the top 500 derivations of the translations of our test corpus are summed , only 50.6 % of them yield an estimated highest-weighted tree that is the same as the true highest-weighted tree .
+as a measure of the effect weighted determinization and its consequential re-ordering has on an actual end-to-end evaluation , we obtain bleu scores for our 1-best translations from determinization , and compare them with the 1-best translations from the undeterminized forest and the 1-best translations from the top-500 � crunching � method .
+the results are tabulated in figure 6 .
+note that in 26.7 % of cases determinization did not terminate in a reasonable amount of time .
+for these sentences we used the best parse from top-500 estimation instead .
+it is not surprising that determinization may occasionally take a long time ; even for a language of monadic trees ( i.e. strings ) the determinization algorithm is np-complete , as implied by ( casacuberta and de la higuera , 2000 ) and , e.g. ( dijkstra , 1959 ) .
+data-oriented parsing .
+weighted determinization of tree automata is also useful for parsing .
+data-oriented parsing ( dop ) � s methodology is to calculate weighted derivations , but as noted in ( bod , 2003 ) , it is the highest ranking parse , not derivation , that is desired .
+since ( sima � an , 1996 ) showed that finding the highest ranking parse is an np-complete problem , it has been common to estimate the highest ranking parse by the previously described � crunching � method .
+we create a dop-like parsing model4 by extracting and weighting a subset of subtrees from sections 2-21 of the penn treebank and use a dopstyle parser to generate packed forest representations of parses of the 2416 sentences of section 23 .
+the forests contain a median of parse trees .
+we then remove cycles and apply weighted determinization to the forests .
+the number of trees in each determinized parse forest is reduced by a factor of between 2.1 and .
+on average , the number of trees is reduced by a factor of 900,000 , demonstrating a much larger number of duplicate parses prior to determinization than in the machine translation experiment .
+the top-scoring parse after determinization is different from the top- scoring parse before determinization for 49.1 % of the forests , and when the determinization method is � approximated � by crunching the top-500 parses from the undeterminized list only 55.9 % of the top- scoring parses are the same , indicating the crunching method is not a very good approximation of determinization .
+we use the standard f-measure combination of recall and precision to score the top-scoring parse in each method against reference parses .
+the results are tabulated in figure 8 .
+note that in 16.9 % of cases determinization did not terminate .
+for those sentences we used the best parse from top-500 estimation instead .
+conclusion .
+we have shown that weighted determinization is useful for recovering -best unique trees from a weighted forest .
+as summarized in figure 9 , the number of repeated trees prior to determinization was typically very large , and thus determinization is critical to recovering true tree weight .
+we have improved evaluation scores by incorporating the presented algorithm into our mt work and we believe that other nlp researchers working with trees can similarly benefit from this algorithm .
+further advances in determinization will provide additional benefit to the community .
+the translation system detailed here is a string-to-tree system , and the determinization algorithm returns the -best unique trees from a packed forest .
+users of mt systems are generally interested in the string yield of those trees , and not the trees per se .
+thus , an algorithm that can return the -best unique strings from a packed forest would be a useful extension .
+we plan for our weighted determinization algorithm to be one component in a generally available tree automata package for intersection , composition , training , recognition , and generation of weighted and unweighted tree automata for research tasks such as the ones described above .

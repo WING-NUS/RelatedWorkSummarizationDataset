@@ -1,0 +1,209 @@
+support vector machines applied to the classification of semantic relations in nominalized noun phrases .
+abstract .
+the discovery of semantic relations in text plays an important role in many nlp applications .
+this paper presents a method for the automatic classification of semantic relations in nominalized noun phrases .
+nominalizations represent a subclass of np constructions in which either the head or the modifier noun is derived from a verb while the other noun is an argument of this verb .
+especially designed features are extracted automatically and used in a support vector machine learning model .
+the paper presents preliminary results for the semantic classification of the most representative np patterns using four distinct learning models .
+introduction .
+problem description .
+the automatic identification of semantic relations in text has become increasingly important in information extraction , question answering , summarization , text understanding , and other nlp applications .
+this paper discusses the automatic labeling of semantic relations in nominalized noun phrases ( nps ) using a support vector machines learning algorithm .
+based on the classification provided by the new websters grammar guide ( semmelmeyer and bolander 1992 ) and our observations of noun phrase patterns on large text collections , the most frequently occurring np level constructions are : ( 1 ) compound nominals consisting of two consecutive nouns ( eg pump drainage - an instrument relation ) , ( 2 ) adjective noun constructions where the adjectival modifier is derived from a noun ( eg parental refusal - agent ) , ( 3 ) genitives ( eg tone of conversation - a property relation ) , ( 4 ) adjective phrases in which the modifier noun is expressed by a prepositional phrase which functions as an adjective ( eg amusement in the park - a location relation ) , and ( 5 ) adjective clauses where the head noun is modified by a relative clause ( eg the man who was driving the car - an agent relation between man and driving ) .
+previous work on the discovery of semantic relations .
+the development of large semantically annotated corpora , such as penn treebank2 and , more recently , prop- bank ( kingsbury , et al. 2002 ) , as well as semantic knowledge bases , such as framenet ( baker , fillmore , and lowe 1998 ) , have stimulated a high interest in the automatic acquisition of semantic relations , and especially of semantic roles .
+in the last few years , many researchers ( blaheta and charniak 2000 ) , ( gildea and jurafsky 2002 ) , ( gildea and palmer 2002 ) , ( pradhan et al. 2003 ) have focused on the automatic prediction of semantic roles using statistical techniques .
+these statistical techniques operate on the output of probabilistic parsers and take advantage of the characteristic features of the semantic roles that are then employed in a learning algorithm .
+while these systems focus on verb-argument semantic relations , called semantic roles , in this paper we investigate predicate-argument semantic relations in nominalized noun phrases and present a method for their automatic detection in open-text .
+approach .
+we approach the problem top-down , namely identify and study first the characteristics or feature vectors of each noun phrase linguistic pattern and then develop models for their semantic classification .
+the distribution of the semantic relations is studied across different np patterns and the similarities and differences among resulting semantic spaces are analyzed .
+a thorough understanding of the syntactic and semantic characteristics of nps provides valuable insights into defining the most representative feature vectors that ultimately drive the discriminating learning models .
+an important characteristic of this work is that it relies heavily on state-of-the-art natural language processing and machine learning methods .
+prior to the discovery of semantic relations , the text is syntactically parsed with charniaks parser ( charniak 2001 ) and words are semantically disambiguated and mapped into their appropriate wordnet senses .
+the word sense disambiguation is done manually for training and automatically for testing with a state-of-the-art wsd module , an improved version of a system with which we have participated successfully in senseval 2 and which has an accuracy of 81 % when disambiguating nouns in open-domain .
+the discovery of semantic relations is based on learning lexical , syntactic , semantic and contextual constraints that effectively identify the most probable relation for each np construction considered .
+semantic relations in nominalized noun phrases .
+in this paper we study the behavior of semantic relations at the noun phrase level when one of the nouns is nominalized .
+the following np level constructions are considered : complex nominals , genitives , adjective phrases , and adjective clauses .
+complex nominals .
+levi ( levi 1979 ) defines complex nominals ( cns ) as expressions that have a head noun preceded by one or more modifying nouns , or by adjectives derived from nouns ( usually called denominal adjectives ) .
+each sequence of nouns , or possibly adjectives and nouns , has a particular meaning as a whole carrying an implicit semantic relation ; for example , parental refusal ( agent ) .
+the main tasks are the recognition , and the interpretation of complex nominals .
+the recognition task deals with the identification of cn constructions in text , while the interpretation of cns focuses on the detection and classification of a comprehensive set of semantic relations between the noun constituents .
+genitives in english there are two kinds of genitives ; in one , the modifier is morphologically linked to the possessive clitic s and precedes the head noun ( s-genitive e.g.
+johns conclusion ) , and in the second one the modifier is syntactically marked by the preposition of and follows the head noun ( of-genitive , e.g. declaration of independence ) .
+adjective phrases are prepositional phrases attached to nouns and act as adjectives ( cf . ( semmelmeyer and bolander 1992 ) ) .
+prepositions play an important role both syntactically and semantically ( ( dorr 1997 ) .
+prepositional constructions can encode various semantic relations , their interpretations being provided most of the time by the underlying context .
+for instance , the preposition with can encode different semantic relations : ( 1 ) it was the girl with blue eyes ( meronymy ) , ( 2 ) the baby with the red ribbon is cute ( possession ) , ( 3 ) the woman with triplets received a lot of attention ( kinship ) .
+the conclusion for us is that in addition to the nouns semantic classes , the preposition and the context play important roles here .
+adjective clauses are subordinate clauses attached to nouns ( cf . ( semmelmeyer and bolander 1992 ) ) .
+often they are introduced by a relative pronoun / adverb ( ie that , which , who , whom , whose , where ) as in the following examples : ( 1 ) here is the book which i am reading ( book is the theme of reading ) ( 2 ) the man who was driving the car was a spy ( man is the agent of driving ) .
+adjective clauses are inherently verb-argument structures , thus their interpretation consists of detecting the semantic role between the head noun and the main verb in the relative clause .
+this is addressed below .
+nominalizations and mapping of nps into grammatical role structures .
+nominalizations .
+a further analysis of various examples of noun - noun pairs encoded by the first three major types of np-level constructions shows the need for a different taxonomy based on the syntactic and grammatical roles the constituents have in relation to each other .
+the criterion in this classification splits the noun - noun examples ( respectively , adjective - noun examples in complex nominals ) into nominalizations and non-nominalizations .
+nominalizations represent a particular subclass of np constructions that in general have a systematic correspondence with a clause structure ( quirk et al.1985 ) .
+the head or modifier noun is derived from a verb while the other noun ( the modifier , or respectively , the head ) is interpreted as an argument of this verb .
+for example , the noun phrase car owner corresponds to he owns a car .
+the head noun owner is morphologically related to the verb own .
+otherwise said , the interpretation of this class of nps is reduced to the automatic detection and interpretation of semantic roles mapped on the corresponding verb-argument structure .
+as in ( hull and gomez 1996 ) , in this paper we use the term nominalization to refer only to those senses of the nominalized nouns which are derived from verbs .
+for example , the noun decoration has three senses in wordnet 2.0 : an ornament ( # 1 ) , a medal ( # 2 ) , and the act of decorating ( # 3 ) .
+only the last sense is a nominalization .
+however , there are more complex situations when the underlying verb has more than one sense that refers to an action / event .
+this is the case of examination which has five senses of which four are action-related .
+in this case , the selection of the correct sense is provided by the context .
+we are interested in answering the following questions : ( 1 ) what is the best set offeatures that can capture the meaning of noun-noun nominalization pairsfor each np-level construction ? and ( 2 ) what is the semantic behavior of nominalization constructions across np levels ?
+taxonomy of nominalizations .
+deverbal vs verbal noun . ( quirk et al.1985 ) generally classify nominalizations based on the morphological formation of the nominalized noun .
+they distinguish between deverbal nouns , i.e. those derived from the underlying verb through word formation ; e.g. , student examination , and verbal nouns , i.e. those derived from the verb by adding the gerund suffix -ing ; e.g. : cleaning woman .
+most of the time , verbal nouns are derived from verbs which dont have a deverbal correspondent .
+table 1 shows the mapping of the first three major syntactic np constructions to the grammatical role level .
+by analyzing a large corpus , we have observed that quirks grammatical roles shown in table 1 are not uniformly distributed over the types of np-constructions .
+for example , the pattern cannot be encoded by s-genitives ( e.g. , language teacher , teacher of language ) .
+some of the non-nominalization np constructions can also capture the arguments of a particular verb that is missing ( e.g. , subject - object , subject - complement ) .
+the general subclass refers to all other types of noun - noun constructions that cannot be mapped on verb- argument relations ( e.g. , hundreds of dollars ) .
+adjective clauses are not part of table 1 as they describe by default verb-argument relations ( semantic roles ) .
+thus they cannot be classified as nominalizations or nonnominalizations .
+two other useful classifications for nominalizations are : paraphrased vs. non -paraphrased , and the classification according to the nominalized nouns verb- argument underlying structures as provided by the nomlex dictionary of english nominalizations ( macleod et al. 1998 ) discussed more later .
+paraphrased vs non-paraphrased .
+in most cases , the relation between the nominalized noun and the other noun argument can be captured from the subcategorization properties of the underlying verb .
+otherwise said , most of the time , there is a systematic correspondence between the nominalized np construction and the predicate-argument structure of the corresponding verb in a clausal paraphrase ( paraphrased nominalization ) .
+the predicate-argument structure can be captured by three grammatical roles : verb-subject , verb- object , and verb-complement .
+we call the arguments of the verb that appear more frequently or are obligatory - frame arguments .
+from this point of view the nonnominalized noun can be mapped on the verb-argument frame or not .
+thus we can classify paraphrased nominalizations in framed and non -framed according to the presence or absence of the non-nominalized noun in the frame of the verb .
+the semantic classification of nominalizations involves first the detection of a nominalization , the selection of the correct sense of the root verb , and finally the detection of the semantic relationship with the other noun .
+besides the paraphrase nominalization , there is another type which occurs less frequently .
+we call this type non -paraphrased nominalization as its meaning is different from its most related paraphrase clause .
+examples : research budget , design contract , preparation booklet , publishing sub-industry and editing error .
+an important observation is that the nominalized noun occurs most of the time on the first position in an np construction .
+the criteria presented here consider also nominalizations with adjectival modifiers such as parental refusal .
+these adjectives are derived from nouns , so the construction is just a special case of nominalization between nouns .
+nomlex classification .
+the nomlex dictionary of nominalizations ( macleod et al. 1998 ) contains 1025 lexical entries and lists the verbs from which the nouns are derived .
+this dictionary specifies the complements allowed for a nominalization .
+the mapping is done at a syntactic level only .
+nomlex is used in the first phase of our algorithm in order to detect a possible nominalization and the corresponding root verb .
+the criterion of nomlex classification is based on the verb-argument correspondence : verb-nom : the nominalized noun represents the action / state of the verb ( e.g. , acquisition challenge , depositary receipt ) , subj-nom : the nominalized noun refers to the subject of the verb ( e.g. , auto maker , math teacher ) .
+this type is also called agential nominalization ( quirk et al. 1985 ) as the nominalized noun captures information about both the subject and verb .
+obj-nom : the nominalized noun refers to the object of the verb ( e.g. , court order , company employee ) , verb -part : the nominalized noun is derived from a compositional verb ( e.g. , takeover target ) .
+corpus analysis at np level .
+the data .
+we have assembled a corpus from the wall street journal articles from trec-9 .
+table 2 shows for each syntactic category the number of randomly selected sentences , the number of instances found in these sentences , and finally the number of nominalized instances our group managed to annotate by hand .
+the annotation of each example consisted of specifying its feature vector and the most appropriate semantic relation as defined in ( moldovan et al. 2004 ) .
+inter-annotator agreement .
+the annotators , four phd students in computational semantics worked in groups of two , each group focusing on one half of the corpus to annotate .
+besides the type of relation , the annotators were asked to provide information about the order of the modifier and the head nouns in the syntactic constructions if applicable .
+for example , owner of the car and car of the owner .
+the annotators were also asked to indicate if the instance was a nominalization and if yes , which of the noun constituents was derived from a verb ( e.g. the head noun nominalization student protest , or the modifier noun nominalization working woman cf . ( quirk et al.1985 ) ) .
+the annotators agreement was measured using the kappa statistics ( siegel and castellan 1988 ) , one of the most frequently used measure of inter-annotator agreement for classification tasks : , where is the proportion of times the raters agree and is the probability of agreement by chance .
+the k coefficient is 1 if there is a total agreement among the annotators , and 0 if there is no agreement other than that expected to occur by chance .
+for each construction , the corpus was split after agreement with an 80 / 20 training / testing ratio .
+for each pattern , we computed the k coefficient only for those instances tagged with one of the 35 semantic relations ( k value for : nn ( 0.64 ) , adjn ( 0.70 ) , s-genitive ( 0.69 ) , of- genitive ( 0.73 ) , adjective phrases ( 0.67 ) , and adjective clauses ( 0.71 ) ) .
+for each pattern , we also calculated the number of pairs that were tagged with others by both annotators , over the number of examples classified in this category by at least one of the judges , averaged by the number of patterns considered ( agreement for others : 75 % ) .
+the k coefficient shows a good level of agreement for the training and testing data on the set of 35 relations , taking into consideration the task difficulty .
+this can be explained by the instructions the annotators received prior to annotation and by their expertise in lexical semantics .
+distribution of semantic relations .
+even noun phrase constructions are very productive allowing for a large number of possible interpretations , table 3 shows that a relatively small set of 35 semantic relations covers a significant part of the semantic distribution of these constructions on a large open-domain corpus .
+moreover , the distribution of these relations is dependent on the type of np construction , each type encoding a particular subset .
+for example , in the case of s-genitives , there were 13 relations found from the total of 35 relations considered .
+the most frequently occurring relations were agent , temporal , location , and theme .
+by comparing the subsets of semantic relations in each column we can notice that these semantic spaces ( the set of semantic relations an np construction can encode ) are not identical , proving our initial intuition that the np constructions cannot be alternative ways of packing the same information .
+table 3 also shows that there is a subset of semantic relations that can be fully encoded by all types of np constructions .
+the statistics about the annotated nominalized examples are as follows ( lines 3 and 4 in table 2 ) : n-n ( 32.30 % ) , adj-n ( 30.80 % ) , s-genitive ( 21.09 % ) , of-genitive ( 21.8 % ) , adjective phrase ( 40.5 % ) . 80 % of the examples in adjective phrases ( respectively in 94 % in s-genitives ) had the nominalized noun on the head position .
+this simple analysis leads to the important conclusion that the np constructions must be treated separately as their semantic content is different .
+there are semantic relations that have preferences over particular syntactic constructions .
+model .
+support vector machines .
+support vector machines ( svm ) have a strong mathematical foundation ( vapnik 1982 ) and have been applied successfully to text classification ( tong and koller 2001 ) , speech recognition , and other applications .
+we applied svm to the semantic classification problem and obtained encouraging results .
+the kernel function is the inner product of the non-linear function that maps the original feature vectors into real feature space .
+the function that provides the best classification is of the form : .
+the vectors for which the lagrange multipliers are called support vectors .
+intuitively , they are the closest to the separating hyperplane .
+svm provide good classifiers with few , well chosen training examples .
+in order to achieve classification in classes , a binary classifier is built for each pair of classes ( a total of classifiers ) .
+a voting procedure is then used to establish the class of a new example .
+for the experiments with semantic relations , the simplest voting scheme has been chosen ; each binary classifier has one vote which is assigned to the class it chooses when it is run .
+then the class with the largest number of votes is considered to be the answer .
+using the specific nature of the semantic relation detection problem , new voting schemes can be designed , with good perspectives of improving the overall precision .
+the software used in these experiments is the package libsvm , http : / / www.csie.ntu.edu.tw / cjlin / libsvm / which implements the svm algorithm described above .
+the choice of the kernel is the most difficult part of applying svm algorithms as the performance of the classifier might be enhanced with a judicious choice of the kernel .
+we used in our experiments 4 types of general kernels ( linear , polynomial , radial-based and sigmoid ) , with good results .
+all of them had nearly the same performance , with slight deviations between 2 % and 4 % on a reduced testing set .
+however , remarkable is the fact that all classifiers , regardless of the kernel used , made the same mistakes ( misclassified the same examples - eg , a classifier with 58 % precision makes the same mistakes as one with 62 % precision , plus some of its own , and this situation occurred even when the two classifiers had different kernels ) , while the overall precision seems to be around to the same value during the coefficient tuning .
+this shows that the limitation is rather imposed by the classification task than by the kernel type .
+feature space .
+the key to a successful semantic classification of np constructions is the identification of their most specific lexical , syntactic , semantic and contextual features .
+we developed algorithms for finding their values automatically .
+the values of these features are determined with the help of some important resources mentioned below .
+comlex ( grishman et al. 1994 ) is a computational lexicon providing syntactic information for more than 38,000 english headwords .
+it contains detailed syntactic information about the attributes of each lexical item and the subcategorization frames when words have arguments .
+this last feature is the most useful for our task as the senses of verbs are clustered by the syntactic frames .
+we will use comlex in combination with verblex to map the syntactic behaviors to verb semantic classes .
+verblex is an in-house verb lexicon built by enriching verbnet ( kipper et al. 2000 ) with verb synsets from wordnet and verbs extracted from the semantic frames of framenet .
+it contains information about the semantic roles that can appear within a class of verbs together with the selectional restrictions for their lexical realizations , syntactic subcategorization and wordnet verb senses .
+the syntactic information is less detailed than in comlex , but a mapping between these two resources will provide both the semantic and syntactic information needed for the task .
+from the total of 13,213 verbs in the extended verbnet , 6,077 were distinct .
+it also provides a mapping from the framenet deep semantic roles to general thematic roles ( list defined in ( moldovan et al. 2004 ) ) , and use cases for verbnet.the percentages represent the number of examples that encode a semantic relation for a particular pattern .
+the last row shows the number of examples covered by each pattern in the entire annotated corpus ( 1502 pairs ) .
+an essential aspect of our approach below is the word sense disambiguation ( wsd ) of the content words ( nouns , verbs , adjectives and adverbs ) .
+using a state- of-the-art open-text wsd system , each word is mapped into its corresponding wordnet 2.0 sense .
+when disambiguating each word , the wsd algorithm takes into account the surrounding words , and this is one important way through which context gets to play a role in the semantic classification of nps .
+so far , we have identified and experimented with the following np features : semantic class of the non-nominalized noun .
+the non-nominalized noun is classified into one of the 39 eurowordnet noun semantic classes .
+verbnet classes extended in verblex contain selectional restrictions for different semantic roles inside the verb frame .
+these restrictions are provided based on the eurowordnet noun semantic classes .
+example : computer maker , where computer is mapped to the abstract noun category in eurowordnet .
+we intend to map the eurowordnet top noun semantic classes into their wordnet correspondents .
+verb class for nominalized noun , or verb in adjective clauses maps the nominalizing verb into its verblex class .
+the intuition behind this feature is that semantic relations cluster around specific verblex verb classes .
+type of nominalization indicates the nomlex nominalization class .
+for this experiment we considered only examples that could be found in nomlex .
+by specifying subj-nom , obj-nom , and verb-nom types of nominalization , we reduce the list of possible semantic relations the verb can have with the non-nominalized noun .
+example : computer maker , where maker is an agential deverbal noun that captures both the subject ( respectively , agent ) and the verb .
+thus , the noun computer can only map to object ( respectively , theme ) .
+semantic class of the coordinating word .
+this is a contextual feature and can be either a noun ( if the phrase that contains the nominalization is attached to a noun ) or a verb ( if the phrase is an argument of the verb in the sentence ) .
+the feature value is either the verblex class of the verb or the root of the noun in the wordnet hierarchy .
+the coordinating word captures some properties present in the noun phrase , properties that help to discriminate between various competing semantic relations .
+example : foreigners complain that they have limited access to [ government procurement ] in japan . -the coordinating word is access which is a psychological feature .
+position of the nominalized noun depicts the position of the nominalizing verb in the compound ; ie , either head or modifier .
+example : working woman , where the nominalized noun is the modifier , and computer maker where the nominalized noun is the head noun .
+in frame is a three-value feature indicating whether the compound has a paraphrase or if the peer in the compound is framed or not .
+if the peer in the np noun-noun pair is in the corresponding verblex predicate-argument frame , than the relation is captured in the predicate-argument structure .
+if it is not in the verblex frame , but is an external argument ( eg , location , temporal , manner , etc . ) , then it is no-frame .
+otherwise , there is no paraphrase that keeps the meaning , so the relation is not defined by the predicate-argument frame .
+example : computer maker is framed where as backyard composting is non-framed , and editing error is no-paraphrase ( has no paraphrase of type verb-argument ) .
+relative pronoun / adverb applies only to adjective clauses and embeds information about the grammatical and / or semantic role of the head noun in the subordinate clause .
+example : the room where the meeting tookplace - the word where implies location . 9 .
+grammatical role of relative pronoun / adverb applies only to adjective clauses and specifies the grammatical role of the relative pronoun / adverb , if one exists .
+this feature depicts better the grammatical role played in the sentence by the head noun .
+we used for this purpose an in-house rule-based grammatical role detection module , which annotates the following roles ( cf . ( quirk et al.1985 ) : subject , direct object , indirect object , subject complement ( argument for copular verbs ) , object complement ( second argument for complex transitive verbs ) , object oblique , free predicative , and approximates extent and temporal semantic roles .
+example : the man who gave mary the book - mary and the book are indirect object and , respectively direct object , so man cannot be theme or recipient . 10 .
+voice .
+this feature applies only to adjective clauses and indicates the voice of the verb in the relative clause .
+the voice plays an important role in the correlation between grammatical roles and semantic roles in a sentence .
+example : the child that was taken to the zoo - passive voice , so the child is in a theme relation with the verb take .
+lets consider an example of nominalization with its features .
+several candidates have withdrawn their names from consideration after administration officials asked them for their views on abortion and fetal-tissue transplants .
+the noun compound fetal-tissue # 1 transplant # 1 is detected as a nominalization as the noun transplant is derived from the verb to transplant # 3 .
+the features and their values are : feature 1 : semantic class for fetal-tissue : body -part ; feature 2 : verb class for transplant : fill-9.8 ; feature 3 : type of nominalization : verb-nom ; 4 overview of results .
+the f-measure results obtained so far are summarized in table 4 .
+they are divided in two categories , nominalizations , and adjective clauses since the feature vectors differ from one category to another .
+we have compared the performance of svm with three other learning algorithms : ( 1 ) semantic scattering ( moldovan et al. 2004 ) , ( 2 ) decision trees ( a c4.5 implementation ) , and ( 3 ) naive bayes .
+we considered as baseline semantic scattering which is a new learning model ( moldovan et al. 2004 ) developed in-house for the semantic classification of noun- noun pairs in np constructions .
+the semantic relation derives from the wordnet semantic classes of the two nouns participating in those constructions , as well as the surrounding context provided by the wsd module .
+as expected , the results vary from pattern to pattern .
+svm and naive bayes seem to perform better than other models for the nominalizations and adjective clauses .
+overall , these results are very encouraging given the complexity of the problem .
+by comparison with the baseline , the feature vector presented here gives better results .
+this explains in part our initial intuition that nominalization constructions at np level have a different semantic behavior than the np non-nominalization patterns .
+we studied the influence of each feature on the performance , and since there are too many cases to discuss we only show in table 5 the average impact as high , medium , or low .
+this table also shows the features used in each case .

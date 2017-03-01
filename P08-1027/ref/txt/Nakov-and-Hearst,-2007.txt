@@ -1,0 +1,54 @@
+ucb : system description for semeval task # 4 .
+abstract .
+the uc berkeley team participated in the semeval 2007 task # 4 , with an approach that leverages the vast size of the web in order to build lexically-specific features .
+the idea is to determine which verbs , prepositions , and conjunctions are used in sentences containing a target word pair , and to compare those to features extracted for other word pairs in order to determine which are most similar .
+by combining these web features with words from the sentence context , our team was able to achieve the best results for systems of category c and third best for systems of category a. introduction .
+semantic relation classification is an important but understudied language problem arising in many nlp applications , including question answering , information retrieval , machine translation , word sense disambiguation , information extraction , etc .
+this year s semeval ( previously senseval ) competition has included a task targeting the important special case of classification of semantic relations between nominals .
+in the present paper we describe the ucb system which took part in that competition .
+the semeval dataset contains a total of 7 semantic relations ( not exhaustive and possibly overlapping ) , with 140 training and about 70 testing sentences per relation .
+sentence classes are approximately 50 % negative and 50 % positive ( near misses ) .
+table 1 lists the 7 relations together with some examples .
+each example consists of a sentence , two nominals to be judged on whether they are in the target semantic relation , manually annotated wordnet 3.0 sense keys for these nominals , and the web query used to obtain that example : related work .
+lauer ( 1995 ) proposes that eight prepositions are enough to characterize the relation between nouns in a noun-noun compound : of , for , in , at , on , from , with or about .
+lapata and keller ( 2005 ) improve on his results by using web statistics .
+rosario et al. ( 2002 ) use a descent of hierarchy , which characterizes the relation based on the semantic category of the two nouns .
+girju et al. ( 2005 ) apply svm , decision trees , semantic scattering and iterative semantic specialization , using wordnet , word sense disambiguation , and linguistic features .
+barker and szpakowicz ( 1998 ) propose a two-level hierarchy with 5 classes at the upper level and 30 at the lower level .
+turney ( 2005 ) introduces latent relational analysis , which uses the web , synonyms , patterns like x for y , x such as y , etc . , and singular value decomposition to smooth the frequencies .
+turney ( 2006 ) induces patterns from the web , e.g.
+cause is best characterized by y * causes x , and y in * early x is the best pattern for temporal .
+kim and baldwin ( 2006 ) propose to use a predefined set of seed verbs and multiple resources : wordnet , corelex , and moby s thesaurus .
+finally , in a previous publication ( nakov and hearst , 2006 ) , we make the claim that the relation between the nouns in a noun-noun compound can be characterized by the set of intervening verbs extracted from the web .
+method .
+given an entity-annotated example sentence , we reduce the target entities e1 and e2 to single nouns noun1 and noun2 , by keeping their last nouns only , which we assume to be the heads .
+we then mine the web for sentences containing both noun1 and noun2 , from which we extract features , consisting of word ( s ) , part of speech ( verb , preposition , verb + preposition , coordinating conjunction ) , and whether noun1 precedes noun2 .
+table 2 shows some example features and their frequencies .
+we ignore modals and auxiliaries , but retain the passive be , verb particles and prepositions ( in case of indirect object ) .
+preposition : if one of the nouns is the head of an np which contains a pp , inside which there is an np headed by the other noun ( or an inflectional form thereof ) , we extract the preposition heading that pp .
+coordination : if the two nouns are the heads of two coordinated nps , we extract the coordinating conjunction .
+in addition , we include some non-web features2 : sentence word : we use as features the words from the context sentence , after stop words removal and stemming with the porter stemmer .
+entity word : we also use the lemmas of the words that are part of ei ( i = 1 , 2 ) .
+query word : finally , we use the individual words that are part of the query string .
+this feature is used for category c runs only ( see below ) .
+once extracted , the features are used to calculate the similarity between two noun pairs .
+each feature triplet is assigned a weight .
+we wish to downweight very common features , such as of used as a preposition in the 2 * 1 direction , so we apply tf.idf weighting to each feature .
+lin ( 1998 ) , who measures word similarity by using triples extracted from a dependency parser .
+in particular , given a noun , he finds all verbs that have it as a subject or object , and all adjectives that modify it , together with the corresponding frequencies .
+experiments and results .
+participants were asked to classify their systems into categories depending on whether they used the wordnet sense ( wn ) and / or the google query ( gc ) .
+our team submitted runs for categories a ( wn = no , qc = no ) and c ( wn = no , qc = yes ) only , since we believe that having the target entities annotated with the correct wordnet senses is an unrealistic assumption for a real-world application .
+following turney and littman ( 2005 ) and barker and szpakowicz ( 1998 ) , we used a 1-nearestneighbor classifier .
+given a test example , we calculated the dice coefficient between its feature vector and the vector of each of the training examples .
+if there was a single highest-scoring training example , we predicted its class for that test example .
+otherwise , if there were ties for first , we assumed the class predicted by the majority of the tied examples .
+if there was no majority , we predicted the class that was most likely on the training data .
+regardless of the classifier s prediction , if the head words of the two entities e1 and e2 had the same lemma , we classified that example as negative .
+table 3 and 4 show the results for our a and c runs for different amounts of training data : 45 ( a1 , c1 ) , 90 ( a2 , c2 ) , 105 ( a3 , c3 ) and 140 ( a4 , c4 ) .
+all results are above the baseline : always propose the majority label ( true / false ) in the test set .
+in fact , our category c system is the best-performing ( in terms of f and acc ) among the participating systems , and we achieved the third best results for category a. our category c results are slightly but consistently better than for a for all measures ( p , r , features used leave-1-out test ucb f , acc ) , which suggests that knowing the query is helpful .
+interestingly , systems ucb-a2 and ucbc2 performed worse than ucb-a1 and ucb-c1 , which means that having more training data does not necessarily help with a 1nn classifier .
+table 5 shows additional analysis for a4 and c4 .
+we study the effect of adding extra google contexts ( using up to 10 stars , rather than 8 ) , and using different subsets of features .
+we show the results for : ( a ) leave-one-out cross-validation on the training data , ( b ) on the test data , and ( c ) our official ucb runs .

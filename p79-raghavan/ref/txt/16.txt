@@ -1,0 +1,258 @@
+the potential and actual effectiveness of interactive query expansion .
+in query expansion , terms from a source such as relevance feedback are added to the query .
+this often improves retrieval effectiveness but results are variable across queries .
+in interactive query expansion ( iqe ) the automatically-derived terms are instead offered as suggestions to the searcher , who decides which to add .
+there is little evidence of whether iqe is likely to be effective over multiple iterations in a large scale retrieval context , or whether inexperienced users can achieve this effectiveness in practice .
+these experiments address these two questions .
+a small but significant improvement in potential retrieval effectiveness is found .
+this is consistent across a range of topics .
+inexperienced users ' term selections consistently fail to improve on automatic query expansion , however .
+it is concluded that interactive query expansion has good potential , particularly for term sources that are poorer than relevance feedback .
+but it may be difficult for searchers to realise this potential without experience or training in term selection and free-text search strategies .
+background and motivation .
+in free-text retrieval systems , queries can often be improved by adding extra terms that appear in relevant documents but which were not included in the original query .
+this is called query expansion .
+if the terms are provided by the system , as a result of relevance feedback for example , then it is called automatic query expansion .
+the potential of automatic query expansion for improving retrieval effectiveness has been investigated by many researchers , trying various sources of new terms with variable results .
+using relevance feedback terms has produced the greatest improvements ( harman 1992 ; salton and buckley 1990 ) , although on occasion it has also been shown to degrade performance ( robertson et al. 1981 ; smeaton and van rijsbergen 1983 ) .
+the effectiveness of relevance feedback query expansion depends on many factors , including the document ranking functions used ( smeaton and van rijsbergen 1983 ) , the document collection and queries ( salton and buckley 1990 ) , and the number of terms that are used ( buckley et al. 1994 ; harman 1988 ) .
+exploiting co-occurrence of terms in the document collection has generally achieved little or no effect on overall retrieval performance ( minker et al. 1972 ; peat and willett 1991 ; smeaton and van rijsbergen 1983 ) .
+however , as with other query expansion term sources , some individual queries may be improved by adding co-occurring terms whilst others are degraded ( hannan 1988 ) .
+stemming algorithms such as those devised by porter ( porter 1980 ) and lovins ( lovins 1968 ) , have been shown to offer small overall improvements in most situations but with great variation across queries , some being improved greatly , others being degraded ( harman 1987 ; harman 1988 ; hull 1996 ; keen 1992 ) .
+kristensen used a manually-constructed thesaurus in a limited domain ( economics & environment ) ( kristensen 1993 ) .
+adding loosely-defined synonyms , related terms , and narrower terms , resulted in a large improvement in overall recall at the expense of a small drop in precision .
+voorhees & hou used a general purpose thesaurus ( wordnet ) as a source of related concepts resulting in the improvement of some queries but degradation of others ( voorhees and hou 1993 ) .
+these studies show that automatic query expansion is capable of producing large improvements in retrieval effectiveness , particularly when relevance feedback terms are used , but that the effectiveness varies greatly , particularly across queries .
+although nearly all of these experiments have used only a single application of query expansion improvements can continue to be made over many iterations ( harman 1992 ) .
+relevance feedback may produce poor query expansion terms for a number of reasons .
+the sample of relevant documents may be very small , terms may be extracted from non-relevant sections of otherwise relevant documents , and some relevant terms may also attract non-relevant topics that are already over-emphasised .
+it seems reasonable to assume that a searcher , given a list of the query expansion terms , will be able to distinguish the good terms from the bad terms .
+this is the assumption underlying the use of interactive query expansion .
+in interactive query expansion the potential query expansion terms are shown to the searcher as suggestions .
+the searcher then decides which to add and which not to add .
+this technique can be used with any source of potential query expansion terms and it has been implemented in a number of operational systems .
+cupid uses relevance feedback to suggest search terms ( porter 1982 ) .
+muscat uses relevance feedback to suggest word stems and udc ( universal decimal classification ) numbers ( porter and ga1pin 1988 ) .
+one version of instruct used term clustering statistics and morphological processing of the query words to suggest related word stems ( wade and willett 1988 ) .
+cite uses a dictionary and the mesh thesaurus at the pre-search stage to suggest initial query terms which are related to the terms entered by the user . ( doszkocs 1983 ) .
+however , none of these implementations have been evaluated to determine whether the interactive query expansion facility leads to improved retrieval effectiveness .
+the earliest evidence for the potential of interactive query expansion was provided by harman 's experiments using the cranfield 1400 test collection ( harman 1988 ) .
+her results showed that lists of candidate query expansion terms produced by a number of different methods could be improved upon by the selection of a subset that a searcher might be expected to be able to choose .
+relevance feedback was used to produce a list of 20 candidate query expansion terms .
+searchers ' term selections were simulated by using only those candidate terms that occurred in at least one of the relevant unretrieved documents , on average 12 of the original 20 .
+according to harman , this simulated a " perfect " choice by the user .
+the result was an improvement in retrieval effectiveness .
+the simulated interactive query expansion terms produced an average of 2.3 relevant documents from the next 20 retrieved , compared with 1.9 for the unfiltered list and 1.3 for no feedback at all .
+overall the simulated interactive query expansion improved 122 queries and degraded ii , whilst the automatic query expansion improved 91 and degraded 24 .
+even greater relative improvements were achieved by simulating searchers ' selections from candidate query expansion terms produced by a stemming algorithm ( lovins ) and a synonym thesaurus since the suggested terms were much poorer .
+these results show that worthwhile improvements are possible from interactive query expansion in the restricted context represented by the cranfield collection .
+however , it is not possible to say whether searchers can achieve these improvements in practice , or whether the potential is the same in a more realistic large scale retrieval context .
+experiments using real searchers to carry out interactive query expansion have so far failed to show any significant improvements over automatic query expansion ( araya 1990 ; hancock-beaulieu et al. 1995 ) .
+there is , however , some evidence to suggest that searchers may prefer the interactive method regardless of whether it improves performance ( koenemann and belkin 1996 ) and this may in itself be a case for using it .
+the experiments described in this paper aim to determine the potential and actual effectiveness of multiple iterations of interactive query expansion in a large scale realistic search context .
+the potential effectiveness , compared with automatic query expansion , is measured using a method similar to harman 's but with an improved simulation of good term selections .
+it is assumed that experienced users of interactive query expansion would be able to reach this level of performance .
+the ' experienced user ' performance is compared with the performance of inexperienced interactive query expansion users in the same setting .
+experimental set-up .
+experimental tasks .
+to make it possible to compare the retrieval effectiveness of automatic , experienced user interactive , and inexperienced user interactive query expansion , a single task context is used .
+however , there simply aren 't any experienced users of multiple iteration interactive query expansion to be found and training experimental subjects would be too costly , both in time and in financial payments .
+experienced users ' selections therefore have to be simulated in some way .
+the simulation of experienced user interactive query expansion requires 2,401 multiple-iteration searches for each query ( see section 3.2 for details ) .
+it is clearly not possible to do this with real searchers so the searches , including the relevance judgement phase , are automated by using a standard test collection .
+using a test collection raises problem for the real user interactive query expansion tests , however .
+to allow direct comparison with the retrieval performance of automatic query expansion the same documents , topics , and relevance judgements have to be used .
+but the interactive query expansion users are not then involved in their own tasks .
+instead , they are being asked to search on predetermined topics that they may poorly understand .
+steps that are taken to deal with this problem are described in section 4 .
+the task contexts used for this and all subsequent performance measurement experiments are taken from the trec exercise .
+for these experiments , a small portion of the trec data is used , consisting of 173,252 articles which appeared in the wall street journal newspaper between 1987 and 1992 .
+the topics used for these experiments are from trec-3 ( topics 151-200 ) .
+an example is shown in figure 1 .
+they are long enough to provide a full , unambiguous description of what is and is not relevant , so an experimental subject with no prior knowledge of the subject area should be able to follow them without difficulty .
+the topic titles are used as the initial queries because they resemble the range of queries that one would expect users to input .
+two extreme examples are topic 168 " financing amtrak " , and topic 181 " abuse of the elderly by family members , and medical and nonmedical personnel , and initiatives being taken to minimize this mistreatment " .
+each search consists of multiple iterations of query modification and retrieval .
+each iteration starts with the retrieval of the best 20 documents using the current query .
+these are assessed for relevance and 20 relevance feedback terms are generated .
+a subset of these terms , derived according to the technique being tested , is then added to the query and the next iteration begins .
+the experimental system .
+the document collection is indexed using single , lower case , non- hyphenated words as index terms .
+a stoplist is used to reject words that are too common to be used as discriminators for retrieval purposes , such as the and to , and words that appear in more than half of all documents , such as wall , street , and today .
+stemming is not used since interactive searchers may not be able to understand the meaning of stems and it provides little or no expected gain in retrieval effectiveness ( hull 1996 ) .
+the query-document matching function uses the inverse of the frequency ofoccurence of a query term in the document collection to measure the term 's rarity .
+individual documents are scored by summing the inverse document frequency ( idf ) weights of all the query terms that appear in it .
+ranking the documents according to their scores and making a cut-off gives the relevance feedback set .
+it is now well accepted that , if the corpus generally consists of quite long documents like those in the trec wall street journal corpus , retrieval effectiveness is improved by including in the matching function the frequency of occurence of each query term in the document ( harman 1992 ) .
+however , this search engine doesn 't use document term frequencies so the retrieval effectiveness might be expected to be lower than the state of the art .
+this may affect the query expansion , since the number of relevant documents available to provide feedback terms will be lower .
+however , the difference is not large enough to pose any methodological problem .
+relevance feedback terms are produced by ranking all the terms contained in the set of relevant documents using the relevance feedback term weighting function and making a cut-off .
+the relevance feedback term weighting function used by the ir engine is the robertson and spark jones f4 function ( robertson and sparck jones 1976 ) : umber of documents in the collection containing term t , andn = the total number of documents in the collection .
+automatic query expansion .
+the number of terms used for query expansion is known to affect performance .
+harman found that , in the cranfield 1400 test collection using a good term-weighting formulae , effectiveness improved as the relevance feedback term cut-off increased up to 20 terms , then gradually degraded with the addition of further terms ( harman 1988 ; harman 1992 ) .
+a completely different result was achieved by buckley et al. using relevance feedback query expansion in a routing environment ( buckley et al. 1994 ) .
+performance continued to improve as the cut-off was increased , never degrading .
+the differences between the results of these two experiments illustrates the problems of interpreting results achieved in one situation in a different situation .
+there are many possible differences that could have an affect ( some of these are discussed in ( buckley et al. 1995 ) ) .
+it is therefore difficult to predict how query expansion performance will vary with the cutoff in the context of these experiments , although various factors suggest that the situation will more closely resemble harman 's than buckley 's .
+the cut-off that gives the best average retrieval effectiveness over a representative range of searches is found empirically .
+the effectiveness of using automatic query expansion with this cut-off provides the most stringent baseline for the performance of the interactive techniques .
+for each of the 20 topics relevance feedback was performed on the 20 documents retrieved by the initial query , producing a ranked list of 20 potential query expansion terms .
+all terms ranked at or above a given cut-off were used for query expansion and another 20 documents were retrieved .
+this was repeated for four iterations of query expansion , thus retrieving a total of 100 documents for the search .
+searches were carried out using all cutoffs between 0 and 20 , 0 being no query expansion .
+the mean precision at 100 documents retrieved for each cut-off is shown in table 1 and graphically in figure 2 .
+the general trend is similar to harman 's results - a sharp increase up to a peak , followed by a more gradual decrease ( harman 1988 ; harman 1992 ) .
+but the peak comes at only 6 added terms and the decrease looks anything but smooth .
+although all cut-offs give a large improvement over no query expansion there is little material difference in the scores for all the cut-offs between 2 and 20 .
+the mean precision at cut-off 6 is only just over 9 % better than at cut-off 20 , giving an average 2.5 extra relevant documents in the hundred retrieved .
+it is debatable whether a user would expansion .
+for others there is little or no improvement .
+in some cases the lack of improvement is due to there being few relevant documents in the dataset or the very good performance of the original query .
+but there are also some failures .
+for example , with topic 200 the unexpanded search finds only 28 of the 63 relevant documents but this is increased to only 34 by query expansion , consider this an appreciable difference .
+it is also debatable whether this difference reflects a real difference in effectiveness rather than a statistical sampling error .
+wilcoxon 's matched-pairs signed-ranks test reveals no significant difference at p = .05 between the scores for cut-offs 6 and 20 .
+the mean recall achieved by the best cut-off was 45.2 % after 100 documents retrieved .
+because some of the topics have many more than 100 relevant documents and only 100 documents are retrieved in the experiment , 100 % recall is not attainable for some topics .
+the best possible mean recall over all topics that could be achieved by 100 documents retrieved is 64.58 % .
+a recall of 45.2 % is therefore perfectly acceptable .
+the precision / retrieval graph in figure 3 shows how five different cut-offs perform throughout the search .
+a cut-off of 5 is slightly unusual in that its precision rises sharply in the first iteration of query expansion when 40 documents have been retrieved .
+but by 60 and 80 documents retrieved it has been overtaken by cut-offs 6 and 10 which follow the smoother pattern shown by all other cut-offs .
+cut-off i also follows this smooth pattern but with less overall effectiveness .
+the curve for cut-off 0 indicates the effectiveness of the unexpanded search .
+an important aspect of the results is that the similarity in mean precision hides differences that are very variable from query to query .
+for some topics the best overall cut-off , which is 6 , retrieves up to 10 times as many relevant documents as no query and with topic 196 both searches achieve only about 50 % recall .
+the variability in the performance of different cut-offs between topics is well illustrated by figure 4 which shows the precision at 100 documents retrieved for each cut-off on three selected topics .
+for topic 189 the low cut-offs are the most effective whilst for topic 190 they are the least effective .
+topic 192 is different again , with relatively constant precision across all cut-offs .
+the overall results show that automatic query expansion offers a large improvement in retrieval performance in this situation and that the best cut-off to use is relatively small compared with previous findings in other situations .
+as long as the cut-off is in the right region it is not critical to get the absolute best .
+there are good reasons to expect interactive query expansion to be capable of much more improvement than this since it goes further than just selecting the best overall cut-off .
+an interactive query expansion user can vary the cut-off between searches and between iterations of a single search .
+by making non-contiguous term selections the user also effectively re-ranks the relevance feedback terms before making a cut-off .
+this gives a clue about how to simulate experienced user performance - by re-ranking the relevance feedback terms according to their utility and making the best cutoff on each iteration of each search .
+experienced user performance .
+this next experiment is an attempt to estimate how much retrieval effectiveness can be improved by experienced interactive query expansion users .
+simulating experienced users ' term selections .
+harman attempted to measure the potential of interactive query expansion by simulating users ' selections .
+the approach was to devise a computable theoretical definition of ' good ' terms and select all of those ( harman 1988 ) .
+harman 's definition of a good term was any term that appears in at least one of the unretrieved relevant documents .
+this is a fair definition since it recognizes that the task is to select terms that will attract the target documents and it is certain that a term that doesn 't appear in any of the target documents will not attract them .
+however , although attracting target documents is necessary , the real task is to attract them without also attracting unwanted documents .
+the ir system has a built-in function that weights terms according to their utility for discriminating one set of documents from another - the relevance feedback term weighting function .
+the utility of each of the suggested terms is therefore measured by using the normal relevance feedback term weighting function with the target documents in place of the relevant documents .
+the terms are then re-ranked by their resulting utilities and the selection is made by applying some cut-off to this ranked list .
+harman ' s method is a special case of this in which the cut-off is made at the point where the utility becomes zero .
+an approximation of the best cut-off point is found empirically , by trying all possible combinations of 5 different cutoffs over 4 iterations of query expansion .
+the number of searches required to test more than five cut-offs would have taken longer than the time available .
+the results for automatic query expansion suggest that the best numbers of terms to select are more likely to be in the range 0 to 10 than in the range 10 to 20 , so it is sensible to use more samples at the lower end of the range .
+searches are therefore carried out using every combination of the cut-offs 0,3 , 6,10 , and 20 , over 4 query expansion iterations .
+so experienced users ' interactive query expansion performance is simulated by the following method : on each query expansion iteration rank the 20 relevance feedback terms according to the utilities calculated by applying the relevance feedback term weighting function to the unretrieved relevant documents .
+select the highest ranked terms by applying a cut-off to this ranking and add those to the query .
+run a search using every possible combination , over four query expansion iterations , of the cut-offs 0 , 3 , 6,10 , and 20 .
+the best retrieval effectiveness measures experienced user performance .
+there are various ways in which this simulation can be criticised .
+the first is that users , even experienced ones , do not have the precise knowledge of term distribution statistics that the relevance feedback term weighting function uses .
+it is therefore unlikely that a user , given a set of 20 terms , could rank them in utility order .
+secondly , effective query expansion is not as simple as selecting terms that distinguish the target documents from all the other documents in the database .
+it is also a matter of rejecting the dangerous terms that also attract similar but non-relevant topics .
+experienced users are likely to realise this and make their selections accordingly .
+thirdly , it is not clear that a strategy of targeting all the non-relevant documents will result in the best retrieval performance .
+lastly , it is unlikely that even experienced users would be able to consistently make the best cut-off .
+this objection is reduced by the fact that the simulation doesn 't necessarily make the best cut-offs itself since it only tries 5 out of the 21 possible cut-offs .
+in conclusion , there are some reasons to believe that experienced users might make better term selections than this simulation and other reasons to believe that they might make worse selections .
+despite these objections , it is reasonable to assume that the simulation method will result in good term selections with retrieval effectiveness sufficiently similar to experienced user performance .
+effectiveness of experienced users ' term selections .
+the retrieval results for searches simulating experienced users ' term selections are shown as precision at 100 documents retrieved ( table 2 ) .
+also shown for comparison are the results for the best fixed cut-off searches and the results using harman 's method of selecting any term that appeared in at least one of the unretrieved relevant documents .
+compared with the best overall automatic query expansion search , which used the top 6 terms , precision is improved for every topic except one .
+the overall improvement is therefore unequivocal and doesn 't require significance testing .
+mean precision is increased from 30 % to 35 % giving the user an extra 5 relevant documents per search on average .
+this improvement is also very consistent .
+however , the experienced user simulation is outperformed on one topic by the best automatic query expansion search .
+the scores achieved on topic 189 for both the experienced user simulation and harman 's method are surprisingly low at 38 % and 24 % precision respectively .
+the best automatic query expansion search for that topic , using a cut-off of 2 , achieves 51 % precision .
+this shows that the experienced user simulation does not always produce the best selection .
+overall , harman 's method is not particularly good , achieving a mean precision only just better than the best automatic query expansion search .
+inexperienced user .
+the results of the previous experiments show the potential of multiple iteration interactive query expansion for improving retrieval performance .
+the improvement that experienced users can be expected to achieve is not great in the experimental search situation compared with that which has been achieved by other researchers in other situations .
+it is nevertheless worthwhile .
+this experiment aims to discover whether or not inexperienced users can achieve this improvement .
+retrieval performance is measured in the same search situation ( tasks and system ) that was used for the previous experiments .
+the only difference is the addition of an interactive document viewing and term selection phase .
+experimental procedure .
+five subjects were recruited from the undergraduate and postgraduate population of the university 's computing science department .
+before searching , the system was demonstrated by the experimenter who carried out a single feedback iteration of a test search .
+subjects then carried out a single feedback iteration of a test search themselves so that they could get used to the system and reveal any problems they might have .
+each subject then searched on 4 randomly assigned topics of the 20 used in the experiment , going through four iterations of query expansion after the initial search .
+there was no time limit and searches took between 20 and 90 minutes with a mean of i hour .
+on each iteration the titles of all the retrieved articles were displayed and subjects were able to view their full texts with occurrences of current query terms highlighted .
+they were asked to indicate which of the articles were relevant by clicking checkboxes .
+however , their judgements were ignored by the system and the official trec relevance judgements were used for relevance feedback .
+this ensured that the retrieved documents , and therefore the suggested terms , were identical throughout the whole search to those used in the simulation of experienced users .
+the experimental instructions given to subjects purposely mislead them by suggesting that their relevance judgements were being used to produce the term suggestions .
+this was done to ensure that the subjects would become familiar with the topic and the results of the search .
+it was felt that if the subjects knew that their judgements were being ignored they would stop bothering to look at the articles properly .
+when the subjects had made their judgements they were checked against the official trec judgements and if any were in disagreement the subjects were asked to reconsider them after re-reading the topic description .
+again they were mislead into thinking that the system was merely ' making sure ' rather than that it had an in-built list of relevant documents .
+the purpose- of this prompting was to make sure the subjects fully understood the requirements of the search topic .
+in the query expansion phase the 20 relevance feedback terms were displayed to the subject in a selection list .
+any number from 0 to 20 could be selected .
+by default no terms were selected .
+subjects could view examples of how the terms were used in relevant documents .
+this was done to enable them to overcome the problem of unfamiliar subject vocabulary .
+the selected terms were added to the query which was then resubmitted .
+the instructions given to the subjects were carefully written to avoid giving any suggestions regarding how many and what type of terms to select .
+results of inexperienced user searches .
+the inexperienced users ' term selections generally failed to improve on automatic query expansion .
+the complete results are shown in table 3 .
+the mean precision of 27.25 was lower than that achieved by any automatic cut-off between 2 and 20 .
+however , wilcoxon 's matched-pairs signed-ranks test reveals that the difference is never significant at p = .05 .
+compared with the best overall automatic cut-off of 6 , precision was improved for 8 topics and degraded for 10 , with no change for the other 2 .
+however , there were only two topics for which subjects managed to make a small improvement over all the automatic query expansion cut-offs .
+apart from topic 195 , on which the inexperienced user did particularly badly , there was no marked variation in the lack of improvement .
+this shows that the effects of interactive query expansion for inexperienced users is steady across topics , a result that mirrors what was found for the experienced user simulation .
+there is not enough data to draw any conclusions about differences between individual subjects although , given the relative lack of topical variation , it is unlikely that there would be much .
+results and discussion .
+automatic query expansion has been shown to be capable of producing large improvements in retrieval effectiveness , particularly when relevance feedback terms are used , but the effectiveness varies greatly , particularly across queries .
+interactive query expansion seems very promising , both as a way of fixing the problems automatic query expansion and of improving on its successes .
+it has been implemented in a number of operational systems and small scale simulation experiments have shown that it has potential for improving retrieval effectiveness .
+however , there has previously been no evidence to suggest whether the potential is the same in a more realistic large scale retrieval context , or whether inexperienced users can achieve this potential in practice .
+the experiments described in this paper aimed to determine both the potential and the actual effectiveness of multiple iterations of interactive query expansion in a large scale realistic search context .
+the main results are as follows : automatic query expansion using relevance feedback terms offers a large overall improvement in retrieval performance in this situation .
+the improvement is very variable across topics , however , with some showing little or no improvement .
+the best number of terms to use is relatively small compared with previous findings in other situations .
+six terms were found to work best overall although the exact number is not critical .
+interactive query expansion , as it might be performed by an experienced user , offers a small but significant further improvement .
+this improvement is very consistent across a range of topics .
+inexperienced users of interactive query expansion did not make good term selections and failed to improve on automatic query expansion .
+this lack of improvement is also very consistent across a range of topics .
+these experiments investigate an attempted improvement on what is arguably the most successful technique available in a free- text retrieval system for improving retrieval effectiveness - relevance feedback query expansion .
+other sources of query expansion terms that have not been shown to be as useful may have more potential for improvement by interactive filtering .
+sources such as semantically- or morphologically-based thesauri are complementary to relevance feedback , providing different types of terms .
+improvements that can be made using interactive query expansion on these sources may prove more worthwhile .
+the lack of improvement by the inexperienced users suggests that interactive query expansion may be difficult to use well .
+it adds a great deal of complexity on top of the automatic method .
+a free text search system using relevance feedback for automatic query expansion is very simple for searchers .
+all they have to do is provide an initial query and judge the relevance of the documents that are presented to them .
+there is no complex functionality to learn and the user interface can be minimal .
+whatever methods it uses for searching are hidden from the searcher who has no chance to influence it once the initial query has been input .
+there is therefore no search logic or strategy involved in using it .
+this is often recognised as one of its benefits , making it particularly suitable for novice or infrequent searchers or those who lack the time , ability , or motivation to learn to use it more effectively .
+using interactive query expansion instead of automatic query expansion gives the searcher a greater degree of control over the search .
+there is some evidence to suggest that searchers may prefer the interactive method regardless of whether it improves performance ( koenemann and belkin 1996 ) and this may in itself be a case for using it .
+it does , however , require extra effort from searchers .
+the extra term selection stage not only takes time and involves added user interface functions but also presents the searcher with a task that involves decision making and strategy .
+they must decide which terms to select and which to reject , knowing that their choices will have a direct bearing on the success of the search .
+the majority of online-searching up till now has been done by librarians using commercial search systems .
+these systems offer an extensive functionality that requires complex query languages .
+in order to use these systems effectively librarians are given extensive training .
+in addition to this training , there is a huge amount of literature available concerning functions , tactics , and strategies for using these systems and exploiting their facilities .
+in contrast , there is no such training or advice available for using interactive query expansion in a free text search environment and there is nothing in the literature about strategies for free-text searching .
+without good strategies and careful reasoning it is unlikely that a searcher will be able to use techniques such as interactive query expansion effectively .
+the question of how searchers use , or could use , interactive query expansion is therefore an important research topic .

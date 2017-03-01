@@ -1,0 +1,139 @@
+the semeval-2007 weps evaluation : establishing a benchmark for the web people search task .
+abstract .
+this paper presents the task definition , resources , participation , and comparative results for the web people search task , which was organized as part of the semeval-2007 evaluation exercise .
+this task consists of clustering a set of documents that mention an ambiguous person name according to the actual entities referred to using that name .
+introduction .
+finding information about people in the world wide web is one of the most common activities of internet users .
+person names , however , are highly ambiguous .
+in most cases , the results for a person name search are a mix of pages about different people sharing the same name .
+the user is then forced either to add terms to the query ( probably losing recall and focusing on one single aspect of the person ) , or to browse every document in order to filter the information about the person he is actually looking for .
+in an ideal system the user would simply type a person name , and receive search results clustered according to the different people sharing that name .
+and this is , in essence , the weps ( web people search ) task we have proposed to semeval-2007 participants : systems receive a set of web pages ( which are the result of a web search for a person name ) , and they have to cluster them in as many sets as entities sharing the name .
+this task has close links with word sense disambiguation ( wsd ) , which is generally formulated as the task of deciding which sense a word has in a given con- text .
+in both cases , the problem addressed is the resolution of the ambiguity in a natural language expression .
+a couple of differences make our problem different .
+wsd is usually focused on open- class words ( common nouns , adjectives , verbs and adverbs ) .
+the first difference is that boundaries between word senses in a dictionary are often subtle or even conflicting , making binary decisions harder and sometimes even useless depending on the application .
+in contrast , distinctions between people should be easier to establish .
+the second difference is that wsd usually operates with a dictionary containing a relatively small number of senses that can be assigned to each word .
+our task is rather a case of word sense discrimination , because the number of senses ( actual people ) is unknown a priori , and it is in average much higher than in the wsd task ( there are 90,000 different names shared by 100 million people according to the u.s. census bureau ) .
+there is also a strong relation of our proposed task with the co-reference resolution problem , focused on linking mentions ( including pronouns ) in a text .
+our task can be seen as a co-reference resolution problem where the focus is on solving inter- document co-reference , disregarding the linking of all the mentions of an entity inside each document .
+an early work in name disambiguation ( bagga and baldwin , 1998 ) uses the similarity between documents in a vector space using a bag of words representation .
+an alternative approach by mann and yarowsky ( 2003 ) is based on a rich feature space of automatically extracted biographic information .
+fleischman and hovy ( 2004 ) propose a maximum entropy model trained to give the probability that two names refer to the same individual 1 .
+the paper is organized as follows .
+section 2 provides a description of the experimental methodology , the training and test data provided to the participants , the evaluation measures , baseline systems and the campaign design .
+section 3 gives a description of the participant systems and provides the evaluation results .
+finally , section 4 presents some conclusions .
+experimental methodology .
+data .
+following the general semeval guidelines , we have prepared trial , training and test data sets for the task , which are described below .
+trial data .
+for this evaluation campaign we initially delivered a trial corpus for the potential participants .
+the trial data consisted of an adapted version of the weps corpus described in ( artiles et al. , 2006 ) .
+the predominant feature of this corpus is a high number of entities in each document set , due to the fact that the ambiguous names were extracted from the most common names in the us census .
+this corpus did not completely match task specifications because it did not consider documents with internal ambiguity , nor it did consider non-person entities ; but it was , however , a cost-effective way of releasing data to play around with .
+during the first weeks after releasing this trial data to potential participants , some annotation mistakes were noticed .
+we preferred , however , to leave the corpus as is and concentrate our efforts in producing clean training and test datasets , rather than investing time in improving trial data .
+training data .
+in order to provide different ambiguity scenarios , we selected person names from different sources : us census .
+we reused the web03 corpus ( mann , 2006 ) , which contains 32 names randomly picked from the us census , and was well suited for the task .
+wikipedia .
+another seven names were sampled from a list of ambiguous person names in the english wikipedia .
+these were expected to have a ecdl .
+finally , ten additional names were randomly selected from the program committee listing of a computer science conference ( ecdl 2006 ) .
+this set offers a scenario of potentially low ambiguity ( computer science scholars usually have a stronger internet presence than other professional fields ) with the added value of the a priori knowledge of a domain specific type of entity ( scholar ) present in the data .
+all datasets consist of collections of web pages obtained from the 100 top results for a person name query to an internet search engine 2 .
+note that 100 is an upper bound , because in some occasions the url returned by the search engine no longer exists .
+the second and third datasets ( developed explicitly for our task ) consist of 17 person names and 1685 associated documents in total ( 99 documents per name in average ) .
+each web page was downloaded and stored for off-line processing .
+we also stored the basic metadata associated to each search result , including the original url , title , position in the results ranking and the corresponding snippet generated by the search engine .
+in the process of generating the corpus , the selection of the names plays an important role , potentially conditioning the degree of ambiguity that will be found later in the web search results .
+the reasons for this variability in the ambiguity of names are diverse and do not always correlate with the straightforward census frequency .
+a much more decisive feature is , for instance , the presence of famous entities sharing the ambiguous name with less popular people .
+as we are considering top search results , these can easily be monopolized by a single entity that is popular in the internet .
+after the annotation of this data ( see section 2.1.4 . ) we found our predictions about the average ambiguity of each dataset not to be completely accurate .
+in table 1 we see that the ecdl-06 average ambiguity is indeed relatively low ( except for the documents for thomas baker standing as the most ambiguous name in the whole training ) .
+wikipedia names have an average ambiguity of 23,14 entities per name , which is higher than for the ecdl set .
+the web03 corpus has the lowest ambiguity ( 5,9 entities per name ) , for two reasons : first , randomly picked names belong predominantly to the long tail of unfrequent person names which , per se , have low ambiguity .
+being rare names implies that in average there are fewer documents returned by the search engine ( 47,20 per name ) , which also reduces the possibilities to find ambiguity .
+test data .
+for the test data we followed the same process described for the training .
+in the name selection we tried to maintain a similar distribution of ambiguity degrees and scenario .
+for that reason we randomly extracted 10 person names from the english wikipedia and another 10 names from participants in the acl-06 conference .
+in the case of the us census names , we decided to focus on relatively common names , to avoid the problems explained above .
+unfortunately , after the annotation was finished ( once the submission deadline had expired ) , we found a major increase in the ambiguity degrees ( table 2 ) of all data sets .
+while we expected a raise in the case of the us census names , the other two cases just show that there is a high ( and unpredictable ) variability , which would require much larger data sets to have reliable population samples .
+this has made the task particularly challenging for participants , because naive learning strategies ( such as empirical adjustment of distance thresholds to optimize standard clustering algorithms ) might be misleaded by the training set .
+annotation .
+the annotation of the data was performed separately in each set of documents related to an ambiguous name .
+given this set of approximately 100 documents that mention the ambiguous name , the annotation consisted in the manual clustering of each document according to the actual entity that is referred on it .
+when non person entities were found ( for instance , organization or places named after a person ) the annotation was performed without any special rule .
+generally , the annotator browses documents following the original ranking in the search results ; after reading a document he will decide whether the mentions of the ambiguous name refer to a new entity or to a entity previously identified .
+we asked the annotators to concentrate first on mentions that strictly contained the search string , and then to pay attention to the co-referent variations of the name .
+for instance john edward fox or edward fox smith would be valid mentions .
+edward j. fox , however , breaks the original search string , and we do not get into name variation detection , so it will be considered valid only if it is co-referent to a valid mention .
+in order to perform the clustering , the annotator was asked to pay attention to objective facts ( biographical dates , related names , occupations , etc . ) and to be conservative when making decisions .
+the final result is a complete clustering of the documents , where each cluster contains the documents that refer to a particular entity .
+following the previous example , in documents for the name edward fox the annotator found 16 different entities with that name .
+note that there is no a priori knowledge about the number of entities that will be discovered in a document set .
+this makes the task specially difficult when there are many different entities and a high volume of scattered biographical information to take into account .
+in cases where the document does not offer enough information to decide whether it belongs to a cluster or is a new entity , it is discarded from the evaluation process ( not from the dataset ) .
+another common reason for discarding documents was the absence of the person name in the document , usu ally due to a mismatch between the search engine cache and the downloaded url .
+we found that , in many cases , different entities were mentioned using the ambiguous name within a single document .
+this was the case when a document mentions relatives with names that contain the ambiguous string ( for instance edward fox and edward fox jr . ) .
+another common case of intra-document ambiguity is that of pages containing database search results , such as book lists from amazon , actors from imdb , etc .
+a similar case is that of pages that explicitly analyze the ambiguity of a person name ( wikipedia disambiguation pages ) .
+the way this situation was handled , in terms of the annotation , was to assign each document to as many clusters as entities were referred to on it with the ambiguous name .
+evaluation measures .
+evaluation was performed in each document set ( web pages mentioning an ambiguous person name ) of the data distributed as test .
+the human annotation was used as the gold standard for the evaluation .
+each system was evaluated using the standard purity and inverse purity clustering measures purity is related to the precision measure , well known in information retrieval .
+this measure focuses on the frequency of the most common category in each cluster , and rewards the clustering solutions that introduce less noise in each cluster .
+being c the set of clusters to be evaluated , l the set of categories ( manually annotated ) and n the number of clustered elements , purity is computed by taking the weighted average of maximal precision values : inverse purity focuses on the cluster with maximum recall for each category , rewarding the clustering solutions that gathers more elements of each category in a corresponding single cluster .
+inverse purity is defined as : for the final ranking of systems we used the harmonic mean of purity and inverse purity fa = 0,5 .
+the f measure is defined as follows : inverse purity .
+fa = 0,2 is included as an additional measure giving more importance to the inverse purity aspect .
+the rationale is that , for a search engine user , it should be easier to discard a few incorrect web pages in a cluster containing all the information needed , than having to collect the relevant information across many different clusters .
+therefore , achieving a high inverse purity should be rewarded more than having high purity .
+baselines .
+two simple baseline approaches were applied to the test data .
+the all-in-one baseline provides a clustering solution where all the documents are assigned to a single cluster .
+this has the effect of always achieving the highest score in the inverse purity measure , because all classes have their documents in a single cluster .
+on the other hand , the purity measure will be equal to the precision of the predominant class in that single cluster .
+the onein-one baseline gives another extreme clustering solution , where every document is assigned to a different cluster .
+in this case purity always gives its maximum value , while inverse purity will decrease with larger classes .
+campaign design .
+the schedule for the evaluation campaign was set by the semeval organisation as follows : ( i ) release task description and trial data set ; ( ii ) release of training and test ; ( iii ) participants send their answers to the task organizers ; ( iv ) the task organizers evaluate the answers and send the results .
+the task description and the initial trial data set were publicly released before the start of the official evaluation .
+the official evaluation period started with the simultaneous release of both training and test data , together with a scoring script with the main evaluation measures to be used .
+this period spanned five weeks in which teams were allowed to register and download the data .
+during that period , results for a given task had to be submitted no later than 21 days after downloading the training data and no later than 7 days after downloading the test data .
+only one submission per team was allowed .
+training data included the downloaded web pages , their associated metadata and the human clustering of each document set , providing a development test-bed for the participants systems .
+we also specified the source of each ambiguous name in the training data ( wikipedia , ecdl conference and us census ) .
+test data only included the downloaded web pages and their metadata .
+this section of the corpus was used for the systems evaluation .
+participants were required to send a clustering for each test document set .
+finally , after the evaluation period was finished and all the participants sent their data , the task organizers sent the evaluation for the test data .
+results of the evaluation campaign . 29 teams expressed their interest in the task ; this number exceeded our expectations for this pilot experience , and confirms the potential interest of the research community in this highly practical problem .
+out of them , 16 teams submitted results within the deadline ; their results are reported below .
+results and discussion .
+table 3 presents the macro-averaged results obtained by the sixteen systems plus the two baselines on the test data .
+we found macro-average 3 preferable to micro-average 4 because it has a clear interpretation : if the evaluation measure is f , then we should calculate f for every test case ( person name ) and then average over all trials .
+the interpretation of micro-average f is less clear .
+the systems are ranked according to the scores obtained with the harmonic mean measure fa = 0,5 of purity and inverse purity .
+considering only the participant systems , the average value for the ranking measure was 0 , 60 and its standard deviation 0 , 11 .
+results with f ^ = 0,2 are not substantially different ( except for the two baselines , which roughly swap positions ) .
+there are some ranking swaps , but generally only within close pairs .
+the good performance of the one-in-one baseline system is indicative of the abundance of singleton entities ( entities represented by only one document ) .
+this situation increases the inverse purity score for this system giving a harmonic measure higher than the expected .
+conclusions .
+the weps task ended with considerable success in terms of participation , and we believe that a careful analysis of the contributions made by participants ( which is not possible at the time of writing this report ) will be an interesting reference for future research .
+in addition , all the collected and annotated dataset will be publicly available 5 as a benchmark for web people search systems .
+at the same time , it is clear that building a reliable test-bed for the task is not simple .
+first of all , the variability across test cases is large and unpredictable , and a system that works well with the names in our test bed may not be reliable in practical , open search situations .
+partly because of that , our test-bed happened to be unintentionally challenging for systems , with a large difference between the average ambiguity in the training and test datasets .
+secondly , it is probably necessary to think about specific evaluation measures beyond standard clustering metrics such as purity and inverse purity , which are not tailored to the task and do not behave well when multiple classification is allowed .
+we hope to address these problems in a forthcoming edition of the weps task .

@@ -1,0 +1,21 @@
+analyzing and accessing wikipedia as a lexical semantic resource .
+abstract .
+in this paper , we analyze wikipedia as an emerginglexical semanticresource that is growing exponentially .
+recent research has shown thatwikipediacan be successfully employed for nlp tasks e.g. question answering ahnetet al. , 2004 ) , text classification ( gabrilovich and markovitch , 2006 ) or named entity disambiguation ( bunescu and pasca 2006 ) we extend this work by focusing on the analysis of wikipedia contentin particularitsitscategory structure , and present a highly efficient java-based api to usewikipediain large scale nlp .
+at first , we compare wikipedia with conventional lexical semanticresources such as dictionaries , thesauri semantic wordnets or paper bound encyclopedias .
+we show that diiferent parts of wikipediareflect diiferent aspects of these resources .
+wikipedia articles form a heavilylinkedencyclopedia , whereas the category system is a collaboratively constructedthesaurus used for collaborative tagging ( voss 2006 ) our analysisrevealsthat wikipedia additionally contains a vast amount of knowledge about named entities , domain specific terms or specific word senses that cannot be easily found in other freely available lexical semantic resources .
+we alsoshowthat the redirect system of wikipedia can be used as a dictionary forsynonyms , spelling variations and abbreviations .
+next , we perform a detailed analysis of the category graph of wikipedia employing graph-theoretic methods .
+previous studies ( holloway et al. 2005 ; buriol et al. , 2006 ; zlatic et al. , 2006 ) have focused on the wikipedia article graph .
+we analyze the category graph as it can be regarded as animportant lexical semantic resource of its own .
+from this analysis , we drawsome conclusions for adapting algorithms from semantic wordnetstothewikipedia category graph .
+if wikipedia is to be used as a lexical-semantic resourceinlarge-scale nlp tasks , efficient programmatic access to the knowledgethereinisisrequired .
+we review existing access mechanisms ( riddle , 2006 ; sigurbj � rnsson et al. , 2006 ; wikimedia foundation 2006 ) and show that they arelimited with respect to either their performance or the access functions provided .
+therefore , we introduce a general purpose , high performance java-based api for wikipedia that overcomes theselimitations andisspecifically designed to turn wikipedia into a lexical semantic resource .
+we transformthe wikipedia database dump into an optimized representation that canbe more efficiently accessed .
+the information nuggets such as redirects , are explicitly stored there , whereas they are scatteredin the original dump as a case study , the api is used to perform the graph-theoretic analysis ofwikipedia mentioned above .
+the first release of the wikipedia-api provides access tothe fullsetset of explicit information encoded in wikipedia including articles , links , categories and redirects .
+in particular , the category system is convertedinto a graph representation , on which the whole range of standard graph algorithms can be applied , e.g. finding the shortest path between two given categories .
+we plan to make the api freely available for research purposes .
+our ongoing work investigates the use of knowledge in wikipedia to computesemantic relatedness of words and extensions oftheapifor miningthelexicalsemantic knowledge represented in wikipedia articles .

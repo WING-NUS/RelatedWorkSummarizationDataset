@@ -1,0 +1,198 @@
+text clustering with extended user feedback .
+abstract .
+text clustering is most commonly treated as a fully automated task without user feedback .
+however , a variety of researchers have explored mixed-initiative clustering methods which allow a user to interact with and advise the clustering algorithm .
+this mixed-initiative approach is especially attractive for text clustering tasks where the user is trying to organize a corpus of documents into clusters for some particular purpose ( e.g. , clustering their email into folders that reflect various activities in which they are involved ) .
+this paper introduces a new approach to mixed-initiative clustering that handles several natural types of user feedback .
+we first introduce a new probabilistic generative model for text clustering ( the speclustering model ) and show that it outperforms the commonly used mixture of multinomials clustering model , even when used in fully autonomous mode with no user input .
+we then describe how to incorporate four distinct types of user feedback into the clustering algorithm , and provide experimental evidence showing substantial improvements in text clustering when this user feedback is incorporated .
+introduction .
+we as human beings are quite familiar with clustering objects into categories based on features of these objects .
+for example , a computer user may sort her emails into folders that are personally meaningful because each one represents a particular activity she is involved in , or because they are emails from a particular group of people , etc .
+for each folder , or cluster , the user may have in mind a rich category description , but assigns objects to these categories based on their surface features ( e.g. , the words in the email , or recipients in the header ) .
+there are many other examples : we may informally cluster news stories into categories such as sports , politics , etc . , or we may easily recognize in a supermarket what type of products a corridor belongs to .
+computer algorithms for clustering are typically cast as fully automated , unsupervised learning algorithms ; that is , the algorithm is given only the collection of instances and the surface features that describe each , without any information about the nature of the clusters .
+recently , however , a variety of researchers have studied ways of allowing a user to provide limited information to improve clustering quality .
+one approach is to allow the user to provide cluster labels for some of the instances , indicating which cluster that instance belongs to .
+for example , [ 11 ] [ 2 ] [ 8 ] use labels of this type to form initial cluster descriptions , which are then refined using both the unlabeled and labeled instances .
+a second type of input information consists of pair-wise constraints among instances .
+these constraints may assert that two documents must belong to the same cluster without indicating which one it is , or may assert that two documents must belong to different clusters .
+various constraint-based methods and distance-based methods have been proposed to use this type of information .
+see [ 1 ] for a short survey on different approaches and also for an approach to integrating distance-based and constraint-based approaches into a probabilistic framework .
+a third type of additional input involves background knowledge to enrich the set of features that describe each instance .
+for example , [ 6 ] enriches their document representation by using an ontology ( wordnet ) as background knowledge .
+a fourth type of extra information , which we are primarily interested in , is information about the key surface features for a particular class , or cluster .
+for example , [ 9 ] uses a few user-supplied keywords per class and a class hierarchy to generate preliminary labels to build an initial text classifier for the class . [ 10 ] proposes an interesting technique in which they ask a user to identify interesting words among automatically selected representative words for each class of documents , and then use these user-identified words to re-train the classifier as in [ 9 ] .
+researchers working on active learning have also studied using feedback about key features .
+for example , [ 5 ] converts a user-recommended feature into a mini-document which is used to help train an svm classifier .
+an altenative approach to using this information is proposed by [ 12 ] who adjust the svm weights associated with these key features to a predefined value in binary classification tasks .
+we are interested in how to best incorporate user input into automated clustering algorithms , and more generally into mixed-initiative clustering approaches that allow the user and computer to jointly arrive at coherent clusters that capture the categories ofeinterest tontheeuser .
+note thisogofl of discovering clusters of interest to the user is somewhat different from the objective optimized in totally unsupervised clustering algorithms that attempt instead to maximize some statistical property of the clusters ( such as data likelihood , or inter-cluster distance ) .
+we are specifically interested in how to incorporate into clustering algorithms the user s emerging understanding about a categoryl , stimulated by seeing the instances that are clustered together , and by seeing ( and editing ) summaries of these emerging clusters .
+a user s understanding about a category may be expressed in a variety of forms , such as by keywords , important person names , other types of entities , and relationships among entities .
+it may encapsulate a variety of types of information , and it may be difficult for a user to articulate fully their notion of the cluster .
+the chief contribution of this paper is to introduce a new probabilistic model for clustering that outperforms standard unsupervised clustering in our experiments , and that also can accomodate a variety of types of user feedback to iteratively refine the clusters .
+we present experiments in both an email clustering domain , and in a second document clustering domain ( 20 newsgroups ) showing the performance of this clustering approach .
+the research we report here is part of our larger research effort to build computer algorithms to automatically infer the key activities , or projects , a user is involved in , given the contents of their workstation ( e.g. , their emails , files , directories , calendar entries , personal contacts lists , etc . ) .
+for example , a user may be involved in activities such as teaching a particular course , participating in a particular committee , hanging out with a particular group of friends , etc .
+in our previous work [ 7 ] , we have shown that unsupervised clustering of emails can result in useful descriptions of user activities , such as the one shown in figure 1 .
+the work we report in this paper is motivated in part by our interest in developing a more mixed-initiative approach to inferring such activity clusters , using both computer analysis of workstation data and user feedback based on examining proposed clusters .
+we will describe our probabilistic model and the associated clustering algorithm in the next section .
+section 3 then discusses how several types of user feedback can be incorporated into the clustering algorithm .
+the experimental setup and evaluation are described in section 4 and conclusions are presented in section 5 .
+speclustering model .
+separating specific from general topics .
+we present here a clustering algorithm based on a novel probabilistic model .
+one commonly used probabilistic model for text clustering is the multinomial naive bayes model described in [ 11 ] , which models a document as a vector of words with each word generated independently by a multinomial probability distribution conditioned on the document s class ( i.e. , conditioned on which cluster it belongs to ) .
+our speclustering model also assumes words are generated probabilistically , but differs in an important way from this standard model .
+in particular , the speclustering model assumes that only some of the words in the document are conditioned on the document s cluster , and that other words follow a more general word distribution that is independent of which cluster the document belongs to .
+to see the intuition behind this model , consider a cluster of emails about skiing .
+there will be some words ( e.g. , snow ) that appear in this cluster of emails because the topic is skiing , and there will be other words ( e.g. , contact ) that appear for reasons independent of the cluster topic .
+the key difference between the standard model and our speclustering model is that our model assumes each document is generated by a mixture of two multinomials { one associated with the document s cluster , and the other shared across all clusters .
+as we show below , our more elaborate speclustering model can lead to improved accuracy when used for automatic clustering , and it also provides a formalism that can easily accomodate several important types of user feedback to support mixed-initiative clustering .
+to construct this speclustering model , we extend the standard multinomial model in two ways .
+the first modification is to add a g topic variable that is intended to capture general topics not related to the cluster .
+the second modification is to introduce a hidden boolean variable , x , associated with each word o in each document .
+if x = 1 , the observation o is generated by the cluster-specific topic s , and if x = 0 , the observation o is generated by a general topic g. throughout this paper we simplify the model by assuming there is only one general topic instead of multiple topics , so the value of g is fixed at g = g .
+figure 2 shows the graphical model representation of the model .
+here the outer rectangle ( or plate ) is duplicated for each of the d documents , and the inner plate is duplicated for each of the n observations o and associated variables x. note the general topic g is constant across all documents and words , whereas the cluster topic s is different for each document .
+note the probability p ( x = 11s = c , o = f ; 0 ) , which can be derived from the model parameters , describes the probability that any particular feature f is generated by a particular cluster c , as opposed to the general topic g .
+learning clusters with the speclustering model .
+in the most general case we are interested in unsupervised clustering of documents given just the observed features o of a set of documents , where the values for the s and x variables are unobserved .
+because of the existence of unobserved variables , we use an em process [ 3 ] for parameter estimation .
+the em algorithm is commonly applied to find a ( locally ) maximum-likelihood estimate of the parameters in situations when the observable data is incomplete and the model depends on unobserved latent variables .
+given by iterating through e step and m step , the likelihood will converge to a ( local ) maximum and values of parameters will be stabilized .
+extension to multiple types of features .
+in some cases instances may be described by multiple types of features .
+for example , when clustering emails we might describe each email by the set of words in its body , plus the set of email addresses the email is sent to .
+if there are multiple types of features in an instance , we can extend the speclustering model .
+figure 3 shows the extended model with two feature types .
+the model adds one new block { y , q } for the introduction of a new feature type . { y , q } is identical and parallel to { x , o } .
+in the activitydiscovery-via-emails task , we can apply this model to represent an activity in terms of both its key words and the primary participants of the activity .
+parameter estimation in the extended speclustering model is nearly identical to that described in section 2.2 .
+the only exception is a change to the posterior probability estimate in eq 1 .
+the new posterior probability estimate in the extended model combines generative probabilities from multiple feature types .
+eq 3 shows the estimate from two different feature types .
+model adaptation according to user s feedback .
+as discussed earlier , we are particularly interested in allowing extended forms of user feedback to help direct the clustering process .
+in this section we discuss how several types of user feedback are incorporated to guide the clustering algorithm .
+we describe each feedback type in terms of the task of clustering emails to discover descriptions of a user s activities .
+the types of user feedback allowed are : there are two posterior probabilities in the speclustering model that turn out to be highly related to the above types of feedback .
+to be more specific , type 1 and 2 feedback are related to eq . 3 and type 3 , 4 , and 5 feedback are related to eq . 2 .
+there are two methods to initialize the speclustering model with user feedback .
+the simple method inherits previous clustering results which the user gives her feedback upon and for removed clusters , we reset the initial value of p ( si1di ; bt ) by distributing the probability mass uniformly among all clusters and halving the probability for the cluster s. the joint method uses feedback jointly to initialize the model .
+we first select several documents that have the highest cosine similarity with confirmed documents and keywords ( where we treat keywords as a mini-documents ) associated with current clusters .
+we then search for a small set of similar documents that maximize inter-cluster distances and replace any cluster that is removed in the feedback .
+we perform type 2 to 4 adjustments during each em iteration while training the speclustering model .
+for type 2 feedback , we adjust the value of p ( si = c1di ; bt ) to be one if the email-to-cluster bound is confirmed by the user or set it to zero if the bound is disapproved by the user .
+proper adjustment to normalize posterior probabilities of { p ( si = c ' 1di ; bt ) ^ c ' = ~ c } is also required in this case .
+for type 3 and 4 feedback , we adjust the value of p ( xis = 11si = c , ois = v ; bt ) to be one if the keyword / person-to-activity bound is confirmed by the user or set it to zero if the bound is disapproved by the user .
+for type 5 feedback , we tokenize the description y and make each token of y a confirmed keyword as in type 3 feedback .
+we have described details of the speclustering model .
+however , the model is not restricted to clustering .
+it can also be applied to supervised classification tasks .
+the difference in classification is that the topic variable s is no longer a hidden variable .
+we can treat the classification tasks as knowing all the type 2 user feedback and replace the estimate of posterior probabilities p ( si = c1di ; ^ t ) with the true value specified by the instance label .
+experiments .
+datasets .
+to test the speclustering algorithm we used two data sets .
+the first is an email dataset ( emailyh ) from one of the authors that contains 623 emails .
+this dataset had previously been sorted into 11 folders and contains 6684 unique words and 135 individual people after pre-processing 2 .
+the second data set is the publicly available 20-newsgroups collection .
+this data set contains text messages from 20 different usenet newsgroups , with 1000 messages harvested from each newsgroup .
+we derived three datasets according to [ 1 ] .
+the first , news-similar-3 , consists of messages from 3 similar newsgroups ( comp.graphics , comp.os.ms-windows.misc , comp.windows.x ) where cross-posting occurs often between these three newsgroups .
+news-related-3 consists of messages from 3 related newsgroups ( talk.politics.misc , talk.politics.guns and talk.politics.mideast ) .
+news-different-3 contains 3 newsgroups of quite different topics ( alt.atheism , rec.sport.baseball , and sci.space ) .
+we use only the text part of messages in the three news- group datasets because a reviewer won t have the knowledge needed to decide which author is the key-person with regard to which newsgroup .
+for the text part , we applied the same pre-processing we used in ( emailyh ) .
+there are 3000 messages in these datasets .
+news-different-3 contains 8465 unique words , news-related-3 contains 9998 unique words and news-similar-3 has 10037 unique words .
+measurement for cluster evaluation .
+we use two measurements to estimate cluster quality : folder-reconstruction accuracy , and normalized mutual information ( nmi ) [ 4 ] .
+in order to calculate the folder-reconstruction accuracy , we search through all possible alignments of cluster indices z. , to folder indices zf in order to find the alignment resulting in optimal accuracy , then report the accuracy under this optimal alignment .
+the normalized mutual information measurement is defined as eq . 5 , where i ( s ; f ) is the mutual information between cluster assignment s and folder labels f , h ( s ) is the entropy of s and h ( f ) is the entropy of f. it measures the shared information between s and f. the pre-processing for words includes stemming , stop word removal and removal of words that appear only once in the dataset .
+the pre-processing for people contains reference- reconciliation over email senders and recipients , and removal of people that are involved in only one email .
+these two measurements are correlated but show different aspects of clustering performance .
+accuracy calculates the ratio between major chunks of clusters to its reference .
+nmi measures the similarity between cluster partitions and reference partitions .
+results and discussion .
+to experimentally study the speclustering model and algorithms , we consider three distinct algorithms .
+first , we consider the standard multinomial naive bayes text clustering [ 11 ] algorithm as a baseline approach representing a typical probabilistic approach to text clustering .
+we modified this baseline approach by allowing it to search for a good cluster initialization and to avoid situations in which one cluster gets eliminated during the em iterations [ 7 ] .
+two versions of speclustering algorithm are tested .
+the fist version is the original speclustering algorithm as described in section 2 .
+the second version , speclustering-bound , adds range constraints on parameter values ^ : for word features , the range is [ 0.1 , 0.4 ] and for person features , the range is [ 0.6 , 0.9 ] .
+the reason for introducing these range constraints is to avoid situations where some values of ^ converge to 1 or 0 .
+this is undesirable because the value of ^ reflects the percentage of specific features ( x = 1 ) occuring over all observations .
+both speclustering algorithms are initialized using the output from the baseline naive bayes clustering .
+autonomous clustering .
+first we compared our speclustering approach to the naive bayes baseline in fully autonomous clustering without user feedback .
+we made 50 individual runs on emailyh dataset and 20 runs each on news-similar-3 , news-related3 , and news-different-3 .
+table 1 shows the average accuracy and nmi results of different datasets and the three clustering algorithms .
+notice in all datasets , the speclustering algorithm performs better than the naive bayes algorithm , and the speclustering-bound model performs better than speclustering .
+the naive bayes clustering results are used to initialize its associated speclustering and speclusteringbound runs , so the performance gain are directly due to the difference between the speclustering probabilistic model and the and naive bayes model .
+when we examined the details of individual runs , we found that every one of the runs resulted in speclustering-bound outperforming naive bayes in terms of the nmi measure , and that in the vast majority of these runs it also outperformed naive bayes in terms of the accuracy measure .
+clustering with user feedback .
+we next studied the impact of user feedback on the bounded speclustering model .
+in particular , we chose 5 clustering results using the multinomial naive bayes model with the best log-likelihood among 50 runs on emailyh and presented each of these to the user .
+we also chose one best run from 20 runs on news-different-3 , news-related-3 , and news-similar-3 .
+the user gave feedback using the interface shown in fig 5 .
+the top left panel shows a list of documents that are clustered into the selected cluster label , the top right panel shows 5 key-persons of the cluster and the bottom left panel shows 20 keywords of the cluster .
+the keywords and key-persons of the cluster are selected using a chi-squared measurement [ 13 ] .
+when a user clicks on a document in the document list , the content of the document shows in the bottom left panel .
+the user can give various types of feedback described in section 3 and the interface displays feedback the user has entered so far .
+the user can also go back and forth to correct conflict assumptions she has made to achieve consistent cluster interpretations .
+an interesting observation we found is that displaying keywords and key-persons tremendously helps the user make judgements about a cluster .
+in fact , to decide the meaning of a large cluster based only on examining the documents is extremely difficult .
+a reviewer would tend to decide based on the first several documents she goes through even when the cluster contains more than hundreds of documents , and the biased decision often causes conflicts with later clusters .
+the reviewer usually chooses to remove a cluster , if the keywords and key-persons don t show any consistency and are not meaningful to the user , or if documents in the cluster are a hodgepodge from several categories .
+if the keywords or key-persons make sense to the user , the user gives feedback about document-cluster associations according to these meanings .
+we don t put constraints on how the reviewer does the feedback , so the reviewer can make decisions freely based on how she perceives the clustering results , and gives feedback using her own interpretation of the results .
+this way of collecting feedback may result in a situation where the meaning in the reviewer s mind doesn t match the majority of documents associated with the cluster because the reviewer rationalizes clusters mostly according to key features .
+keyword selection favors words that occur in the cluster and don t appear in other clusters , so if a category contains many documents and gets spread out to several clusters , even the majority of documents in the cluster belong to that category , the keyword selection may give low scores to words belong to that category because those words appear in other clusters .
+we ran6the speclustering-bound algorithm with user feedback and compared the results to the naive bayes baseline and the speclustering-bound algorithm without feedback .
+the difference between speclustering with and without feedbackeis the parameter adjustment described in section 3 .
+figure 6 : performance of using single feedback types ( cr , pp , wx and hx ) on the emailyh dataset .
+specbound is the speclustering-bound model without feedback .
+the speclustering-bound model with one type of feedback out-performs naive bayes and speclusteringbound without feedback in 17 out of 20 runs .
+we use the simple initialization method on emailyh dataset in order to break down feedback to single types .
+figure 6 shows the results using just one type of feedback on 5 selected runs from emailyh dataset .
+the cr feedback is independent from other types of feedback and all other types involve feedback only from clusters that are not removed .
+all 5 runs with cr or pp feedback , 4 runs with wx feedback and 3 runs with hx feedback outperform both naive bayes baseline and speclustering-bound without feedback .
+figure 7 shows the results using combination of feedback types .
+user s feedback gives huge improvements in all runs ( 19.55 % average accuracy improvements from naive bayes results to speclustering-bound with full feedback ) .
+speclustering-bound with full feedback performs best in 4 out of 5 runs .
+in the remaining one run , cr + pp feedback performs best .
+the quantity of pp feedback is about 1 / 7th to 1 / 9th to the whole dataset and even higher if we exclude documents in removed clusters .
+the number of wx + hx feedback are fewer than pp feedback in these runs .
+however , cr + wx + hx performs better than cr + pp in 2 runs , which shows that meanings of clusters gives comparable information like document-cluster association .
+more compellingly , it is also much easier to get cr + wx + hx feedback than cr + pp in terms of time efficiency .
+in [ 12 ] , they measure the time spend on labeling a document or a feature , and they find a person only need 1 / 5th of time to label a feature compared to the time to label a document .
+for the 3 newsgroup datasets , the ratio of feedback number to the corpus size is very small .
+the inheritance of old results in the simple initialization overwhelms the training process so we use the joint initialization method to remedy the problem .
+the user feedback is quite different across these three runs .
+for the selected run of news-similar-3 , the naive bayes results are extremely noisy and the cluster summarization is hardly recognizable by the reviewer .
+it turns out the feedback contains the removal of two out of three clusters and the reason that one is kept is because some keywords weakly indicates the meaning of one newsgroup , but the documents in the remaining cluster contain huge chunks from each newsgroup .
+for the selected run of news-related3 , talk. politics. guns and talk. politics.mideast are referred to two remaining clusters while talk.politics.misc has no reference due to the removal of the last cluster , which the reviewer cannot figure out its meaning .
+the cluster summarization is noisy but comprehensible , so the reviewer can make positive and negative feedback easily .
+the baseline accuracy of news-different-3 is very high so most feedback is positive about the automatically generated summarization figure 8 shows experimental results from user feedback on one selected run from each newsgroup dataset .
+it is difficult to improve on the already accurate news-different-3 run .
+incorporating feedback gives no significant improvement on the selected news-similar-3 runs whose feedback is based on extremely noisy clusters and a user is barely able to associate meaningful criterion to any cluster .
+however , one sees huge improvement from using feedback on the noisy but still meaningful cluster results .
+the accuracy of the selected news-related-3 run jumps from 63.23 % to 81.07 % .
+conclusions and future work .
+in this paper , we focus on the problem of how to cluster text documents based on the meanings of categories a user understands or wants .
+often the meanings of clusters become clear to a user only after examining their descriptions and providing feedback to explore the space of possible clusters .
+our solution to this problem involves three components .
+first , we propose a new speclustering model that separates the features of a document that are specific to a cluster from other general features that are unrelated to the cluster s semantics .
+the second component is a method to collect user feedback about the meanings of the clusters .
+we present an interface that enables a user to browse through cluster results and provide several types of feedback .
+the process requires the user s understanding of desired categories , and her judgement about which cluster is associated with the meaning of which category .
+the third component is an algorithm for integrating user feedback with the speclustering model .
+the structure of the speclustering model provides a natural way to adjust parameters according to a variety of types of user feedback .
+our experimental results show our unsupervised speclustering algorithm outperforms the commonly used multinomial naive bayes clustering algorithm for both of the text data sets we considered .
+furthermore , when provided with user feedback , the speclustering model gains significant improvement in a personal email dataset and in the newsgroup dataset when the clustering results is noisy but meaningful .
+our approach combines the advantage of the machine s computational power to analyze large data sets , with the advantages of a human s understanding of categories of interest .
+the results indicate that cooperation between computers and human beings is a promising direction for future work .
+there are many future challenges , such as using active learning principles to optimize the summarization of a cluster , and building more sophisticated models to allow more natural types of user feedback .

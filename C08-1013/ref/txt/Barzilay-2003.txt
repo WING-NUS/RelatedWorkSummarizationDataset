@@ -1,0 +1,432 @@
+sentence fusion for multidocument news summarization .
+abstract .
+a system that can produce informative summaries , highlighting common information found in many online documents , will help web users to pinpoint information that they need without extensive reading .
+in this article , we introduce sentence fusion , a novel text-to-text generation technique for synthesizing common information across documents .
+sentence fusion involves bottom-up local multisequence alignment to identify phrases conveying similar information and statistical generation to combine common phrases into a sentence .
+sentence fusion moves the summarization field from the use of purely extractive methods to the generation of abstracts that contain sentences not found in any of the input documents and can synthesize information across sources .
+introduction .
+redundancy in large text collections , such as the web , creates both problems and opportunities for natural language systems .
+on the one hand , the presence of numerous sources conveying the same information causes difficulties for end users of search engines and news providers ; they must read the same information over and over again .
+on the other hand , redundancy can be exploited to identify important and accurate information for applications such as summarization and question answering ( mani and bloedorn 1997 ; radev and mckeown 1998 ; radev , prager , and samn 2000 ; clarke , cormack , and lynam 2001 ; dumais et al. 2002 ; chu-carroll et al. 2003 ) .
+clearly , it would be highly desirable to have a mechanism that could identify common information among multiple related documents and fuse it into a coherent text .
+in this article , we present a method for sentence fusion that exploits redundancy to achieve this task in the context of multidocument summarization .
+a straightforward approach for approximating sentence fusion can be found in the use of sentence extraction for multidocument summarization ( carbonell and goldstein 1998 ; radev , jing , and budzikowska 2000 ; marcu and gerber 2001 ; lin and hovy 2002 ) .
+once a system finds a set of sentences that convey similar information ( e.g. , by clustering ) , one of these sentences is selected to represent the set .
+this is a robust approach that is always guaranteed to output a grammatical sentence .
+however , extraction is only a coarse approximation of fusion .
+an extracted sentence may include not only common information , but additional information specific to the article from which it came , leading to source bias and aggravating fluency problems in the extracted summary .
+attempting to solve this problem by including more sentences to restore the original context might lead to a verbose and repetitive summary .
+instead , we want a fine-grained approach that can identify only those pieces of sentences that are common .
+language generation offers an appealing approach to the problem , but the use of generation in this context raises significant research challenges .
+in particular , generation for sentence fusion must be able to operate in a domain- independent fashion , scalable to handle a large variety of input documents with various degrees of overlap .
+in the past , generation systems were developed for limited domains and required a rich semantic representation as input .
+in contrast , for this task we require text-to-text generation , the ability to produce a new text given a set of related texts as input .
+if language generation can be scaled to take fully formed text as input without semantic interpretation , selecting content and producing well-formed english sentences as output , then generation has a large potential payoff .
+in this article , we present the concept of sentence fusion , a novel text-to-text generation technique which , given a set of similar sentences , produces a new sentence containing the information common to most sentences in the set .
+the research challenges in developing such an algorithm lie in two areas : identification of the fragments conveying common information and combination of the fragments into a sentence .
+to identify common information , we have developed a method for aligning syntactic trees of input sentences , incorporating paraphrasing information .
+our alignment problem poses unique challenges : we only want to match a subset of the subtrees in each sentence and are given few constraints on permissible alignments ( e.g. , arising from constituent ordering , start or end points ) .
+our algorithm meets these challenges through bottom-up local multisequence alignment , using words and paraphrases as anchors .
+combination of fragments is addressed through construction of a fusion lattice encompassing the resulting alignment and linearization of the lattice into a sentence using a language model .
+our approach to sentence fusion thus features the integration of robust statistical techniques , such as local , multisequence alignment and language modeling , with linguistic representations automatically derived from input documents .
+sentence fusion is a significant first step toward the generation of abstracts , as opposed to extracts ( borko and bernier 1975 ) , for multidocument summarization .
+unlike extraction methods ( used by the vast majority of summarization researchers ) , sentence fusion allows for the true synthesis of information from a set of input documents .
+it has been shown that combining information from several sources is a natural strategy for multidocument summarization .
+analysis of human-written summaries reveals that most sentences combine information drawn from multiple documents ( banko and vanderwende 2004 ) .
+sentence fusion achieves this goal automatically .
+our evaluation shows that our approach is promising , with sentence fusion outperforming sentence extraction for the task of content selection .
+this article focuses on the implementation and evaluation of the sentence fusion method within the multidocument summarization system multigen , which daily summarizes multiple news articles on the same event as part1 of columbia 's news browsing system newsblaster ( http : / / newsblaster.cs.columbia.edu / ) .
+in the next section , we provide an overview of multigen , focusing on components that produce input or operate over output of sentence fusion .
+in section 3 , we provide an overview of our fusion algorithm and detail on its main steps : identification of common information ( section 3.1 ) , fusion lattice computation ( section 3.2 ) , and lattice linearization ( section 3.3 ) .
+evaluation results and their analysis are presented in section 4 .
+analysis of the systems output reveals the capabilities and the weaknesses of our textto-text generation method and identifies interesting challenges that will require new insights .
+an overview of related work and a discussion of future directions conclude the article .
+framework for sentence fusion : multigen .
+sentence fusion is the central technique used within the multigen summarization system .
+multigen takes as input a cluster of news stories on the same event and produces a summary which synthesizes common information across input stories .
+an example of a multigen summary is shown in figure 1 .
+the input clusters are automatically produced from a large quantity of news articles that are retrieved by newsblaster from 30 news sites each day .
+in order to understand the role of sentence fusion within summarization , we overview the multigen architecture , providing details on the processes that precede sentence fusion and thus , the input that the fusion component requires .
+fusion itself is discussed in the subsequent sections of the article .
+multigen follows a pipeline architecture , shown in figure 2 .
+the analysis component of the system , simfinder ( hatzivassiloglou , klavans , and eskin 1999 ) clusters sentences of input documents into themes , groups of sentences that convey similar information ( section 2.1 ) .
+once themes are constructed , the system selects a subset of the groups to be included in the summary , depending on the desired compression length ( section 2.2 ) .
+the selected groups are passed to the ordering component , which selects a complete order among themes ( section 2.3 ) .
+theme construction .
+the analysis component of multigen , simfinder , identifies themes , groups of sentences from different documents that each say roughly the same thing .
+each theme will ultimately correspond to at most one sentence in the output summary , generated by the fusion component , and there may be many themes for a set of articles .
+an example of a theme is shown in table 1 .
+as the set of sentences in the table illustrates , sentences within a theme are not exact repetitions of each other ; they usually include phrases expressing information that is not common to all sentences in the theme .
+information that is common across sentences is shown in the table in boldface ; other portions of the sentence are specific to individual articles .
+if one of these sentences were used as is to represent the theme , the summary would contain extraneous information .
+also , errors in clustering might result in the inclusion of some unrelated sentences .
+evaluation involving human judges revealed that simfinder identifies similar sentences with 49.3 % precision at 52.9 % recall ( hatzivassiloglou , klavans , and eskin 1999 ) .
+we will discuss later how this error rate influences sentence fusion .
+to identify themes , simfinder extracts linguistically motivated features for each sentence , including wordnet synsets ( miller et al. 1990 ) and syntactic dependencies , such as subjectverb and verbobject relations .
+a log-linear regression model is used to combine the evidence from the various features into a single similarity value .
+the model was trained on a large set of sentences which were manually marked for similarity .
+the output of the model is a listing of real-valued similarity values on sentence pairs .
+these similarity values are fed into a clustering algorithm that partitions the sentences into closely related groups .
+theme selection .
+to generate a summary of predetermined length , we induce a ranking on the themes and select the n highest . 2 this ranking is based on three features of the theme : size measured as the number of sentences , similarity of sentences in a theme , and salience score .
+the first two of these scores are produced by simfinder , and the salience score is computed using lexical chains ( morris and hirst 1991 ; barzilay and elhadad 1997 ) as described below .
+combining different rankings further filters common information in terms of salience .
+since each of these scores has a different range of values , we perform ranking based on each score separately , then induce total ranking by summing ranks from individual categories : lexical chainssequences of semantically related wordsare tightly connected to the lexical cohesive structure of the text and have been shown to be useful for determining which sentences are important for single-document summarization ( barzilay and elhadad 1997 ; silber and mccoy 2002 ) .
+in the multidocument scenario , lexical chains can be adapted for theme ranking based on the salience of theme sentences within their original documents .
+specifically , a theme that has many sentences ranked high by lexical chains as important for a single-document summary is , in turn , given a higher salience score for the multidocument summary .
+in our implementation , a salience score for a theme is computed as the sum of lexical chain scores of each sentence in a theme .
+theme ordering .
+once we filter out the themes that have a low rank , the next task is to order the selected themes into coherent text .
+our ordering strategy aims to capture chronological order of the main events and ensure coherence .
+to implement this strategy in multigen , we select for each theme the sentence which has the earliest publication time ( theme time stamp ) .
+to increase the coherence of the output text , we identify blocks of topically related themes and then apply chronological ordering on blocks of themes using theme time stamps ( barzilay , elhadad , and mckeown 2002 ) .
+these stages produce a sorted set of themes which are passed as input to the sentence fusion component , described in the next section .
+sentence fusion .
+given a group of similar sentencesa themethe problem is to create a concise and fluent fusion of information , reflecting facts common to all sentences . ( an example of a fusion sentence is shown in table 1 . )
+to achieve this goal we need to identify phrases common to most theme sentences , then combine them into a new sentence .
+at one extreme , we might consider a shallow approach to the fusion problem , adapting the bag of words approach .
+however , sentence intersection in a set-theoretic sense produces poor results .
+in our approach , sentence fusion is modeled after the typical generation pipeline : content selection ( what to say ) and surface realization ( how to say it ) .
+in contrast to that involved in traditional generation systems in which a content selection component chooses content from semantic units , our task is complicated by the lack of semantics in the textual input .
+at the same time , we can benefit from the textual information given in the input sentences for the tasks of syntactic realization , phrasing , and ordering ; in many cases , constraints on text realization are already present in the input .
+the algorithm operates in three phases : identification of common information ( section 3.1 ) , fusion lattice computation ( section 3.2 ) , lattice linearization ( section 3.3 ) .
+content selection occurs primarily in the first phase , in which our algorithm uses local alignment across pairs of parsed sentences , from which we select fragments to be included in the fusion sentence .
+instead of examining all possible ways to combine these fragments , we select a sentence in the input which contains most of the fragments and transform its parsed tree into the fusion lattice by eliminating nonessential information and augmenting it with information from other input sentences .
+this construction of the fusion lattice targets content selection , but in the process , alternative verbalizations are selected , and thus some aspects of realization are also carried out in this phase .
+finally , we generate a sentence from this representation based on a language model derived from a large body of texts .
+identification of common information .
+our task is to identify information shared between sentences .
+we do this by aligning constituents in the syntactic parse trees for the input sentences .
+our alignment process differs considerably from alignment for other nl tasks , such as machine translation , because we cannot expect a complete alignment .
+rather , a subset of the subtrees in one sentence will match different subsets of the subtrees in the others .
+furthermore , order across trees is not preserved , there is no natural starting point for alignment , and there are no constraints on crosses .
+for these reasons we have developed a bottom- up local multisequence alignment algorithm that uses words and phrases as anchors for matching .
+this algorithm operates on the dependency trees for pairs of input sentences .
+we use a dependency-based representation because it abstracts over features irrelevant for comparison such as constituent ordering .
+in the subsections that follow , we describe first how this representation is computed , then how dependency subtrees are aligned , and finally how we choose between constituents conveying overlapping information .
+in this section we first describe an algorithm which , given a pair of sentences , determines which sentence constituents convey information appearing in both sentences .
+this algorithm will be applied to pairwise combinations of sentences in the input set of related sentences .
+the intuition behind the algorithm is to compare all constituents of one sentence to those of another and select the most similar ones .
+of course , how this comparison is performed depends on the particular sentence representation used .
+a good sentence representation will emphasize sentence features that are relevant for comparison , such as dependencies between sentence constituents , while ignoring irrelevant features , such as constituent ordering .
+a representation which fits these requirements is a dependency-based representation ( melcuk 1988 ) .
+we first detail how this representation is computed , then describe a method for aligning dependency subtrees .
+sentence representation .
+our sentence representation is based on a dependency tree , which describes the sentence structure in terms of dependencies between words .
+the similarity of the dependency tree to a predicateargument structure makes it a natural representation for our comparison.3 this representation can be constructed from the output of a traditional parser .
+in fact , we have developed a rule-based component that transforms the phrase structure output of collinss ( 2003 ) parser into a representation in which a node has a direct link to its dependents .
+we also mark verb subject and verbnode dependencies in the tree .
+the process of comparing trees can be further facilitated if the dependency tree is abstracted to a canonical form which eliminates features irrelevant to the comparison .
+we hypothesize that the difference in grammatical features such as auxiliaries , number , and tense has a secondary effect when the meaning of sentences is being compared .
+therefore , we represent in the dependency tree only nonauxiliary words with their associated grammatical features .
+for nouns , we record their number , articles , and class ( common or proper ) .
+for verbs , we record tense , mood ( indicative , conditional , or infinitive ) , voice , polarity , aspect ( simple or continuous ) , and taxis ( perfect or none ) .
+the eliminated auxiliary words can be re-created using these recorded features .
+we also transform all passive-voice sentences to the active voice , changing the order of affected children .
+while the alignment algorithm described in section 3.1.2 produces one-to-one mappings , in practice some paraphrases are not decomposable to words , forming one-to-many or many-to-many paraphrases .
+our manual analysis of paraphrased sentences ( barzilay 2003 ) revealed that such alignments most frequently occur in pairs of noun phrases ( e.g. , faculty member and professor ) and pairs including verbs with particles ( e.g. , stand up , rise ) .
+to correctly align such phrases , we flatten subtrees containing noun phrases and verbs with particles into one node .
+we subsequently determine matches between flattened sentences using statistical metrics .
+dependency tree of the sentence the idf spokeswoman did not confirm this , but said the palestinians fired an antitank missile at a bulldozer on the site .
+the features of the node confirm are explicitly marked .
+an example of a sentence and its dependency tree with associated features is shown in figure 3 . ( in figures of dependency trees hereafter , node features are omitted for clarity . )
+alignment .
+our alignment of dependency trees is driven by two sources of information : the similarity between the structure of the dependency trees and the similarity between lexical items .
+in determining the structural similarity between two trees , we take into account the types of edges ( which indicate the relationships between nodes ) .
+an edge is labeled by the syntactic function of the two nodes it connects ( e.g. , subject verb ) .
+it is unlikely that an edge connecting a subject and verb in one sentence , for example , corresponds to an edge connecting a verb and an adjective in another sentence .
+the word similarity measures take into account more than word identity : they also identify pairs of paraphrases , using wordnet and a paraphrasing dictionary .
+we automatically constructed the paraphrasing dictionary from a large comparable news corpus using the co-training method described in barzilay and mckeown ( 2001 ) .
+the dictionary contains pairs of word-level paraphrases as well as phrase-level paraphrases.4 several examples of automatically extracted paraphrases are given in table 2 .
+during alignment , each pair of nonidentical words that do not comprise a synset in wordnet is looked up in the paraphrasing dictionary ; in the case of a match , the pair is considered to be a paraphrase .
+we now give an intuitive explanation of how our tree similarity function , denoted by sim , is computed .
+if the optimal alignment of two trees is known , then the value of the similarity function is the sum of the similarity scores of aligned nodes and aligned edges .
+since the best alignment of given trees is not known a priori , we select the maximal score among plausible alignments of the trees .
+instead of exhaustively traversing the space of all possible alignments , we recursively construct the best alignment for trees of given depths , assuming that we know how to find an optimal alignment for trees of shorter depths .
+more specifically , at each point of the traversal we consider two cases , shown in figure 4 .
+in the first case , two top nodes are aligned with each other , and their children are aligned in an optimal way by applying the algorithm to shorter trees .
+in the second case , one tree is aligned with one of the children of the top node of the other tree ; again we can apply our algorithm for this computation , since we decrease the height of one of the trees .
+before giving the precise definition of sim , we introduce some notation .
+when t is a tree with root node v , we let c ( t ) denote the set containing all children of v. for a tree t containing a node s , the subtree of t which has s as its root node is denoted by ts .
+given two trees t and t ' with root nodes v and v ' , respectively , the similarity sim ( t , t ' ) between the trees is defined to be the maximum of the three expressions nodecompare ( t , t ' ) , maxsec ( t ) sim ( ts , t ' ) , and maxs 'ec ( t ' ) sim ( t , t 's ' ) .
+the upper part of figure 4 depicts the computation of nodecompare ( t , t ' ) , in which two top nodes are aligned with each other .
+the remaining expressions , maxsec ( t ) sim ( ts , t ' ) , and maxs ' ec ( t ' ) sim ( t , t 's ' ) , capture mappings in which the top of one tree is aligned with one of the children of the top node of the other tree ( the bottom of figure 4 ) .
+the similarity score nodesimilarity ( v , v ' ) of atomic nodes depends on whether the corresponding words are identical , paraphrases , or unrelated .
+the similarity scores for pairs of identical words , pairs of synonyms , pairs of paraphrases , and edges ( given in table 3 ) are manually derived using a small development corpus .
+while learning of the similarity scores automatically is an appealing alternative , its application in the fusion context is challenging because of the absence of a large training corpus and the lack of an automatic evaluation function.5 the similarity of nodes containing flattened subtrees , 6 such as noun phrases , is computed as the score of their intersection normalized by the length of the longest phrase .
+for instance , the similarity score of the noun phrases antitank missile and machine gun and antitank missile is computed as a ratio between the score of their intersection antitank missile ( 2 ) , divided by the length of the latter phrase ( 5 ) .
+the similarity function sim is computed using bottom-up dynamic programming , in which the shortest subtrees are processed first .
+the alignment algorithm returns the similarity score of the trees as well as the optimal mapping between the subtrees of input trees .
+the pseudocode of this function is presented in the appendix .
+in the resulting tree mapping , the pairs of nodes whose nodesimilarity positively contributed to the alignment are considered parallel .
+figure 5 shows two dependency trees and their alignment .
+as is evident from the sim definition , we are considering only one-to-one node matchings : every node in one tree is mapped to at most one node in another tree .
+this restriction is necessary because the problem of optimizing many-to-many alignments is np-hard .
+the subtree flattening performed during the preprocessing stage aims to minimize the negative effect of the restriction on alignment granularity .
+another important property of our algorithm is that it produces a local alignment .
+local alignment maps local regions with high similarity to each other rather than creating an overall optimal global alignment of the entire tree .
+this strategy is more meaningful when only partial meaning overlap is expected between input sentences , as in typical sentence fusion input .
+only these high-similarity regions , which we call intersection subtrees , are included in the fusion sentence .
+fusion lattice computation .
+fusion lattice computation is concerned with combining intersection subtrees .
+during this process , the system will remove phrases from a selected sentence , add phrases from other sentences , and replace words with the paraphrases that annotate each node .
+among the many possible combinations of subtrees , we are interested only in those combinations which yield semantically sound sentences and do not distort the information presented in the input sentences .
+we cannot explore every possible combination , since the lack of semantic information in the trees prohibits us from assessing the quality of the resulting sentences .
+in fact , our early experimentation with generation from constituent phrases ( e.g. , nps , vps ) demonstrated that it was difficult to ensure that semantically anomalous or ungrammatical sentences would not be generated .
+instead , we select a combination already present in the input sentences as a basis and transform it into a fusion sentence by removing extraneous information and augmenting the fusion sentence with information from other sentences .
+the advantage of this strategy is that , when the initial sentence is semantically correct and the applied transformations aim to preserve semantic correctness , the resulting sentence is a semantically correct one .
+our generation strategy is reminiscent of robin and mckeowns ( 1996 ) earlier work on revision for summarization , although robin and mckeown used a three-tiered representation of each sentence , including its semantics and its deep and surface syntax , all of which were used as triggers for revision .
+the three steps of the fusion lattice computation are as follows : selection of the basis tree , augmentation of the tree with alternative verbalizations , and pruning of the extraneous subtrees .
+alignment is essential for all the steps .
+the selection of the basis tree is guided by the number of intersection subtrees it includes ; in the best case , it contains all such subtrees .
+the basis tree is the centroid of the input sentences the sentence which is the most similar to the other sentences in the input .
+using the alignment-based similarity score described in section 3.1.2 , we identify the centroid by computing for each sentence the average similarity score between the sentence and the rest of the input sentences , then selecting the sentence with the highest score .
+next , we augment the basis tree with information present in the other input sentences .
+more specifically , we add alternative verbalizations for the nodes in the basis tree and the intersection subtrees which are not part of the basis tree .
+the alternative verbalizations are readily available from the pairwise alignments of the basis tree with other trees in the input computed in the previous section .
+for each node of the basis tree , we record all verbalizations from the nodes of the other input trees aligned with a given node .
+a verbalization can be a single word , or it can be a phrase , if a node represents a noun compound or a verb with a particle .
+an example of a fusion lattice , augmented with alternative verbalizations , is given in figure 6 .
+even after this augmentation , the fusion lattice may not include all of the intersection subtrees .
+the main difficulty in subtree insertion is finding an acceptable placement ; this is often determined by syntactic , semantic , and idiosyncratic knowledge .
+therefore , we follow a conservative insertion policy .
+among all the possible aligned sentences , we insert only subtrees whose top node aligns with one of the nodes in a basis tree.8 we further constrain the insertion procedure by inserting only trees that appear in at least half of the sentences of a theme .
+these two constituent-level restrictions prevent the algorithm from generating overly long , unreadable sentences .
+finally , subtrees which are not part of the intersection are pruned off the basis tree .
+however , removing all such subtrees may result in an ungrammatical or semantically flawed sentence ; for example , we might create a sentence without a subject .
+this overpruning may happen if either the input to the fusion algorithm is noisy or the alignment has failed to recognize similar subtrees .
+therefore , we perform a more conservative pruning , deleting only the self-contained components which can be removed without leaving ungrammatical sentences .
+as previously observed in the literature ( mani , gates , and bloedorn 1999 ; jing and mckeown 2000 ) , such components include a clause in the clause conjunction , relative clauses , and some elements within a clause ( such as adverbs and prepositions ) .
+for example , this procedure transforms the lattice in figure 6 into the pruned basis lattice shown in figure 7 by deleting the clause the clash erupted and the verb phrase to better protect israeli forces .
+these phrases are eliminated because they do not appear in the other sentences of the theme and at the same time their removal does not interfere with the well-formedness of the fusion sentence .
+once these subtrees are removed , the fusion lattice construction is completed .
+generation .
+the final stage in sentence fusion is linearization of the fusion lattice .
+sentence generation includes selection of a tree traversal order , lexical choice among available alternatives , and placement of auxiliaries , such as determiners .
+our generation method utilizes information given in the input sentences to restrict the search space and then chooses among remaining alternatives using a language model derived from a large text collection .
+we first motivate the need for reordering and rephrasing , then discuss our implementation .
+for the word-ordering task , we do not have to consider all the possible traversals , since the number of valid traversals is limited by ordering constraints encoded in the fusion lattice .
+however , the basis lattice does not uniquely determine the ordering : the placement of trees inserted in the basis lattice from other theme sentences is not restricted by the original basis tree .
+while the ordering of many sentence constituents is determined by their syntactic roles , some constituents , such as time , location and manner circumstantials , are free to move ( elhadad et al. 2001 ) .
+therefore , the algorithm still has to select an appropriate order from among different orders of the inserted trees .
+the process so far produces a sentence that can be quite different from the extracted sentence ; although the basis sentences provides guidance for the generation process , constituents may be removed , added in , or reordered .
+wording can also be modified during this process .
+although the selection of words and phrases which appear in the basis tree is a safe choice , enriching the fusion sentence with alternative verbalizations has several benefits .
+in applications such as summarization , in which the length of the produced sentence is a factor , a shorter alternative is desirable .
+this goal can be achieved by selecting the shortest paraphrase among available alternatives .
+alternate verbalizations can also be used to replace anaphoric expressions , for instance , the task of auxiliary placement is alleviated by the presence of features stored in the input nodes .
+in most cases , aligned words stored in the same node have the same feature values , which uniquely determine an auxiliary selection and conjugation .
+however , in some cases , aligned words have different grammatical features , in which case the linearization algorithm needs to select among available alternatives .
+linearization of the fusion sentence involves the selection of the best phrasing and placement of auxiliaries as well as the determination of optimal ordering .
+since we do not have sufficient semantic information to perform such selection , our algorithm is driven by corpus-derived knowledge .
+we generate all possible sentences10 from the valid traversals of the fusion lattice and score their likelihood according to statistics derived from a corpus .
+this approach , originally proposed by knight and hatzivassiloglou ( 1995 ) and langkilde and knight ( 1998 ) , is a standard method used in statistical generation .
+we trained a trigram model with goodturing smoothing over 60 megabytes of news articles collected by newsblaster using the second version cmucambridge statistical language modeling toolkit ( clarkson and rosenfeld 1997 ) .
+the sentence with the lowest length-normalized entropy ( the best score ) is selected as the verbalization of the fusion lattice .
+table 4 shows several verbalizations produced by our algorithm from the central tree in figure 7 .
+here , we can see that the lowest- scoring sentence is both grammatical and concise .
+table 4 also illustrates that entropy-based scoring does not always correlate with the quality of the generated sentence .
+for example , the fifth sentence in table 4 palestinians fired antitank missile at a bulldozer to build a new embankment in the areais not a well-formed sentence ; however , our language model gave it a better score than its well-formed alternatives , the second and the third sentences ( see section 4 for further discussion ) .
+despite these shortcomings , we preferred entropy-based scoring to symbolic linearization .
+in the next section , we motivate our choice .
+statistical versus symbolic linearization .
+in the previous version of the system ( barzilay , mckeown , and elhadad 1999 ) , we performed linearization of a fusion dependency structure using the language generator fuf / surge ( elhadad and robin 1996 ) .
+as a large-scale linearizer used in many traditional semantic-to-text generation systems , fuf / surge could be an appealing solution to the task of surface realization .
+because the input structure and the requirements on the linearizer are quite different in text-to-text generation , we had to design rules for mapping between dependency structures produced by the fusion component and fuf / surge input .
+for instance , fuf / surge requires that the input contain a semantic role for prepositional phrases , such as manner , purpose , or location , which is not present in our dependency representation ; thus we had to augment the dependency representation with this information .
+in the case of inaccurate prediction or the lack of relevant semantic information , the linearizer scrambles the order of sentence constituents , selects wrong prepositions , or even fails to generate an output .
+another feature of the fuf / surge system that negatively influences system performance is its limited ability to reuse phrases readily available in the input , instead of generating every phrase from scratch .
+this makes the generation process more complex and thus prone to error .
+while the initial experiments conducted on a set of manually constructed themes seemed promising , the system performance deteriorated significantly when it was applied to automatically constructed themes .
+our experience led us to believe that transformation of an arbitrary sentence into a fuf / surge input representation is similar in its complexity to semantic parsing , a challenging problem in its own right .
+rather than refining the mapping mechanism , we modified multigen to use a statistical linearization component , which handles uncertainty and noise in the input in a more robust way .
+sentence fusion evaluation .
+in our previous work , we evaluated the overall summarization strategy of multigen in multiple experiments , including comparisons with human-written summaries in the document understanding conference ( duc ) 11 evaluation ( mckeown et al. 2001 ; mckeown et al. 2002 ) and quality assessment in the context of a particular information access task in the newsblaster framework ( mckeown et al. 2002 ) .
+in this article , we aim to evaluate the sentence fusion algorithm in isolation from other system components ; we analyze the algorithm performance in terms of content selection and the grammaticality of the produced sentences .
+we first present our evaluation methodology ( section 4.1 ) , then we describe our data ( section 4.2 ) , the results ( section 4.3 ) , and our analysis of them ( section 4.4 ) .
+methods .
+construction of a reference sentence .
+we evaluated content selection by comparing an automatically generated sentence with a reference sentence .
+the reference sentence was produced by a human ( hereafter the rfa ) , who was instructed to generate a sentence conveying information common to many sentences in a theme .
+the rfa was not familiar with the fusion algorithm .
+the rfa was provided with the list of theme sentences ; the original documents were not included .
+the instructions given to the rfa included several examples of themes with fusion sentences generated by the authors .
+even though the rfa was not instructed to use phrases from input sentences , the sentences presented as examples reused many phrases from the input sentences .
+we believe that phrase reuse elucidates the connection between input sentences and a resulting fusion sentence .
+two examples of themes , reference sentences , and system outputs are shown in table 5 .
+data selection .
+we wanted to test the performance of the fusion component on automatically computed inputs which reflect the accuracy of the existing preprocessing tools .
+for this reason , the test data were selected randomly from material collected by newsblaster .
+to remove themes irrelevant for fusion evaluation , we introduced two additional filters .
+first , we excluded themes that contained identical or nearly identical sentences ( with cosine similarity higher than 0.8 ) .
+when processing such sentences , our algorithm reduces to sentence extraction , which does not allow us to evaluate the generation abilities of our algorithm .
+second , themes for which the rfa was unable to create a reference sentence were also removed from the test set .
+as mentioned above , simfinder does not always produce accurate themes , 12 and therefore , the rfa could choose not to generate a reference sentence if the theme sentences had too little in common .
+an example of a theme for which no sentence was generated is shown in table 6 .
+as a result of this filtering , 34 % of the sentences were removed .
+baselines .
+in addition to the system-generated sentence , we also included in the evaluation a fusion sentence generated by another human ( hereafter , rfa2 ) and three baselines . ( following the duc terminology , we refer to the baselines , our system , and the rfa2 as peers . )
+the first baseline is the shortest sentence among the theme sentences , which is obviously grammatical , and it also has a good chance of being representative of common topics conveyed in the input .
+the second baseline is produced by a simplification of our algorithm , where paraphrase information is omitted during the alignment process .
+this baseline is included to capture the contribution of paraphrase information to the performance of the fusion algorithm .
+the third baseline consists of the basis sentence .
+the comparison with this baseline reveals the contribution of the insertion and deletion stages in the fusion algorithm .
+the comparison against an rfa2 sentence provides an upper bound on the performance of the system and baselines .
+in addition , this comparison sheds light on the human agreement on this task .
+comparison against the reference sentence .
+one judge was given a peer sentence along with the corresponding reference sentence .
+the judge also had access to the original theme from which these sentences were generated .
+the order of the presentation was randomized across themes and peer systems .
+reference and peer sentences were divided into clauses by the authors .
+the judges assessed overlap on the clause level between reference and peer sentences .
+the wording of the instructions was inspired by the duc instructions for clause comparison .
+for each clause in the reference sentence , the judge decided whether the meaning of a corresponding clause was conveyed in a peer sentence .
+in addition to 0 score for no overlap and 1 for full overlap , this framework allows for partial overlap with a score of 0.5 .
+from the overlap data , we computed weighted recall and precision based on fractional count ( hatzivassiloglou and mckeown 1993 ) .
+recall is a ratio of weighted clause overlap between a peer and a reference sentence , and the number of clauses in a reference sentence .
+precision is a ratio of weighted clause overlap between a peer and a reference sentence , and the number of clauses in a peer sentence .
+grammaticality assessment .
+grammaticality was rated in three categories : grammatical ( 3 ) , partially grammatical ( 2 ) , and not grammatical ( 1 ) .
+the judge was instructed to rate a sentence in the grammatical category if it contained no grammatical mistakes .
+partially grammatical included sentences that contained at most one mistake in agreement , articles , and tense realization .
+the not grammatical category included sentences that were corrupted by multiple mistakes of the former type , by erroneous component order or by the omission of important components ( e.g. , subject ) .
+punctuation is one issue in assessing grammaticality .
+improper placement of punctuation is a limitation of our implementation of the sentence fusion algorithm that we are well aware of.13 therefore , in our grammaticality evaluation ( following the duc procedure ) , the judge was asked to ignore punctuation .
+data .
+to evaluate our sentence fusion algorithm , we selected 100 themes following the procedure described in the previous section .
+each set varied from three to seven sentences , with 4.22 sentences on average .
+the generated fusion sentences consisted of 1.91 clauses on average .
+none of the sentences in the test set were fully extracted ; on average , each sentence fused fragments from 2.14 theme sentences .
+out of 100 sentence , 57 sentences produced by the algorithm combined phrases from several sentences , while the rest of the sentences comprised subsequences of one of the theme sentences . ( note that compression is different from sentence extraction . )
+we included these sentences in the evaluation , because they reflect both content selection and realization capacities of the algorithm .
+table 5 shows two sentences from the test corpus , along with input sentences .
+the examples are chosen so as to reflect good- and bad-performance cases .
+note that the first example results in inclusion of the essential information ( the fact that bodies were found , along with time and place ) and leaves out details ( that it was a remote location or how many miles west it was , a piece of information that is in dispute in any case ) .
+the problematic example incorrectly selects the number of people killed as six , even though this number is not repeated and different numbers are referred to in the text .
+this mistake is caused by a noisy entry in our paraphrasing dictionary which erroneously identifies five and six as paraphrases of each other .
+results .
+table 7 shows the length ratio , precision , recall , f-measure , and grammaticality score for each algorithm .
+the length ratio of a sentence was computed as the ratio of its output length to the average length of the theme input sentences .
+discussion .
+the results in table 7 demonstrate that sentences manually generated by the second human participant ( rfa2 ) not only are the shortest , but are also closest to the reference sentence in terms of selected information .
+the tight connection 14 between sentences generated by the rfas establishes a high upper bound for the fusion task .
+while neither our system nor the baselines were able to reach this level of performance , the fusion algorithm clearly outperforms all the baselines in terms of content selection , at a reasonable level of compression .
+the performance of baseline 1 and baseline 2 demonstrates that neither the shortest sentence nor the basis sentence is an adequate substitution for fusion in terms of content selection .
+the gap in recall between our system and baseline 3 confirms our hypothesis about the importance of paraphrasing information for the fusion process .
+omission of paraphrases causes an 8 % drop in recall due to the inability to match equivalent phrases with different wording .
+table 7 also reveals a downside of the fusion algorithm : automatically generated sentences contain grammatical errors , unlike fully extracted , human-written sentences .
+given the high sensitivity of humans to processing ungrammatical sentences , one has to consider the benefits of flexible information selection against the decrease in readability of the generated sentences .
+sentence fusion may not be a worthy direction to pursue if low grammaticality is intrinsic to the algorithm and its correction requires 14 we cannot apply kappa statistics ( siegel and castellan 1988 ) for measuring agreement in the content selection task since the event space is not well-defined .
+this prevents us from computing the probability of random agreement .
+error analysis .
+in this section , we discuss the results of our manual analysis of mistakes in content selection and surface realization .
+note that in some cases multiple errors are entwined in one sentence , which makes it hard to distinguish between a sequence of independent mistakes and a cause-and-effect chain .
+therefore , the presented counts should be viewed as approximations , rather than precise numbers .
+we start with the analysis of the test set and continue with the description of some interesting mistakes that we encountered during system development .
+mistakes in content selection .
+most of the mistakes in content selection can be attributed to problems with alignment .
+in most cases ( 17 ) , erroneous alignments missed relevant word mappings as a result of the lack of a corresponding entry in our paraphrasing resources .
+at the same time , mapping of unrelated words ( as shown in table 5 ) was quite rare ( two cases ) .
+this performance level is quite predictable given the accuracy of an automatically constructed dictionary and limited coverage of wordnet .
+even in the presence of accurate lexical information , the algorithm occasionally produced suboptimal alignments ( four cases ) because of the simplicity of our weighting scheme , which supports limited forms of mapping typology and also uses manually assigned weights .
+another source of errors ( two cases ) was the algorithms inability to handle many-to-many alignments .
+namely , two trees conveying the same meaning may not be decomposable into the node-level mappings which our algorithm aims to compute .
+for example , the mapping between the sentences in table 8 expressed by the rule x denied claims by y < -4x said that ys claim was untrue cannot be decomposed into smaller matching units .
+at least two mistakes resulted from noisy preprocessing ( tokenization and parsing ) .
+in addition to alignment , overcutting during lattice pruning caused the omission of three clauses that were present in the corresponding reference sentences .
+the sentence conservatives were cheering language is an example of an incomplete sentence derived from the following input sentence : conservatives were cheering language in the final version mistakes in surface realization .
+grammatical mistakes included incorrect selection of determiners , erroneous word ordering , omission of essential sentence constituents , and incorrect realization of negation constructions and tense .
+these mistakes ( 42 ) originated during linearization of the lattice and were caused either by incompleteness of the linearizer or by suboptimal scoring of the language model .
+mistakes of the first type are caused by missing rules for generating auxiliaries given node features .
+an example of this phenomenon is the sentence the coalition to have play a central role , which verbalizes the verb construction will have to play incorrectly .
+our linearizer lacks the completeness of existing application-independent linearizers , such as the unification- based fuf / surge ( elhadad and robin 1996 ) and the probabilistic fergus ( bangalore and rambow 2000 ) .
+unfortunately , we were unable to reuse any of the existing large-scale linearizers because of significant structural differences between input expected by these linearizers and the format of a fusion lattice .
+we are currently working on adapting fergus for the sentence fusion task .
+mistakes related to suboptimal scoring were the most common ( 33 out of 42 ) ; in these cases , a language model selected ill-formed sentences , assigning a worse score to a better sentence .
+the sentence the diplomats were given to leave the country in 10 days illustrates a suboptimal linearization of the fusion lattice .
+the correct linearizationsthe diplomats were given 10 days to leave the country and the diplomats were ordered to leave the country in 10 dayswere present in the fusion lattice , but the language model picked the incorrect verbalization .
+we found that in 27 cases the optimal verbalizations ( in the authors view ) were ranked below the top-10 sentences ranked by the language model .
+we believe that more powerful language models that incorporate linguistic knowledge ( such as syntax-based models ) can improve the quality of generated sentences .
+further analysis .
+in addition to analyzing errors found in this particular study , we also regularly track the quality of generated summaries on newsblasters web page .
+we have noted a number of interesting errors that crop up from time to time that seem to require information about the full syntactic parse , semantics , or even discourse .
+consider , for example , the last sentence from a summary entitled estrogenprogestin supplements now linked to dementia , which is shown in table 9 .
+this sentence was created by sentence fusion and clearly , there is a problem .
+certainly , there was a study finding the risk of dementia in women who took one type of combined hormone pill , but it was not the government study which was abruptly halted last summer .
+in looking at the two sentences from which this summary sentence was drawn , we can see that there is a good amount of overlap between the two , but the component does not have enough information about the referents of the different terms to know that two different studies are involved and that fusion should not take place .
+one topic of our future work ( section 6 ) is the problem of reference and summarization .
+another example is shown in table 10 .
+here again , the problem is reference .
+the first error is in the references to the segments .
+the two uses of segments in the first source document sentence do not refer to the same entity and thus , when the modifier is dropped , we get an anomaly .
+the second , more unusual problem is in the equation of clinton / dole , dole / clinton , and clinton and dole .
+related work .
+text-to-text generation .
+unlike traditional concept-to-text generation approaches , text-to-text generation methods take text as input and transform it into a new text satisfying some constraints ( e.g. , length or level of sophistication ) .
+in addition to sentence fusion , compression algorithms ( chandrasekar , doran , and bangalore 1996 ; grefenstette 1998 ; mani , gates , and bloedorn 1999 ; knight and marcu 2002 ; jing and mckeown 2000 ; reizler et al. 2003 ) and methods for expansion of a multiparallel corpus ( pang , knight , and marcu 2003 ) are other instances of such methods .
+compression methods have been developed for single-document summarization , and they aim to reduce a sentence by eliminating constituents which are not crucial for understanding the sentence and not salient enough to include in the summary .
+these approaches are based on the observation that the importance of a sentence constituent can often be determined based on shallow features , such as its syntactic role and the words it contains .
+for example , in many cases a relative clause that is peripheral to the central point of the document can be removed from a sentence without significantly distorting its meaning .
+while earlier approaches for text compression were based on symbolic reduction rules ( grefenstette 1998 ; mani , gates , and bloedorn 1999 ) , more recent approaches use an aligned corpus of documents and their human written summaries to determine which constituents can be reduced ( knight and marcu 2002 ; jing and mckeown 2000 ; reizler et al. 2003 ) .
+the summary sentences , which have been manually compressed , are aligned with the original sentences from which they were drawn .
+knight and marcu ( 2000 ) treat reduction as a translation process using a noisy- channel model ( brown et al. 1993 ) .
+in this model , a short ( compressed ) string is treated as a source , and additions to this string are considered to be noise .
+the probability of a source string s is computed by combining a standard probabilistic context-free grammar score , which is derived from the grammar rules that yielded tree s , and a word-bigram score , computed over the leaves of the tree .
+the stochastic channel model creates a large tree t from a smaller tree s by choosing an extension template for each node based on the labels of the node and its children .
+in the decoding stage , the system searches for the short string s that maximizes p ( slt ) , which ( for fixed t ) is equivalent to maximizing p ( s ) x p ( t1s ) .
+while this approach exploits only syntactic and lexical information , jing and mckeown ( 2000 ) also rely on cohesion information , derived from word distribution in a text : phrases that are linked to a local context are retained , while phrases that have no such links are dropped .
+another difference between these two methods is the extensive use of knowledge resources in the latter .
+for example , a lexicon is used to identify which components of the sentence are obligatory to keep it grammatically correct .
+the corpus in this approach is used to estimate the degree to which a fragment is extraneous and can be omitted from a summary .
+a phrase is removed only if it is not grammatically obligatory , is not linked to a local context , and has a reasonable probability of being removed by humans .
+in addition to reducing the original sentences , jing and mckeown ( 2000 ) use a number of manually compiled rules to aggregate reduced sentences ; for example , reduced clauses might be conjoined with and .
+sentence fusion exhibits similarities with compression algorithms in the ways in which it copes with the lack of semantic data in the generation process , relying on shallow analysis of the input and statistics derived from a corpus .
+clearly , the difference in the nature of both tasks and in the type of input they expect ( single sentence versus multiple sentences ) dictates the use of different methods .
+having multiple sentences in the input poses new challengessuch as a need for sentence comparison but at the same time it opens up new possibilities for generation .
+while the output of existing compression algorithms is always a substring of the original sentence , sentence fusion may generate a new sentence which is not a substring of any of the input sentences .
+this is achieved by arranging fragments of several input sentences into one sentence .
+the only other text-to-text generation approach able to produce new utterances is that of pang , knight , and marcu ( 2003 ) .
+their method operates over multiple english translations of the same foreign sentence and is intended to generate novel paraphrases of the input sentences .
+like sentence fusion , their method aligns parse trees of the input sentences and then uses a language model to linearize the derived lattice .
+the main difference between the two methods is in the type of the alignment : our algorithm performs local alignment , while the algorithm of pang , knight , and marcu ( 2003 ) performs global alignment .
+the differences in alignment are caused by differences in input : pang , knight , and marcus method expects semantically equivalent sentences , while our algorithm operates over sentences with only partial meaning overlap .
+the presence of deletions and insertions in input sentences makes alignment of comparable trees a new and particularly significant challenge .
+computation of an agreement tree .
+the alignment method described in section 3 falls into a class of tree comparison algorithms extensively studied in theoretical computer science ( sankoff 1975 ; finden and gordon 1985 ; amir and keselman 1994 ; farach , przytycka , and thorup 1995 ) and widely applied in many areas of computer science , primarily computational biology ( gusfield 1997 ) .
+these algorithms aim to find an overlap subtree that captures structural commonality across a set of related trees .
+a typical tree similarity measure considers the proximity , at both the node and the edge levels , between input trees .
+in addition , some algorithms constrain the topology of the resulting alignment based on the domain-specific knowledge .
+these constraints not only narrow the search space but also increase the robustness of the algorithm in the presence of a weak similarity function .
+in the nlp context , this class of algorithms has been used previously in example- based machine translation , in which the goal is to find an optimal alignment between the source and the target sentences ( meyers , yangarber , and grishman 1996 ) .
+the algorithm operates over pairs of parallel sentences , where each sentence is represented by a structure-sharing forest of plausible syntactic trees .
+the similarity function is driven by lexical mapping between tree nodes and is derived from a bilingual dictionary .
+the search procedure is greedy and is subject to a number of constraints needed for alignment of parallel sentences .
+this algorithm has several features in common with our method : it operates over syntactic dependency representations and employs recursive computation to find an optimal solution .
+however , our method is different in two key aspects .
+first , our algorithm looks for local regions with high similarity in nonparallel data , rather than for full alignment , expected in the case of parallel trees .
+the change in optimization criteria introduces differences in the similarity measurespecifically , the relaxation of certain constraintsand the search procedure , which in our work uses dynamic programming .
+second , our method is an instance of a multisequence alignment , 15 in contrast to the pairwise alignment described in meyers , yangarber , and grishman ( 1996 ) .
+combining evidence from multiple trees is an essential step of our algorithmpairwise comparison of nonparallel trees may not provide enough information regarding their underlying correspondences .
+in fact , previous applications of multisequence alignment have been shown to increase the accuracy of the comparison in other nlp tasks ( barzilay and lee 2002 ; bangalore , murdock , and riccardi 2002 ; lacatusu , maiorano , and harabagiu 2004 ) ; unlike our work these approaches operate on strings , not trees , and with the exception of ( lacatusu , maiorano , and harabagiu 2004 ) , they apply alignment to parallel data , not comparable texts .
+in this article , we have presented sentence fusion , a novel method for text-to-text generation which , given a set of similar sentences , produces a new sentence containing the information common to most sentences .
+unlike traditional generation methods , 15 see gusfield ( 1997 ) and durbin et al. ( 1998 ) for an overview of multisequence alignment .
+sentence fusion does not require an elaborate semantic representation of the input but instead relies on the shallow linguistic representation automatically derived from the input documents and knowledge acquired from a large text corpus .
+generation is performed by reusing and altering phrases from input sentences .
+as the evaluation described in section 4 shows , our method accurately identifies common information and in most cases generates a well-formed fusion sentence .
+our algorithm outperforms the shortest-sentence baseline in terms of content selection , without a significant drop in grammaticality .
+we also show that augmenting the fusion process with paraphrasing knowledge improves the output by both measures .
+however , there is still a gap between the performance of our system and human performance .
+an important goal for future work on sentence fusion is to increase the flexibility of content selection and realization .
+we believe that the process of aligning theme sentences can be greatly improved by having the system learn the similarity function , instead of using manually assigned weights .
+an interesting question is how such a similarity function can be induced in an unsupervised fashion .
+in addition , we can improve the flexibility of the fusion algorithm by using a more powerful language model .
+recent research ( daume et al. 2002 ) has show that syntax-based language models are more suitable for language generation tasks ; the study of such models is a promising direction to explore .
+an important feature of the sentence fusion algorithm is its ability to generate multiple verbalizations of a given fusion lattice .
+in our implementation , this property is utilized only to produce grammatical texts in the changed syntactic context , but it can also be used to increase coherence of the text at the discourse level by taking context into account .
+in our current system , each sentence is generated in isolation , independently from what is said before and what will be said after .
+clear evidence of the limitation of this approach is found in the selection of referring expressions .
+for example , all summary sentences may contain the full description of a named entity ( e.g. , president of columbia university lee bollinger ) , while the use of shorter descriptions such as bollinger or anaphoric expressions in some summary sentences would increase the summary 's readability ( schiffman , nenkova , and mckeown 2002 ; nenkova and mckeown 2003 ) .
+these constraints can be incorporated into the sentence fusion algorithm , since our alignment-based representation of themes often contains several alternative descriptions of the same object .
+beyond the problem of referring-expression generation , we found that by selecting appropriate paraphrases of each summary sentence , we can significantly improve the coherence of an output summary .
+an important research direction for future work is to develop a probabilistic text model that can capture properties of well-formed texts , just as a language model captures properties of sentence grammaticality .
+ideally , such a model would be able to discriminate between cohesive fluent texts and ill-formed texts , guiding the selection of sentence paraphrases to achieve an optimal sentence sequence .

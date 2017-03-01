@@ -1,0 +1,175 @@
+thumbs up or thumbs down ?
+semantic orientation applied to unsupervised classification of reviews abstract .
+this paper presents a simple unsupervised learning algorithm for classifying reviews as recommended ( thumbs up ) or not recommended ( thumbs down ) .
+the classification of a review is predicted by the average semantic orientation of the phrases in the review that contain adjectives or adverbs .
+a phrase has a positive semantic orientation when it has good associations ( e.g. , " subtle nuances " ) and a negative semantic orientation when it has bad associations ( e.g. , " very cavalier " ) .
+in this paper , the semantic orientation of a phrase is calculated as the mutual information between the given phrase and the word " excellent " minus the mutual information between the given phrase and the word " poor " . a review is classified as recommended if the average semantic orientation of its phrases is positive .
+the algorithm achieves an average accuracy of 74 % when evaluated on 410 reviews from epinions , sampled from four different domains ( reviews of automobiles , banks , movies , and travel destinations ) .
+the accuracy ranges from 84 % for automobile reviews to 66 % for movie reviews .
+introduction .
+if you are considering a vacation in akumal , mexico , you might go to a search engine and enter the query " akumal travel review " .
+however , in this case , google1 reports about 5,000 matches .
+it would be useful to know what fraction of these matches recommend akumal as a travel destination .
+with an algorithm for automatically classifying a review as " thumbs up " or " thumbs down " , it would be possible for a search engine to report such summary statistics .
+this is the motivation for the research described here .
+other potential applications include recognizing " flames " ( abusive newsgroup messages ) ( spertus , 1997 ) and developing new kinds of search tools ( hearst , 1992 ) .
+in this paper , i present a simple unsupervised learning algorithm for classifying a review as recommended or not recommended .
+the algorithm takes a written review as input and produces a classification as output .
+the first step is to use a part-of-speech tagger to identify phrases in the input text that contain adjectives or adverbs ( brill , 1994 ) .
+the second step is to estimate the semantic orientation of each extracted phrase ( hatzivassiloglou & mckeown , 1997 ) .
+a phrase has a positive semantic orientation when it has good associations ( e.g. , " romantic ambience " ) and a negative semantic orientation when it has bad associations ( e.g. , " horrific events " ) .
+the third step is to assign the given review to a class , recommended or not recommended , based on the average semantic orientation of the phrases extracted from the review .
+if the average is positive , the prediction is that the review recommends the item it discusses .
+otherwise , the prediction is that the item is not recommended .
+the pmi-ir algorithm is employed to estimate the semantic orientation of a phrase ( turney , 2001 ) .
+pmi-ir uses pointwise mutual information ( pmi ) and information retrieval ( ir ) to measure the similarity of pairs of words or phrases .
+the semantic orientation of a given phrase is calculated by comparing its similarity to a positive reference word ( " excellent " ) with its similarity to a negative reference word ( " poor " ) .
+more specifically , a phrase is assigned a numerical rating by taking the mutual information between the given phrase and the word " excellent " and subtracting the mutual information between the given phrase and the word " poor " . in addition to determining the direction of the phrase " s semantic orientation ( positive or negative , based on the sign of the rating ) , this numerical rating also indicates the strength of the semantic orientation ( based on the magnitude of the number ) .
+the algorithm is presented in section 2 .
+hatzivassiloglou and mckeown ( 1997 ) have also developed an algorithm for predicting semantic orientation .
+their algorithm performs well , but it is designed for isolated adjectives , rather than phrases containing adjectives or adverbs .
+this is discussed in more detail in section 3 , along with other related work .
+the classification algorithm is evaluated on 410 reviews from epinions2 , randomly sampled from four different domains : reviews of automobiles , banks , movies , and travel destinations .
+reviews at epinions are not written by professional writers ; any person with a web browser can become a member of epinions and contribute a review .
+each of these 410 reviews was written by a different author .
+of these reviews , 170 are not recommended and the remaining 240 are recommended ( these classifications are given by the authors ) .
+always guessing the majority class would yield an accuracy of 59 % .
+the algorithm achieves an average accuracy of 74 % , ranging from 84 % for automobile reviews to 66 % for movie reviews .
+the experimental results are given in section 4 .
+the interpretation of the experimental results , the limitations of this work , and future work are discussed in section 5 .
+potential applications are outlined in section 6 .
+finally , conclusions are presented in section 7 .
+classifying reviews .
+the first step of the algorithm is to extract phrases containing adjectives or adverbs .
+past work has demonstrated that adjectives are good indicators of subjective , evaluative sentences ( hatzivassiloglou & wiebe , 2000 ; wiebe , 2000 ; wiebe et al. , 2001 ) .
+however , although an isolated adjective may indicate subjectivity , there may be insufficient context to determine semantic orientation .
+for example , the adjective " unpredictable " may have a negative orientation in an automotive review , in a phrase such as " unpredictable steering " , but it could have a positive orientation in a movie review , in a phrase such as " unpredictable plot " .
+therefore the algorithm extracts two consecutive words , where one member of the pair is an adjective or an adverb and the second provides context .
+first a part-of-speech tagger is applied to the review ( brill , 1994 ) .3 two consecutive words are extracted from the review if their tags conform to any of the patterns in table 1 .
+the jj tags indicate adjectives , the nn tags are nouns , the rb tags are adverbs , and the vb tags are verbs.4 the second pattern , for example , means that two consecutive words are extracted if the first word is an adverb and the second word is an adjective , but the third word ( which is not extracted ) cannot be a noun .
+nnp and nnps ( singular and plural proper nouns ) are avoided , so that the names of the items in the review cannot influence the classification .
+the second step is to estimate the semantic orientation of the extracted phrases , using the pmi-ir algorithm .
+this algorithm uses mutual information as a measure of the strength of semantic association between two words ( church & hanks , 1989 ) .
+pmi-ir has been empirically evaluated using 80 synonym test questions from the test of english as a foreign language ( toefl ) , obtaining a score of 74 % ( turney , 2001 ) .
+for comparison , latent semantic analysis ( lsa ) , another statistical measure of word association , attains a score of 64 % on the same 80 toefl questions ( landauer & dumais , 1997 ) .
+the pointwise mutual information ( pmi ) between two words , word1 and word2 , is defined as follows ( church & hanks , 1989 ) : here , p ( word1 & word2 ) is the probability that word1 and word2 co-occur .
+if the words are statistically independent , then the probability that they co-occur is given by the product p ( word1 ) p ( word2 ) .
+the ratio between p ( word1 & word2 ) and p ( word1 ) p ( word2 ) is thus a measure of the degree of statistical dependence between the words .
+the log of this ratio is the amount of information that we acquire about the presence of one of the words when we observe the other .
+the reference words " excellent " and " poor " were chosen because , in the five star review rating system , it is common to define one star as " poor " and five stars as " excellent " . so is positive when phrase is more strongly associated with " excellent " and negative when phrase is more strongly associated with " poor " . pmi-ir estimates pmi by issuing queries to a search engine ( hence the ir in pmi-ir ) and noting the number of hits ( matching documents ) .
+the following experiments use the altavista advanced search engine5 , which indexes approximately 350 million web pages ( counting only those pages that are in english ) .
+i chose altavista because it has a near operator .
+the altavista near operator constrains the search to documents that contain the words within ten words of one another , in either order .
+previous work has shown that near performs better than and when measuring the strength of semantic association between words ( turney , 2001 ) .
+let hits ( query ) be the number of hits returned , given the query query .
+the following estimate of so can be derived from equations ( 1 ) and ( 2 ) with hits ( phrase near " poor " ) hits ( " excellent " ) equation ( 3 ) is a log-odds ratio ( agresti , 1996 ) .
+to avoid division by zero , i added 0.01 to the hits .
+i also skipped phrase when both hits ( phrase near " excellent " ) and hits ( phrase near " poor " ) were ( simultaneously ) less than four .
+these numbers ( 0.01 and 4 ) were arbitrarily chosen .
+to eliminate any possible influence from the testing data , i added " and ( not host : epinions ) " to every query , which tells altavista not to include the epinions web site in its searches .
+the third step is to calculate the average semantic orientation of the phrases in the given review and classify the review as recommended if the average is positive and otherwise not recommended .
+table 2 shows an example for a recommended review and table 3 shows an example for a not recommended review .
+both are reviews of the bank of america .
+both are in the collection of 410 reviews from epinions that are used in the experiments in section 4 .
+related work .
+this work is most closely related to hatzivassiloglou and mckeown " s ( 1997 ) work on predicting the semantic orientation of adjectives .
+they note that there are linguistic constraints on the semantic orientations of adjectives in conjunctions .
+as an example , they present the following three sentences ( hatzivassiloglou & mckeown , 1997 ) : the tax proposal was simple and well- received by the public .
+the tax proposal was simplistic but well- received by the public .
+the third sentence is incorrect , because we use " and " with adjectives that have the same semantic orientation ( " simple " and " well-received " are both positive ) , but we use " but " with adjectives that have different semantic orientations ( " simplistic " is negative ) .
+hatzivassiloglou and mckeown ( 1997 ) use a four-step supervised learning algorithm to infer the semantic orientation of adjectives from constraints on conjunctions : all conjunctions of adjectives are extracted from the given corpus .
+a supervised learning algorithm combines multiple sources of evidence to label pairs of adjectives as having the same semantic orientation or different semantic orientations .
+the result is a graph where the nodes are adjectives and links indicate sameness or difference of semantic orientation .
+a clustering algorithm processes the graph structure to produce two subsets of adjectives , such that links across the two subsets are mainly different-orientation links , and links inside a subset are mainly same-orientation links .
+since it is known that positive adjectives tend to be used more frequently than negative adjectives , the cluster with the higher average frequency is classified as having positive semantic orientation .
+this algorithm classifies adjectives with accuracies ranging from 78 % to 92 % , depending on the amount of training data that is available .
+the algorithm can go beyond a binary positive-negative distinction , because the clustering algorithm ( step 3 above ) can produce a " goodness-of-fit " measure that indicates how well an adjective fits in its assigned cluster .
+although they do not consider the task of classifying reviews , it seems their algorithm could be plugged into the classification algorithm presented in section 2 , where it would replace pmi-ir and equation ( 3 ) in the second step .
+however , pmi-ir is conceptually simpler , easier to implement , and it can handle phrases and adverbs , in addition to isolated adjectives .
+as far as i know , the only prior published work on the task of classifying reviews as thumbs up or down is tong " s ( 2001 ) system for generating sentiment timelines .
+this system tracks online discussions about movies and displays a plot of the number of positive sentiment and negative sentiment messages over time .
+messages are classified by looking for specific phrases that indicate the sentiment of the author towards the movie ( e.g. , " great acting " , " wonderful visuals " , " terrible score " , " uneven editing " ) .
+each phrase must be manually added to a special lexicon and manually tagged as indicating positive or negative sentiment .
+the lexicon is specific to the domain ( e.g. , movies ) and must be built anew for each new domain .
+the company mindfuleye7 offers a technology called lexanttm that appears similar to tong " s ( 2001 ) system .
+other related work is concerned with determining subjectivity ( hatzivassiloglou & wiebe , 2000 ; wiebe , 2000 ; wiebe et al. , 2001 ) .
+the task is to distinguish sentences that present opinions and evaluations from sentences that objectively present factual information ( wiebe , 2000 ) .
+wiebe et al. ( 2001 ) list a variety of potential applications for automated subjectivity tagging , such as recognizing " flames " ( spertus , 1997 ) , classifying email , recognizing speaker role in radio broadcasts , and mining reviews .
+in several of these applications , the first step is to recognize that the text is subjective and then the natural second step is to determine the semantic orientation of the subjective text .
+for example , a flame detector cannot merely detect that a newsgroup message is subjective , it must further detect that the message has a negative semantic orientation ; otherwise a message of praise could be classified as a flame .
+hearst ( 1992 ) observes that most search engines focus on finding documents on a given topic , but do not allow the user to specify the directionality of the documents ( e.g. , is the author in favor of , neutral , or opposed to the event or item discussed in the document ? ) .
+the directionality of a document is determined by its deep argumentative structure , rather than a shallow analysis of its adjectives .
+sentences are interpreted metaphorically in terms of agents exerting force , resisting force , and overcoming resistance .
+it seems likely that there could be some benefit to combining shallow and deep analysis of the text .
+experiments .
+table 4 describes the 410 reviews from epinions that were used in the experiments . 170 ( 41 % ) of the reviews are not recommended and the remaining 240 ( 59 % ) are recommended .
+always guessing the majority class would yield an accuracy of 59 % .
+the third column shows the average number of phrases that were extracted from the reviews .
+table 5 shows the experimental results .
+except for the travel reviews , there is surprisingly little variation in the accuracy within a domain .
+in addition to recommended and not recommended , epinions reviews are classified using the five star rating system .
+the third column shows the correlation between the average semantic orientation and the number of stars assigned by the author of the review .
+the results show a strong positive correlation between the average semantic orientation and the author " s rating out of five stars .
+discussion of results .
+a natural question , given the preceding results , is what makes movie reviews hard to classify ?
+table 6 shows that classification by the average so tends to err on the side of guessing that a review is not recommended , when it is actually recommended .
+this suggests the hypothesis that a good movie will often contain unpleasant scenes ( e.g. , violence , death , mayhem ) , and a recommended movie review may thus have its average semantic orientation reduced if it contains descriptions of these unpleasant scenes .
+however , if we add a constant value to the average so of the movie reviews , to compensate for this bias , the accuracy does not improve .
+this suggests that , just as positive reviews mention unpleasant things , so negative reviews often mention pleasant scenes .
+table 7 shows some examples that lend support to this hypothesis .
+for example , the phrase " more evil " does have negative connotations , thus an so of -4.384 is appropriate , but an evil character does not make a bad movie .
+the difficulty with movie reviews is that there are two aspects to a movie , the events and actors in the movie ( the elements of the movie ) , and the style and art of the movie ( the movie as a gestalt ; a unified whole ) .
+this is likely also the explanation for the lower accuracy of the cancun reviews : good beaches do not necessarily add up to a good vacation .
+on the other hand , good automotive parts usually do add up to a good automobile and good banking services add up to a good bank .
+it is not clear how to address this issue .
+future work might look at whether it is possible to tag sentences as discussing elements or wholes .
+another area for future work is to empirically compare pmi-ir and the algorithm of hatzivassiloglou and mckeown ( 1997 ) .
+although their algorithm does not readily extend to two-word phrases , i have not yet demonstrated that two-word phrases are necessary for accurate classification of reviews .
+on the other hand , it would be interesting to evaluate pmi-ir on the collection of 1,336 hand-labeled adjectives that were used in the experiments of hatzivassiloglou and mckeown ( 1997 ) .
+a related question for future work is the relationship of accuracy of the estimation of semantic orientation at the level of individual phrases to accuracy of review classification .
+since the review classification is based on an average , it might be quite resistant to noise in the so estimate for individual phrases .
+but it is possible that a better so estimator could produce significantly better classifications .
+one possibility is to apply a statistical significance test to each estimated so .
+there is a large statistical literature on the log-odds ratio , which might lead to improved results on this task .
+this paper has focused on unsupervised classification , but average semantic orientation could be supplemented by other features , in a supervised classification system .
+the other features could be based on the presence or absence of specific words , as is common in most text classification work .
+this could yield higher accuracies , but the intent here was to study this one feature in isolation , to simplify the analysis , before combining it with other features .
+table 5 shows a high correlation between the average semantic orientation and the star rating of a review .
+i plan to experiment with ordinal classification of reviews in the five star rating system , using the algorithm of frank and hall ( 2001 ) .
+for ordinal classification , the average semantic orientation would be supplemented with other features in a supervised classification system .
+a limitation of pmi-ir is the time required to send queries to altavista .
+inspection of equation ( 3 ) shows that it takes four queries to calculate the semantic orientation of a phrase .
+however , i cached all query results , and since there is no need to recalculate hits ( " poor " ) and hits ( " excellent " ) for every phrase , each phrase requires an average of slightly less than two queries .
+as a courtesy to altavista , i used a five second delay between queries .
+this might appear to be a significant limitation , but extrapolation of current trends in computer memory capacity suggests that , in about ten years , the average desktop computer will be able to easily store and search altavista " s 350 million web pages .
+this will reduce the processing time to less than one second per review .
+applications .
+there are a variety of potential applications for automated review rating .
+as mentioned in the introduction , one application is to provide summary statistics for search engines .
+given the query " akumal travel review " , a search engine could report , " there are 5,000 hits , of which 80 % are thumbs up and 20 % are thumbs down . "
+the search results could be sorted by average semantic orientation , so that the user could easily sample the most extreme reviews .
+similarly , a search engine could allow the user to specify the topic and the rating of the desired reviews ( hearst , 1992 ) .
+preliminary experiments indicate that semantic orientation is also useful for summarization of reviews .
+a positive review could be summarized by picking out the sentence with the highest positive semantic orientation and a negative review could be summarized by extracting the sentence with the lowest negative semantic orientation .
+epinions asks its reviewers to provide a short description of pros and cons for the reviewed item .
+a pro / con summarizer could be evaluated by measuring the overlap between the reviewer " s pros and cons and the phrases in the review that have the most extreme semantic orientation .
+another potential application is filtering " flames " for newsgroups ( spertus , 1997 ) .
+there could be a threshold , such that a newsgroup message is held for verification by the human moderator when the semantic orientation of a phrase drops below the threshold .
+a related use might be a tool for helping academic referees when reviewing journal and conference papers .
+ideally , referees are unbiased and objective , but sometimes their criticism can be unintentionally harsh .
+it might be possible to highlight passages in a draft referee " s report , where the choice of words should be modified towards a more neutral tone .
+tong " s ( 2001 ) system for detecting and tracking opinions in on-line discussions could benefit from the use of a learning algorithm , instead of ( or in addition to ) a hand-built lexicon .
+with automated review rating ( opinion rating ) , advertisers could track advertising campaigns , politicians could track public opinion , reporters could track public response to current events , stock traders could track financial opinions , and trend analyzers could track entertainment and technology trends .
+conclusions .
+this paper introduces a simple unsupervised learning algorithm for rating a review as thumbs up or down .
+the algorithm has three steps : ( 1 ) extract phrases containing adjectives or adverbs , ( 2 ) estimate the semantic orientation of each phrase , and ( 3 ) classify the review based on the average semantic orientation of the phrases .
+the core of the algorithm is the second step , which uses pmi-ir to calculate semantic orientation ( turney , 2001 ) .
+in experiments with 410 reviews from epinions , the algorithm attains an average accuracy of 74 % .
+it appears that movie reviews are difficult to classify , because the whole is not necessarily the sum of the parts ; thus the accuracy on movie reviews is about 66 % .
+on the other hand , for banks and automobiles , it seems that the whole is the sum of the parts , and the accuracy is 80 % to 84 % .
+travel reviews are an intermediate case .
+previous work on determining the semantic orientation of adjectives has used a complex algorithm that does not readily extend beyond isolated adjectives to adverbs or longer phrases ( hatzivassiloglou and mckeown , 1997 ) .
+the simplicity of pmi-ir may encourage further work with semantic orientation .
+the limitations of this work include the time required for queries and , for some applications , the level of accuracy that was achieved .
+the former difficulty will be eliminated by progress in hardware .
+the latter difficulty might be addressed by using semantic orientation combined with other features in a supervised classification algorithm .

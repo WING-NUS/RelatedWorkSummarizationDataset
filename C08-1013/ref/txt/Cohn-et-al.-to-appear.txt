@@ -1,0 +1,263 @@
+constructing corpora for the development and evaluation of paraphrase systems .
+abstract .
+automatic paraphrasing is an important component in many natural language processing tasks .
+in this article we present a new parallel corpus with paraphrase annotations .
+we adopt a definition of paraphrase based on word alignments and show that it yields high inter-annotator agreement .
+as kappa is suited to nominal data , we employ an alternative agreement statistic which is appropriate for structured alignment tasks .
+we discuss how the corpus can be usefully employed in evaluating paraphrase systems automatically ( e.g. , by measuring precision , recall , and f1 ) and also in developing linguistically rich paraphrase models based on syntactic structure .
+introduction .
+the ability to paraphrase text automatically carries much practical import for many nlp applications ranging from summarization ( barzilay 2003 ; zhou et al. 2006 ) to question answering ( lin and pantel 2001 ; duboue and chu-carroll 2006 ) and machine translation ( callison-burch , koehn , and osborne 2006 ) .
+it is therefore not surprising that recent years have witnessed increasing interest in the acquisition of paraphrases from real world corpora .
+these are most often monolingual corpora containing parallel translations of the same source text ( barzilay and mckeown 2001 ; pang , knight , and marcu 2003 ) .
+truly bilingual corpora consisting of documents and their translations have also been used to acquire paraphrases ( bannard and callison-burch 2005 ; callisonburch 2007 ) as well as comparable corpora such as collections of articles produced by two different newswire agencies about the same events ( barzilay and elhadad 2003 ) .
+although paraphrase induction algorithms differ in many respectsfor example , the acquired paraphrases often vary in granularity as they can be lexical ( fighting , battle ) or structural ( last weeks fighting , the battle last week ) , and are represented as words or syntax treesthey all rely on some form of alignment for extracting paraphrase pairs .
+in its simplest form , the alignment can range over individual words , as is often done in machine translation ( quirk , brockett , and dolan 2004 ) .
+in other cases , the alignments range over entire trees ( pang , knight , and marcu 2003 ) or sentence clusters ( barzilay and lee 2003 ) .
+the obtained paraphrases are typically evaluated via human judgments .
+paraphrase pairs are presented to judges who are asked to decide whether they are semantically equivalent , that is , whether they can be generally substituted for one another in the same context without great information loss ( barzilay and lee 2003 ; barzilay and mckeown 2001 ; pang , knight , and marcu 2003 ; bannard and callison-burch 2005 ) .
+in some cases the automatically acquired paraphrases are compared against manually generated ones ( lin and pantel 2001 ) or evaluated indirectly by demonstrating performance increase for a specific application , such as machine translation ( callison-burch , koehn , and osborne 2006 ) .
+unfortunately , manually evaluating paraphrases in this way has at least three drawbacks .
+first , it is infeasible to perform frequent evaluations when assessing incremental system changes or tuning system parameters .
+second , it is difficult to replicate results presented in previous work because there is no standard corpus , and no standard evaluation methodology .
+consequently comparisons across systems are few and far between .
+the third drawback concerns the evaluation studies themselves , which primarily focus on precision .
+recall is almost never evaluated directly in the literature .
+and this is for a good reason : there is no guarantee that participants will identify the same set of paraphrases as each other or with a computational model .
+the problem relates to the nature of the paraphrasing task , which has so far eluded formal definition ( see the discussion in barzilay [ 2003 ] ) .
+such a definition is not so crucial when assessing precision , because subjects are asked to rate the paraphrases without actually having to identify them .
+however , recall might be measured with respect to some set of gold- standard paraphrases which will have to be collected according to some concrete definition .
+in this article we present a resource that could potentially be used to address these problems .
+specifically , we create a monolingual parallel corpus with human paraphrase annotations .
+our working definition of paraphrase is based on word and phrase1 alignments between semantically equivalent sentences .
+other definitions are possible , for instance we could have asked our annotators to identify all constituents that are more or less meaning preserving in our parallel corpus .
+we chose to work with alignments for two reasons .
+first , the notion of alignment appears to be central in paraphrasingmost existing paraphrase induction algorithms rely on alignments either implicitly or explicitly for identifying paraphrase units .
+secondly , research in machine translation , where several gold-standard alignment corpora have been created , shows that word alignments can be identified reliably by annotators ( melamed 1998 ; och and ney 2000b ; mihalcea and pedersen 2003 ; martin , mihalcea , and pedersen 2005 ) .
+we therefore create word alignments similar to those observed in machine translation , namely , featuring one-to-one , one-to-many , many-to-one , and many-to-many links between words .
+alignment blocks larger than one-to-one are used to specify phrase correspondences .
+in the following section we explain how our corpus was created and summarize our annotation guidelines .
+section 3 gives the details of an agreement study , demonstrating that our annotators can identify and align paraphrases reliably .
+we measure agreement using alignment overlap measures from the smt literature , and also introduce a novel agreement statistic for non-enumerable labeling spaces .
+section 4 illustrates how the corpus can be used in paraphrase research , for example , as a test set for evaluating the output of automatic systems or as a training set for the development of paraphrase systems .
+discussion of our results concludes the article .
+corpus creation and annotation .
+our corpus was compiled from three data sources that have been previously used for paraphrase induction ( barzilay and mckeown 2001 ; pang , knight , and marcu 2003 ; dolan , quirk , and brockett 2004 ) : the multiple-translation chinese ( mtc ) corpus , jules vernes twenty thousand leagues under the sea novel ( leagues ) , and the microsoft research ( msr ) paraphrase corpus .
+these are monolingual parallel corpora , aligned at the sentence level .
+both source and target sentences are in english , and express the same content using different surface forms .
+the mtc corpus contains news stories from three sources of journalistic mandarin chinese text.2 these stories were translated into english by 11 translation agencies .
+because the majority of the translators were non-native english speakers , occasionally translations contain syntactic or grammatical errors and are not entirely fluent .
+after inspection , we identified four translators with consistently fluent english , and used their sentences for our corpus .
+the leagues corpus contains two english translations of the french novel twenty thousand leagues under the sea .
+the corpus was created by tagyoung chung and manually aligned at the paragraph level .3 in order to obtain sentence level paraphrase pairs , we sampled from the subset of one-to-one sentence alignments .
+the msr corpus was harvested automatically from online news sources.4 the obtained sentence pairs were further submitted to judges who rated them as being semantically equivalent or not ( dolan , quirk , and brockett 2004 ) .
+we only used semantically equivalent pairs .
+the sentence pairs were filtered for length ( < 50 ) and length ratio ( < 1 : 9 between the shorter and longer sentence ) .
+this was necessary to prune out incorrectly aligned sentences .
+we randomly sampled 300 sentence pairs from each corpus ( 900 in total ) .
+of these , 300 pairs ( 100 per corpus ) were first annotated by two coders to assess inter-annotator agreement .
+the remaining 600 sentence pairs were split into two distinct sets , each consisting of 300 sentences ( 100 per corpus ) , and were annotated by a single coder .
+each coder annotated the same amount of data .
+in addition , we obtained a trial set of 50 sentences from the mtc corpus which was used for familiarizing our annotators with the paraphrase alignment task ( this set does not form part of the corpus ) .
+in sum , we obtained paraphrase annotations for 900 sentence pairs , 300 of which are doubly annotated .
+to speed up the annotation process , the data sources were first aligned automatically and then hand-corrected .
+we used giza + + ( och and ney 2003 ) , a publicly available implementation of the ibm word alignment models ( brown et al. 1993 ) .
+giza + + was trained on the full 993-sentence mtc part1 corpus5 using all 11 translators and all pairings of english translations as training instances .
+this resulted in 55 = 11 ( 12 ^ 1 ) training pairs per sentence and a total of 54,615 training pairs .
+in addition , we augmented the training data with a word-identity lexicon , as proposed by quirk , brockett , and dolan ( 2004 ) .
+this follows standard practice in smt where entries from a bilingual dictionary are added to the training set ( och and ney 2000a ) , except in our case the dictionary is monolingual and specifies that each word type can be paraphrased as itself .
+this is necessary in order to inform giza + + about word identity .
+a common problem with automatic word alignments is that they are asymmetric : one source word can only be aligned to one target word , whereas one target word can be aligned to multiple source words .
+in smt , word alignments are typically predicted in both directions : source-to-target and target-to-source .
+these two alignments are then merged ( symmetrized ) to produce the final alignment ( koehn , och , and marcu 2003 ) .
+symmetrization improves the alignment quality compared to that of a single directional model , while also allowing a greater range of alignment types ( i.e. , some many-toone , one-to-many , and many-to-many alignments can be produced ) .
+analogously , we obtained word alignments in both directions6 which we subsequently merged by taking their intersection .
+this resulted in a high precision and low recall alignment .
+our annotators ( two linguistics graduates ) were given pairs of sentences and asked to show which parts of these were in correspondence by aligning them on a word-byword basis.7 our definition of alignment was fairly general ( och and ney 2003 ) : given a source string x = x1 , ... , xn and a target string y = y1 , ... , ym , an alignment a between two word strings is the subset of the cartesian product of the word positions : we did not provide a formal definition of what constitutes a correspondence .
+as a rule of thumb , annotators were told to align words or phrases x ^ y in two sentences ( x , y ) whenever the words x could be substituted for y in y , or vice versa .
+this relationship should hold within the context of the sentence pair in question : the relation x ^ y need not hold in general contexts .
+trivially this definition allowed for identical word pairs .
+following common practice ( och , tillmann , and ney 1999 ; och and ney 2003 ; daume iii and marcu 2004 ) , we distinguished between sure ( s ) and possible ( p ) alignments , where s ^ p. the intuition here is that sure alignments are clear-cut decisions and typical of genuinely substitutable words or phrases , whereas possible alignments flag a correspondence that has slightly divergent syntax or semantics .
+annotators were encouraged to produce sure alignments .
+they were also instructed to prefer smaller alignments whenever possible , but were allowed to create larger block alignments .
+smaller alignments were generally used to indicate lexical correspondences , whereas block alignments were reserved for non-compositional phrase pairs ( e.g. , idiomatic expressions ) or simply expressions with radically different syntax or vocabulary .
+in cases where information in one sentence was not present in the other , the annotators were asked to leave this information unaligned .
+finally , annotators were given a list of heuristics to help them decide how to make alignments in cases of ambiguity .
+these heuristics handled the alignment of named entities ( e.g. , george bush ) and definite descriptions ( e.g. , the president ) , tenses ( e.g. , had been and shall be ) , noun phrases with mismatching determiners ( e.g. , a man and the man ) , verb complexes ( e.g. , was developed and had been developed ) , phrasal verbs ( e.g. , take up and accept ) , genitives ( e.g. , bushs infrequent speeches and the infrequent speeches by bush ) , pronouns , repetitions , typographic errors , and approximate correspondences .
+for more details , we refer the interested reader to our annotation guidelines .
+human agreement .
+as mentioned in the previous section , 300 sentence pairs ( 100 pairs from each sub- corpus ) were doubly annotated , in order to measure inter-annotator agreement .
+here , we treat one annotator as gold-standard ( reference ) and measure the extent to which the other annotator deviates from this reference .
+word-based measures .
+the standard technique for evaluating word alignments is to represent them as a set of links ( i.e. , pairs of words ) and compare them against gold- standard alignments .
+the quality of an alignment a ( defined in equation ( 1 ) ) compared to reference alignment b can be then computed using standard recall , precision , and f1 measures ( och and ney 2003 ) : to give an example , consider the sentence pairs in figure 2 , whose alignments have been produced by the two annotators a ( left ) and b ( right ) .
+table 1 shows the individual word alignments for each annotator and their type ( sure or possible ) .
+in order to measure f1 , we must first estimate precision and recall ( see equation ( 2 ) ) .
+treating annotator b as the gold standard , | as | = 4 , | bs | i = 5 , 1 | as ^ bp | = 4 , and | ap ^ bs | i = 4 .
+this results in a precision of 44 = 1 , a recall of 45 , and f1 of 21 + o s.8 = 0.89 .
+note that we ignore alignments over identical words ( i.e. , discussed ^ discussed , the ^ the , and ^ and , . ^ . ) .
+phrase-based measures .
+the given definitions are all word-based ; however , our annotators , and several paraphrasing models , create correspondences not only between words but also between phrases .
+to take this into account , we also evaluate these measures over larger blocks ( similar to ayan and dorr [ 2006 ] ) .
+specifically , we extract phrase pairs from the alignments produced by our annotators using a modified version of the standard smt phrase extraction heuristic ( och , tillmann , and ney 1999 ) .
+the heuristic extracts all phrase pairs consistent with the word alignment .
+these include phrase pairs whose words are aligned to each other or nothing , but not to words outside the phrase boundaries.10 the phrase extraction heuristic creates masses of phrase pairs , many of which are of dubious quality .
+this is often due to the inclusion of unaligned words or simply to the extraction of overly-large phrase pairs which might be better decomposed into smaller units .
+for our purposes we wish to be maximally conservative in how we process the data , and therefore we do not extract phrase pairs with unaligned words on their boundaries .
+figure 3 illustrates the types of phrase pairs our extraction heuristic permits .
+here , the pair and reached ^ and arrived at is consistent with the word alignment .
+in contrast , the pair and reached ^ and arrived isnt ; there is an alignment outside the hypothetical phrase boundary which is not accounted for ( reached is also aligned to at ) .
+the phrase pair and reached an ^ and arrived at is consistent with the word alignment ; however it has an unaligned word ( i.e. , an ) on the phrase boundary , which we disallow .
+our phrase extraction procedure distinguishes between two types of phrase pairs : atomic , that is , the smallest possible phrase pairs , and composite , which can be created by combining smaller phrase pairs .
+for example , the phrase pair and reached ^ and arrived at in figure 3 is composite , as it can be decomposed into and ^ and and reached ^ arrived at .
+table 2 shows the atomic and composite phrase pairs extracted from the possible alignments produced by annotators a and b for the sentence pair in figure 2 .
+we compute recall , precision , and f1 over the phrase pairs extracted from the word alignments as follows : validity of phrase pairs according to the phrase extraction heuristic .
+only the leftmost phrase pair is valid .
+the others are inconsistent with the alignment or have an unaligned word on a boundary , respectively , indicated by a cross. where ap and bp are the predicted and reference phrase pairs , respectively , and the atom subscript denotes the subset of atomic phrase pairs , apatom ^ ap .
+as shown in equation ( 3 ) we measure precision and recall between atomic phrase pairs and the full space of atomic and composite phrase pairs .
+this ensures that we do not multiply reward composite phrase pair combinations , 11 while also not unduly penalizing non-matching phrase pairs which are composed of atomic phrase pairs in the reference .
+a potential caveat here concerns the quality of the atomic phrase pairs , which are automatically induced and may not correspond to linguistic intuition .
+to evaluate this , we had two annotators review a random sample of 166 atomic phrase pairs drawn from the mtc corpus ( sure ) , classifying each phrase pair as correct , incorrect , or uncertain given the sentence pair as context .
+from this set , 73 % were deemed correct , 22 % uncertain , and 5 % incorrect . 12 annotators agreed in their decisions 75 % of the time ( using the kappa 13 statistic , their agreement is 0.61 ) .
+this confirms that the phrase-extraction process produces reliable phrase pairs from our word-aligned data ( although we cannot claim that it is exhaustive ) .
+chance-corrected agreement .
+besides precision and recall , inter-annotator agreement is commonly measured using the kappa statistic ( cohen 1960 ) .
+thus is a desirable measure because it is adjusted for agreement due purely to chance : kappa is a suitable agreement measure for nominal data .
+an example would be a classification task , where two coders must assign n linguistic instances ( e.g. , sentences or words ) into one of m categories .
+given this situation , it would be possible for each coder to assign each instance to the same category .
+kappa allows us to quantify whether the coders agree with each other about the category membership of each instance .
+it is relatively straightforward to estimate pr ( a ) it is the proportion of instances on which the two coders agree .
+pr ( e ) requires a model of what would happen if the coders were to assign categories randomly .
+under the assumption that coders r1 and r2 are independent , the chance of them agreeing on the jth category is the product of each of them assigning an instance to that category : pr ( cj | r1 ) pr ( cj | r2 ) .
+either a separate distribution is estimated for each coder ( cohen 1960 ) or the same distribution for all coders ( scott 1955 ; fleiss 1971 ; siegel and castellan 1988 ) .
+we refer the interested reader to di eugenio and glass ( 2004 ) and artstein and poesio ( 2008 ) for a more detailed discussion .
+unfortunately , kappa is not universally suited to every categorization task .
+a prime example is structured labeling problems that allow a wide variety of output categories .
+importantly , the number and type of categories is not fixed in advance and can vary from instance to instance .
+in parsing , annotators are given a sentence for which they must specify a tree , of which there is an exponential number in the sentence length .
+similarly , in our case the space of possible alignments for a sentence pair is also exponential in the input sentence lengths .
+considering these annotations as nominal variables is inappropriate .
+besides , alignments are only an intermediate representation that we have used to facilitate the annotation of paraphrases .
+ideally , we would like to measure agreement over the set of phrase pairs which are specified by our annotators ( via the word alignments ) , not the alignment matrices themselves .
+kupper and hafner ( 1989 ) present an alternative measure similar to kappa that is especiall y designed for sets of variables : also note that we use the term coder instead of the more common rater .
+this is because in our task the annotators must identify ( a.k.a. code ) the paraphrases rather than rate them .
+here , ai and bi are the coders predictions on sentence pair i from our corpus of i sentence pairs .
+each prediction is a subset of the full space of k items .
+expression ( 5 ) measures the agreement ( or concordance ) between coders a and b and follows the general form of kappa from equation ( 4 ) , which is defined analogously with pr ( a ) and pr ( e ) taking the roles of ft and ft0 , but with different definitions .
+kupper and hafner ( 1989 ) developed their agreement measure with medical diagnostic tasks in mind .
+for example , two physicians classify subjects into k = 3 diagnostic categories and wish to find out whether they agree in their diagnoses .
+here , each coder must decide which ( possibly empty ) subset from k categories best describes each subject .
+the size of k is thus invariant with the instance under consideration .
+this is not true in our case , where k will vary across sentence pairs as sentences of different lengths license different numbers of phrase pairs .
+more critically , the formulation in equation ( 5 ) assumes that items in the set are independent : all subsets of the same cardinality as k are equally likely , and no combination is impossible .
+this independence assumption is inappropriate for the paraphrase annotation task .
+the phrase extraction heuristic allows each contiguous span in a sentence to be aligned to either zero or one span in the other sentence ; that is , nominating a phrase pair precludes the choice of many other possible phrase pairs .
+consequently relatively few of the subsets of the full set of possible phrase pairs are valid .
+formally , an alignment can specify only o ( n2 ) phrase pairs from a total set of k = o ( n4 ) possible phrase pairs .
+this disparity in magnitudes leads to increasingly underestimated ft for larger n , namely , limn , ,, , , ft0 = limn , ,, , , o ( n2 ) / o ( n4 ) = 0 .
+the end result is an overestimate of c on longer sentences .
+this is done via the word alignments .
+recall that the annotators start out with alignments from an automatic word- aligner .
+firstly , we develop a distribution to predict how often an annotator changes a cell from the initial alignment matrix .
+we model the number of changes made with a binomial distribution , that is , each local change is assumed independent and has a fixed probability , pr ( edit r , ni , mi ) where r is the coder and ni and mi are the sentence lengths .
+this distribution is fit to each annotators predictions using a linear function over the combined length of two sentences .
+next we sample word alignments .
+each sample starts with the automatic alignment , and each cell is changed with probability pr ( edit ) .
+these changes are binary , swapping alignments for non-alignments and vice versa .
+finally , the phrase-extraction heuristic is run over the alignment matrix to produce a set of phrase pairs .
+this is done for each annotator , a and b , after which we have a sample , ( apatom , bpatom ) .
+each sample is then fed into equation ( 7 ) .
+admittedly , this is not the most accurate prior , as annotators are not just randomly changing the alignment , but instead are influenced by the content expressed by the sentence pair and other factors such as syntactic complexity .
+however , this prior produces estimates for ^ 0 which are several orders of magnitude larger than those using kupper and hafners model of ^ 0 in equation ( 5 ) .
+now , imagine a hypothetical case where ^ = 4 7 = 0.571 ( i.e. , the agreement is the same as before ) , annotator b edits nine alignment cells , but annotator a chooses not to make any edits .
+this leads to an increased estimate of ^ 0 = 0.259 and a decreased c = 0.442 .
+if both annotators were not to make any edits , ^ 0 = 1 and c = oo .
+interestingly , at the other extreme when pr ( edit r = a ) = pr ( edit r = b ) = 1 , agreement is also perfect , ^ 0 = 1 and c = oo .
+this is because only one phrase pair can be extracted which consists of the two full sentences .
+results .
+tables 3 and 4 display agreement statistics on our three corpora using precision , recall , f1 , and c. specifically , we estimate c by aggregating ^ and ^ 0 into corpus- level estimates .
+table 3 shows agreement scores for individual words , whereas table 4 shows agreement for phrase pairs .
+in both cases the agreement is computed over nonidentical word and phrase pairs which are more likely to correspond to paraphrases .
+the agreement figures are broken down into possible ( poss ) and sure alignments ( sure ) for precision and recall .
+when agreement is measured over words , our annotators obtain high f1 on all three corpora ( mtc , leagues , and news ) .
+recall on possibles seems worse on the news corpus when compared to mtc or leagues .
+this is to be expected because this corpus was automatically harvested from the web , and some of its instances may not be representative examples of paraphrases .
+for example , it is common for one sentence to provide considerably more details than the other , despite the fact that both describe the same event .
+the annotators in turn have difficulty deciding whether such instances are valid paraphrases .
+the c scores for the three corpora are in the same ballpark .
+interestingly , c is highest on the news corpus , whereas f1 is lowest .
+whereas precision and recall are normalized by the number of predictions from annotators a and b , respectively , c is normalized by the minimum number of predictions between the two .
+therefore , when the predictions are highly divergent , c will paint a rosier picture than f1 ( which is the combination of precision and recall ) .
+this indeed seems to be the case for the news corpus , where precision and recall have a higher spread in comparison to the other two corpora ( see the poss column in table 3 ) .
+agreement scores tend to be lower when taking phrases into account ( see table 4 ) .
+this is expected because annotators are faced with a more complex task ; they must generally make more decisions : for example , determining the phrase boundaries and how to align their constituent words .
+an exception to this trend is the news corpus where the f1 is higher for phrase pairs than for individual word pairs .
+this is due to the fact that there are many similar sentence pairs in this data .
+these have many identical words and a few different words .
+the differences are often in a clump ( e.g. , person names , verb phrases ) , rather than distributed throughout the sentence .
+the annotators tend to block align these and there is a large scope for disagreement .
+whereas estimating agreement over words heavily penalizes block differences , when phrases are taken into account in the f1 measure , these are treated more leniently .
+note that c is not so lenient , as it measures agreement over the sets of atomic phrase pairs rather than between atomic and composite phrase pairs in the f1 measure .
+this means that under c , choosing different granularities of phrases will be penalized , but would not have been under the f1 measure .
+in figure 4 we show how phrase pairs in the f1 measure .
+this means that under c , choosing different granularities of phrases will be penalized , but would not have been under the f1 measure .
+unfortunately , there are no comparable annotation studies that would allow us to gauge the quality of the obtained agreements .
+the use of precision , recall , and f1 is widespread in smt , but these measures evaluate automatic alignments against a gold standard , rather than the agreement between two or more annotators ( but see melamed [ 1998 ] for an exception ) .
+nevertheless , we would expect the humans to agree more with each other than with giza + + , given that the latter produces many erroneous word alignments and is not specifically tuned to the paraphrasing task .
+table 5 shows agreement between one annotator and giza + + for atomic phrase pairs . 15 we obtained similar results for the other annotator and with the word-based measures .
+as can be seen , humangiza + + agreement is much lower than humanhuman agreement on all three corpora ( compare tables 5 and 4 ) .
+taken together the results in tables 35 show a substantial level of agreement , thus indicating that our definition of paraphrases via word alignments can yield reliable annotations .
+in the following section we discuss how our corpus can be usefully employed in the study of paraphrasing .
+experiments .
+our annotated corpus can be used in a number of ways to help paraphrase research : for example , to inform the linguistic analysis of paraphrases , as a training set for the development of discriminative paraphrase systems , and as a test set for the automatic evaluation of computational models .
+here , we briefly demonstrate some of these uses .
+paraphrase modeling .
+much previous research has focused on lexical paraphrases ( but see lin and pantel [ 2001 ] and pang , knight , and marcu [ 2003 ] for exceptions ) .
+we argue that our corpus should support a richer range of structural ( syntactic ) paraphrases .
+to demonstrate this we have extracted paraphrase rules from our annotations using the grammar induction algorithm from cohn and lapata ( 2007 ) .
+briefly , the algorithm extracts tree pairs from word-aligned text by choosing aligned constituents in a pair of equivalent sentences .
+these pairs are then generalized by factoring out aligned subtrees , thereby resulting in synchronous grammar rules ( aho and ullman 1969 ) with variable nodes .
+we parsed the mtc corpus with bikels ( 2002 ) parser and extracted synchronous rules from the gold-standard alignments .
+a sample of these rules are shown in figure 5 .
+here we see three lexical paraphrases , followed by five structural paraphrases .
+in example 4 , also is replaced with moreover and is moved to the start of the sentence from the pre-verbal position .
+examples 58 show various reordering operations , where the boxed numbers indicate correspondences between non-terminals in the two sides of the rules .
+the synchronous rules in figure 5 provide insight into the process of paraphrasing at the syntactic level , and also a practical means for developing algorithms for paraphrase generationa task which has received little attention to date .
+for instance , we could envisage a paraphrase model that transforms parse trees of an input sentence into parse trees that represent a sentential paraphrase of that sentence .
+our corpus can be used to learn this mapping using discriminative methods ( cowan , ku ^ cerova , and collins 2006 ; cohn and lapata 2007 ) .
+evaluation set .
+as mentioned in section 1 , it is currently difficult to compare competing approaches due to the effort involved in eliciting manual judgments of paraphrase output .
+our corpus could fill the role of a gold-standard test set , allowing for automatic evaluation techniques .
+developing measures for automatic paraphrase evaluation is outside the scope of this article .
+nevertheless , we illustrate how the corpus can be used for this purpose .
+for example we could easily measure the precision and recall of an automatic system against our annotations .
+computing precision and recall for an individual system is not perhaps the most meaningful test , considering the large potential for paraphrasing in a given sentence pair .
+a better evaluation strategy would include a comparison across many systems on the same corpus .
+we could then rank these systems without , however , paying so much attention to the absolute precision and recall values .
+we expect these comparisons to yield relatively low numbers for many reasons .
+first and foremost the task is hard , as shown by our inter-annotator agreement figures in tables 3 and 4 .
+secondly , there may be valid paraphrases that the systems identify but are not listed in our gold standard .
+thirdly , systems may have different biases , for example , towards producing more lexical or syntactic paraphrases , but our comparison would not take this into account .
+despite all these considerations , we believe that comparison against our corpus would treat these systems on an equal footing against the same materials while factoring out nonessential degrees of freedom inherent in human elicitation studies ( e.g. , attention span , task familiarity , background ) .
+we evaluated the performance of two systems against our corpus .
+our first system is simply giza + + trained on the 55,615 sentence pairs described in section 4 .
+the second system uses a co-training-based paraphrase extraction algorithm ( barzilay and mckeown 2001 ) .
+it was also trained on the mtc part 1 corpus , on the same data set used for giza + + , with its default parameters .
+for each system , we filtered the predicted paraphrases to just those which match part of a sentence pair in the test set .
+these paraphrases were then compared to the sure phrase pairs extracted from our manually aligned corpus .
+giza + + s precision is 55 % and recall 49 % ( see table 5 ) .
+the co-training system obtained a precision of 30 % and recall of 16 % .
+to confirm the accuracy of the precision estimate , we performed a human evaluation on a sample of 48 of the predicted paraphrases which were treated as errors .
+of these , 63 % were confirmed as being incorrect and only 20 % were acceptable ( the remaining were uncertain ) .
+the inter- annotator agreement in table 4 can be used as an upper bound for precision and recall ( precision for sure phrase pairs is 67 % and recall 66 % ) .
+these results seem to suggest that a hypothetical paraphrase extractor based on automatic word alignments would obtain performance superior to the co-training approach .
+however , we must bear in mind that the co-training system is highly parametrized and was not specifically tuned to our data set .
+conclusions .
+in this article we have presented a human-annotated paraphrase corpus and argued that it can be usefully employed for the evaluation and modeling of paraphrases .
+we have defined paraphrases as word alignments in a corpus containing pairs of equivalent sentences and shown that these can be reliably identified by annotators .
+in measuring agreement , we used the standard measures of precision , recall , and f1 , but also proposed a novel formulation of chance-corrected agreement for word ( and phrase ) alignments .
+beyond alignment , our formulation could be applied to other structured tasks including parsing and sequence labeling .
+the uses of the corpus are many and varied .
+it can serve as a test set for evaluating the precision and recall of paraphrase induction systems trained on parallel monolingual corpora .
+the corpus could be further used to develop new evaluation metrics for paraphrase acquisition or novel paraphrasing models .
+an exciting avenue for future research concerns paraphrase prediction , that is , determining when and how to paraphrase single sentence input .
+because our corpus contains paraphrase annotations at the sentence level , it could provide a natural test-bed for prediction algorithms .

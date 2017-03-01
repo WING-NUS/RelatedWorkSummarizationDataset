@@ -1,0 +1,191 @@
+exploiting wikipedia as external knowledge for named entity recognition .
+abstract .
+we explore the use of wikipedia as external knowledge to improve named entity recognition ( ner ) .
+our method retrieves the corresponding wikipedia entry for each candidate word sequence and extracts a category label from the first sentence of the entry , which can be thought of as a definition part .
+these category labels are used as features in a crf-based ne tagger .
+we demonstrate using the conll 2003 dataset that the wikipedia category labels extracted by such a simple method actually improve the accuracy of ner .
+introduction .
+it has been known that gazetteers , or entity dictionaries , are important for improving the performance of named entity recognition .
+however , building and maintaining high-quality gazetteers is very time consuming .
+many methods have been proposed for solving this problem by automatically extracting gazetteers from large amounts of texts ( riloff and jones , 1999 ; thelen and riloff , 2002 ; etzioni et al. , 2005 ; shinzato et al. , 2006 ; talukdar et al. , 2006 ; nadeau et al. , 2006 ) .
+however , these methods require complicated induction of patterns or statistical methods to extract high-quality gazetteers .
+we have recently seen a rapid and successful growth of wikipedia ( http : / / www.wikipedia.org ) , which is an open , collaborative encyclopedia on the web .
+wikipedia has now more than 1,700,000 articles on the english version ( march 2007 ) and the number is still increasing .
+since wikipedia aims to be an encyclopedia , most articles are about named entities and they are more structured than raw texts .
+although it cannot be used as gazetteers directly since it is not intended as a machine readable resource , extracting knowledge such as gazetteers from wikipedia will be much easier than from raw texts or from usual web texts because of its structure .
+it is also important that wikipedia is updated every day and therefore new named entities are added constantly .
+we think that extracting knowledge from wikipedia for natural language processing is one of the promising ways towards enabling large-scale , real-life applications .
+in fact , many studies that try to exploit wikipedia as a knowledge source have recently emerged ( bunescu and pasca , 2006 ; toral and munoz , 2006 ; ruiz-casado et al. , 2006 ; ponzetto and strube , 2006 ; strube and ponzetto , 2006 ; zesch et al. , 2007 ) .
+as a first step towards such approach , we demonstrate in this paper that category labels extracted from the first sentence of a wikipedia article , which can be thought of as the definition of the entity described in the article , are really useful to improve the accuracy of ner .
+for example , franz fischler has the article with the first sentence , franz fischler ( born september 23 , 1946 ) is an austrian politician .
+we extract politician from this sentence as the category label for franz fischler .
+we use such category labels as well as matching information as features of a crf-based ne tagger .
+in our experiments using the conll 2003 ner dataset ( tjong et al. , 2003 ) , we demonstrate that we can improve performance by using the wikipedia features by 1.58 points in f-measure from the baseline , and by 1.21 points from the model that only uses the gazetteers provided in the conll 2003 dataset .
+our final model incorporating all features achieved 88.02 in f-measure , which means a 3.03 point improvement over the baseline , which does not use any gazetteer-type feature .
+the studies most relevant to ours are bunescu and pasca ( 2006 ) and toral and munoz ( 2006 ) .
+bunescu and pas ca ( 2006 ) presented a method of disambiguating ambiguous entities exploiting internal links in wikipedia as training examples .
+the difference however is that our method tries to use wikipedia features for ner , not for disambiguation which assumes that entity regions are already found .
+they also did not focus on the first sentence of an article .
+also , our method does not disambiguate ambiguous entities , since accurate disambiguation is difficult and possibly introduces noise .
+there are two popular ways for presenting ambiguous entities in wikipedia .
+the first is to redirect users to a disambiguation page , and the second is to redirect users to one of the articles .
+we only focused on the second case and did not utilize disambiguation pages in this study .
+this method is simple but works well because the article presented in the second case represents in many cases the major meaning of the ambiguous entities and therefore that meaning frequently appears in a corpus .
+toral and munoz ( 2006 ) tried to extract gazetteers from wikipedia by focusing on the first sentences .
+however , their way of using the first sentence is slightly different .
+we focus on the first noun phrase after be in the first sentence , while they used all the nouns in the sentence .
+by using these nouns and wordnet , they tried to map wikipedia entities to abstract categories ( e.g. , loc , per org , misc ) used in usual ner datasets .
+we on the other hand use the obtained category labels directly as features , since we think the mapping performed automatically by a crf model is more precise than the mapping by heuristic methods .
+finally , they did not demonstrate the usefulness of the extracted gazetteers in actual ner systems .
+the rest of the paper is organized as follows .
+we first explain the structure of wikipedia in section 2 .
+next , we introduce our method of extracting and using category labels in section 3 .
+we then show the experimental results on the conll 2003 ner dataset in section 4 .
+finally , we discuss the possibility of further improvement and future work in section 5.2 wikipedia basic structure .
+an article in wikipedia is identified by a unique name , which can be obtained by concatenating the words in the article title with underscore .
+for example , the unique name for the article , david beckham , is david beckham .
+we call these unique names entity names in this paper .
+wikipedia articles have many useful structures for knowledge extraction such as headings , lists , internal links , categories , and tables .
+these are marked up by using the wikipedia syntax in source files , which authors edit .
+see the wikipedia entry identified by how to edit a page for the details of the markup language .
+we describe two important structures , redirections and disabiguation pages , in the following sections .
+redirection .
+some entity names in wikipedia do not have a substantive article and are only redirected to an article with another entity name .
+this mechanism is called redirection .
+redirections are marked up as # redirect [ [ a b c ] ] in source files , where [ [ ... ] ] is a syntax for a link to another article in wikipedia ( internal links ) .
+if the source file has such a description , users are automatically redirected to the article specified by the entity name in the brackes ( a b c for the above example ) .
+redirections are used for several purposes regarding ambiguity .
+for example , they are used for spelling resolution such as from apples to apple and abbreviation resolution such as from mit to massachusetts institute of technology .
+they are also used in the context of more difficult disambiguations described in the next section .
+disambiguation pages .
+some authors make a disambiguation page for an ambiguous entity name . '
+a disambiguation page typically enumerates possible articles for that name .
+data .
+snapshots of the entire contents of wikipedia are provided in xml format for each language version .
+we used the english version at the point of february 2007 , which includes 4,030,604 pages.2 we imported the data into a text search engine3 and used it for the research .
+method .
+in this section , we describe our method of extracting category labels from wikipedia and how to use those labels in a crf-based ner model .
+generating search candidates .
+our purpose here is to find the corresponding entity in wikipedia for each word sequence in a sentence .
+for example , given the sentence , rare jimi hendrix song draft sells for almost $ 17,000 , we would like to know that jimi hendrix is described in wikipedia and extract the category label , musician , from the article .
+however , considering all possible word sequences is costly .
+we thus restricted the candidates to be searched to the word sequences of no more than eight words that start with a word containing at least one capitalized letter.4 finding category labels .
+we converted a candidate word sequence to a wikipedia entity name by concatenating the words with underscore .
+although there is no strict formatting rule in wikipedia , the convention is to start an article with a short sentence defining the entity the article describes .
+for example , the article for jimi hendrix starts with the sentence , jimi hendrix ( november 27 , 1942 , seattle , washington - september 18 , 1970 , london , england ) was an american guitarist , singer and songwriter .
+most of the time , the head noun of the noun phrase just after be is a good category label .
+we thus tried to extract such head nouns from the articles .
+first , we eliminated unnecessary markup such as italics , bold face , and internal links from the article .
+we also converted the markup for internal links like [ [ jimi hendrix | hendrix ] ] to hendrix , since the part after | , if it exists , represents the form to be displayed in the page .
+we also eliminated template markup , which is enclosed by { { and } } , because template markup sometimes comes at the beginning of the article and makes the extraction of the first sentence impossible.6 we then divided the article into lines according to the new line code , \ n , < br > html tags , and a very simple sentence segmentation rule for period ( . ) .
+next , we removed lines that match regular expression / \ s * : / to eliminate the lines such as : these sentences are not the content of the article but often placed at the beginning of an article .
+fortunately , they are usually marked up using : , which is for indentation .
+after the preprocessing described above , we extracted the first line in the remaining lines as the first sentence from which we extract a category label .
+we then performed pos tagging and phrase chunking .
+tagchunk ( daume iii and marcu , 2005 ) 7 was used as a pos / chunk tagger .
+next , we extracted the first noun phrase after the first is , was , are , or were in the sentence .
+basically , we extracted the last word in the noun phrase as the category label .
+however , we used the second noun phrase when the first noun phrase ended with one , kind , sort , or type , or it ended with name followed by of .
+these rules were for treating examples like : jazz is [ a kind ] np [ of ] pp [ music ] np characterized by swung and blue notes .
+in these cases , we would like to extract the head noun of the noun phrase after of ( e.g. , music in instead of kind for the above example ) .
+however , we would like to extract name itself when the sentence was like ichiro is a japanese given name .
+we did not utilize wikipedias category sections in this study , since a wikipedia article can have more than one category , and many of them are not clean hypernyms of the entity as far as we observed .
+we will need to select an appropriate category from the listed categories in order to utilize the category section .
+we left this task for future research .
+using category labels as features .
+if we could find the category label for the candidate word sequence , we annotated it using iob2 tags in the same way as we represent named entities .
+in iob2 tagging , we use b-x , i-x , and o tags , where b , i , and o means the beginning of an entity , the inside of an entity , and the outside of entities respectively .
+suffix x represents the category of an entity.8 in this case , we used the extracted category label as the suffix .
+for example , if we found that jimi hendrix was in wikipedia and extracted guitarist as the category label , we annotated the sentence , rare jimi hendrix song draft sells for almost $ 17,000 , as : rareo jimib-guitarist hendrixi-guitarist songo drafto foro almosto $ 17,000 .
+note that we adopted the leftmost longest match if there were several possible matchings .
+these iob2 tags were used in the same way as other features in our ne tagger using conditional random fields ( crfs ) ( lafferty et al. , 2001 ) .
+for example , we used a feature such as the wikipedia tag is b-guitarist and the ne tag is b-per .
+experiments .
+in this section , we demonstrate the usefulness of the extracted category labels for ner .
+data and setting .
+we used the english dataset of the conll 2003 shared task ( tjong et al. , 2003 ) .
+it is a corpus of english newspaper articles , where four entity categories , per , loc , org , and misc are annotated .
+it consists of training , development , and testing sets ( 14,987 , 3,466 , and 3,684 sentences , respectively ) .
+we concatenated the sentences in the same document according to the document boundary markers provided in the dataset .
+this generated 964 documents for the training set , 216 documents for the development set , and 231 documents for the testing set .
+although automatically assigned pos and chunk tags are also provided in the dataset , we used tagchunk ( daume iii and marcu , 2005 ) 10 to assign pos and chunk tags , since we observed that accuracy could be improved , presumably due to the quality of the tags .
+we used the features summarized in table 1 as the baseline feature set .
+these are similar to those used in other studies on ner .
+we omitted features whose surface part described in table 1 occurred less than twice in the training corpus .
+gazetteer files for the four categories , per ( 37,831 entries ) , loc ( 10,069 entries ) , org ( 3,439 entries ) , and misc ( 3,045 entries ) , are also provided in the dataset .
+we compiled these files into one gazetteer , where each entry has its entity category , and used it in the same way as the wikipedia feature described in section 3.3 .
+we will compare features using this gazetteer with those using wikipedia in the following experiments . 9we used sentence concatenation because we found it improves the accuracy in another study ( kazama and torisawa , 2007 ) .
+we used crf + + ( ver . 0.44 ) 12 as the basis of our implementation of crfs .
+we implemented scaling , which is similar to that for hmms ( see for instance ( rabiner , 1989 ) ) , in the forward-backward phase of crf training to deal with long sequences due to sentence concatenation . 13 we used gaussian regularization to avoid overfitting .
+the parameter of the gaussian , ^ 2 , was tuned using the development set . 14 we stopped training when the relative change in the log-likelihood became less than a pre-defined threshold , 0.0001 , for at least three iterations .
+category label finding .
+table 2 summarizes the statistics of category label finding for the training set .
+table 3 lists examples of the extracted categories .
+as can be seen , we could extract more than 1,200 distinct category labels .
+these category labels seem to be useful , although there is no guarantee that the extracted category label is correct for each candidate .
+feature comparison .
+we compared the following features in this experiment .
+gazetteer match ( gaz m ) this feature represents the matching with a gazetteer entry by using b , i , and o tags .
+that is , this is the gazetteer version of wp m below .
+gazetteer category label ( gaz c ) this feature represents the matching with a gazetteer entry and its category by using b-x , i-x , and o tags , where x is one of per , loc , org , and misc .
+that is , this is the gazetteer version of wp c below .
+wikipedia match ( wp m ) this feature represents the matching with a wikipedia entity by using b , i , and o tags .
+wikipedia category label ( wp c ) this feature represents the matching with a wikipedia entity and its category in the way described section in 3.3 .
+note that this feature only fires when the category label is successfully extracted from the wikipedia article .
+for these gaz m , gaz c , wp m , and wp c , we generate the node features , the edge features , the bigram node features , and the bigram edge features , as described in table 1 .
+table 4 shows how many matches ( the leftmost longest matches that were actually output ) were found for gaz m , wp m , and wp c .
+we omitted the numbers for gaz c , since they are same as gaz m .
+we can see that wikipedia had more matches than the gazetteer , and covers more named entities ( more than 70 % of the nes in the training corpus ) .
+the overlap between the gazetteer matches and the wikipedia matches was moderate as the last row indicates ( 5,664 out of 18,617 matches ) .
+this indicates that wikipedia has many entities that are not listed in the gazetteer .
+we then compared the baseline model ( baseline ) , which uses the feature set in table 1 , with the following models to see the effect of the gazetteer features and the wikipedia features .
+the results for model ( e ) show that we can improve accuracy further , by using the gazetteer features and the wikipedia features together .
+model ( e ) achieved 87.67 in f-measure , which is better than those of ( b ) and ( d ) .
+this result coincides with the fact that the overlap between the gazetteer feature and the wikipedia feature was not so large .
+if we consider model ( b ) a practical baseline , we can say that the wikipedia features improved the accuracy in f-measure by 1.21 points .
+we can also see that the effect of the gazetteer features and the wikipedia features were consistent irrespective of categories ( i.e. , per , loc , org , or misc ) and performance measures ( i.e. , precision , recall , or f-measure ) .
+this indicates that gazetteer- type features are reliable as features for ner .
+the final model , ( f ) , achieved 88.02 in f- measure .
+this is greater than that of the baseline by 3.03 points , showing the usefulness of the gazetteer type features .
+effect of training size .
+we observed in the previous experiment that the matching information alone was not useful .
+however , the situation may change if the size of the training data becomes small .
+we thus observed the effect of the training size for the wikipedia features wp m and wp c ( we used ^ 2 = 10.24 ) .
+figure 1 shows the result .
+as can be seen , the matching information had a slight positive effect when the size of training data was small .
+for example , it improved f-measure by 0.8 points from the baseline at 200 documents .
+however , the superiority of category labels over the matching information did not change .
+the effect of category labels became greater as the training size became smaller .
+its effect compared with the matching information alone was 3.01 points at 200 documents , while 1.91 points at 964 documents ( i.e. , the whole training data ) .
+improvement and error analysis .
+we analyze the improvements and the errors caused by using the wikipedia features in this section .
+we compared the output of ( b ) and ( e ) for the development set .
+there were 5,942 named entities in the development set .
+we assessed how the labeling for these entities changed between ( b ) and ( e ) .
+note that the labeling for 199 sentences out of total 3,466 sentences was changed .
+table 6 shows the breakdown of the improvements and the errors. inc in the table means that the model could not label the entity correctly , i.e. , the model could not find the entity region at all , or it assigned an incorrect category to the entity. cor means that the model could label the entity correctly .
+the column , inc * cor , for example , has the numbers for the entities that were labeled incorrectly by ( b ) but labeled correctly by ( e ) .
+we can see from the column , num , that the number of improvements by ( e ) exceeded the number of errors introduced by ( e ) ( 102 vs. 56 ) .
+table 6 also shows how the gazetteer feature , gaz c , and the wikipedia feature , wp c , fired in each case .
+we mean that the gazetteer feature fired by using g , and that the wikipedia feature fired by using w. g and w mean that the feature did not fire .
+as is the case for other machine learning methods , it is difficult to find a clear reason for each improvement or error .
+however , we can see that the number of g n w exceeded those of other cases in the case of inc * cor , meaning that the wikipedia feature contributed the most .
+finally , we show an example of case inc cor in figure 2 .
+we can see that gazzetta dello sport in the sentence was correctly labeled as an entity of org category by model ( e ) , because the wikipedia feature identified it as a newspaper entity.an issue , which we should treat , is the disambiguation of ambiguous entities .
+our method worked well although it was very simple , presumably because of the following reason .
+( 1 ) if a retrieved page is a disambiguation page , we cannot extract a category label and critical noise is not introduced .
+( 2 ) if a retrieved page is not a disambiguation page , it will be the page describ- ing the major meaning determined by the agreement of many authors .
+the extracted categories are use- ful for improving accuracy because the major mean- ing will be used frequently in the corpus .
+how- ever , it is clear that disambiguation techniques are required to achieve further improvements .
+in ad- dition , if wikipedia grows at the current rate , it is possible that almost all entities become ambiguous and a retrieved page is a disambiguation page most of the time .
+we will need a method for finding the most suitable article from the articles listed in a disambiguation page .
+an interesting point in our results is that wikipedia category labels improved accuracy , although they were much more specific ( more than 1,200 categories ) than the four categories of the conll 2003 dataset .
+the correlation between a wikipedia category label and a category label of ner ( e.g. , musician to per ) was probably learned by a crf tagger .
+however , the merit of using such specific wikipedia labels will be much for improvement .
+conclusion .
+we tried to exploit wikipedia as external knowledge to improve ner .
+we extracted a category label from the first sentence of a wikipedia article and used it as a feature of a crf-based ne tagger .
+the experiments using the conll 2003 ner dataset demonstrated that category labels extracted by such a simple method really improved accuracy .
+however , disambiguation techniques will become more important as wikipedia grows or if we aim at more fine- grained ner .
+we thus would like to incorporate a disambiguation technique into our method in future work .
+exploiting wikipedia structures such as disambiguation pages and link structures will be the key in that case as well .

@@ -1,0 +1,10 @@
+(claim)#our focus in this section is on describing the properties of the two previous systems for reconstructing ancient word forms to which we compare our method .
+(claim)#citations for other related work , such as similar approaches to using faithfulness and markedness features , appear in the body of the paper .
+0#(oakes 2000)#in $1 , the word forms in a given protolanguage are reconstructed using a viterbi multialignment between a small number of its descendant languages . the alignment is computed using handset parameters . deterministic rules characterizing changes between pairs of observed languages are extracted from the alignment when their frequency is higher than a threshold , and a proto-phoneme inventory is built using linguistically motivated rules and parsimony . a reconstruction of each observed word is first proposed independently for each language . if at least two reconstructions agree , a majority vote is taken , otherwise no reconstruction is proposed .
+(claim)#this approach has several limitations .
+(claim)#first , it is not tractable for larger trees , since the time complexity of their multi-alignment algorithm grows exponentially in the number of languages .
+(claim)#second , deterministic rules , while elegant in theory , are not robust to noise : even in experiments with only four daughter languages , a large fraction of the words could not be reconstructed .
+0#(bouchard cote et al. 2008)#in $1 , a stochastic model of sound change is used and reconstructions are inferred by performing probabilistic inference over an evolutionary tree expressing the relationships between languages .
+(claim)#the model does not support generalizations across languages , and has no way to capture phonotactic regularities within languages .
+(claim)#as a consequence , the resulting method does not scale to large phylogenies .
+(claim)#the work we present here addresses both of these issues , with a richer model and faster inference allowing improved reconstruction and increased scale .

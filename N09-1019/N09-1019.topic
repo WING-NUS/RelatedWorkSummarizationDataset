@@ -1,0 +1,19 @@
+<topic index> 0 </topic index>
+<title> named entity recognition </title>
+<keywords> named;entities;recognition;languages; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> supervised approaches </title>
+<keywords> supervised;approaches; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> semi-supervised approaches </title>
+<keywords> semi-supervised;co-training;approaches; </keywords>
+
+<topic index> 0.3 </topic index>
+<title> the use of extremely large corpora </title>
+<keywords> use;large;web;data;corpora; </keywords>
+
+<topic index> 1 </topic index>
+<title> cross-document coreference </title>
+<keywords> coreference;generative;inference;cross-document;discriminative;Gibbs sampling;Markov chain; </keywords>

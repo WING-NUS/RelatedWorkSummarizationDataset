@@ -1,0 +1,61 @@
+cross-language text classification .
+introduction .
+our goal in cross-language text classification ( cltc ) is to use english training data to classify czech documents ( although the concepts presented here are applicable to any language pair ) .
+cltc is an off-line problem , and the authors are unaware of any previous work in this area .
+cltc is motivated by both the non-availability of czech training data ( the case , presently , in our dataset ) and the possibility of leveraging different topic distributions in different languages to improve overall classification for information retrieval .
+consider , for example , that english speakers tend to contribute more to some topics than their czech counterparts ( e.g. , to discuss london more than prague ) , so that , having only documents in english , we may expect to do poorly at identifying topics like prague .
+czech speakers , on the other hand , often talk about prague , so that by leveraging czech data , we might expect to improve on detecting the topic prague in english speakers ; and prague in english speakers is exactly the sort of thesaurus label which information seekers are most interested in because it is rare .
+accordingly , while a lack of czech training data presently necessitates cltc , we would have no reason to warrant the method s abandonment if such data were to suddenly become available .
+our dataset is a collection of manually transcribed , spontaneous , conversational speech in english and czech .
+english transcripts have human assigned labels from a hierarchical thesaurus of approximately 40,000 labels .
+presently , labeled czech data is not available for classifier training .
+the hierarchy may be divided into two principle branches , containing 1 ) concept labels ( e.g. , education ) and 2 ) pre- coordinated place-date labels ( e.g. , germany , 1914 1918 ) .
+method .
+a few methods present themselves for cltc .
+as we have training data only in english , we may translate all of the czech data features into english for classification ( we refer to this as english sided classification ) .
+alternatively , we may translate all english training features into czech , before classifying in czech .
+finally , we may classify in both directions and combine the evidence .
+we here confine ourselves to english sided classification , although the concepts may naturally be extended ( mutatis mutandis ) to the czech and two sided approaches .
+a vectors subscript denotes the language from which the term frequencies were originally drawn ( e.g. , ee denotes a feature vector of english term frequencies that were drawn from an english document ) .
+the principle novelty of english sided cltc then is that , given feature vectors ee and c . , we must produce translated testing vectors , e . , suitable for classification .
+the matrix e represents a probabilistic dictionary mapping between czech and english terms , such that the ( i , j ) element represents the probability that an english word ei is the translation of the czech word cj .
+by inspection , we see that e. may be reasonably approximated by ec .
+pz ~ e . , where e. is the left matrix product of the probabilistic dictionary matrix e and the untranslated czech feature vector c ..
+having attained a set of training vectors ee ( via normal indexing ) and testing vectors e . ( via probabilistic word translation ) , we are free to continue with classification as before in the monolingual case .
+before documents are indexed , they are parsed and fed into morpha [ 1 ] and the czech feature-based tagger [ 3 ] for lemmatization .
+lemmatization is motivated by both the disparity in morphological richness between english and czech ( which increases the granularity , and thus the noise of translation ) and the expectation that most of the semantic information associated with words ( from which we infer thesaurus labels ) is as present in their base forms as it is in their inflections .
+the base of the probabilistic dictionary is taken from version 1.0 of the prague czech-english dependency treebank ( pcedt ) [ 4 ] , which contains conditional word-translation probabilities for 46,150 word translation pairs .
+the dictionary has been derived from a parallel czech-english corpus based on reader s digest stories , technical texts , and the translation of the penn treebank s wsj portion into czech .
+ibm model 3 has been used in the extraction , and data has been subsequently filtered [ 2 ] to avoid most of the noise caused by relatively small datasets .
+indexing proceeds on the english documents by first checking if the term is already present in the probabilistic dictionary .
+if it is , the term s frequency is incremented .
+if the base form for term w is not present in the dictionary , we hope that the term might be a relevant feature sans translation , and therefore augment e with p ( ew | cw ) = 1 before incrementing w s term frequency .
+we then index the documents in czech , although here it is unnecessary to augment the dictionary for previously unseen words ( i.e. , words not seen in the training documents ) , as we do not expect to infer a thesaurus label from features never observed in training .
+the indexed czech vectors are probabilistically translated via left matrix multiplication of e and classified using knn with symmetric-okapi .
+from informal monolingual trials on held out english data , we determined a reasonable choice to bek = 20 .
+evaluation .
+there is currently no labeled czech data in our dataset .
+to evaluate our implementation , english sided classification was run on three disjoint segments of 25 czech sentences each .
+the segment size was chosen to have roughly 400 words ( the average number of words in three minutes of interview ) .
+the segments and their ten highest ranked labels were then given to a native czech speaker for manual relevance assessment .
+using the same training set , monolingual english classification was run on four similarly partitioned test segments .
+the relevance of many labels could not be determined by inspection ( e.g. , poland , 1945 was hypothesized and , while the text made no explicit mention of poland in 1945 , the label was not ruled out ) .
+these questionable labelings were all simply assumed to be non-relevant .
+table 1 lists precision calculations for both the english sided czech experiments and monolingual english experiments .
+precision was calculated over the five and ten highest ranked thesaurus labels ( the complete set ) as well as the five highest concept labels alone ( that is , without the pre-coordinated place-date labels ) .
+place-date labels may reasonably be excluded from consideration because it is nearly always impossible to assess their relevance to short text segments .
+on concept labels , the cross-language system performed at 73 % of the monolingual precision .
+consider every label assignment to be an independent trial with probability of success p .
+now , p will vary across thesaurus labels , but the largest p , pl , will correspond to the label most commonly seen in the training data .
+if we were to randomly assign any one of the labels to a segment , pl would represent an upper bound on the probability of this label being relevant .
+in this spirit , we can consider pl to be an upper bound on the probability of success in a series of n bernoulli trials , such that an upper bound on the chance probability of obtaining r or more successes in n trials is .
+note that for most p , p pl , so that we are strongly biasing the test against our method .
+from inspection , we found pl on all labels , pla = 954 / 43104 and pl on concepts , plc = 954 / 28896 ( both corresponding to the label extended family members ) .
+the penultimate row of table 1 lists the p-values calculated for each english sided experiment using equation 1 .
+we observe that our method is successfully classifying segments across the language barrier .
+this is likewise confirmed by the final row of table 1 , which lists an upper bound on the expected precision for any of the experiments ( an interpretation of pl ) .
+conclusions and future work .
+having introduced the problem of cltc , we discussed some of its salient features and potential methods for its solution .
+our implementation was outlined and preliminary feedback suggests that it is already meeting with some success .
+future work will be prompted by the availability of additional testing data , possibly through machine translation of available labeled segments ( i.e. , to produce labeled pseudo-czech ) .
+this data will allow more extensive evaluation , parameter optimization on held out data , and two sided classifier combination studies .

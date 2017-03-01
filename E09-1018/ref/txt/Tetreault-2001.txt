@@ -1,0 +1,259 @@
+a corpus-based evaluation of centering and pronoun resolution .
+abstract .
+in this paper we compare pronoun resolution algorithms and introduce a centering algorithm ( left- right centering ) that adheres to the constraints and rules of centering theory and is an alternative to brennan , friedman , and pollard 's ( 1987 ) algorithm .
+we then use the left-right centering algorithm to see if two psycholinguistic claims on cf-list ranking will actually improve pronoun resolution accuracy .
+our results from this investigation lead to the development of a new syntax- based ranking of the cf-list and corpus-based evidence that contradicts the psycholinguistic claims .
+introduction .
+the aims of this paper are to compare implementations of pronoun resolution algorithms automatically on a common corpus and to see if results from psycholinguistic experiments can be used to improve pronoun resolution .
+many hand-tested corpus evaluations have been done in the past ( e.g. , walker 1989 ; strube 1998 ; mitkov 1998 ; strube and hahn 1999 ) , but these have the drawback of being carried out on small corpora .
+while manual evaluations have the advantage of allowing the researcher to examine the data closely , they are problematic because they can be time consuming , generally making it difficult to process corpora that are large enough to provide reliable , broadly based statistics .
+with a system that can run various pronoun resolution algorithms , one can easily and quickly analyze large amounts of data and generate more reliable results .
+in this study , this ability to alter an algorithm slightly and test its performance is central .
+we first show the attractiveness of the left-right centering algorithm ( henceforth lrc ) ( tetreault 1999 ) given its incremental processing of utterances , psycholinguistic plausibility , and good performance in finding the antecedents of pronouns .
+the algorithm is tested against three other leading pronoun resolution algorithms : hobbs 's naive algorithm ( 1978 ) , s-list ( strube 1998 ) , and bfp ( brennan , friedman , and pollard 1987 ) .
+next we use the conclusions from two psycholinguistic experiments on ranking the cf-list , the salience of discourse entities in prepended phrases ( gordon , grosz , and gilliom 1993 ) and the ordering of possessor and possessed in complex nps ( gordon et al. 1999 ) , to try to improve the performance of lrc .
+we begin with a brief review of the four algorithms to be compared ( section 2 ) .
+we then discuss the results of the corpus evaluation ( sections 3 and 4 ) .
+finally , we show that the results from two psycholinguistic experiments , thought to provide a better ordering of the cf-list , do not improve lrc 's performance when they are incorporated ( section 5 ) .
+algorithms .
+hobbs 's algorithm .
+hobbs ( 1978 ) presents two algorithms : a naive one based solely on syntax , and a more complex one that includes semantics in the resolution method .
+the naive one ( henceforth , the hobbs algorithm ) is the one analyzed here .
+unlike the other three algorithms analyzed in this project , the hobbs algorithm does not appeal to any discourse models for resolution ; rather , the parse tree and grammatical rules are the only information used in pronoun resolution .
+the hobbs algorithm assumes a parse tree in which each np node has an n type node below it as the parent of the lexical object .
+a match is " found " when the np in question matches the pronoun in number , gender , and person .
+the algorithm amounts to walking the parse tree from the pronoun in question by stepping through each np and s on the path to the top s and running a breadth-first search on np 's children left of the path .
+if a referent cannot be found in the current utterance , then the breadth-first strategy is repeated on preceding utterances .
+hobbs did a hand-based evaluation of his algorithm on three different texts : a history chapter , a novel , and a news article .
+four pronouns were considered : he , she , it , and they .
+cases where it refers to a nonrecoverable entity ( such as the time or weather ) were not counted .
+the algorithm performed successfully on 88.3 % of the 300 pronouns in the corpus .
+accuracy increased to 91.7 % with the inclusion of selectional constraints .
+centering theory and bfp 's algorithm .
+centering theory is part of a larger theory of discourse structure developed by grosz and sidner ( 1986 ) .
+these researchers assert that discourse structure has three components : ( 1 ) a linguistic structure , which is the structure of the sequence of utterances ; the intentional structure , which is a structure of discourse-relevant purposes ; and the attentional state , which is the state of focus .
+the attentional state models the discourse participants ' focus of attention determined by the other two structures at any one time .
+also , it has global and local components that correspond to the two levels of discourse coherence .
+centering models the local component of attentional state namely , how the speaker 's choice of linguistic entities affects the inference load placed upon the hearer in discourse processing .
+for example , referring to an entity with a pronoun signals that the entity is more prominently in focus .
+as described by brennan , friedman , and pollard ( 1987 ) ( henceforth , bfp ) and walker , iida , and cote ( 1994 ) , entities called centers link an utterance with other utterances in the discourse segment .
+each utterance within a discourse has one backward- looking center ( cb ) and a set of forward-looking centers ( cf ) .
+the cf set for an utterance l / 0 is the set of discourse entities evoked by that utterance .
+the cf set is ranked according to discourse salience ; the most accepted ranking is by grammatical role ( by subject , direct object , indirect object ) .
+the highest-ranked element of this list is called the preferred center ( cp ) .
+the cb represents the most highly ranked element of the previous utterance that is found in the current utterance .
+essentially , it serves as a link between utterances .
+abrupt changes in discourse topic are reflected by a change of cb between utterances .
+in discourses where the change of cb is minimal , the cp of the utterance represents a prediction of what the cb will be in the next utterance .
+constraints .
+in addition , they proposed the following rules : walker ( 1989 ) compared hobbs and bfp on three small data sets using hand evaluation .
+the results indicated that the two algorithms performed equivalently over a fictional domain of 100 utterances ; and hobbs outperformed bfp over domains consisting of newspaper articles ( 89 % to 79 % ) and a task domain ( tasks ) ( 51 % to 49 % ) .
+the s-list approach .
+the third approach ( strube 1998 ) discards the notions of backward- and forward- looking centers but maintains the notion of modeling the attentional state .
+this method , the s-list ( salience list ) , was motivated by the bfp algorithm 's problems with incrementality and computational overhead ( it was also difficult to coordinate the algorithm with intrasentential resolution ) .
+the s-list .
+the model has one structure , the s-list , which " describes the attentional state of the hearer at any given point in processing a discourse " ( strube 1998 , page 1252 ) .
+at first glance , this definition is quite similar to that of a cf-list ; however , the two differ in ranking and composition .
+first , the s-list can contain elements from both the current and previous utterance while the cf-list contains elements from the previous utterance alone .
+second , the s-list 's elements are ranked not by grammatical role but by information status and then by surface order .
+the elements of the s-list are separated into three information sets � hearer-old discourse entities ( old ) , mediated discourse entities ( med ) , and hearer-new discourse entities ( new ) � all of which are based on prince 's ( 1981 ) familiarity scale .
+the three sets are further subdivided : old consists of evoked and unused entities ; med consists of inferrables , containing inferrables , and anchored brand-new discourse intrasentential entities ; new consists solely of brand-new entities .
+what sorts of nps fall into these categories ?
+pronouns and other referring expressions , as well as previously mentioned proper names , are evoked .
+unused entities are proper names .
+inferrables are entities that are linked to some other entity in the hearer 's knowledge , but indirectly .
+anchored brand-new discourse entities have as their anchor an entity that is old .
+in short , the s-list method continually inserts new entities into the s-list in their proper positions and " cleanses " the list after each utterance to purge entities that are unlikely to be used again in the discourse .
+pronoun resolution is a simple lookup in the s-list .
+strube did perform a hand test of the s-list algorithm and the bfp algorithm on three short stories by hemingway and three articles from the new york times .
+bfp , with intrasentential centering added , successfully resolved 438 pronouns out of 576 ( 76 % ) .
+the s-list approach performed much better ( 85 % ) .
+left-right centering algorithm .
+left-right centering ( tetreault 1999 ) is an algorithm built upon centering theory 's constraints and rules as detailed in grosz , joshi , and weinstein ( 1995 ) .
+the creation of the lrc algorithm is motivated by bfp 's limitation as a cognitive model in that it makes no provision for incremental resolution of pronouns ( kehler 1997 ) .
+psycholinguistic research supports the claim that listeners process utterances one word at a time .
+therefore , when a listener hears a pronoun , he or she will try to resolve it immediately ; if new information appears that makes the original choice incorrect ( such as a violation of binding constraints ) , the listener will go back and find a correct antecedent .
+responding to the lack of incremental processing in the bfp model , we have constructed an incremental resolution algorithm that adheres to centering constraints .
+it works by first searching for an antecedent in the current utterance ; 2 if one is not found , then the previous cf-lists ( starting with the previous utterance ) are searched the preference for searching intrasententially before intersententially is motivated by the fact that large sentences are not broken up into clauses as kameyama ( 1998 ) proposes .
+by looking through the cf-partial , clause-by-clause centering is roughly approximated .
+in addition , the antecedents of reflexive pronouns are found by searching cf-partial right to left because their referents are usually found in the minimal s. there are two important points to be made about centering and pronoun resolution .
+first , centering is not a pronoun resolution method ; the fact that pronouns can be resolved is simply a side effect of the constraints and rules .
+second , ranking by grammatical role is very naive .
+in a perfect world , the cf-list would consist of entities ranked by a combination of syntax and semantics .
+in our study , ranking is based solely on syntax .
+evaluation of algorithms .
+data .
+all four algorithms were compared on two domains taken from the penn treebank annotated corpus ( marcus , santorini , and marcinkiewicz 1993 ) .
+the first domain consists of 3,900 utterances ( 1,694 unquoted pronouns ) in new york times articles provided by ge , hale , and charniak ( 1998 ) , who annotated the corpus with coreference information .
+the corpus consists of 195 different newspaper articles .
+sentences are fully bracketed and have labels that indicate part of speech and number .
+pronouns and their antecedent entities are all marked with the same tag to facilitate coreference verification .
+in addition , the subject np of each s subconstituent is marked .
+the second domain consists of 553 utterances ( 511 unquoted pronouns ) in three fictional texts taken from the penn treebank corpus , which we annotated in the same manner as ge , hale , and charniak 's corpus .
+the second domain differs from the first in that the sentences are generally shorter and less complex , and contain more hes and shes .
+method .
+the evaluation ( byron and tetreault 1999 ) consisted of two steps : ( 1 ) parsing penn treebank utterances and ( 2 ) running the four algorithms .
+the parsing stage involved extracting discourse entities from the penn treebank utterances .
+since we were solely concerned with pronouns having np antecedents , we extracted only nps .
+for each np we generated a " filecard " that stored its syntactic information .
+this information included agreement properties , syntactic type , parent nodes , depth in tree , position in utterance , presence or absence of a determiner , gender , coreference tag , utterance number , whether it was quoted , commanding verb , whether it was part of a title , whether it was reflexive , whether it was part of a possessive np , whether it was in a prepended phrase , and whether it was part of a conjoined sentence .
+the entities were listed in each utterance in order of mention except in the case of conjoined nps .
+conjoined entities such as john and mary were realized as three entities : the singular entities john and mary and the plural john and mary .
+the plural entity was placed ahead of the singular ones in the cf-list , on the basis of research by gordon et al. ( 1999 ) .
+conjoined utterances were broken up into their subutterances .
+for example , the utterance united illuminating is based in new haven , conn . , and northeast is based in hartford , conn. was replaced by the two utterances united illuminating is based in new haven , conn. and northeast is based in hartford , conn .
+this strategy was inspired by kameyama 's ( 1998 ) methods for dealing with complex sentences ; it improves the accuracy of each algorithm by 1 % to 2 % .
+the second stage involved running each algorithm on the parsed forms of the penn treebank utterances .
+for all algorithms , we used the same guidelines as strube and hahn ( 1999 ) : no world knowledge was assumed , only agreement criteria ( gender , number ) and binding constraints were applied .
+unlike strube and hahn , we did not make use of sortal constraints .
+the number of each np could be extracted from the penn treebartk annotations , but gender had to be hand-coded .
+a database of all nps was tagged with their gender ( masculine , feminine , neuter ) .
+nps such as president or banker were marked as androgynous since it is possible to refer to them with a gendered pronoun .
+entities within quotes were removed from the evaluation since the s-list algorithm and bfp do not allow resolution of quoted text .
+we depart from walker 's ( 1989 ) and strube and hahn 's ( 1999 ) evaluations by not defining any discourse segments .
+walker defines a discourse segment as a paragraph ( unless the first sentence of the paragraph has a pronoun in subject position or unless it has a pronoun with no antecedent among the preceding nps that match syntactic features ) .
+instead , we divide our corpora only by discourses ( newspaper article or story ) .
+once a new discourse is encountered , the history list for each algorithm ( be it the cf-list or s-list ) is cleared .
+using discourse segments should increase the efficiency of all algorithms since it constrains the search space significantly .
+unlike walker ( 1989 ) , we do not account for false positives or error chains ; instead , we use a " location " -based evaluation procedure .
+error chains occur when a pronoun pi , refers to a pronoun 13 , , that was resolved incorrectly to entity ek ( where p12 and 1311 evoke the same entity e1 ) .
+so p would corefer incorrectly with ek .
+in our evaluation , a coreference is deemed correct if it corefers with an np that has the same coreference tag .
+so in the above situation , p , , would be deemed correct since it was matched to an expression that should realize the correct entity .
+algorithm modifications .
+the bfp algorithm had to be modified slightly to compensate for underspecifications in its intrasentential resolution .
+we follow the same method as strube and hahn that is , we first try to resolve pronouns intersententially using the bfp algorithm .
+if there are pronouns left unresolved , we search for an antecedent left to right in the same utterance .
+strube and hahn use kameyama 's ( 1998 ) specifications for complex sentences to break up utterances into smaller components .
+we keep the utterances whole ( with the exception of splitting conjoined utterances ) .
+as an aside , the bfp algorithm can be modified ( walker 1989 ) so that intrasentential antecedents are given a higher preference .
+to quote walker , the alteration ( suggested by carter [ 1987 ] ) involves selecting intrasentential candidates " only in the cases where no discourse center has been established or the discourse center has been rejected for syntactic or selectional reasons " ( page 258 ) .
+walker applied the modification and was able to boost bfp 's accuracy to 93 % correct over the fiction corpus , 84 % on newsweek articles , and 64 % on tasks ( up from 90 % , 79 % , and 49 % , respectively ) .
+bfp with carter 's modification may seem quite similar to lrc except for two points .
+first , lrc seeks antecedents intrasententially regardless of the status of the discourse center .
+second , lrc does not use rule 2 in constraining possible antecedents intersententially , while bfp does so .
+because the s-list approach incorporates both semantics and syntax in its familiarity ranking scheme , a shallow version that uses only syntax is implemented in this study .
+this means that inferrables are not represented and entities rementioned as nps may be underrepresented in the ranking .
+both the bfp and s-list algorithms were modified so that they have the ability to look back through all past cf / s-lists .
+this puts the two algorithms on equal footing with the hobbs and lrc algorithms , which allow one to look back as far as possible within the discourse .
+hobbs ( 1978 ) makes use of selectional constraints to help refine the search space for neutral pronouns such as it .
+we do not use selectional constraints in this syntax-only study .
+results .
+two naive algorithms were created to serve as a baseline for results .
+the first , " most recent , " keeps a history list of all entities seen within the discourse unit .
+the most recent entity that matches in gender , number , and binding constraints is selected as the antecedent for the pronoun .
+this method correctly resolves 60 % of pronouns in both domains .
+a slightly more complex baseline involves using the lrc algorithm but randomizing all cf-lists considered .
+so , in the intrasentential component , the ranking of the entities in cf-partial is random .
+previous cf-lists are also randomized after being processed .
+this method actually does well ( 69 % ) compared with the " intelligent " algorithms , in part because of its preference for intrasentential entities .
+tables 2 and 3 include results for the different algorithms over the two domains .
+" success rate " as defined by mitkov ( 2000 ) is the number of successfully resolved pronouns divided by the total number of pronouns .
+two variations of lrc are included as further baselines .
+lrcsurf ranks its cf-list by surface order only .
+lrc ranks the cf-list by grammatical function .
+lrc-f is the best instantiation of lrc and involves moving entities in a prepended phrase to the back of the cf-list ( which is still ranked by grammatical function ) .
+lrc-p ranks its entities the same way as lrc-f except that it then moves all pronouns to the head of the cf-list ( maintaining original order ) .
+this algorithm was meant to be a hybrid of the s-list and lrc algorithms with the hope that performance would be increased by giving weight to pronouns since they would be more likely to continue the backward-looking center .
+discussion .
+for this study , we use mcnemar ' s test to test whether the difference in performance of two algorithms is significant .
+we adopt the standard statistical convention of p < 0.05 for determining whether the relative performance is indeed significant .
+first , we consider lrc in relation to the classical algorithms : hobbs , bfp , and s-list .
+we found a significant difference in the performance of all four algorithms ( e.g. , lrc and s-list : p < 0.00479 ) , though hobbs and lrc performed the closest in terms of getting the same pronouns right .
+these two algorithms perform similarly for two reasons .
+first , both search for referents intrasententially and then intersententially .
+in the new york times corpus , over 71 % of all pronouns have intrasentential referents , so clearly an algorithm that favors the current utterance will perform better .
+second , both search their respective data structures in a salience-first manner .
+intersententially , both examine previous utterances in the same manner : breadth-first based on syntax .
+intrasententially , hobbs does slightly better since it first favors antecedents close to the pronoun before searching the rest of the tree .
+lrc favors entities near the head of the sentence under the assumption that they are more salient .
+these algorithms ' similarities in intra- and intersentential evaluation are reflected in the similarities in their percentage correct for the respective categories .
+although s-list performed worse than lrc over the new york times corpus , it did fare better over the fictional texts .
+this is due to the high density of pronouns in these texts , which s-list would rank higher in its salience list since they are hearer-old .
+it should be restated that a shallow version ( syntax only ) of the s-list algorithm is implemented here .
+the standing of the bfp algorithm should not be surprising given past studies .
+for example , strube ( 1998 ) found that the s-list algorithm performed at 91 % correct on three new york times articles , while the best version of bfp performed at 81 % .
+this 10 % difference is reflected in the present evaluation as well .
+the main drawback for bfp was its preference for intersentential resolution .
+also , bfp , as formally defined , does not have an intrasentential processing mechanism .
+for the purposes of the project , the lrc intrasentential technique was used to resolve pronouns that could not be resolved by the bfp ( intersentential ) algorithm .
+it is unclear whether this is the optimal intrasentential algorithm for bfp .
+lrc-f is much better than lrc alone considering its improvement of over 5 % in the newspaper article domain and over 7 % in the fictional domain .
+this increase is discussed in the following section .
+the hybrid algorithm ( lrc-p ) has the same accuracy rate as lrc-f , though each gets 5 instances right that the other does not .
+examining psycholinguistic claims of centering .
+having established lrc as a fair model of centering given its performance and incremental processing of utterances , we can use it to test empirically whether psycholinguistic claims about the ordering of the cf-list are reflected in an increase in accuracy in resolving pronouns .
+the reasoning behind the following corpus tests is that if the predictions made by psycholinguistic experiments fail to increase performance or even lower performance , then this suggests that the claims may not be useful .
+as sun , mccoy , and decristofaro ( 1999 , page 180 ) point out : " the corpus analysis reveals how language is actually used in practice , rather than depending on a small set of discourses presented to the human subjects . "
+in this section , we use our corpus evaluation to provide counterevidence to the claims made about using genitives and prepended phrases to rank the cf-list , and we propose a new cf-list ranking based on these results .
+moving prepended phrases .
+gordon , grosz , and gilliom ( 1993 ) carried out five self-paced reading time experiments that provided evidence for the major tenets of centering theory : that the backward- looking center ( cb ) should be realized as a pronoun and that the grammatical subject of an utterance is most likely to be the cb if possible .
+their final experiment showed that surface position also plays a role in ranking the cf-list .
+they observed that entities in surface-initial nonsubject positions in the previous sentence had about the same repeated-name penalty as an entity that had been the noninitial subject of the previous sentence .
+these results can be interpreted to mean that entities in subject position and in prepended phrases ( nonsubject surface-initial positions ) are equally likely to be the cb .
+so the claim we wished to test was whether sentence-initial and subject position can serve equally well as the cb .
+to evaluate this claim , we changed our parser to find the subject of the utterance .
+by tagging the subject , we know what entities constitute the prepended phrase ( since they precede the subject ) .
+we developed two different methods of locating the subject .
+the first simply takes the first np that is the subject of the first s constituent .
+it is possible that this s constituent is not the top-level s structure and may even be embedded in a prepended phrase .
+this method is called lrc-f since it takes the first subject np found .
+the second method ( lrc-s ) selects the np that is the subject of the top-level s structure .
+if one cannot be found , then the system defaults to the first method .
+the result of both tagging methods is that all nps preceding the chosen subject are marked as being in a prepended phrase .
+eight different corpus trials were carried out involving the two different parsing algorithms ( lrc-f and lrc-s ) and two different ordering modifications : ( 1 ) ranking the cf-list after processing and ( 2 ) modifying the order of entities before processing the utterance .
+the standard cf-list consists of ranking entities by grammatical role and surface order .
+as a result , prepended phrases would still be ranked ahead of the main subject .
+the modified cf-list consists of ranking the main clause by grammatical role and placing all entities in the prepended phrase after all entities from the main clause .
+the second method involves reordering the utterance before processing .
+this technique was motivated mostly by the order we selected for pronoun resolution : an antecedent is first searched for in the cf-partial , then in the past cf-lists , and finally in the entities of the same utterance not in the cf-partial .
+pronouns in prepended phrases frequently refer to the subject of the same utterance as well as to entities in the previous utterance .
+moving the prepended entities after the main clause entities before evaluation achieves the same result as looking in the main clause before the intersentential search .
+table 4 contains the results of the trials over the new york times domain .
+" prepended movement " refers to ranking the cf-list with prepended entities moved to the end of the main clause ; " standard sort " refers to maintaining the order of the cf-list .
+" norm " means that prepended entities were not moved before the utterance was processed .
+" pre " means that the entities were placed behind the main clause .
+all statistics ( within the respective algorithms ) were deemed significant relative to each other using mcnemar ' s test .
+however , it should be noted that between the best performers for lrc-f and lrc-s ( movement of prepended phrases before and after cf-list , column 2 ) , the difference in performance is insignificant ( p < 0.624 ) .
+this indicates that the two algorithms fare the same .
+the conclusion is that if an algorithm prefers the subject and marks entities in prepended phrases as less salient , it will resolve pronouns better .
+ranking complex nps .
+the second claim we wished to test involved ranking possessor and possessed entities realized in complex nps .
+walker and prince ( 1996 ) developed the complex np assumption that " in english , when an np evokes multiple discourse entities , such as a subject np with a possessive pronoun , we assume that the cf ordering is from left to right within the higher np " ( page 8 ) .
+so the cf-list for the utterance her mother knows queen elizabeth would be { her , mother , elizabeth } .
+walker and prince note that the theory is just a hypothesis but motivate its plausibility with a complex example .
+however , a series of psycholinguistic experiments carried out by gordon et al. ( 1999 ) refute walker and prince 's claim that the entities are ordered left to right .
+gordon et al. found that subjects had faster reading rates for small discourses in which a pronoun referred to the possessed entity rather than the possessor entity .
+hobbs ( 1978 ) also assumes gordon et al. ' s interpretation in his pronoun algorithm .
+he assumes that possessor entities are nested deeper in the parse tree , so when the algorithm does a breadth-first search of the tree , it considers the possessed np to be the most prominent .
+to see which claim is correct , we altered the cf-list ranking to put possessed entities before possessor entities .
+the original lrc ordered them left to right as walker and prince ( wp ) suggest .
+tables 5 and 6 include results for both domains .
+" + gen " indicates that only complex nps containing genitive pronouns were reversed ; " + pos " indicates that all possessive nps were reversed , matching gordon et al. ' s study .
+the results indicate for both domains that walker and prince 's theory works better , though marginally ( for all domains and algorithms , significance levels between wp and + gen are under 0.05 ) .
+for the new york times domain , the difference in the actual number correct between lrc-s with wp and lrc-s with + pos is 1,362 to 1,337 or 25 pronouns , which is substantial ( p < 1.4e-06 ) over a corpus of 1,691 pronouns .
+likewise , for the fictional texts , 1 extra pronoun is resolved incorrectly when using gordon et al. ' s method .
+looking at the difference in what each algorithm gets right and wrong , it seems that type of referring expression and mention count play a role in which entity should be selected from the complex np .
+if an entity has been mentioned previously or is realized as a pronoun , it is more likely to be the referent of a following pronoun .
+this would lend support to strube and hahn 's s-list and functional centering theories ( strube and hahn 1996 ) , which maintain that type of referring expression and previous mention influence the salience of each entity with the s-list or cf-list .
+conclusions .
+in this paper we first presented a new pronoun resolution algorithm , left-right centering , which adheres to the constraints of centering theory and was inspired by the need to remedy a lack of incremental processing in brennan , friedman , and pollard 's ( 1987 ) method .
+second , we compared lrc 's performance with that of three other leading pronoun resolution algorithms , each one restricted to using only syntactic information .
+this comparison is significant in its own right because these algorithms have not been previously compared , in computer-encoded form , on a common corpus .
+coding all the algorithms allows one to quickly test them on a large corpus and eliminates human error .
+third , we tried to improve lrc 's performance by incorporating theories on cf-list construction derived from psycholinguistic experiments .
+our corpus-based evaluation showed that prepended phrases should not be ranked prominently in the cf-list as gordon , grosz , and gilliom ( 1993 ) suggest .
+our results also showed that walker and prince 's ( 1996 ) complex np assumption performs marginally better than the opposite theory based on experimental results .
+we believe that corpus-based analyses such as this one not only increase performance in resolution algorithms but also can aid in validating the results of psycholinguistic studies , which are usually based on small sequences of utterances .
+future work .
+the next step is to research ways of breaking up complex utterances and applying centering to these utterances .
+an overlooked area of research , the incorporation of quoted phrases into centering and pronoun resolution , should be explored .
+research into how transitions and the backward-looking center can be used in a pronoun resolution algorithm should also be carried out .
+strube and hahn ( 1996 ) developed a heuristic of ranking transition pairs by cost to evaluate different cf-ranking schemes .
+perhaps this heuristic could be used to constrain the search for antecedents .
+it should be noted that all the algorithms analyzed in this paper are syntax based ( or modified to be syntax based ) .
+incorporating semantic information such as sortal constraints would be the next logical development for the system .
+we believe that purely syntax-based resolution algorithms probably have an upper bound of performance in the mid 80s and that developing an algorithm that achieves 90 % or better accuracy over several domains requires semantic knowledge .
+in short , the results presented here suggest that purely syntactic methods cannot be pushed much farther , and the upper limit reached can serve as a baseline for approaches that combine syntax and semantics .
+there are several other psycholinguistic experiments that can be verified using our computational corpus-based approach .
+the effects of parallelism and other complex nps such as plurals still need to be investigated computationally .

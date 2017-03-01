@@ -1,0 +1,132 @@
+extending the javelin qa system with domain semantics .
+abstract .
+this paper presents the current status of work to extend the javelin qa system with domain semantics for question answering in restricted domains .
+we discuss how the original architecture was extended , and how the system modules must be adjusted to incorporate knowledge from existing ontologies and information provided by third-party annotation tools .
+introduction .
+this paper describes extensions to the javelin system ( nyberg et al. 2003a ; 2003b ) for question answering in restricted domains .
+the basic architecture ( figure 1 ) includes four processing components and two control components : question analyzer ( qa ) : analyzes the input text to determine question type , answer type , and keywords .
+retrieval strategist ( rs ) : uses a successive relaxation of structured queries to retrieve relevant documents .
+information extractor ( ix ) : locates passages in the documents which are candidate answers .
+answer generator ( ag ) : canonicalizes and aggregates the candidate answers to produce a ranked answer list .
+execution manager ( em ) : creates instances of these component types to answer questions at run time .
+planner ( pl ) : decides when to invoke each component , and which algorithmic variant to use .
+further detail regarding the basic javelin architecture can be found in ( nyberg et al. 2003a ; 2003b ; hiyakumoto 2004 ) .
+to extend the system for use in restricted domains , we first considered the differences between developing an open-domain qa system and developing one for a particular domain .
+there are three basic considerations : a ) there may be a limited amount of data ( text ) available for development of data-driven techniques ; b ) in a restricted domain , the text includes both domain-specific terms , and general english terms that carry domain-specific meanings ; c ) if the domain is narrow enough , it may be possible to model the domain semantics with reasonable human effort .
+these characteristics prompted a discussion of which techniques may or may not be effective a restricted domain .
+on the one hand , it might be difficult to develop data-driven statistical techniques for text interpretation , given the potential lack of data .
+on the other hand , symbolic parsing techniques may not fare much better if they do not take into account domain semantics , especially domain-specific meanings of words and phrases .
+symbolic nlp might be possible , but only if we can identify the lexical items in the restricted domain and interpret them properly .
+under phase ii of ardas aquaint program , we are extending javelin for use with the corpus of documents created by the center for non-proliferation studies ( cns ) .
+the cns corpus contains reports on the weapons capabilities of various geo-political entities ; for this study we selected a subset of 1130 documents that are potentially relevant to a particular intelligence scenario ( development of bioweapons in egypt ) .
+the extended system makes use of the identifinder ( bikel , schwartz , & weischedel 1999 ) and assert ( pradhan et al. 2004 ) text annotators , wordnet ( fellbaum 1998 ) , and a wmd ontology created by saic and stanford ksl during phase i of aquaint .
+we extend the question analysis phase to introduce the notion of key predicates - a predicate-argument representation of the kinds of facts that might answer the question .
+we also add annotators to label important semantic information in the corpus ( e.g. , named entities , verb-argument structures , semantic roles , etc . ) .
+when semantic information is available , the process of question answering becomes one of finding relevant facts and matching them against a key predicate representation of the question .
+the remainder of this paper is structured as follows .
+in section 2 , we present the details of the extended design for closed-domain qa .
+in section 3 we present a complete endto-end example .
+we conclude in section 4 with a summary of open issues and ongoing research .
+extending javelin for restricted domains .
+a primary difference between the open-domain javelin system and the version we are extending for restricted- domain qa is the leveraging of an ontology that represents entities and relationships specific to the domain .
+where the open-domain system relies on keyword-based retrieval , passage extraction , and reconciliation of answer strings with expected answer types , the extended system makes use of semantic retrieval , fact extraction and reasoning .
+module extensions .
+the prototype described in this paper includes changes to the four processing components in the javelin pipeline : question analyzer : this component , which formerly produced just question keywords , question type and answer type for each question , is extended to provide key predicates as well .
+key predicates ( described in the following section ) are a logical representation of the facts which are sought by the system as candidate answers .
+retrieval strategist : to complement existing keyword- based indexing and retrieval , the retrieval strategist will be extended to also access a relational database containing instances of predicates ( verb-argument frames ) and entity mentions .
+in this new retrieval mode , the system serach for documents containing instances of predicates that match key predicates and contain mentions of the entities referred to in the question .
+the search is extended through the use of wordnet and the cns ontology ( details in the following section ) .
+no further processing is performed on the retrieved predicate instances at this stage .
+information extractor : in previous work , we proposed an approach to question answering based on unification of a logical representation of the question with logical representations for the passages in the corpus ( van durme et al. 2003 ) .
+for the prototype system we decribe here , a new component is created which takes the key predicates as input , as well as a set of documents provided by the retrieval strategist which contain predicate instances that match the key predicates , and entity mentions of interest .
+predications are instantiated by filling in the entities and binding the logic variables , and then they are checked for consistency against the ontology .
+only those that are consistent with our knowledge sources are passed on to the next module as candidate answers .
+answer generator : the answer generator module for the fact-based qa model extends quite naturally from our previous work in open-domain qa .
+the answer generator is responsible for combining evidence for answers extracted from different documents , and for resolving issues of answer granularity .
+developing good metrics for computing confidence scores from combinations of facts is an entire open area of research ; our current answer generator performs only rudimentary filtering of duplicate facts and presentation of the answer set .
+ontology resources .
+within restricted-domain question answering , an important issue arises when parsing domain specific concepts .
+typically these concepts are not represented in open domain knowledge bases and lexical resources such as wordnet , thoughttreasure , etc .
+in order to efficiently recognize , parse and use these concepts it becomes very important to have an adequate domain specific ontology that describes the relations between the domain concepts , as well as the properties of the objects in those domains .
+for the prototype system we utilized the cns ontology , which represents concepts and relations about wmd capabilities of geo-political entities .
+the cns ontology was written in kif ( genesereth & fikes 1992 ) ; we converted the kif to jgraph format and created a java api for the resulting ontology .
+there are two types of information that we extract from the cns ontology to support question answering : the type hierarchy and the set of synonyms ( akas ) for a given concept .
+these are used to extend the type of a given concept for indexing and semantic-based retrieval .
+other relation types will be considered in the future , such as member-of , but the ambiguity ( john is a member of the club ? vs portugal is a member of the european union ) in the inference possibilities makes it unclear how useful they will be for type extension in information extraction .
+aka extraction aka ( or also known as ) extraction is derived from the the also-known-as relation .
+most of the nodes reached through this relation are abstract nodes , and thus usable only for identification of the defined object , from which more information can be extracted .
+it is assumed that all synonyms are grounded in the same concept , and usually refer to different ways of saying the same thing , therefore there is no guarantee that the traversal of hypernyms will generate a unique path ; we perform a greedy traversal , where the first path is chosen , thus producing an ordered list as a hierarchy .
+a detailed end-to-end example .
+for this work , we have chosen to show a detailed example that highlights the differences between general , open- domain question answering and narrow-domain question answering .
+we chose an example question extracted from a hypothetical dialog between javelin and an intelligence analyst reporting on egypts chemical weapons programs : the example question is a list question that poses several specific challenges .
+the first of these challenges is the paraphrase problem as identified in ( woods 1997 ) , namely that the phrase chemical weapons could be realized in the text in any number of equivalent ways , including chemweapons , chemical arms and chemical agents , etc . , or even by terms that subsume it like cbw or wmd .
+querying on chemical weapons using traditional , keyword-based ir will fail to retrieve documents that use one of the paraphrases listed above ; this is a known limitation of keyword-based ir .
+although automatic query expansion techniques exist that claim to address this problem , they rely on cooccurrence between query terms and related words in top-ranking documents .
+given this , it seems unlikely that chem-weapons would be generated as an alternation for chemical agents .
+as woods also notes , thesaurus-based methods are equally prone to error because the words in a traditional thesaurus entry are not guaranteed to be pairwise synonymous ; some other relation might hold between them , such as hypernymy , hyponymy or meronymy , but this is underspecified .
+a traditional thesaurus might identify chemical weapons and wmd as synonyms , but suggest no relationship between chemical arms and chem-weapons .
+another challenge posed by list questions is that the name of the category queried ( e.g. chemical weapons ) does not usually appear in relevant documents .
+often , a particular article will discuss one or more specific chemical weapons , mentioning them by name , but never using any expression for the name of the object type they belong to , such as chemical agents .
+if we add a keyword to the query to represent the object type , we will incur a recall penalty because not all relevant documents contain that keyword .
+to address these two challenges , we are leveraging an ontology built for the cns data that is capable of detecting a variety of equivalent expressions that refer to the type chemical-weapon .
+the ontology can also tell us that the phrase wmd refers to a superset , not an equivalent set , of objects that contains not only chemical weapons , but also biological and nuclear weapons .
+furthermore , the ontology understands several instances of the type chemical-weapon , and we have augmented the ontology to include an even wider variety of chemical-weapon instances for the purpose of this example .
+see figure 2 for a visualization of the chemical-weapon type in the cns ontology .
+a third challenge underscored by this particular example is that the verb meaning is difficult to decipher .
+the question could be asking which chemical weapons egypt has currently in its arsenal in some quantity , or which agents egypt has the capability to produce .
+it could also be asking which potentially lethal substances egypt may be storing in , say , for example , a research laboratory , but has not yet been able to weaponize .
+a related difficulty is how to generate alternations for the verb so that documents containing its synonyms can be retrieved ; the previously cited comments from woods regarding the use of thesauri also apply here .
+without making a judgment as to whether or not expansion of synonyms is good retrieval practice on average , it is clear that the expansion given for have above is not taking advantage of assumptions that we can make about our closed domain .
+we would rather have a verb expansion such as the following , which is conditioned on the domain and pinpoints several potential meanings for have that are exceptionally relevant for the cns domain : as this domain-specific expansion capability is not yet available in the ontology we are working with , the expansion of key predicates into surface forms was performed by hand for the purposes of this example .
+as a part of the retrieval process , javelin uses corpus annotation to mark mentions of different kinds of chemical weapons in the text and link them into the ontology .
+in addition , javelin relies on the assert system ( pradhan et al. 2004 ) to generate predicate-argument structures for verbs in the text .
+these annotations are stored in a separate database to facilitate search and retrieval .
+when our example question enters the javelin pipeline , the question analyzer is the first module to process it .
+it returns an expected answer type of chemical-weapon , which corresponds to a type node in our cns ontology .
+it also recognizes the question as a list question , which means that the result should be a list of different instances of the type chemical-weapon .
+the final and most important job of the question analyzer is to break the question down into key predicates that can be used by the rs to retrieve documents .
+since extensions are ongoing , these tasks were carried out manually for this example .
+in this case , the question is broken down into the following conjunction of predicates .
+this formulation of the users information need goes on to the retrieval strategist , which is responsible for generating a set of queries and retrieving documents relevant to that information need .
+making use of the ontology , the closed-domain rs can improve on the quality of keyword-based search by indexing and retrieving on predicate instances that match the information need .
+the first step is to expand the set of key predicates with domain-appropriate expansion .
+with this expanded pattern , the rs can then use a combination of database and ir techniques to retrieve a set of documents from the collection to pass along the pipeline .
+the subcorpus used in this example is approximately 1130 documents extracted from a cleaned , trec-formatted version of the cns data .
+the subcorpus is centered on the egypt chemical weapons program scenario described above .
+the rs generates a list of documents that contain mentions of the geo-political entity egypt , as well as instances of one of the predicates , such as possess or develop , and passes that list of documents along to the ix module .
+the majority of the documents passed to the ix contain instances of predicates that do not satisfy the constraints in the information need ; for example , they may discuss items that egypt possesses , stockpiles or trades that are not chemical weapons .
+it is the job of the ix to separate the truly useful facts from the rest using unification and constraint checking techniques grounded in the ontology .
+the actual sentences that gave rise to these facts are shown below , with the mentioned chemical weapons in italics , and the filename of the original cns corpus document given in parentheses for each sentence : the ix also found facts about egypts delivery of chemical weapons to third parties , and egypts battlefield use of such weapons , both of which might satisfy the information need with the help of some inference .
+other retrieved information includes facts about egypts development of missiles that could be used to deliver chemical weapons , and mentions of egyptian chemical weapons experts .
+as a baseline for comparison with our method of search by extraction of predicate instances , we ran a boolean keyword search engine over the document collection using the following query , in which the last term matches any term from a document that begins with the prefix chem .
+the query returned 235 of the 1130 documents in the egypt scenario subcorpus , and they were manually judged for relevance under the criterion that they link egypt or its government to having possession of or any other connection to any sort of chemical agent that can be used as a weapon , regardless of the level of inference necessary .
+it turned out that only 17 of the 235 ( 0.0723 precision ) were relevant to the scenario in that they discussed chemical weapons at all in connection with egypt .
+the vast majority of the documents concerned nuclear activity on egypts part , disputes between egypt and israel , development and use of non- chemical weapons by egypt , development of scud and other types of missile technology and trade of these technologies between egypt and other countries .
+status and future work .
+the example presented in this paper demonstrates how we are extending the javelin qa system to work with restricted domain semantics .
+we are evolving toward a model in which facts are extracted from text , reasoned over , and used to pinpoint answers supported by the root text in the corpus documents .
+our goal is to extend the coverage of javelin to the entire cns corpus , in support of unrestricted question-answering dialogs with the user .
+in the remainder of this section we mention a few of the related research topics we are currently pursuing .
+graphical models for semantics and search .
+advances in fact extraction and inference may be achievable via graphical models of semantics and graph-theoretic approaches to search .
+using an existing set of nlp tools including named-entity taggers , shallow semantic parsers , and within-document coreference tools , a series of interconnected semantic annotations has been constructed across available corpora .
+methods of refining the resulting network of typed entities and predicates to produce a basic level of global entity coreference-resolution are under investigation .
+in addition , entities , along with predicate target verbs , will be tied into lexical and ontological knowledge bases to further ground the types of these objects , and aid further modes of inference across this data .
+following previous research by ( bhalotia et al. 2002 ) , question results may be modeled as trees within this graph which connect nodes matching query elements .
+in the case of our semantic network , many refinements to heuristics influencing the search for interconnecting trees are possible , as the relational model is much more complex than those previously investigated .
+moving toward semantic retrieval .
+to move to a question-answering model that is based on fact extraction and semantic retrieval , we are investigating different strategies of indexing semantic content , such as predicate instances , arguments and entity mentions .
+our information extractor module will need to be tightly integrated with our ontologies and sources of world knowledge so that it can evaluate the consistency and check the constraints of candidate predications discovered among the documents in the collection by the retrieval strategist .
+the challenge in javelin will be to seamlessly merge the fast , shallow search capabilities of ir with slower , deeper search through the predicate argument structures and ontologies on the information extraction side .
+probabilistic inference rules via nlp .
+one of the advantages of working in a restricted domain is that it is usually possible to find a domain expert who has spent many hours ( sometimes , years ) becoming familiar with the domain .
+with experience comes the capacity to perform intuitive associations between concepts , events and persons that are very difficult to capture with automatic data analysis .
+in the future , we would like our system to support the creation of new rules of inference , not in a complicated logical representation , but in natural language .
+we are working towards a system design which will allow an analyst to specify rules of inference over the semantic types and relations in an ontology ( e.g. , if an individual belonging to an organization purchases weapons , the organization may now possess the weapons ) .
+to reason with such probabilistic expressions will require a rule engine that can associate likelihoods with facts and the rules that produce them ; we are actively engaged in research in this direction .
+conclusion .
+in this paper , we described a set of extensions to the javelin qa system which support the use of domain semantics ( ontologies and semantic annotations ) for question answering that is based on key predicates and fact matching , rather than keywords and string matching .
+we have successfully integrated a significant portion of the knowledge in the cns ontology into javelin .
+we have also integrated the identifinder and assert modules for named-entity annotation and verb-argument ( semantic role ) annotation .
+we presented a detailed example of how the system works on a sample input ; due to the ongoing status of the implementation , some of the data used in the example was manually generated .
+while the current system is still at the proof-ofconcept stage , we expect to complete the process of integrating the cns data with javelin for an evaluation with real users during the coming year .

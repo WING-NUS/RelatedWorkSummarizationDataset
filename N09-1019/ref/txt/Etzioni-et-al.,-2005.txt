@@ -1,0 +1,711 @@
+unsupervised named-entity extraction from the web : an experimental study .
+abstract .
+the knowitall system aims to automate the tedious process of extracting large collections of facts ( e.g. , names of scientists or politicians ) from the web in an unsupervised , domain-independent , and scalable manner .
+the paper presents an overview of knowitalls novel architecture and design principles , emphasizing its distinctive ability to extract information without any hand-labeled training examples .
+in its first major run , knowitall extracted over 50,000 class instances , but suggested a challenge : how can we improve knowitalls recall and extraction rate without sacrificing precision ?
+this paper presents three distinct ways to address this challenge and evaluates their performance .
+pattern learning learns domain-specific extraction rules , which enable additional extractions .
+subclass extraction automatically identifies sub-classes in order to boost recall ( e.g. , chemist and biologist are identified as sub-classes of scientist ) .
+list extraction locates lists of class instances , learns a wrapper for each list , and extracts elements of each list .
+since each method bootstraps from knowitalls domain-independent methods , the methods also obviate hand-labeled training examples .
+the paper reports on experiments , focused on building lists of named entities , that measure the relative efficacy of each method and demonstrate their synergy .
+in concert , our methods gave knowitall a 4-fold to 8-fold increase in recall at precision of 0.90 , and discovered over 10,000 cities missing from the tipster gazetteer .
+introduction and motivation .
+information extraction is the task of automatically extracting knowledge from text .
+unsupervised information extraction dispenses with hand-tagged training data .
+because unsupervised extraction systems do not require human intervention , they can recursively discover new relations , attributes , and instances in a fully automated , scalable manner .
+this paper describes knowitall , an unsupervised , domain-independent system that extracts information from the web .
+collecting a large body of information by searching the web can be a tedious , manual process .
+consider , for example , compiling a comprehensive , international list of astronauts , politicians , or cities .
+unless you find the right document or database , you are reduced to an error-prone , piecemeal search .
+one of knowitalls goals is to address the problem of accumulating large collections of facts .
+in our initial experiments with knowitall , we have focused on a sub-problem of information extraction , building lists of named entities found on the web , such as instances of the class city or the class film .
+knowitall is able to extract instances of relations , such as capitalof ( city , country ) or stars in ( actor , film ) , but the focus of this paper is on extracting comprehensive lists of named entities .
+knowitall introduces a novel , generate-and-test architecture that extracts information in two stages .
+inspired by hearst [ 22 ] , knowitall utilizes a set of eight domain-independent extraction patterns to generate candidate facts.1 for example , the generic pattern np1 such as nplist2 indicates that the head of each simple noun phrase ( np ) in the list nplist2 is a member of the class named in np 1 .
+by instantiating the pattern for the class city , knowitall extracts three candidate cities from the sentence : we provide tours to cities such as paris , london , and berlin .
+next , knowitall automatically tests the plausibility of the candidate facts it extracts using pointwise mutual information ( pmi ) statistics computed by treating the web as a massive corpus of text .
+extending turneys pmi-ir algorithm [ 42 ] , knowitall leverages existing web search engines to compute these statistics efficiently . 2 based on these pmi statistics , knowitall associates a probability with every fact it extracts , enabling it to automatically manage the tradeoff between precision and recall .
+since we cannot compute true recall on the web , the paper uses the term recall to refer to the size of the set of facts extracted .
+etzioni [ 19 ] introduced the metaphor of an information food chain where search engines are herbivores grazing on the web and intelligent agents are information carnivores that consume output from various herbivores .
+in terms of this metaphor , knowitall is an information carnivore that consumes the output of existing search engines .
+in its first major run , knowitall extracted over 50,000 facts regarding cities , states , countries , actors , and films [ 20 ] .
+this initial run revealed that , while knowitall is capable of autonomously extracting high-quality information from the web , it faces several challenges .
+in this paper we focus on one key challenge : how can we improve knowitalls recall and extraction rate so that it extracts substantially more members of large classes such as cities andfilms while maintaining high precision ?
+we describe and compare three distinct methods added to knowitall in order to improve its recall : pattern learning ( pl ) : learns domain-specific patterns that serve both as extraction rules and as validation patterns to assess the accuracy of instances extracted by the rules .
+subclass extraction ( se ) : automatically identifies subclasses in order to facilitate extraction .
+for example , in order to identify scientists , it is helpful to determine subclasses of scientists ( e.g. , physicists , geologists , etc . ) and look for instances of these subclasses .
+list extraction ( le ) : locates lists of class instances , learns a wrapper for each list , and uses the wrapper to extract list elements . 1hearst proposed a set of generic patterns that identify a hyponym relation between two noun phrases .
+examples are the pattern np f , } such as np and the pattern np f , } and other np .
+each of the methods dispenses with hand-labeled training examples by bootstrapping from the information extracted by knowitalls domain-independent patterns .
+we evaluate each method experimentally , demonstrate their synergy , and compare with the baseline knowitall system described in [ 20 ] .
+our main contributions are : we demonstrate that it is feasible to carry out unsupervised , domain-independent information extraction from the web with high precision .
+much of the previous work on information extraction focused on small document collections and required hand-labeled examples .
+we present the first comprehensive overview of knowitall , our novel information extraction system .
+we describe knowitalls key design decisions and the experimental justification for them .
+we show that web-based mutual information statistics can be effective in validating the output of an information extraction system .
+we describe and evaluate three methods for improving the recall and extraction rate of a web information extraction system .
+while our implementation is embedded in knowitall , the lessons learned are quite general .
+for example , we show that le typically finds five to ten times more extractions than other methods , and that its extraction rate is forty times faster .
+we demonstrate that our methods , when used in concert , can increase knowitalls recall by 4-fold to 8-fold over the baseline knowitall system .
+the remainder of this paper is organized as follows .
+the paper begins with a comprehensive overview of knowitall , its central design decisions , and their experimental justification .
+sections 3 to 5 describe our three methods for enhancing knowitalls recall , and section 6 reports on our experimental comparison between the methods .
+we discuss related work in section 7 , directions for future work in section 8 , and conclude in section 9 .
+overview of knowitall .
+the only domain-specific input to knowitall is a set of predicates that specify knowitalls focus ( e.g. , figure 6 ) .
+while our experiments to date have focused on unary predicates , which encode class membership , knowitall can also handle n-ary relations as explained below .
+knowitalls bootstrapping step uses a set of domain-independent extraction patterns ( e.g. , figure 1 ) to create its set of extraction rules and discriminator phrases ( described below ) for each predicate in its focus .
+the bootstrapping is fully automatic , in contrast to other bootstrapping methods that require a set of manually created training seeds .
+a system flowchart is shown in figure 2 and pseudocode in figure 3 for the baseline knowitall system .
+the two main knowitall modules are the extractor and the assessor .
+the extractor creates a query from keywords in each rule , sends the query to a web search engine , and applies the rule to extract information from the resulting web pages .
+the assessor computes a probability that each extraction is correct before adding the extraction to knowitalls knowledge base .
+the assessor bases its probability computation on search engine hit counts used to compute the mutual information between the extracted instance of a class and a set of automatically generated discriminator phrases associated with that class.3 this assessment process is an extension of turneys pmi-ir algorithm [ 42 ] .
+a bootstrapping step creates extraction rules and discriminators for each predicate in the focus .
+knowitall creates a list of search engine queries associated with the extraction rules , then executes the main loop .
+at the start of each loop , knowitall selects queries , favoring predicates and rules that have been most productive in previous iterations of the main loop .
+the extractor sends the selected queries to a search engine and extracts information from the resulting web pages .
+the assessor computes the probability that each extraction is correct and adds it to the knowledge base .
+this loop is repeated until all queries are exhausted or deemed too unproductive .
+knowitalls running time increases linearly with the size and number of web pages it examines .
+we now elaborate on knowitalls extraction rules and discriminators , and the bootstrapping , extraction , and assessor modules .
+extraction rules and discriminators .
+knowitall automatically creates a set of extraction rules for each predicate , as described in section 2.2 .
+each rule consists of a predicate , an extraction pattern , constraints , bindings , and keywords .
+the predicate gives the relation name and class name of each predicate argument .
+in the rule shown in figure 4 , the unary predicate is city .
+the extraction pattern is applied to a sentence and has a sequence of alternating context strings and slots , where each slot represents a string from the sentence .
+the rule may set constraints on a slot , and may bind it to one of the predicate arguments as a phrase to be extracted .
+in the example rule , the extraction pattern consists of three elements : a slot named np 1 , a context string such as , and a slot named nplist2 .
+there is an implicit constraint on slots with name np < digit > .
+they must match simple noun phrases and those with name nplist < digit > match a list of simple noun phrases .
+slot names of p < digit > can match arbitrary phrases .
+the extractor uses regular expressions based on part-of-speech tags from the brill tagger [ 5 ] to identify simple noun phrases and nplists .
+the head of a noun phrase is generally the last word of the phrase .
+if the last word is capitalized , the extractor searches left for the start of the proper noun , based on orthographic clues .
+take for example , the sentence the tour includes major cities such as new york , central los angeles , and dallas .
+the head of the np major cities is just cities , whereas the head of new york is new york and the head of central los angeles is los angeles .
+this simple syntactic analysis was chosen for processing efficiency , and because our domain-independent architecture avoids more knowledge intensive analysis .
+the constraints of a rule can specify the entire phrase that matches the slot , the head of the phrase , or the head of each simple np in an nplist slot .
+one type of constraint is an exact string constraint , such as the constraint head ( np 1 ) = cities in the rule shown in figure 4 .
+other constraints can specify that a phrase or its head must follow the orthographic pattern of a proper noun , or of a common noun .
+the rule bindings specify which slots or slot heads are extracted for each argument of the predicate .
+if the bindings have an nplist slot , a separate extraction is created for each simple np in the list that satisfies all constraints .
+in the example rule , an extraction is created with the city argument bound to each simple np in nplist2 that passes the proper noun constraint .
+a final part of the rule is a list of keywords that is created from the context strings and any slots that have an exact word constraint .
+in our example rule , there is a single keyword phrase cities such as that is derived from slot np 1 and the immediately following context .
+a rule may have multiple keyword phrases if context or slots with exact string constraints are not immediately adjacent .
+knowitall uses the keywords as search engine queries , then applies the rule to the web page that is retrieved , after locating sentences on that page that contain the keywords .
+more details of how rules are applied is given in section 2.3 .
+a bnf description of the rule language is given in figure 8 .
+the example given here is a rule for a unary predicate , city .
+the rule language also covers n-ary predicates with arbitrary relation name and multiple predicate arguments , such as the rule for ceoof ( person , company ) shown in figure 9 .
+knowitalls extractor module uses extraction rules that apply to single web pages and carry out shallow syntactic analysis .
+in contrast , the assessor module uses discriminators that apply to search engine indices .
+these discriminators are analogous to simple extraction rules that ignore syntax , punctuation , capitalization , and even sentence breaks , limitations that are imposed by use of commercial search engine queries .
+on the other hand , discriminators are equivalent to applying an extraction pattern simultaneously to the entire set of web pages indexed by the search engine .
+a discriminator consists of an extraction pattern with alternating context strings and slots .
+there are no explicit or implicit constraints on the slots , and the pattern matches web pages where the context strings and slots are immediately adjacent , ignoring punctuation , whitespace , or html tags .
+the discriminator for a unary predicate has a single slot , which we represent as an x here , for clarity of exposition .
+discriminators for binary predicates have two slots , here represented as x and y , for arguments 1 and 2 of the predicate , and so forth .
+when a discriminator is used to validate a particular extraction , the extracted phrases are substituted into the slots of the discriminator to form a search query .
+this is described in more detail in section 2.4 .
+we now describe how knowitall automatically creates a set of extraction rules and discriminator phrases for a predicate .
+bootstrapping .
+knowitalls input is a set of predicates that represent classes or relationships of interest .
+the predicates supply symbolic names for each class ( e.g.
+movieactor ) , and also give one or more labels for each class ( e.g. actor and movie star ) .
+these labels are the surface form in which a class may appear in an actual sentence .
+bootstrapping uses the labels to instantiate extraction rules for the predicate from generic rule templates .
+figure 6 shows some examples of predicates for a geography domain and for a movies domain .
+some of these are unary predicates , used to find instances of a class such as city and country ; some are n-ary predicates , such as the capitalof relationship between city and country and the stars in relationship between movieactor and film .
+in this paper , we concentrate primarily on unary predicates and how knowitall uses them to extract instances of classes from the web .
+preliminary experiments show that the same methods work well on n-ary predicates .
+the first step of bootstrapping uses a set of domain-independent generic extraction patterns ( e.g.
+figure 1 ) .
+the pattern in figure 1 can be summarized informally as < c l a s s 1 > such as nplist that is , given a sentence that contains the class label followed by such as , followed by a list of simple noun phrases , knowitall extracts the head of each noun phrase as a candidate member of the class , after testing that it is a proper noun .
+combining this template with the predicate city produces two instantiated rules , one for the class label city ( shown in figure 4 in section 2.1 ) and a similar rule for the label town .
+each instantiated extraction rule has a list of keywords that are sent as phrasal query terms to a search engine .
+a sample of the syntactic patterns that underlie knowitalls rule templates is shown in figure 7 .
+some of our rule templates are adapted from marti hearsts hyponym patterns [ 22 ] and others were developed independently .
+the first eight patterns shown are for unary predicates whose pluralized english name ( or label ) matches < class1 > .
+to instantiate the rules , the pluralized class label is automatically substituted for < class1 > , producing patterns like cities such as nplist .
+we have also experimented with rule templates for binary predicates , such as the last two examples .
+these are for the generic predicate , relation ( c l a s s 1 , class 2 ) .
+the first produces the pattern < city > is the capital of < country > for the predicate capitalof ( city , country ) , and the pattern < person > is the ceo of < company > for the predicate ceoo f ( person , company ) .
+bootstrapping also initializes the assessor for each predicate in a fully automated manner .
+it first generates a set of discriminator phrases for the predicate based on class labels and on keywords in the extraction rules for that predicate .
+bootstrapping then uses the extraction rules to find a set of seed instances to train the discriminators for each predicate , as described in section 2.5 .
+extractor .
+to see how knowitalls extraction rules operate , suppose that < class1 > in the pattern < class 1 > such as nplist is bound to the name of a class in the ontology .
+then each simple noun phrase in nplist is likely to be an instance of that class .
+when this pattern is used for the class country it would match a sentence that includes the phrase countries such as x , y , and z where x , y , and z are names of countries .
+the same pattern is used to generate rules to find instances of the class actor , where the rule looks for actors such as x , y , and z. in using these patterns as the basis for extraction rule templates , we add syntactic constraints that look for simple noun phrases ( a nominal preceded by zero or more modifiers ) .
+np must be a simple noun phrase ; nplist must be a list of simple nps ; and what is denoted by < class1 > is a simple noun phrase with the class name as its head .
+rules that look for proper names also include an orthographic constraint that tests capitalization .
+to see why noun phrase analysis is essential , compare these two sentences .
+in sentence a the word country is the head of a simple noun phrase , and china is indeed an instance of the class country .
+in sentence b , noun phrase analysis can detect that country is not the head of a noun phrase , so garth brooks wont be extracted as the name of a country .
+lets consider a rule template ( figure 1 ) and see how it is instantiated for a particular class .
+the bootstrapping module generates a rule for city from this rule template by substituting city for class1 , plugging in the plural cities as a constraint on the head of np1 .
+this produces the rule shown in figure 4 .
+bootstrapping also creates a similar rule with towns as the constraint on np 1 , if the predicate specifies town as well as city as surface forms associated with the class name .
+bootstrapping then takes the literals of the rule and forms a set of keywords that the extractor sends to a search engine as a query .
+in this case , the search query is the phrase cities such as .
+the extractor matches the rule in figure 4 to sentences in web pages returned for the query .
+np1 matches a simple noun phrase ; it must be immediately followed by the string such as ; following that must be a list of simple nps .
+if the match is successful , the extractor applies constraints from the rule .
+the head of np 1 must match the string cities .
+the extractor checks that the head of each np in the list nplist2 has the capitalization pattern of a proper noun .
+any nps that do not pass this test are ignored .
+if all constraints are met , the extractor creates one or more extractions : an instance of the class city for each proper noun in nplist2 .
+the bnf for knowitalls extraction rules appears in figure 8 .
+the rule in figure 4 would extract three instances of city from the sentence we service corporate and business clients in all major european cities such as london , paris , and berlin .
+if all the tests for proper nouns fail , nothing is extracted , as in the sentence detailed maps and information for several cities such as airport maps , city and downtown maps .
+the extractor can also utilize rules for binary or n-ary relations .
+this particular rule has the second argument bound to an instance of company , amazon , which knowitall has previously added to its knowledgebase .
+knowitall automatically formulates queries based on its extraction rules .
+each rule has an associated search query composed of the rules keywords .
+for example , if the pattern in figure 4 was instantiated for the class city , it would lead knowitall to 1 ) issue the search-engine query cities such as , 2 ) download in parallel all pages named in the engines results , and 3 ) apply the extractor to sentences on each downloaded page .
+for robustness and scalability knowitall queries multiple different search engines .
+assessor .
+knowitall uses statistics computed by querying search engines to assess the likelihood that the extractors conjectures are correct .
+specifically , the assessor uses a form of pointwise mutual information ( pmi ) between words and phrases that is estimated from web search engine hit counts in a manner similar to turneys pmi-ir algorithm [ 42 ] .
+the assessor computes the pmi between each extracted instance and multiple , automatically generated discriminator phrases associated with the class ( such as x is a city for the class city ) .4 for example , in order to estimate the likelihood that liege is the name of a city , the assessor might check to see if there is a high pmi between liege and phrases such as liege is a city .
+hits the pmi score is the number of hits for a query that combines the discriminator and instance , divided by the hits for the instance alone .
+the raw pmi score for an instance and a given discriminator phrase is typically a tiny fraction , perhaps as low as 1 in 100,000 even for positive instances of the class .
+this does not give the probability that the instance is a member of the class , only the probability of seeing the discriminator on web pages containing the instance .
+these mutual information statistics are treated as features that are input to a naive bayes classier ( nbc ) using the formula given in equation 2 .
+this is the probability that fact 0 is correct , given features f1 , f2 , ... f , ,, , with an assumption of independence between the features .
+our method to turn a pmi score into the conditional probabilities needed for equation 2 is straightforward .
+the assessor takes a set of k positive and k negative seeds for each class and finds a threshold on pmi scores that splits the positive and negative seeds .
+it then uses a tuning set of another k positive and k negative seeds to estimate p ( pmi > threshl class ) , p ( pmi > threshl class ) , p ( pmi < threshl class ) , and p ( pmi < threshl class ) , by counting the positive and negative seeds ( plus a smoothing term ) that are above or below the threshold .
+we used k = 10 and a smoothing term of 1 in the experiments reported here .
+in a standard nbc , if a candidate fact is more likely to be true than false , it is classified as true .
+however , since we wish to be able to trade precision against recall , we record the crude probability estimates computed by the nbc for each extracted fact .
+by raising the probability threshold required for a fact to be deemed true , we increase precision and decrease recall ; lowering the threshold has the opposite effect .
+we found that , despite its limitations , nbc gave better probability estimates than the logistic regression and gaussian models we tried .
+several open questions remain about the use of pmi for information extraction .
+even with the entire web as a text corpus , the problem of sparse data remains .
+the most precise discriminators tend to have low pmi scores for numerous positive instances , often as low as 10-5 or 10-6 .
+this is not a problem for prominent instances that have several million hits on the web .
+if an instance is found on only a few thousand web pages , the expected number of hits for a positive instance will be less than 1 for such a discriminator .
+this leads to false negatives for the more obscure positive instances .
+a different problem with using pmi is homonyms words that have the same spelling , but different meanings .
+for example , georgia refers to both a state and country , normal refers to a city in illinois and a socially acceptable condition , and amazon is both a rain forest and an on-line shopping destination .
+when a homonym is used more frequently in a sense distinct from the one we are interested in , then the pmi scores may be low and may fall below threshold .
+this is because pmi scores measure whether membership in the class is the most common meaning of a noun denoting an instance , not whether membership in the class is a legitimate but less frequent usage of that noun .
+another issue is in the choice of a naive bayes classifier .
+since the naive bayes classifier is notorious for producing polarized probability estimates that are close to zero or to one , the estimated probabilities are often inaccurate .
+however , as [ 15 ] points out , the classifier is surprisingly effective because it only needs to make an ordinal judgment ( which class is more likely ) to classify instances correctly .
+similarly , our formula produces a reasonable ordering on the likelihood of extracted facts for a given class .
+this ordering is sufficient for knowitall to implement the desired precision / recall tradeoff .
+training discriminators .
+in order to estimate the probabilities p ( fz 0 ) and p ( fi 1,0 ) needed in equation 2 , knowitall needs a training set of positive and negative instances of the target class .
+we want our method to scale readily to new classes , however , which requires that we eliminate human intervention .
+to achieve this goal we rely on a bootstrapping technique that induces seeds from generic extraction patterns and automatically-generated discriminators .
+bootstrapping begins by instantiating a set of extraction rules and queries for each predicate from generic rule templates , and also generates a set of discriminator phrases from keyword phrases of the rules and from the class names .
+this gives a set of a few dozen possible discriminator phrases such as country x , x country , countries such as x , x is a country .
+we found it best to supply the system with two names for each class , such as country and nation for the class country .
+this compensates for inherent ambiguity in a single name : country might be a music genre or refer to countryside ; instances with high mutual information with both country and nation are more likely to have the desired semantic class .
+bootstrapping is able to find its own set of seeds to train the discriminators , without requiring any hand- chosen examples .
+it does this by using the queries and extraction rules to find a set of candidate seeds for each predicate .
+each of these candidate seeds must have a minimum number of hit counts for the instance itself ; otherwise the pmi scores from this seed will be unreliable .
+after assembling the set of candidate seeds , bootstrapping computes pmi ( c , u ) for each candidate seed c , and each untrained discriminator phrase u .
+the candidate seeds are ranked by average pmi score and the best m become the first set of bootstrapped seeds .
+thus we can use untrained discriminator phrases to generate our first set of seeds , which we use to train the discriminators .
+half of the seeds are used to find pmi thresholds for each discriminator , and the remaining seeds used to estimate conditional probabilities .
+an equal number of negative seeds is taken from among the positive seeds for other classes .
+bootstrapping selects the best k discriminators to use for the assessor , favoring those with the best split of positive and negative instances .
+now that it has a set of trained discriminators , knowitall does two more bootstrapping cycles : first , it uses the discriminators to re-rank the candidate seeds by probability ; next , it selects a new set of seeds and re-trains the discriminators .
+in the experiments reported in this paper , we used 100 candidate seeds , each with a hit count of at least 1,000 , and picked the best 20 ( m = 20 ) .
+finally , we set the number of discriminators k to 5 .
+these settings have been sufficient to produce correct seeds for all the classes we have experimented with thus far .
+bootstrapping and noise tolerance .
+an important issue with bootstrap training is robustness and noise tolerance : what is the effect on performance of the assessor if the automatically selected training seeds include errors ?
+experiment 1 compares performance for country trained on three different sets of seeds : correct seeds , seeds with 10 % noise ( 2 errors out of 20 seeds ) , and seeds with 30 % noise .
+the noisy seeds were actual candidate extractions that were not chosen by the full bootstrap process ( eu , middle east countries , iroquois , and other instances semantically related to nation or country ) .
+there is some degradation of performance from 10 % noise , and a sharp drop in performance from 30 % noise .
+another question that troubled us is the source of negative seeds .
+our solution was to train the assessor on multiple classes at once ; knowitall finds negative seeds for a class by sampling positive seeds from other classes , as in [ 26 ] .
+we take care that each class has at least one semantically related class to provide near misses .
+in these experiments , country gets negative seeds from city , usstate , actor , and film , and so forth .
+we tried the following alternative method of finding negative seeds .
+knowitall runs its extractor module to produce a set of unverified instances , then takes a random sample of those instances , which are hand-tagged as seeds .
+this training set has the added advantage of a representative proportion of positive and negative instances .
+experiment 2 shows an experiment where a random sample of 40 extractions were hand-tagged as seeds .
+these seeds were then removed from the test set for that run .
+surprisingly , the recall-precision curve is somewhat worse than selecting negative seeds from the other classes .
+a key point in training the discriminators is to provide useful near misses as negative training .
+using random words as negative training would nearly always give pmi scores of zero , and not produce accurate pmi thresholds or conditional probabilities .
+it turns out that actual extraction errors will often have zero pmi as well .
+much better near misses come from using instances of classes that have a semantic relation to the target class .
+instances of city and usstate tend to co-occur with discriminator phrases for country , and help the assessor learn higher pmi thresholds and more conservative estimates of conditional probability .
+experiment 2 : using negative seeds that are taken from seeds of other classes works better than tagging actual extraction errors as negative seeds .
+resource allocation .
+our preliminary experiments demonstrated that knowitall needs a policy that dictates when to stop looking for more instances of a predicate .
+for example , suppose that knowitall is looking for instances of the predicate country : there are only around 300 valid country names to find , but the extractor could continue examining up to 3 million web pages that match the query countries including , or other countries , and so forth .
+the valid country names would be found repeatedly , along with a large set of extraction errors .
+this would reduce efficiency if knowitall wastes queries on predicates that are already exhausted , this diverts system resources from the productive classes .
+finding thousands of spurious instances can also overwhelm the assessor and degrade knowitalls precision .
+we use a signal to noise ratio ( stn ) to determine the utility of searching for further instances of a predicate .
+while the extractor continues to find correct extractions at a fairly steady rate , the proportion of new extractions ( those not already in the knowledge base ) that are correct gradually becomes smaller over time .
+if nearly all the correct instances of a predicate are already in the knowledge base , new extractions will be mostly errors .
+thus , the ratio of good extractions to noise of new extractions is a good indicator of whether knowitall has exhausted the predicate .
+knowitall computes the stn ratio by dividing the number of high probability new extractions by the number of low probability ones over the most recent n web pages examined for that predicate ( n = 5000 ) .
+a small smoothing term is added to numerator and denominator to avoid division by zero .
+when the stn ratio drops below a cutoff point , the extractor is finding mostly noise , and halts search for that predicate .
+a cutoff of 0.10 means that there is ten times as much noise as good extractions .
+the stn metric is a reflective , unsupervised computation , since knowitall has no outside source of information to tell it which instances are correct and which are noise .
+instead , knowitall uses the probability estimates assigned by the assessor , and defines high probability and low probability in terms of thresholds on these probabilities .
+in the experiments reported here , we used a stn cutoff of 0.10 and defined high probability as probabilities above 0.90 and low probabilities as those below 0.0001 .
+the same settings were used for all predicates and all methods that included pmi probability assessment .
+the setting of 0.0001 for low probability is due to the nave bayes probability updates tendency to polarize the probability estimates .
+relying on probability assignments by the assessor is a limitation of the stn metric : we typically run the list extractor without using pmi assessment.5 le uses an alternate assessor method that assigns higher probability to instances that are found on a larger number of lists .
+this method is not suitable for a stn cutoff that is computed over new extractions , since all new extractions are necessarily on only a single list so far , thus all new extractions have low probability .
+we used an additional cutoff metric , the query yield ratio ( qyr ) , and halt search for new instances when either stn or qyr falls below 0.10 .
+qyr is defined as the ratio of query yield over the most recent n web pages examined , divided by the initial query yield over the first n web pages , where query yield is the number of new extractions divided by the number of web pages examined ( adding a small smoothing term to avoid division by zero ) .
+if this ratio falls below a cutoff point , the extractor has reached a point of diminishing returns where it is hardly finding any new extractions and halts the search for that predicate .
+the ratio of recent query yield to initial query yield is a better indicator that a predicate is nearly exhausted than using a cutoff on the query yield itself .
+the query yield varies greatly depending on the predicate and the extraction method used : the query yield for learned rules tends to be lower than for rules from generic patterns ; the list extractor method , where one query can produces a hundred extractions or more , has much higher query yield than the other knowitall extraction methods .
+experiment 3 shows the impact of the cutoff metrics .
+the top curve is for us state where knowitall automatically stopped looking for further instances after the stn fell below 0.10 after finding 371 proposed state names .
+the curve just below that is for us state when knowitall kept searching and found 3,927 proposed state names .
+in fact , none of the states found after the first few hours were correct , but enough of the errors fooled the assessor to reduce precision from 1.0 to 0.98 at the highest probability .
+the next two curves show country with and without cutoff metrics .
+knowitall found 194 correct and 357 incorrect country names with the cutoff metrics ; it found 387 correct countries , but also 2,777 incorrect extractions without cutoff metrics .
+the data point at precision 0.88 and recall 0.76 with cutoff metrics represents 148 correct instances ; without cutoff metrics , the point at precision 0.86 and recall 0.34 represents 130 correct instances .
+so continuing the search actually produced fewer correct instances at a given precision level .
+extended example .
+to better understand how knowitall operates , we present a detailed example of learning facts about geography .
+a user has given knowitall a set of predicates including city , and knowitall has used domain-independent rule templates to generate extraction rules and untrained discriminator phrases for city as described in section 2.2 .
+bootstrapping automatically selected seeds to train discriminators for city that include prominent cities like london and rome , and the obscure cities dagupan and shakhrisabz .
+negative training comes from seeds for other classes trained at the same time , including names of countries and u.s. states .
+after training all discriminator phrases with these seeds , bootstrapping has selected the five best discriminators shown in figure 11 .
+the thresholds are from one training set of 10 positive and 10 negative seeds ; the conditional probabilities come from another training set , with a smoothing factor of 1 added to the count of positive or negative above and below the threshold .
+once bootstrapping has generated the set of extraction rules and trained a set of discriminators for each predicate , knowitall begins its main extraction cycle .
+each cycle , knowitall selects a set of queries , sends them to a search engine , and uses the associated extraction rules to analyze the web pages that it downloads .
+suppose that the query is and other cities , from a rule with extraction pattern : np and other cities .
+figure 12 shows two sentences that might be found by the query for this rule .
+the extraction rule correctly extracts fes as a city from the first sentence , but is fooled by the second sentence , and extracts east coast as a city .
+to compute the probability of city ( fes ) , the assessor sends six queries to the web , and finds the following hit counts .
+fes has 446,000 hits ; fes is a city has 14 hits , giving a pmi score of 0.000031 for this discriminator , which is over the threshold for this discriminator .
+a pmi score over threshold for this discriminator is 10 times more likely for a correct instance than for an incorrect one , raising the probability that fes is a city .
+fes is also above threshold for cities fes ( 201 hits ) ; cities such as fes ( 10 hits ) ; and cities including fes ( 4 hits ) .
+it is below threshold on only one discriminator , with 0 hits for fes and other towns .
+the final probability is 0.99815 .
+in contrast , the assessor finds that city ( east coast ) is below threshold for all discriminators .
+even though there are 141 hits for cities east coast , 1 hit for cities such as east coast , and 3 hits for cities including east coast , the pmi scores are below threshold when divided by 1.7 million hits for east coast .
+the final probability is 0.00027 .
+experiments with baseline knowitall .
+we ran an experiment to evaluate the performance of knowitall as thus far described .
+we were particularly interested in quantifying the impact of the assessor on the precision and recall of the system .
+the assessor assigns probabilities to each extraction .
+these probabilities are the systems confidence in each extraction and can be thought of as analogous to a ranking function in information retrieval : the goal is for the set of extractions with high probability to have high precision , and for the precision to decline gracefully as the probability threshold is lowered .
+this is , indeed , what we found .
+we ran the system with an information focus consisting of five classes : city , usstate , country , actor , and film .
+the first three had been used in system development and the last two , actor and film , were new classes .
+the assessor used pmi score thresholds as boolean features to assign a probability to each extraction , with the system selecting the best five discriminator phrases as described in section 2.4 .
+we use the standard metrics of precision and recall to measure knowitalls performance .
+at each probability p assigned by the assessor , we count the number of correct extractions at or above probability p .
+this is done by first comparing the extracted instances automatically with an external knowledge base , the tipster gazetteer for locations and the internet movie database ( imdb ) for actors and films .
+we manually checked any instances not found in the gazetteer or the imdb to ensure that they were indeed errors .
+precision at p is the number of correct extractions divided by the total extractions at or above p .
+recall at p is defined as the number of correct extractions at or above p divided by the total number of correct extractions at all probabilities .
+note that this is recall with respect to sentences that the system has actually seen , and the extraction rules it utilizes , rather than a hypothetical , but unknown , number of correct extractions possible with an arbitrary set of extraction rules applied to the entire web .
+experiments 4 and 5 show precision and recall at the end of running knowitall for four days .
+each point on the curves shows the precision and recall for extractions with probability at or above a given level .
+the curve for city has precision 0.98 at recall 0.76 , then drops to precision 0.71 at recall 1.0 .
+the curve for usstate has precision 1.0 at recall 0.98 ; country has precision 0.97 at recall 0.58 , and precision 0.79 at recall 0.87 .
+performance on the two new classes ( actor and film ) is on par with the geography domain we used for system development .
+the class actor has precision 0.96 at recall 0.85 .
+knowitall had more difficulty with the class film , where the precision-recall curve is fairly flat , with precision 0.90 at recall 0.27 , and precision 0.78 at recall 0.57 .
+our precision / recall curves also enable us to precisely quantify the impact of the assessor on knowitalls performance .
+if the assessor is turned off , then knowitalls output corresponds to the point on the curve where the recall is 1.00 .
+the precision , with the assessor off , varies between classes : for city 0.71 , usstate 0.96 , country 0.35 , film 0.49 , and actor 0.69 .
+turning the assessor on enables knowitall to achieve substantially higher precision .
+for example , the assessor raised precision for country from 0.35 to 0.79 at recall 0.87 .
+the assessor is able to do a good job of assigning high probabilities to correct instances with only a few false positives .
+most of the extraction errors are of instances that are semantically close to the target class .
+the incorrect extractions for country with probability > 0.80 are nearly all names of collections of countries : nafta , north america , and so forth .
+some of the errors at lower probability are american indian tribes , which are often referred to as nations .
+common errors for the class film are names of directors , or partial names of films ( a film named dalmatians instead of 101 dalmatians ) .
+the assessor has more trouble with false negatives than with false positives .
+even though a majority of the instances at the lowest probabilities are incorrect extractions , many are actually correct .
+an instance that has a relatively low number of hit counts will often fall below the pmi threshold for discriminator phrases , even if it is a valid instance of the class .
+an instance receives a low probability if it fails more than half of the discriminator thresholds , even if it is only slightly below the threshold each time .
+extending knowitall with pattern learning .
+while generic extraction patterns perform well in the baseline knowitall system , many of the best extraction rules for a domain do not match a generic pattern .
+for example , the film < film > starring and headquartered in < city > are rules with high precision and high coverage for the classes film and city .
+arming knowitall with a set of such domain-specific rules can significantly increase the number of sentences from which it can extract facts .
+this section describes our method for learning domain-specific rules .
+as shown in figure 13 , we introduce the insight that pattern learning ( pl ) can be used to increase both coverage ( by learning extractors ) and accuracy ( by learning discriminators ) .
+we quantify the efficacy of this approach via experiments on multiple classes , and describe design decisions that enhance the performance of pattern learning over the web .
+figure 13 : the patterns that pl produces can be used as both extractors and discriminators .
+learning patterns .
+our pattern learning algorithm proceeds as follows : start with a set i of seed instances generated by domain-independent extractors .
+for each seed instance i in i : issue a query to a web search engine for i , and for each occurrence of i in the returned documents record a context string comprised of the w words before i , a placeholder for the class instance ( denoted by < class-name > ) , and the w words after i . ( here , we use w = 4 ) .6 6limited-length context strings form a rather impoverished hypothesis space for pl , but the space was adequate in our experiments .
+the other advantage of the strings , compared with more expressive languages for expressing pl patterns , is that the strings can be used directly as search engine queries when the patterns are employed to generate and assess candidate instances .
+output the best patterns according to some metrica pattern is defined as any substring of a context string that includes the instance placeholder and at least one other word .
+the goal of pl is to find high-quality patterns .
+a patterns quality is given by its recall ( the fraction of instances of the target class that can be found on the web surrounded by the given pattern text ) and its precision ( the fraction of strings found surrounded by the pattern text that are of the target class ) .
+the web contains a large number of candidate patterns ( for example , pl found over 300,000 patterns for the class city ) , most of which are of poor quality .
+thus , estimating the precision and recall of patterns efficiently ( i.e. without searching the web for each candidate pattern ) is important .
+estimating precision for patterns is especially difficult because we have no labeled negative examples , only positive seeds .
+instead , in a manner similar to [ 26 ] we exploit the fact that pl learns patterns for multiple classes at once , and take the positive examples of one class to be negative examples for all other classes .
+given that a pattern p is found for c ( p ) distinct seeds from the target class and n ( p ) distinct seeds from other classes , we define : learned patterns as extractors .
+the patterns pl produces can be used as extractors to search the web for new candidate facts .
+for example , given the learned pattern headquartered in < city > , we search the web for pages containing the phrase headquartered in .
+any proper noun phrase occurring directly after headquartered in in the returned documents becomes a new candidate extraction for the class city .
+of the many patterns pl finds for a given class , we choose as extractors those patterns most able to efficiently generate new extractions with high precision .
+the patterns we select must have high precision , and extractor efficiency ( the number of unique instances produced per search engine query ) is also important .
+for a given class , we first select the top patterns according to the following heuristics : h1 : as in [ 6 ] , we prefer patterns that appear for multiple distinct seeds .
+by banning all patterns found for just a single seed ( i.e. requiring that estimatedrecall > 1 / 5 in equation 4 ) , 96 % of the potential rules are eliminated .
+in experiments with the class city , h1 was found to improve the average efficiency of the resulting patterns by a factor of five .
+h2 : we sort the remaining patterns according to their estimatedprecision ( equation 3 ) .
+on experiments with the class city , ranking by h2 was found to further increase average efficiency ( by 64 % over h1 ) and significantly improve average precision ( from 0.32 to 0.58 ) .
+of all the patterns pl generates for a given class , we take the 200 patterns that satisfy h1 and are ranked most highly by h2 and subject them to further analysis , applying each to 100 web pages and testing precision using pmi assessment .
+experimental results .
+we performed experiments testing our baseline system ( knowitall with only domain independent patterns ) against an enhanced version , baseline + pl ( knowitall including extractors generated by pattern learning ) .
+in both configurations , we perform pmi assessment to assign a probability to each extraction ( using only domain independent discriminators ) .
+we estimated the coverage ( number of unique instances extracted ) for both configurations by manually tagging a representative sample of the extracted instances , grouped by probability .
+in the case of city , we also automatically marked instances as correct if they appeared in the tipster gazetteer .
+to ensure a fair comparison , we compare coverage at the same level of overall precision , computed as the proportion of correct instances at or above a given probability .
+we used the google search engine in all experiments .
+the results shown in experiments 10 and 11 in section 6 show that using learned patterns as extractors improves knowitalls coverage substantially .
+examples of the most productive extractors for each class are shown in table 1 .
+learned patterns as discriminators .
+learned patterns can also be used as discriminators to perform pmi assessment .
+as described above , the pmi scores for a given extraction are used as features in a naive bayes classifier .
+in the experiments below , we show that learned discriminators provide stronger features than domain independent discriminators for the classifier , improving the classification accuracy ( the percentage of extractions classified correctly ) of the pmi assessment .
+once we have a large set of learned discriminators , determining which discriminators are the best in terms of their impact on classification accuracy becomes especially important , as we have limited access to web search engines .
+in the baseline knowitall system , the same five discriminators are executed on every extraction .
+however , it may be the case that a discriminator will perform better on some extractions than it does on others .
+for example , the discriminator cities such as < city > has high precision , but appears only rarely on the web .
+while a pmi score of 1 / 100 , 000 on cities such as < city > may give strong evidence that an extraction is indeed a city , if the city itself appears only a few thousand times on the web , the probability of the discriminator returning a false zero is high .
+for these rare extractions , choosing a more prevalent discriminator ( albeit one with lower precision ) like < city > hotels might offer better performance .
+lastly , executing five discriminators on every extraction is not always the best choice .
+for example , if the first few discriminators executed on an extraction have high precision and return true , the systems resources would be better spent assessing other extractions , the truth of which is less certain .
+in [ 18 ] formalizes the problem of choosing which discriminators to execute on which extractions as an optimization problem , and describes a heuristic method that includes the enhancements mentioned above .
+the paper shows that the heuristic has provably optimal behavior in important special cases , and then verifies experimentally that the heuristic improves accuracy .
+related work .
+pl is similar to existing approaches to pattern learning , the primary distinction being that we use learned patterns to perform pmi-ir [ 42 ] assessment as well as extraction .
+pl also differs from other pattern learning algorithms in some details .
+riloff and jones [ 37 ] use bootstrapped learning on a small corpus to alternately learn instances of large semantic classes and4 patterns that can generate more instances ; similar bootstrapping approaches that use larger corpora include snowball [ 3 ] and dipre [ 6 ] .
+our work is similar to these approaches , but differs in that pl does not use bootstrapping ( it learns its patterns once from an initial set of seeds ) and uses somewhat different heuristics for pattern quality .
+like our work , ravichandran and hovy [ 36 ] use web search engines to find patterns surrounding seed values .
+however , their goal is to support question answering , for which a training set of question and answer pairs is known .
+unlike pl , they can measure a patterns precision on seed questions by checking the correspondence between the extracted answers and the answers given by the seed .
+as in work by riloff [ 41 ] and others , pl uses the fact that it learns patterns for multiple classes at once to improve precision .
+the particular way we use multiple classes to estimate a patterns precision ( equation 3 ) is similar to that of lin et al. [ 26 ] .
+a unique feature of our approach is that our heuristic is computed solely by searching the web for seed values , instead of searching the corpus for each discovered pattern .
+a variety of work in information extraction has been performed using more sophisticated structures than the simple patterns that pl produces .
+wrapper induction algorithms [ 24 , 30 ] attempt to learn wrappers that exploit the structure of html to extract information from web sites .
+also , a variety of rule-learning schemes [ 40 , 7 , 8 ] have been designed for extracting information from semi-structured and free text .
+similarly , richer language models have been used to learn lexico-syntactic patterns that identify examples of the hyponym relation [ 39 ] .
+in this paper , we restrict our attention to simple text patterns , as they are the most natural fit for our approach of leveraging web search engines for both extraction and pmi assessment .
+for extraction , it may be possible to use a richer set of patterns with web search engines given the proper query generation strategy [ 2 ] ; this is an item of future work .
+subclass extraction .
+another method to extend knowitalls recall is subclass extraction ( se ) , which automatically identifies subclasses .
+for example , not all scientists are found in sentences that identify them as scientist some are referred to only as chemists , some only as physicist , some only as biologists , and so forth .
+if se learns these and other subclasses of scientist , then knowitall can create extraction patterns to find a larger set of scientists .
+as it turns out , subclass extraction can be achieved elegantly by a recursive application of knowitalls main loop ( with some extensions ) .
+in the following , we describe the basic subclass extraction method ( 5ebase ) , discuss two variations ( 5esel f and 5ezter ) aimed at increasing ses recall , and present encouraging results for a number of different classes .
+extracting candidate subclasses .
+in general , the 5ebase extraction module has the same design as the original knowitall extraction module .
+its input consists of domain-independent extraction rules for generating candidate terms , for which matches are found on the web .
+the generic rules that extract instances of a class will also extract subclasses , with some modifications .
+to begin with , the rules need to distinguish between instances and subclasses of a class .
+the rules for extracting instances in section 2.1 contain a proper noun test ( using a part-of-speech tagger and a capitalization test ) .
+rules for extracting subclasses instead check that the extracted noun is a common noun ( i.e. , not capitalized ) .
+while these tests are heuristic , they work reasonably well in practice , and knowitall also falls back on its assessor module to weed out erroneous extractions .
+the patterns for our subclass extraction rules appear in table 2 .
+most of our patterns are simple variations of well-known ones in the information-extraction literature [ 22 ] .
+c1 and c2 denote known classes and cn denotes a common noun or common noun phrase .
+note that the last two rules can only be used once some subclasses of the class have already been found .
+assessing candidate subclasses .
+se uses a generate-and-test technique for extracting subclasses , much as the main knowitall algorithm does for extracting instances .
+the 5ebase assessor uses a combination of methods to decide which of the candidate subclasses from the 5ebase extractor are correct .
+first , the assessor checks the morphology of the candidate term , since some subclass names are formed by attaching a prefix to the name of the class ( e.g. , microbiologist is a subclass of biologist ) .
+then the assessor checks whether a subclass is a hyponym of the class in wordnet and if so , it assigns it a very high probability .
+the rest of the extractions are evaluated in a manner similar to the instance assessment in knowitall ( with some modifications ) .
+the assessor computes co-occurrence statistics of candidate terms with a set of class discriminators .
+such statistics represent features that are combined in a naive bayesian probability update .
+the 5ebase assessor uses a bootstrap training method similar to that described in section 2.5 .
+initially , we had hoped to use instance information as part of the assessment process .
+for instance , if a proposed subclass had extracted instances that are also instances of the target class , this would have boosted the probability of it being a true subclass .
+however , our instance sampling procedure revealed that reliable instances for a number of correct proposed subclasses could not be extracted ( with generic rules ) as instances of the target superclass .
+apparently some classes , like scientist , are very general and naturally decomposable , and so people tend to use more specific subclasses of the class when writing .
+classes like physicist or city , on the other hand , are used more frequently together with instances , and they have far fewer useful subclasses .
+context-independent and context-dependent subclasses .
+before presenting our experimental results , we need to introduce two key distinctions .
+we distinguish between finding subclasses in a context-independent manner versus finding subclasses in a context-dependent manner .
+the term context refers to a set of keywords provided by the user that suggest a knowledge domain of interest ( e.g. , the pharmaceutical domain , the political domain , etc . ) .
+in the absence of a domain description , knowitall finds subclasses in a context-independent manner and they can differ from context- dependent subclasses .
+for instance , if we are looking for any subclasses of person ( or people ) , priest would be a good candidate .
+however , if we are looking for subclasses of person ( or people ) in a pharmaceutical context , priest is probably not a good candidate , whereas pharmacist is .
+we also distinguish between named subclasses and derived subclasses .
+named subclasses are represented by novel terms , whereas derived subclasses are phrases whose head noun is the same as the name of the superclass .
+for instance , capital is a named subclass of city , whereas european city is a derived subclass of city .
+while derived subclasses are interesting in themselves , we focus on the extraction of named subclasses , as they are more useful in increasing knowitalls instance recall .
+the reason is that extraction rules that use derived subclasses tend to extract a lot of the same instances as the rules using the name of the superclass .
+we now turn to our experimental results .
+we have evaluated our basic subclass extraction method in two different settings .
+context-independent se first , we chose three classes , scientist , city and film and looked for context-independent subclasses using the 5ebase approach described above .
+ebase found only one named subclass for city , capital , which is also the only one listed in the wordnet hyponym hierarchy for this class . 5ebase found 8 correct subclasses for film and 1 1 for scientistthis confirmed our intuition that subclass extraction would be most successful on general classes , such as scientist and least successful on specific classes such as city .
+as shown in experiment 7 , we have evaluated the output of 5ebase along four metrics : precision , recall , total number of correct subclasses and proportion of ( correct ) subclasses found that do not appear in wordnet .
+as we can see , 5ebase has high-precision but relatively low recall , reflecting the low recall of our domain-independent patterns .
+context-dependent se a second evaluation of 5ebase ( experiment 8 ) was done for a context- dependent subclass extraction task , using as input three categories that were shown to be productive in previous semantic lexicon acquisition work [ 35 ] : people , products and organizations in the pharmaceutical domain.7 5ebase exhibits the same high-precision / low-recall behavior we noticed in the context-independent case .
+we also notice that most of the subclasses of people and organizations are in fact in wordnet , whereas none of the found subclasses for products in the pharmaceutical domain appears in wordnet .
+next , we investigate two methods for increasing the recall of the subclass extraction module .
+improving subclass extraction recall .
+generic extraction rules have low recall and do not generate all of the subclasses we would expect .
+in order to improve our subclass recall , we add another extraction-and-verification step .
+after a set of subclasses for the given class is obtained in the manner of 5ebase , the last two enumeration rules in table 2 are seeded with known subclasses and extract additional subclass candidates .
+for instance , given the sentence biologists , physicists and chemists have convened at this inter-disciplinary conference . , such rules identify chemists as a possible sibling of biologists and physicists .
+we experiment with two methods , sesel f and seiter in order to assess the extractions obtained at this step .
+sesel f is a simple assessment method based on the empirical observation that an extraction matching a large number of different enumeration rules is likely to be a good subclass candidate .
+we have tried to use the enumeration rules directly as features for a naive bayes classifier , but the very nature of the enumeration rule instantiations ensures that positive examples dont have to occur in any specific instantiation , as long they occur frequently enough .
+we simply convert the number of different enumeration rules matched by each example and the average number of times an example matches its corresponding rules into boolean features ( using a learned threshold ) .
+since we have a large quantity of unlabeled data at our disposal , we estimate the thresholds and train a simple naive-bayes classifier using the self-training paradigm [ 31 ] , chosen as it has been shown to outperform em in a variety of situations .
+at each iteration , we label the unlabeled data and retain the example labeled with highest confidence as part of the training set .
+the procedure is repeated until all the unlabeled data is exhausted .
+the extractions whose probabilities are greater than 0.8 represent the final set of subclasses ( since subclasses are generally used by knowitall for instance extraction , bad subclasses translate into time wasted by the system and as such , we retain only candidate subclasses whose probability is relatively high ) .
+b ) seiter is a heuristic assessment method that seeks to adjust the probabilities assigned to the extractions based on confidence scores assigned to the enumeration rules in a recursive fashion .
+the confidence score of a rule is given by the average probability of extractions matched by that rule .
+after rule confidence scores have been determined , the extraction matching the most rules is assigned a probability p = c ( r1 ) 2c ( r2 ) , where r1 and r2 are the two matching rules with highest confidence scores .
+the rule confidence scores are then re-evaluated and the process ends when all extractions have been assigned a probability .
+this scheme has the effect of clustering the extractions based on the rules they match and it works to the advantage of good subclasses that match a small set of good extraction rules .
+however , as we will later see , this method is sensitive to noise .
+as in the case of sesel f , we only retain the extractions whose probability is greater than 0.8 . 4.5 experimental results we evaluated the methods introduced above on two of the three context-independent classes ( scientist and film ) in experiment 7.8 we also evaluated the methods on all three pharmaceutical domain classes ( people , product , organization ) in experiment 8 .
+we found that both sesel f and seiter significantly improved upon the recall of the baseline method ; for both , this increase in recall is traded for a loss in precision .
+seiter has the highest recall , at the price of an average 2.3 % precision loss with respect to sebase .
+in the future , we will perform additional experiments to assess which one of the two methods is less sensitive to noise , but based upon inspection of the test set and the behavior of both methods , sesel f appears more robust to noise than seiter .
+another potential benefit of subclass extraction is an increase in the number of class instances that knowitall is able to extract from the web .
+in the case of the scientist class , for example , the number of scientists extracted by knowitall at precision 0.9 increased by a factor of 5 .
+seiter was used to extract subclasses and add them to the ontology .
+we do not see this benefit for classes such as city , where most of the extracted subclasses are derived subclasses ( e.g. , european city ) .
+the reason is that extraction rules that use derived subclasses tend to extract a lot of the same instances as the rules using the name of the superclass ( see table 2 ) .
+discussion .
+it is somewhat surprising that simple features such as the number of rules matching a given extraction are such good predictors of a candidate representing a subclass .
+we attribute this to the redundancy of web data ( we were able to find matches for a large number of our instantiated candidate rules ) and to the semantics of the enumeration patterns .
+the subclass sets from sesel f and seiter contain many of the same candidates , although seiter typically picks up a few more .
+another interesting observation is that the different sets of extracted subclasses have widely varying degrees of overlap with the hyponym information available in wordnet .
+in fact , all but one of the subclasses identified for people are in wordnet , whereas none of those products appear there ( e.g. , antibiotics , antihistamines , compounds , etc . ) .
+in the case of organizations , there is a partial overlap with wordnet and it is interesting that terms that can refer both to a person and an organization ( supplier , exporter etc . ) tend to appear only as subclasses of person in wordnet , although they are usually found as subclasses of organizations by knowitalls subclass extraction methods .
+list extractor .
+we now present the third method for increasing knowitalls recall , the list extractor ( le ) .
+where the methods described earlier extract information from unstructured text on web pages , le uses regular page structure to support extraction .
+le locates lists of items on web pages , learns a wrapper on the fly for each list , automatically extracts items from these lists , then sorts the items by the number of lists in which they appear .
+le locates lists by querying search engines with sets of items extracted by the baseline knowitall ( e.g. , le might query google with london paris new york rome ) .
+le leverage the fact that many informational pages are generated from databases and therefore have a distinct , but regular and easy-to-learn structure .
+we combine ideas from previous work done on wrapper induction in our implementation of le to learn wrappers quickly ( in under a second of cpu time per document ) and autonomously ( unlike much of the work on wrapper induction , le is unsupervised ) .
+background and related work .
+one of the first applications of wrapper learning appeared in [ 16 ] , which describes an agent that queried online stores with known product names and looked for regularities in the resulting pages in order to build e- commerce wrappers .
+in [ 24 ] , kushmerick generalized how to automatically learn wrappers for information extraction , and presented wrappers as regular expressions with some kind of structure or constraints .
+the idea is that given a fully labeled training set of sample extractions from documents , one can learn a wrapper or patterns of words that precede and follow the extracted terms .
+in addition to the prefixes and suffixes , there is also a notion of heads and tails , which are points that delimit the context to which the extraction pattern applies .
+the base algorithm for wrapper induction is fairly straightforward .
+given fully labeled texts ( or oracles ) in which negative examples are those parts without labels , iterate over all possible patterns to find the best heads , tails , prefixes , and suffixes , that match all the training data , and use these for extraction .
+the complexity and accuracy depends on the expressiveness of the expressions ( i.e. wild cards , semantic / synonym matches , etc . ) , the amount of data to learn from , and the level of structure in the documents .
+cohen in [ 1 1 ] extended the notion of wrapper induction by generalizing how to automatically learn rules to include linear regular expressions as well as hierarchical paths ( dom parse ) in an html document .
+cohen also explored how to use these wrappers to automatically extract arbitrary lists of related items from web pages for other purposes [ 10 ] .
+we borrow both of these ideas in our implementation , but differ in how our wrapper is trained , used , and measured experimentally .
+perhaps the work that most resembles le is google sets , which is an interface provided by google that functionally appears almost identical to le .
+the input to google sets is several words , and the output is a list of up to 100 tokens that are found in lists on the web .
+since we do not know how google sets is implemented and cannot get unlimited results from their interface , we are unable to compare the two systems . 5.2 problem definition and characteristics the inputs to le include the name of a class and a set of positive seeds .
+the output is a set of candidate tokens for the given class that are found on web pages containing lists of instances , where the list includes a subset of the positive seeds .
+we take advantage of the repetition of information on the web by being highly selective on which documents we choose to extract from .
+in particular , we want documents that contain many known positive examples and that exhibit a high amount of structure from which we can infer new examples .
+it is reasonable to assume that this structure exists for many classes , since many professional web sites are automatically generated from databases .
+we do not have negative examples , so any learning procedure we use will have to rely on positive examples only .
+this means that as we carve out a space that we believe separates the positive instances from the negative ones , we need to make some assumptions or apply some domain specific heuristics to create a precise information extractor .
+this is done by analyzing the html structure of a document .
+in particular , we localize our learning to specific blocks of html , and strongly favor complex hypotheses over less restrictive ones .
+it is better to under-generalize than to over-generalize .
+the intuition is that under- generalizing may result in false negatives for a given document , but that the missed opportunities on one document are likely to appear again on other documents .
+algorithm .
+now we will discuss the online wrapper induction algorithm outlined in figure 14 .
+the input to this algorithm is a set of positive examples ( seedexamples at line 1 ) .
+the output is a list of tokens ( extractions ) .
+the first step is to use the seed examples to obtain a set of documents as shown in line 2 .
+this is currently done by selecting some number of random positive seeds to combine in a query to a search engine such as google .
+one can imagine more sophisticated ways of selecting seeds such as grouping popular or rare instances together ( assuming like-popularity instances are found together ) , or grouping seeds alphabetically since lists are often alphabetical on the web .
+we apply the learning and extraction to each document individually .
+within a document we further partition the space based on the html tags .
+this is done by creating a subtree ( or single html block from the whole document ) for every set of composite tags ( such as < table > , < select > , < td > , etc . ) that have a start and end tag and more text and tags in between .
+once we have selected an html block or subtree of the parsed html , we must first identify all the positive seeds within that block that are the words used in the search .
+we may add a threshold to skip and continue with the next block if not enough seeds are found .
+at this point we apply the learning to induce a wrapper .
+a prefix is some pattern that precedes a token ( the seeds in our example ) .
+in order to learn the best prefix pattern for a given block , we consider all the keywords in that block , and find some pattern that maximally matches all of them .
+generally we consider 3 - 10 keywords in a block to learn from ( more discussion of this later ) .
+one option is to build a prefix that matches as many exact characters as possible for each keyword starting from the token and going outwards to the left .
+a more flexible option is to increase expressiveness and have wildcards , boolean characteristics , or semantic / synonym options in the matching , similar to perl regular expressions .
+the former option is too specific to generalize well in almost any context , and the latter is complicated and requires many training examples ( probably best for free text with many labeled examples ) .
+we chose a compromise that we believe will work well in the web domain .
+first we require that all characters match up until the first html tag .
+for example , < center > hot tucson < / center > and < t d > h o t ph o e n i x < / t d > would have a prefix hot .
+if the text matches up to a tag , then we check if the tags match .
+in this case we do not require that the whole tag match - we just require that the tag type be the same , even though the attributes may differ .
+this means that for an < a ... > tag , two keywords might have a different href = ... but still match .
+the only exception is when we match a text block ( or text between tags ) .
+then these must match among all keywords in order to be included in the prefix .
+some sample wrappers look like ( < td > < a > token motels < / a > < / td > ) and ( / / & nbsp ; token & nbsp ; / / ) .
+the best prefix is generally considered to be the longest matching prefix .
+to learn a suffix , we apply the same idea outwards to the right of the token .
+once a wrapper is learned , we add it to a wrapper tree .
+the wrapper tree is a hierarchical structure that resembles the html structure .
+each wrapper in the wrapper tree corresponds to blocks that subsume or contain other wrappers and their blocks .
+this can be useful for later analysis and comparison of wrappers for a given document in order to choose which wrappers to apply .
+one heuristic would be to only apply wrappers that are at the leaves ( i.e. smallest html block with several keywords ) .
+another heuristic would be to apply a wrapper only if it did not generalize any further than its children .
+after all the wrappers have been constructed and added to the tree , we select the best ones according to such a measure ( initialized with defaults or learned in some way ) and apply them to get extractions .
+applying a wrapper simply means to find other sequences in the block that match the pattern completely , and then to extract the specified token .
+example and parameters .
+we consider a relatively simple example in figure 15 in order to see how the algorithm works , and to illustrate the effects of different parameters on precision , recall , overfitting , and generalization .
+on top we have the 4 seeds used to search and retrieve the html document , and below we have the 5 wrappers learned from at least 2 keywords and their bounding lines in the html .
+the first wrapper , w1 , is learned for the whole html document , and matches all 4 keywords ; w2 is for the body , and is identical to w1 , except for the context ; w3 has the same wrapper pattern as w1 and w2 , contains all keywords , but has a noticeably different and smaller context ( just the single table block ) ; w4 is interesting because here we see an example of overfitting .
+the suffix is too long and will not extract france .
+we see a similar problem in w5 where the prefix is too long and will not extract israel .
+it is easy to see that the best wrapper is w3 ; w4 and w5 are too specific ; while w2 and w1 are too general .
+there are a few heuristics one can apply to prefer wrappers such as w3 over the others .
+one is to force most or all keywords to match ( in our case , forcing 3 or 4 words to match rather than 2 would not have allowed w4 or w5 ) .
+another is to only consider leaf wrappers .
+in the case of having at least 2 words match for a wrapper , this would not help since we would select w4 and w5 .
+however , if we combine selecting leaf wrappers with matching many key words , we would eliminate w4 and w5 and be left with w3 , which is optimal .
+the intuition is that generally as we go up the wrapper tree , we generalize our wrappers to a larger part of the document which is more prone to errors .
+if we do not force many keywords to match , we get smaller leaves and may be more precise lower in the tree , but miss out on some of the structure and get less extractions .
+below is a list of some parameters to consider when using this algorithm : we measured le on three classes running it for varying number of seeds and queries .
+we left all parameters at their default values ( meaning the wrappers were fairly selective ) and searched for documents using 4 randomly drawn seeds at a time .
+a sample of the results are shown in experiment 9 .
+as experiment 9 shows , le is very efficient at finding many correct extractions in a class .
+in under two minutes , it took five seeds and found about 4000 correct extractions .
+actually this is not very impressive since some lists were found on pages that contained over 18,000 correct city instances ( so the correct search query can get much better documents ) .
+however , in all cases , there was also a significant amount of junk .
+here are some of the reasons for this : discussion and future extensions .
+although the percentage correct in all categories may not look very promising , these results are actually quite good since cutting down the number of candidate tokens from the whole web to the subsets above helps the assessor .
+also , there may be many items found in lists and other structures on the web that are not found in free text by standard information extraction methods .
+for example , rare cities found on long html select lists will often not be found in free text .
+there are quite a few extensions that can be done to make le work better .
+finding more relevant documents and lists , perhaps through better selection of seeds , will probably help , since there are clearly thousands of lists still to be found in all the classes considered here .
+making the wrappers more expressive and learning the best wrapper parameters for each class could help too .
+for example , movies could use more flexible matching since the titles sometimes have slightly different orders of words , but are still the same .
+experimental comparison .
+we conducted a series of experiments to evaluate the effectiveness of subclass extraction ( se ) , pattern learning ( pl ) , and list extraction ( le ) in increasing the recall of the baseline knowitall system on three classes city , scientist , film .
+we used the google api as our search engine .
+the baseline , se , and pl methods assigned a probability of correctness to each instance based on pmi scores ; le assigned probability based on the number of lists in which an instance was found .
+we estimated the number of correct instances extracted by manually tagging samples of the instances grouped by probability , and computed precision as the proportion of correct instances at or above a given probability .
+in addition , in the case of city , we automatically marked instances as correct when they appeared in the tipster gazetteer , and likewise for film and the internet movie database .
+we were surprised to find that over half of our correct instances of city were not in the tipster gazetteer .
+the le method found a total of 78,157 correct extractions for city , of which 44,611 or 57 % were not in the tipster gazetteer .
+even if we consider only the high probability extractions , there are still a large number of cities found by knowitall that are missing from the tipster gazetteer : we found 14,645 additional true cities at precision .80 and 6,288 true cities at precision .90 .
+experiments 10 , 11 , and 12 compare the number of extractions at two precision levels : at precision 0.90 for the baseline knowitall system ( b ) , the baseline combined with each method ( pl , se , le ) and all for the union of instances extracted by b , pl , se , and le ; and at precision .80 for the bars marked b2 , pl2 , se2 , le2 , and all2 .
+in each bar , the instances extracted by the baseline exclusively ( b or b2 ) are the white portion , and those extracted by both a new method and the baseline are shown in gray .
+since each method begins by running the baseline system , the combined height of the white and gray portions is exactly that of the b bar in each figure .
+finally , instances extracted by one of this papers methods but not by the baseline are in black .
+thus , the black portion shows the added value of our new methods over the baseline system .
+in the city class we see that each of the methods resulted in some improvement over the baseline , but the methods were dominated by le , which resulted in more than a 4-fold improvement , and found nearly all the extractions found by other methods .
+we see very similar results for the class film ( experiment 11 ) , where le gives a 7-fold improvement at precision .90 and 8-fold improvement at precision .80 .
+we saw a different behavior for the class scientist ( experiment 12 ) , where ses ability to extract subclasses made it the dominant method , though both pl and le found useful extractions that se did not .
+se gave a nearly 5-fold improvement over b for scientist at precision .90 and all methods combined gave a 7- fold improvement .
+we believe that se is particularly powerful for general , naturally decomposable classes such as plant , animal , or machine where text usually refers to their named subclasses ( e.g. , flower , mammal , computer ) .
+to use the psychological terminology of [ 38 ] , we conjecture that text on the web refers to instances as elements of basic level categories such as flower much more frequently than as elements of superordinate ones such as plant .
+while our methods clearly enhance knowitalls recall , what impact do they have on its extraction rate ?
+as an information carnivore , knowitall relies heavily on web search engines for both extraction and assessment .
+since it would be inappropriate for knowitall to overload these search engines , we limit the number of queries per minute that knowitall issues to any given search engine .
+thus , search engine queries ( with a courtesy wait between queries ) are the systems main bottleneck .
+we measure extraction rate by the number of unique instances extracted per search engine query .
+we focus on unique extractions because each of our methods extracts popular instances multiple times .
+table 3 shows that le not only finds five to ten times more extractions than the other methods , but also has an extraction rate over forty times greater than the other methods .
+table 4 shows how the trade-off between recall and precision has major impact on knowitalls performance .
+for each class and each method , knowitall finds a total number of extractions that is larger than the number of extractions that it can reliably classify as correct .
+for example , le finds a total of 151,016 extractions for city that include 78,157 correct cities , for an overall precision of 0.52 before applying the assessor .
+a perfect assessor would give high probability to all of the correct extractions , and low probability to all the errors ; we were pleasantly surprised that the alternate list frequency assessor method used by le has performance comparable to the pmi method .
+the pmi probability computation requires a set of search engine queries to get hit counts for each discriminator for each new extraction , which accounts for most of the queries in table 3 .
+le is more efficient , because it does not use hit counts , but uses a probability computation that increases monotonically with the number of lists in which an extraction is found .
+the list frequency method outperformed the pmi method for the class film , finding 70 % of the correct films at precision .80 as compared to 34 % of correct films at precision .80 for the baseline system .
+on the other hand , the pmi method performed better than the list frequency method for the classes city , and scientist .
+this raises an interesting question of whether a frequency-based probability computation can be devised that is effective in maintaining high precision , while avoiding a hit count bottleneck .
+the variation in overall precision in table 4 corresponds to variation in effectiveness of the assessor in distinguishing correct extractions from noise .
+the baseline system halted its search for cities while the overall precision was fairly high , 0.83 , because the assessor was assigning low probability to obscure , but correct cities and the signal-to-noise ratio fell below 0.10 .
+this was even more pronounced for se , which cut off search for more scientists , at an overall precision of 0.91 .
+while each of the methods tested have numerous parameters that influence their performance , we ran our experiments using the best parameter settings we could find for each method .
+while the exact results will vary with different settings , or classes , we are confident that our main observations the large increase in recall due to our methods in concert , and an impressive increase in extraction rate due to le will be borne out by additional studies .
+related work .
+one of knowitalls main contributions is adapting turneys pmi-ir algorithm [ 42 , 43 , 44 ] to serve as validation for information extraction .
+pmi-ir uses search engine hit counts to compute pointwise mutual information that measures the degree of correlation between a pair of words .
+turney used pmi from hit counts to select among candidate synonyms of a word , and to detect the semantic orientation of a phrase by comparing its pmi with positive words ( e.g. excellent ) and with negative words ( e.g. poor ) .
+other researchers have also made use of pmi from hit counts .
+magnini et al. [ 27 ] validate proposed question-answer pairs for a qa system by learning validation patterns that look for the contexts in which the proposed question and answer occur in proximity .
+uryupina [ 45 ] classifies proposed instances of geographical classes by embedding the instance in discriminator phrases much like knowitalls , which are then given as features to the ripper classifier .
+knowitall is distinguished from many information extraction ( ie ) systems by its novel approach to bootstrap learning , which obviates hand-labeled training examples .
+unlike ie systems that use supervised learning techniques such as hidden markov models ( hmms ) [ 21 ] , rule learning [ 40 , 7 , 8 ] , maximum entropy [ 32 ] , or conditional random fields [ 29 ] , knowitall does not require any manually-tagged training data .
+bootstrap learning is an iterative approach that alternates between learning rules from a set of instances , and finding instances from a set of rules .
+this is closely related to co-training [ 4 ] , which alternately learns using two orthogonal view of the data .
+jones et al. [ 23 ] gives a good overview of methods used in bootstrap learning .
+ie systems that use bootstrapping include [ 37 , 1 , 6 , 33 , 12 , 9 ] .
+these systems begin with a set of hand-tagged seed instances , then alternately learn rules from seeds , and further seeds from rules .
+knowitall is unique in not requiring hand-tagged seeds , but instead begins with a domain-independent set of generic extraction patterns from which it induces a set of seed instances .
+knowitalls use of pmi validation helps overcomes the problem of maintaining high precision , which has plagued previous bootstrap ie systems .
+knowitall is able to use weaker input than previous ie systems because it relies on the scale and redundancy of the web for an ample supply of simple sentences .
+this notion of redundancy-based extraction was introduced in mulder [ 25 ] and further articulated in askmsr [ 28 ] .
+of course , many previous ie systems have extracted more complex relational information than knowitall .
+knowitall is effective in extracting n-ary relations from the web , but we have yet to demonstrate this experimentally .
+knowitalls list extractor ( le ) module uses wrapper induction to look for lists of relevant facts on web pages .
+this uses wrapper techniques developed by kushmerick et al. [ 24 ] , and extended by cohen et al. [ 11 , 10 ] to learn hierarchical paths ( dom parse ) in an html document .
+perhaps the work that most resembles le is google sets : the input is several words , and the output is a list of up to 100 tokens that are found in lists on the web .
+since we do not know how google sets is implemented , we are unable to compare the two systems algorithms .
+however , le achieves far greater recall than google sets , at comparable levels of precision .
+several previous projects have automated the collection of information from the web with some success .
+information extraction systems such as googles froogle , whizbangs flipdog , and elion , collected large bodies of facts but only in carefully circumscribed domains ( e.g. , job postings ) , and only after extensive domain-specific hand tuning .
+knowitall is both highly automated and domain independent .
+in fairness , though , knowitalls redundancy-based extraction task is easier than froogle and flipdogs task of extracting rare facts each of which only appears on a single web page .
+semantic tagging systems , notably semtag [ 14 ] , perform a task that is complementary to that of knowitall .
+semtag starts with the tap knowledge base and computes semantic tags for a large number of web pages .
+knowitalls task is to automatically extract the knowledge that semtag takes as input .
+knowitall was inspired , in part , by the webkb project [ 13 ] .
+however , the two projects rely on very different architectures and learning techniques .
+for example , webkb relies on supervised learning methods that take as input hand-labeled hypertext regions to classify web pages , whereas knowitall employs unsupervised learning methods that extract facts by using search engines to home in on easy-to-understand sentences scattered throughout the web .
+future work .
+there are numerous directions for future work if knowitall is to achieve its ambitious goals .
+first , while knowitall can extract n-ary predicates ( see , for example , the extraction rule in figure 9 ) , this ability has not been tested at scale .
+in addition , we need to generalize knowitalls bootstrapping and assessment modules as well as its recall-enhancing methods to handle n-ary predicates .
+second , we need to address tricky extraction problems including the word sense disambiguation ( e.g. , amazon is both a river and a bookstore ) , the extraction of temporally changing facts ( e.g. , the identity of the president of the united states is a function of time ) , the distinction between facts , opinions , and misinformation on the web ( e.g. , mulder [ 25 ] , knowitalls ancestor , was misled by a page entitled popular misconceptions in astronomy ) , and more .
+fourth , we plan to investigate em and related co-training techniques [ 4 , 34 ] to improve the assessment of extracted instances .
+finally , several authors have identified the challenges of moving from todays web to the semantic web .
+we plan to investigate whether knowitalls extractions could be used as a source of semantic annotations to web pages , which would help to make the semantic web real .
+the main bottleneck to knowitalls scalability is the rate at which it can issue search-engine queries ; while knowitall issues over 100,000 queries to web search engines daily , it inevitably exhausts the number of queries it is allowed to issue to any search engine in any given day , which forces it to rest until the next day .
+in order to overcome this bottleneck , we are incorporating an instance of the nutch open- source search engine into knowitall .
+our nutch instance has indexed 60,000,000 web pages .
+however , since our the nutch index is still one to two orders of magnitude smaller than the indices of commercial engines , knowitall will continue to depend on external search engines for some queries .
+using the information food chain terminology , incorporating the nutch instance into knowitall will transform it from an information carnivore to an information omnivore .
+we have shown that knowitalls pmi-based assessor is effective at sorting extracted instances by their likelihood of being correct in order to achieve a reasonable precision / recall tradeoff .
+however , this assessor suffers from two limitations .
+first , computing pmi necessities several search-engine queries ( d + 1 queries for d discriminators ) for each instance assessed .
+second , because pmi scores are combined using a naive bayes classifierthe probabilities assigned to instances tend to be inaccurate .
+we are developing a new assessor that addresses both problems by computing accurate probability estimates for instances based on the number of times they repeat in the extraction data , obviating any additional queries .
+see [ 17 ] a formal treatment of the new assessor and early experimental results showing that its probability estimates are far more accurate than those of the pmi-based assessor .
+finally , we have also considered creating a multi-lingual version of knowitall .
+while its generic extraction patterns are specific to english , knowitall could bootstrap its way into other languages by using the patterns to learn instances of a class ( e.g. , cities in france ) and then use its pattern learning module to learn extraction rules and discriminators in french , which may be particularly effective at extracting the names of french cities .
+in fact , we could restrict underlying search engines such as google to return only pages in french .
+knowitalls architecture applies directly to multi-lingual extraction the main elements that would need to be generalized are the class labels , which are currently in english , and plug in modules such as its part of speech tagger .
+conclusions .
+the bulk of previous work on information extraction has been carried out on small corpora using hand- labeled training examples .
+the use of hand-labeled training examples has enabled mechanisms such hidden markov models or conditional random fields to extract information from complex sentences .
+in contrast , knowitalls focus is on unsupervised information extraction from the web .
+knowitall takes as input a set of predicate names , but no hand-labeled training examples of any kind , and bootstraps its extraction process from a small set of generic extraction patterns .
+to achieve high precision , knowitall utilizes a novel generate-and-test architecture , which relies on mutual-information statistics computed over the web corpus .
+the paper reports on several experiments that shaped knowitalls design .
+the experiments suggest general lessons for the designers of unsupervised extraction systems .
+experiment 1 showed that knowitall can tolerate up to 10 % noise in its bootstrapped training seeds .
+this noise tolerance is essential to unsupervised extraction .
+experiment 2 showed that negative training seeds for one class can be garnered from the positive training seeds of related classes ( cf . [ 26 ] ) .
+finally , experiment 3 demonstrated the importance of a well-designed search cutoff metric for both extraction efficiency and precision .
+our pattern learning ( pl ) , subclass extraction ( se ) , and list extraction ( le ) methods greatly improve on the recall of the baseline knowitall system described in [ 20 ] , while maintaining precision and improving extraction rate .
+experiments 4 through 9 suggest design lessons specific to each method .
+experiments 10 through 12 report on the relative performance of the different methods on the classes city , film , and scientist .
+overall , le gave the greatest improvement , but se extracted the most new scientists .
+remarkably , we found that les extraction rate was over forty times greater than that of the other methods .
+although knowitall is still young , it suggests futuristic possibilities for systems that scale up information extraction , new kinds of search engines based on massive web-based information extraction , and the automatic accumulation of large collections of facts to support knowledge-based ai systems .

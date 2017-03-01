@@ -1,0 +1,49 @@
+Release 1 (Done 12/06/2009)
+- revised with some errors occurred during conversion of PDFBox and Sentence Boundary Tool
+
+Release 2 (Done 13/06/2009)
+- filter strange characters (code from 0 to 25) and remove redundant sentences (containing authors, emails, references and acknowledgements) using heuristics
+
+Release 3 (16/06/2009)
+- annotation with topical information
+
+Release 4 (18/06/2009)
+- correct previous versions with title (the first line) for each article
+
+Release 5 (11/07/2009)
+- preprocessing (tokenization and lowercase)
+Errors from PDFBox:
++ some of information extracted from PDF to text conversion were lost, especially errors located at positions near to "Figure, Table" captions
+- add citation information for easy identification of later processing (e.g. evaluation)
+
+Release 6 (08/09/2009)
+(based on Release 5)
+- Extract raw texts from OmniPage and manually correct errors
+- Annotation for topic hiararchy
+
+Release 7 (22/09/2009)
+(based on Release 6)
+- Sentence boundary for Release 6
+- Annotation for topic-based evaluation
++ citation for each sentence with claim or references
++ topic for each reference
+- (corrected)some unexpected and unknown errors about strange characters (but not affect the results of MEAD toolkit) included in two:
++ p203-wu
++ N09-1042
+
+Release 8 (22/09/2009)
+(based on Release 7)
+- Tokenization & Lowercase
+
+Release 9 (23/09/2009)
+(based on Release 8)
+- Stop words removing
+- Stemming
+
+Release 10 (01/08/2010) - current version
+(based on Release 8)
+- Make the dataset available
+- Write Readme.doc
+
+
+Cong Duy Vu Hoang

@@ -1,0 +1,48 @@
+Transliteration methods typically fall into two categories:
+generative approaches (Li et al., 2004; Jung et al., 2000; Knight and Graehl, 1998) that try to
+produce the target transliteration given a source language
+NE, and discriminative approaches (Goldwasser and Roth, 2008b; Bergsma and Kondrak, 2007; Sproat et al., 2006; Klementiev and Roth, 2006a), that try to identify the correct transliteration for a word in the source language given several
+candidates in the target language. Generative methods
+encounter the Out-Of-Vocabulary (OOV) problem
+and require substantial amounts of training data
+and knowledge of the source and target languages.
+Discriminative approaches, when used to for discovering
+NE in a bilingual corpora avoid the OOV
+problem by choosing the transliteration candidates
+from the corpora. These methods typically make
+very little assumptions about the source and target
+languages and require considerably less data to converge.
+Training the transliteration model is typically
+done under supervised settings (Bergsma and Kondrak, 2007; Goldwasser and Roth, 2008b), or
+weakly supervised settings with additional temporal
+information (Sproat et al., 2006; Klementiev and Roth, 2006a). Our work differs from these works
+in that it is completely unsupervised and makes no
+assumptions about the training data.
+Incorporating knowledge encoded as constraints
+into learning problems has attracted a lot of attention
+in the NLP community recently. This has been
+shown both in supervised settings (Roth and Yih, 2004; Riedel and Clarke, 2006) and unsupervised
+settings (Haghighi and Klein, 2006; Chang et al., 2007) in which constraints are used to bootstrap the
+model. (Chang et al., 2007) describes an unsupervised
+training of a Constrained Conditional Model
+(CCM), a general framework for combining statistical
+models with declarative constraints. We extend
+this work to include constraints over possible assignments
+to latent variables which, in turn, define the
+underlying representation for the learning problem.
+In the transliteration community there are several
+works (Ristad and Yianilos, 1998; Bergsma and Kondrak, 2007; Goldwasser and Roth, 2008b) that
+show how the feature representation of a word pair
+can be restricted to facilitate learning a string similarity
+model. We follow the approach discussed
+in (Goldwasser and Roth, 2008b), which considers
+the feature representation as a structured prediction
+problem and finds the set of optimal assignments (or
+feature activations), under a set of legitimacy constraints.
+This approach stresses the importance of
+interaction between learning and inference, as the
+model iteratively uses inference to improve the sample
+representation for the learning problem and uses
+the learned model to improve the accuracy of the inference process. We adapt this approach to unsupervised
+settings, where iterating over the data improves
+the model in both of these dimensions.

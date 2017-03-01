@@ -1,0 +1,337 @@
+polyphonet : an advanced social network extraction system from the web .
+abstract .
+social networks play important roles in the semantic web : knowledge management , information retrieval , ubiquitous computing , and so on .
+we propose a social network extraction system called polyphonet , which employs several advanced techniques to extract relations of persons , detect groups of persons , and obtain keywords for a person .
+search engines , especially google , are used to measure co-occurrence of information and obtain web documents .
+several studies have used search engines to extract social networks from the web , but our research advances the following points : first , we reduce the related methods into simple pseudocodes using google so that we can build up integrated systems .
+second , we develop several new algorithms for social networking mining such as those to classify relations into categories , to make extraction scalable , and to obtain and utilize person-to-word relations .
+third , every module is implemented in polyphonet , which has been used at four academic conferences , each with more than 500 participants .
+we overview that system .
+finally , a novel architecture called super social network mining is proposed ; it utilizes simple modules using google and is characterized by scalability and relate-identify processes : identification of each entity and extraction of relations are repeated to obtain a more precise social network .
+introduction .
+social networks play important roles in our daily lives .
+people conduct communications and share information through social relations with others such as friends , family , colleagues , collaborators , and business partners .
+our lives are profoundly influenced by social networks without our knowledge of the implications .
+potential applications of social networks in information systems are presented in [ 43 ] : examples include viral marketing through social networks ( also see [ 24 ] ) and e-mail filtering based on social networks .
+social networking services ( snss ) have been given much attention on the web recently .
+as a kind of online application , snss are useful to register personal information including a users friends and acquaintances on these systems ; the systems promote information exchange such as sending messages and reading weblogs .
+friendster1 and orkut2 are among the earliest and most successful snss .
+increasingly , snss especially target focused communities such as music , medical , and business communities .
+in japan , one of large snss has more than three million users , followed by more than 70 snss that have specific characteristics for niche communities .
+information sharing on snss is a promising application of snss [ 15 , 35 ] because large amounts of information such as private photos , diaries and research notes are neither completely open nor closed : they can be shared loosely among a users friends , colleagues and acquaintances .
+several commercial services such as imeem3 and yahoo ! 36004 provide file sharing with elaborate access control .
+in the context of the semantic web , social networks are crucial to realize a web of trust , which enables the estimation of information credibility and trustworthiness [ 16 ] .
+because anyone can say anything on the web , the web of trust helps humans and machines to discern which contents are credible , and to determine which information can be used reliably .
+ontology construction is also related to a social network .
+for example , if numerous people share two concepts , the two concepts might be related [ 32 , 33 ] .
+in addition , when mapping one ontology to another , persons between the two communities play an important role .
+social networks enable us to detect such persons with high betweenness .
+several means exist to demarcate social networks .
+one approach is to make a user describe relations to others .
+in the social sciences , network questionnaire surveys are often performed to obtain social networks , e.g. , asking please indicate which persons you would regard as your friend .
+current snss realize such procedures online .
+however , the obtained relations are sometimes inconsistent ; users do not name some of their friends merely because they are not in the sns or perhaps the user has merely forgotten them .
+some name hundreds of friends , while others name only a few .
+therefore , deliberate control of sampling and inquiry are necessary to obtain high-quality social networks on snss .
+in contrast , automatic detection of relations is also possible from various sources of information such as e-mail archives , schedule data , and web citation information [ 1 , 44 , 34 ] .
+especially in some studies , social networks are extracted by measuring the co-occurrence of names on the web .
+pioneering work was done in that area by h. kautz ; the system is called referral web [ 21 ] .
+several researchers have used that technique to extract social networks , as described in the next section .
+this paper presents advanced algorithms for social network extraction from the web .
+our contributions are summarized as follows : related studies are summarized and their main algorithms are described in brief pseudocodes .
+surprisingly a few components that use google consist of various algorithms .
+new aspects of social networks are investigated : classes of relations , scalability , and a person-word matrix .
+a social network mining system called polyphonet was developed and operated at the 17th , 18th and 19th annual conferences of the japan society of artificial intelligence ( jsai2003 , jsai2004 , and jsai2005 ) and at the international conference on ubiquitous computing ( ubicomp 2005 ) to promote participants communication .
+more than 500 participants attended each conference ; about 200 people actually used the system .
+we briefly overview that system .
+a novel architecture , called super social network mining is proposed .
+it is characterized by scalability and a relate- identify process .
+below , we take the jsai cases as examples : a system is developed in japanese language for jsai conferences and in english language for the ubicomp conference .
+differences of languages affect many details of algorithms .
+for that reason , we try to keep the algorithms as abstract as possible .
+we have various evaluations of algorithms of japanese versions , but we have insufficient evaluations for the english version .
+therefore , we show some evaluations in the japanese version if necessary , in order to provide meaningful insights to readers .
+this paper is organized as follows .
+the following section describes related studies and motivations .
+section 3 addresses basic algorithms to obtain social networks from the web .
+advanced algorithms are described in section 4 including evaluations .
+we briefly overview polyphonet in section 5 .
+we propose super social network mining architecture in section 6 and conclude this paper .
+related work .
+in the mid-1990s , kautz and selman developed a social network extraction system from the web , called referral web [ 21 ] .
+the system focuses on co-occurrence of names on web pages using a search engine .
+it estimates the strength of relevance of two persons x and y by putting a query x and y to a search engine : if x and y share a strong relation , we can find much evidence that might include their respective homepages , lists of co-authors in technical papers , citations of papers , and organizational charts .
+interestingly , a path from a person to a person ( e.g. , from henry kautz to marvin minsky ) is obtained automatically using the system .
+later , with development of the www and semantic web technology , more information on our daily activities has become available online .
+automatic extraction of social relations has much greater potential and demand now compared to when referral web is first developed .
+recently , p. mika developed a system for extraction , aggregation and visualization of online social networks for a semantic web community , called flink [ 32 ] 5 .
+social networks are obtained using analyses of web pages , e-mail messages , and publications and self- created profiles ( foaf files ) .
+the web mining component offlink , similarly to that in kautzs work , employs a co-occurrence analysis .
+given a set of names as input , the component uses a search engine to obtain hit counts for individual names as well as the co- occurrence of those two names .
+the system targets the semantic web community .
+therefore , the term semantic web or ontology is added to the query for disambiguation .
+a. mccallum and his group [ 12,3 ] present an end-to-end system that extracts a users social network.that system identifies unique people in e-mail messages , finds their homepages , and fills the fields of a contact address book as well as the other persons name .
+links are placed in the social network between the owner of the web page and persons discovered on that page .
+a newer version of the system targets co-occurrence information on the entire web , integrated with name disambiguation probability models .
+other studies have used co-occurrence information : harada et al. [ 19 ] develop a system to extract names and also person-to-person relations from the web .
+faloutsos et al. [ 14 ] obtain a social network of 15 million persons from 500 million web pages using their co- occurrence within a window of 10 words .
+knees et al. [ 22 ] classify artists into genres using co-occurrence of names and keywords of music in the top 50 pages retrieved by a search engine .
+some particular social networks on the web have been investigated in detail : l. adamic has classified the social network at stanford and mit students , and has collected relations among students from web link structure and text information [ 1 ] .
+co-occurrence of terms in home- pages can be a good indication to find communities , even obscure ones .
+in the context of the semantic web , a study by cimiano and his group is one of the most relevant works to ours .
+that system , pattern-based annotation through knowledge on the web ( pankow ) , assigns a named entity into several linguistic patterns that convey semantic meanings [ 9,10 ] .
+ontological relations among instances and concepts are identified by sending queries to a google api based on a pattern library .
+patterns that are matched most often on the web indicate the meaning of the named entity , which subsequently enables automatic or semi-automatic annotation .
+the underlying concept of pankow , self-annotating web , is that it uses globally available web data and structures to annotate local resources semantically to bootstrap the semantic web .
+most of those studies use co-occurrence information provided by a search engine as a useful way to detect the proof of relations .
+use of search engines to measure the relevance of two words is introduced in a book , google hacks [ 7 ] , and is well known to the public .
+co-occurrence information obtained through a search engine provides a large variety of new methods that had been only applicable to a limited corpus so far .
+this study seeks the potential of web co-occurrence and describes novel approaches that can be accomplished surprisingly easily using a search engine .
+we add some comments on the stream ofresearch on web graphs .
+sometimes the link structure of web pages is seen as a social network ; a dense subgraph is considered as a community [ 23 ] .
+numerous studies have examined these aspects of ranking web pages ( on a certain topic ) , such as pagerank and hits , and identifying a set of web pages that are densely connected .
+however , particular web pages or sites do not necessarily correspond to an author or a group of authors .
+in our research , we attempt to obtain a social network in which a node is a person and an edge is a relation , i.e. , in kautzs terms , a hidden web .
+recently , weblogs have come to provide an intersection of the two perspectives .
+each weblog corresponds roughly to one author ; it creates a social network both from a link structure perspective and a person-based network perspective .
+social network extraction .
+this section introduces the basic algorithm that uses a web search engine to obtain a social network .
+most related works use one of the algorithms in this section .
+we use jsai cases as examples .
+basic algorithm .
+nodes and edges .
+a social network is extracted through two steps .
+first we set nodes , then we add edges .
+some studies , including those addressing the referral web and mccallums study , have employed expansion of the network , subsequently creating new nodes and finding new edges iteratively .
+in our approach , similarly to that of flink , nodes in a social network are given .
+in other words , a list of persons is given beforehand .
+we collect authors and co-authors who have presented works at past jsai conferences ; we posit them as nodes .
+next , edges between nodes are added using a search engine .
+for example , assume we are to measure the strength of relations between two names : yutaka matsuo and peter mika .
+we put a query yutaka matsuo and peter mika to a search engine .
+consequently , we obtain 44 hits6we obtain only 10 hits if we put another query yutaka matsuo and lada adamic .
+peter mika itself generates 214 hits and lada adamic generates 324 hits .
+therefore , the difference of hits by two names shows the bias of co-occurrence of the two names : yutaka matsuo is likely to appear in web pages with peter mika than lada adamic .
+we can guess that yutaka matsuo has a stronger relationship with peter mika .
+actually in this example , yutaka matsuo and peter mika participated together in several conferences ; they also co-authored one short paper .
+that approach estimates the strength of their relation by co-occurrence of their two names .
+we add an edge between the two corresponding nodes if the strength of relations is greater than a certain threshold .
+several indices can measure the co-occurrence [ 29 ] : matching coefficient , nxny ; mutual information , log ( nnxny / nxny ) ; dice coefficient , ( 2nxny ) / ( nx + ny ) ; jaccard coefficient , ( nxny / nxvy ) ; overlap coefficient , ( nxny / min ( nx , ny ) ) ; and cosine , ( nxny / v / nxny ) ; where nx and ny denote the respective hit counts of name x and y , and nxny and nxvy denote the respective hit counts of x and y and x or y. depending on the co-occurrence measure that is used , the resultant social network varies .
+generally , if we use a matching coefficient , a person whose name appears on numerous web pages will collect many edges .
+the network is likely to be decomposed into clusters if we use mutual information .
+the jaccard coefficient is an appropriate measure for social networks : referral web and flink use this coefficient .
+in polyphonet , we use the overlap coefficient [ 30 ] because it fits our intuition well : for example , a student whose name co-occurs almost constantly with that of his supervisor strongly suggests an edge from him to the supervisor .
+a professor thereby collects edges from her students .
+we also verify that overlap coefficients perform well by investigating the probability of co-authorship [ 31 ] .
+we set k = 30 for the jsai case .
+alternatively , we can take some techniques for smoothing .
+there is an alternative means to measure co-occurrence using a search engine , i.e. , to use top retrieved documents , shown in fig . 2 .
+numentity returns the number of mentions in a given document set .
+numcooc returns the number of co-occurrence of mentions in a given document set .
+some of the related works employ this algorithm , in which we can use more tailored nlp methods .
+however , when the retrieved documents are much more numerous than k , we can process only a small fraction of the documents .
+a social network is obtained using the algorithm in fig . 3 .
+for each pair of nodes where co-occurrence is greater than the threshold , an edge is invented .
+eventually , a network g = ( v , e ) is obtained in which v is a set of nodes and e is a set of edges .
+instead of using googlecooc , we can employ googlecooctop in case that documents are not so large and more detailed processing is necessary .
+if we want to expand the network one node at a time , we can put in the algorithm a module shown in fig . 4 , in which extractentities returns extracted person names from documents , and iterate the execution of the module .
+although various studies have applied co-occurrence by a search engine to extract a social network , most of them correspond to one of the algorithms described previously .
+disambiguate a person name .
+more than one person might have the same name .
+such namesakes cause problems when extracting a social network .
+to date , several studies have produced attempts at personal name disambiguation on the web [ 3 , 17 , 26 , 27 ] .
+in addition , the natural language community has specifically addressed name disambiguation as a class of word sense disambiguation [ 45 , 28 ] .
+bekkerman and mccallum uses probabilistic models for the web appearance disambiguation problem [ 3 ] : the set of web pages is split into clusters , then one cluster can be considered as containing only relevant pages : all other clusters are irrelevant .
+li et al. proposes an algorithm for the problem of cross-document identification and tracing of names of different types [ 25 ] .
+they build a generative model of how names are sprinkled into documents .
+these works identify a person from appearance in the text when a set of documents is given .
+however , to use a search engine for social network mining , a good keyphrase to identify a person is useful because it can be added to a query .
+for example , in the jsai case , we use an affiliation ( a name of organization one belongs to ) together with a name .
+we make a query x and ( a or b or ... ) instead ofx where a and b are affiliations of x ( including past affiliations and short name for the affiliation ) .
+flink uses a phrase semantic web or ontology for that purpose .
+in the ubicomp case , we develop a name-disambiguation module [ 4 ] .
+its concept is this : for a person whose name is not common , such as yutaka matsuo , we need to add no words ; for a person whose name is common , we should add a couple of words that best distinguish that person from others .
+in an extreme case , for a person whose name is very common such as john smith , many words must be added .
+the module clusters web pages that are retrieved by each name into several groups using text similarity .
+it then outputs characteristic keyphrases that are suitable for adding to a query .
+the pseudocode googlecooccontext to query a search engine with disambiguating keyphrases is shown in fig . 5 , which is slightly modified from googlecooc .
+we regard keyphrases to be added as a context of a person .
+advanced extraction .
+this section introduces novel algorithms that polyphonet uses for advanced social network extraction .
+class of relation .
+various interpersonal relations exist : friends , colleagues , families , teammates , and so on .
+relationship [ 13 ] defines more than 30 kinds of relationships we often have as a form of subproperty of the knows property in foaf .
+for example , we can write i am a collaborator of john ( and i know him ) in our foaf file .
+various social networks are obtainable if we can identify such relationships .
+a person is central in the social network of a research community while not in the local community .
+actually , such overlaps of communities exist often and have been investigated in social network analyses [ 46 ] .
+it also provides interesting research topics recently in the context of complex networks [ 40 ] .
+through polyphonet , we target the relations in a researcher community .
+among them , four kinds of relations are picked up because of the ease at identifying them and their importance in reality .
+we first fetch the top five pages retrieved by the xand y query , i.e. , using googletop ( x y , 5 ) .
+then we extract features from the content of each page , as shown in table 1 .
+attributes numco , freqx , and freqy relate to the appearance of name x and y. attributes grotitle and groffive characterize the contents of pages using word groups defined in table 2 .
+we produced word groups by selecting high tf-idf terms using a manually categorized data set .
+figure 6 shows the pseudocode to classify relations .
+the classifier indicates any one classifier used in machine learning such as naive bayes , maximum entropy or support vector machine .
+in the jsai case , we use c4.5 [ 41 ] as a classifier .
+using more than 400 pages to which we manually assigned the correct labels , classification rules are obtained .
+some of those obtained rules are shown in table 3 .
+for example , the rule for co-author is simple : if two names co-occur in the same line , they are classified as co-authors .
+however , the lab relationship is more complicated .
+table 4 shows error rates of five-fold cross validation .
+although the error rate for lab is high , others have about a 10 % error rate or less .
+precision and recall are measured using manual labeling of an additional 200 web pages .
+the co-author class yields high precision and recall even though its rule is simple .
+in contrast , the lab class gives low recall , presumably because laboratory pages have greater variety .
+obtaining the class of relationship is reduced to a text categorization problem .
+a large amount of research pertains to text categorization .
+we can employ more advanced algorithms .
+for example , using unlabeled data also improves categorization [ 38 ] .
+relationships depend on the target domain ; therefore , we must define classes to be categorized depending on a domain .
+vastly numerous pages exist on the web .
+for that reason , the classifyrelation module becomes inefficient when k is large .
+top- ranked web pages do not necessarily contain information that is related to the purpose .
+one approach to remedy that situation is to organize a query in a more sophisticated way .
+for example , if we seek whether x and y has lab relations , we can organize a query such as x y ( publication or paper or presentation ) by consulting tables 2 and 3 .
+this algorithm is not implemented in polyphonet , but it works well in our other study for extraction of a social network of corporations [ 20 ] .
+in question answering systems , query formulation is quite a common technique .
+scalability .
+the number of queries to a search engine becomes a problem when we apply extraction of a social network to a large-scale community : a network with 1000 nodes requires 500,000 queries and grows with o ( n2 ) , where n is the number of persons .
+considering that the google api limits the number of queries to 1000 per day , the number is huge .
+such a limitation might be reduced gradually with the development of technology , but the number of queries remains a great problem .
+one solution might be found in the fact that social networks are often very sparse .
+for example , the network density of the jsai2003 social network is 0.0196 , which means that only 2 % of possible edges actually exist .
+the distribution of the overlap coefficient is shown in fig . 7 .
+most relations are less than 0.2 , which is below the edge threshold .
+how can we reduce the number of queries while maintaining the extraction performance ?
+our idea is to filter out pairs of persons that seem to have no relation .
+that pseudocode is described in fig . 8 .
+this algorithm uses both good points of googlecooc and googlecooctop .
+the latter can be executed in computationally low order ( if k is a constant ) , but the former gives more precise co-occurrence information for the entire web .
+for 503 persons who participated in jsai2003 , 503c2 = 126253 queries are necessary if we use the getsocialnet module .
+however , getsocialnetscalable requires only 19,182 queries in case k = 20 empirically , which is about 15 % .
+how correctly the algorithm filters out information is shown in fig . 9 .
+for example , in case k = 20 , 90 % or more of relations with an overlap coefficient 0.4 are detected correctly .
+it is readily apparent that as k increases , performance improves . ( as an extreme case , we set k = ^ and we achieve 100 % . )
+the computational complexity of this algorithm is o ( nm ) , where n is the number of persons and m is the average number of persons that remain candidates after filtering .
+although m can be a function of n , it is bounded depending on k because a web page contains a certain number of person names in the average case .
+therefore , the number of queries is reduced from o ( n 2 ) to o ( n ) , which enables us to crawl a social network as large as n = 7000 .
+name and word co-occurrence .
+person names co-occur along with many words on the web .
+a particular researchers name will co-occur with many words that are related to that persons major research topic .
+below , we specifically address the co-occurrence of a name and words .
+keyword extraction .
+keywords for a person , in other words personal metadata , are useful for information retrieval and recommendations on a social network .
+for example , if a system has information on a researchers study topic , it is easy to find a person of a certain topic on a social network .
+pankow also provides such keyword extraction from a persons homepage [ 12 ] .
+in polyphonet , keyword extraction for researchers is implemented .
+a ready method to obtain keywords for a researcher is to search a persons homepage and extract words from the page .
+however , homepages do not always exist for each person .
+moreover , a large amount of information about a person is not recorded in homepages , but is recorded in other resources such as conference programs , introductions in seminar webpages , and profiles in journal papers .
+therefore , polyphonet uses co-occurrence information to search the entire web for a persons name .
+we use co-occurrence of a persons name and a word ( or a phrase ) on the web .
+the algorithm is shown in fig . 10 .
+collecting documents retrieved by a person name , we obtain a set of words and phrases as candidates for keywords .
+we use termex [ 37 ] for term extraction in japanese as extractwords .
+then , the co-occurrence of the persons name and a word / phrase is measured .
+this algorithm is simple but effective .
+figure 12 shows an example of keywords for dan brickley .
+he works with xml / rdf and metadata at w3c and ilrt ; he created the foaf vocabulary with libby miller .
+we can see that some important words , such as foaf and semantic web , are extracted properly .
+table 5 shows performance of the proposed algorithm based on a questionnaire .
+both tf and tf-idf are baseline methods that extract keywords from dx .
+in the tf-idf case , a corpus is produced by collecting 3981 pages for 567 researchers .
+we gave questionnaires to 10 researchers and defined the correct set of keywords carefully . ( for details of the algorithm and its evaluation , see [ 36 ] . )
+the tf outputs many common words ; tf-idf outputs very rare words because of the diversity of web document vocabularies .
+the proposed method is far superior to that of the baselines . 4.3.2 affiliation network co-occurrence information of words and persons forms a matrix .
+figure 13 shows a person-word co-occurrence matrix , which represents how likely a persons name co-occurs with words on the web .
+in social network analysis literature , this matrix is called an affiliation matrix while a person-person matrix is called an adjacent matrix [ 46 ] .
+figure 14 presents an example of a person-to-word matrix obtained in polyphonet .
+for example , the name of mitsuru ishizuka co-occurs often with words such as agent and communication .
+koiti hasida co-occurs often with communication and cognition .
+our concept is that by measuring the similarity between two-word co-occurrence vectors ( i.e. , two rows of the matrix ) , we can calculate the similarity of the two peoples contexts .
+in the researchers cases , we can measure how mutually relevant the two researchers research topics are : if two persons are researchers of very similar topics , the distribution of word co-occurrences will be similar .
+figure 11 describes the pseudocode for calculating the context similarity of two persons .
+we should prepare a word / phrase list wl : a controlled vocabulary for the purpose , because rare words do not contribute much to the similarity calculation .
+in polyphonet , we obtain 188 words that appear frequently ( excluding stop words ) in titles of papers at jsai conferences .
+actually , we store the affiliation matrix for a list of persons and a list of words before calculating similarity to avoid inefficiency .
+popular words such as agent and communication co-occur often with many person names .
+therefore , statistical methods are effective : we first apply ^ 2 statistics to the affiliation matrix and calculate cosine similarity [ 8 ] .
+one evaluation is shown in fig . 15 .
+based on the similarity function , we plot the probability that the two persons will attend the same session at a jsai conference .
+we compare several similarity calculations : chi2 represents using the ^ 2 and cosine similarity , the idf represents using idf weighting and cosine similarity , and hits represent using the hit count as weighting and cosine similarity .
+this session prediction task is very difficult and its precision and recall are low ; the ^ 2 performs best among the weighting methods .
+a network based on an affiliation matrix is called affiliation network [ 46 ] .
+a relation between a pair of persons with similar interests or citations is sometimes called intellectual link .
+even if no direct relation exists between the two , we can consider that they have common interests , implying a kind of intellectual relation , or potential social relation .
+polyphonet .
+polyphonet is a coined term using polyphony + network .
+it is a web-based system for an academic community to facilitate communication and mutual understanding based on a social network extracted from the web .
+we implement every module mentioned above in polyphonet .
+the system has been used at jsai annual conferences successively for three years and at ubicomp2005 .
+because of space limitations here , we briefly introduce the system .
+we encourage the reader to visit the website for ubicomp20058 and for jsai20059 .
+a social network of participants is displayed in polyphonet to illustrate a community overview .
+various types of retrieval are possible on the social network : researchers can be sought by name , affiliation , keyword , and research field ; related researchers to a retrieved researcher are listed ; and a search for the shortest path between two researchers can be made .
+even more complicated retrievals are possible : e.g. , a search for a researcher who is nearest to a user on the social network among researchers in a certain field .
+polyphonet is incorporated with a scheduling support system [ 18 ] and a location information display system [ 39 ] in the ubiquitous computing environment at the conference sites .
+figure 16 is a portal page that is tailored to an individual user , called my page .
+the users presentations , bookmarks of the presentations , and registered acquaintances are shown along with the social network extracted from the web .
+figure 17 shows the obtained shortest path between two persons on a social network .
+figure 18 is a screenshot that illustrates when three persons come to an information kiosk and the social network including the three is displayed .
+more than 200 users used the system during each three-day conference , as shown in table 6 .
+comments were almost entirely positive ; they enjoyed using the system .
+relate-identify model .
+in this section , based on the studies of social network mining and lessons learned from polyphonet operation , we propose a novel architecture for social network extraction .
+in the field of artificial intelligence , various forms of semantic representation have been speculated upon for decades , including first-order predicate logic , semantic networks , frames , and so on .
+such representation enables us to describe relations among objects ; it is useful for further use of the web for integration of information and inference .
+on the other hand , studies of social network analyses in sociology provide us a means to capture the characteristics of a network as integration of relations .
+for example , the concept of centrality quantifies the degree to which a person is central to a social network .
+a measure of centrality , i.e. , the degree to which a researcher is central to a research community , sometimes correlates to other measures of an individual , e.g. , their number of publications .
+social networks ( and their individual relations ) are defined properly in terms of a certain purpose if the correlation is high .
+such feedback from an extracted network to individual relations is important when we target extraction of a large-scale social network from the web .
+following that concept , we propose a new architecture to extract a social network from the web , called super social network mining .
+the architecture has two characteristics : scalability we use very simple modules using a search engine to attain scalability .
+relate-identify process we identify entities10 and extract relations to attain scalability , we allow two operations using a search engine : googletop and googlecooc .
+these two are permissible operations even if the web grows more .
+googletop enables us to investigate a small set of samples of web pages using text processing , whereas googlecooc provides statistics that pertain to the entire web .
+we should note that as the web grows , googletop returns fewer and fewer web pages relative to all retrieved documents , thereby rendering it less effective .
+a more effective means to sample documents from the web is essential , as described in [ 2 ] .
+in contrast , googlecooc yields a more precise number if the web grows because the low-frequency problem is improved .
+therefore , a good combination of googlecooc and googletop is necessary for super social network mining .
+for other kinds of operations by a search engine such as get the number of documents where word x co-occurs with y within the word distance of 10 , whether they are permissible or not remains unclear in terms of scalability because the index size grows very rapidly .
+a search engine that is specially designed for nlp [ 6 ] will benefit our research greatly if it actually acales properly .
+figure 19 shows an overview of the module dependencies we described in this paper .
+googlehit and googletop are remarkably versatile yet simple modules .
+we should note that two modules exist that we do not introduce in this paper : contextsimtop and structuralequiv .
+the first , contextsimtop , calculates the context similarity of two persons based on googletop .
+that module is similar to the snippet similarity of two queries ( or two short texts ) introduced in [ 42 ] .
+the structuralequiv module calculates structural equivalence , which plays an important role in the relate-identify process .
+figure 20 depicts an overview of the relate-identify process .
+first , a list of names is given as the initial input .
+we apply the extractkeyword module to obtain some keywords that are useful for personal metadata .
+then in the relate step , relations among persons are extracted using various modules including getsocialnet and classifyrelation , which will eventually produce two kinds of matrices : an adjacent matrix and an affiliation matrix .
+in the identify step , information associated with overall relations is used to obtain an improved query for each person .
+two possibilities to modify identification of an entity ( or a person ) exist : to decompose one entity into two or more , and to merge multiple entities into one .
+decomposition of one entity is equivalent to name disambiguation , which is mentioned in the paper .
+fundamentally , the googletop module is used to obtain documents of a name , and then cluster the documents in some way .
+new keywords are obtained to identify the person more precisely .
+integration of multiple entities is known as a record linkage problem in database studies .
+in the context of social networks , examples include integrating a person with multiple names such as james hendler and jim hendler , a person with different affiliations ( as researchers often move institutes ) , and a person with multiple names in different languages .
+we propose the use of structural equivalence as a key to uncover entity linkage .
+structural equivalence is the degree to which two individuals have the same relations with the same others [ 5 ] .
+the two names might refer to the same individual if the two entities have a very similar distribution of co-occurrence with others .
+furthermore , we can use other information simultaneously : whether the two have similar keywords that are obtained by contextsim module , and whether the two expressions of names share some proximity such as jim hendler , james hendler , or j. hendler .
+although the overall architecture is not implemented in polyphonet , we have partially implemented the system and the results appear promising .
+we can gradually obtain an improved query for each ; simultaneously , the system has served to improve relations among individuals .
+we believe that this architecture works not only for social network extraction in the japanese language , but also in other languages .
+conclusion .
+this paper describes a social network mining approach using the web .
+several studies have addressed similar approaches so far ; we organize those methods into small pseudocodes .
+several algorithms , which classify the relations using google , make the extraction scalable , and obtain a person-to-word matrix , are novel as far as we know .
+we implemented every algorithm on polyphonet , which was put into service at jsai conferences over three years and at the ubicomp conference .
+finally , the super social network mining concept is proposed : it is characterized by its scalability and relate-identify process .
+merging the vast amount of information on the web and producing higher-level information might contribute many knowledge- based systems in the future .
+acquiring knowledge through googling is a similar concept to ours [ 11 ] .
+we intend to apply our approach in the future to extract much structural knowledge aside from social networks .

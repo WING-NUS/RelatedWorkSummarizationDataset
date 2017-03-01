@@ -1,0 +1,298 @@
+grouping search-engine returned citations for person-name queries .
+abstract .
+we present a technique to group search-engine returned citations for person-name queries , such that the search-engine returned citations in each group belong to the same person .
+to group the returned citations , we use a multi-faceted approach that considers evidence from three facets : ( 1 ) attributes , ( 2 ) links , and ( 3 ) page similarity .
+based on the three facets , we construct a relatedness confidence matrix for pairs of citations .
+we then merge pairs whose matching confidence value is above an empirically determined threshold .
+experimental results from the implementation of our multi-faceted approach are promising .
+introduction .
+suppose a user is looking for information about the person kelly flanagan .
+using google , the query kelly flanagan returns about 685 citations . '
+figure 1 shows the first 10 returned citations .
+the returned citations are for more than one person whose name is kelly flanagan .
+six citations refer to a professor in the computer science department at brigham young university ; two citations refer to a person who has a business to help people find and buy homes ; one citation refers to a girl who has diabetes ; one citation refers to an actor .
+normal search engine ranking methods do not group citations by a specific person and therefore usually scatter citations referencing a single person throughout the search engines returned results .
+it would be interesting to present the results in different ways .
+one way is to group the citations such that all those that refer to the same person would be together .
+in this paper we introduce a method that is able to group the returned citations from a search engine such as google [ 5 ] or yahoo [ 15 ] for a person-name query , such that each group of citations refers to the same person .
+figure 2 represents the desired output for figure 1 .
+in the output we retain the basic search-engine returned citations .
+further , within each group we maintain the search engine ranking order , and among groups we maintain the relative order of citations as originally presented by the search engine .
+our method considers three facets : attributes , links , and page similarity .
+for each facet we generate a confidence matrix .
+then we construct a final confidence matrix for all facets .
+using a threshold , we apply a grouping algorithm on the final confidence matrix for all facets .
+the output is groups of the search-engine returned citations , such that the citations in each group relate to the same person .
+we present our contribution of providing a solution to the interesting and useful problem of grouping person-name queries by person as follows .
+section 2 presents related work .
+section 3 introduces our multi-faceted approach to solving the problem by explaining the three facets we use ( attributes , links , and page similarity ) , showing how to construct a confidence matrix for each facet and how to combine all the confidence matrices into a final confidence matrix , and giving the algorithm we use to group returned citations .
+section 4 discusses our experimental results .
+section 5 draws conclusions and mentions and future work .
+related work .
+we know of no literature directly related to the problem of grouping the citations returned by person-name queries for search engines .
+the problem however , is related to cross- document coreferencing [ 3 ] , object identity [ 12 ] , and text classification [ 1 , 2 ] .
+a cross-document coreference occurs when the same person , place , event , or concept is discussed in more than one text source .
+papers [ 3 ] , [ 10 ] , [ 13 ] , and [ 14 ] all discuss approaches to coreferencing to distinguish between different entities that share the same , or a similar name .
+papers [ 3 ] , [ 13 ] , and [ 14 ] use document vectors [ 8 ] over terms that appear in the context in which the target name occurs .
+to adapt this idea for search-engine returned citations for person-name queries , we would need to find a context , which is not straightforward for the mixture of structured , semistructured , and unstructured documents on the web .
+we nevertheless did some investigational experiments using this idea both with entire pages and with google-returned text snippets in citations , but found that neither produced satisfactory results .
+hence , we abandoned this idea in favor of the multi-faceted approach we develop instead .
+similar to our idea of using attributes , [ 10 ] uses document vectors over biographical information such as birth year , birth place , spouse name , and occupation .
+if one document connects a name with a birth year , and another document connects the same name with the same birth year , typically , those two documents refer to the same person .
+this paper assumes , however , that documents are rich with biographic facts , which is not the case in our context because we are dealing with different kinds of web pages that may , but usually do not , contain biographical information .
+object identification refers to the task of deciding that two observed objects are in fact one and the same object .
+this concept applies in our research because we are trying to decide if two or more citations are related to the same person .
+paper [ 12 ] surveys the various approaches to solving the object identity problem .
+all techniques that are mentioned in [ 12 ] compare an objects shared attributes in order to identify matching objects , while our technique involves links and page similarity in addition to attributes .
+with regard to attributes , [ 12 ] mentions two models that are typically used to resolve object identity .
+one technique is vector space modeling [ 8 ] , and the other technique is probabilistic modeling [ 6 , 7 ] .
+in our research , it is not appropriate to apply vector space modeling over attributes because web pages do not usually contain all attributes ; indeed , they often contain no attributes .
+thus , vectors would likely have many missing components , which would make the cosine measure very low ( possibly non existent ) even when the pages are for the same person .
+probabilistic modeling described in [ 6 ] and [ 7 ] also compares objects based on shared attributes and uses appearance probability to determine the similarity between objects .
+appearance probability requires a comparison between observed attributes of the objects .
+in our case for pages on the web , citations that relate to the same person may not have any matching attributes .
+the goal of text classification [ 8 ] is to classify documents into a fixed number of predefined categories .
+each document can be in zero , one , or several categories .
+in our research we apply classification ideas , but we classify returned citations without knowing in advance how many different persons a person-name query will yield .
+we cannot apply standard classification techniques directly to our work because standard classification methods require predefined categories and training data to be able to distinguish between predefined categories .
+since we do not know our categories in advance , we can neither predefine the categories nor specify training data for them .
+a multi-faceted approach .
+when a user enters a first name and last name or a full name of a person as a query to a search engine , our objective is to put the returned citations in groups such that each group relates to one person .
+our approach is multi-faceted .
+each facet represents a relevant aspect of the problem space about which we can gather evidence that two citations reference the same person or different persons .
+in this paper we consider attributes about a person , links within and among sites , and page similarity as facets .
+we consider each facet separately .
+attributes .
+we can obtain evidence about whether two citations refer to the same person by considering values for attributes .
+if identifying information about a person p appears in two different web pages w1 and w2 referenced respectively by citations c1 and c2 , and if the identifying information is the same , then we can be reasonably confident about grouping c1 and c2 together for p .
+to apply this idea , there are a number issues to consider .
+what identifying information are we likely to find ?
+can we recognize the identifying information ?
+how do we know whether recognized identifying information refers to the person for whom we are querying ?
+to answer these questions , we looked for attributes that appear often in web pages of citations returned as results of person-name queries .
+identifying attributes we found by manual inspection that satisfy these criteria are phone number , email address , state , city , and zip code .
+to extract values from a web page , we write regular expressions for each attribute .
+in addition for state , city , and zip code , since we are looking for identifying information about a person ( not information about references to a state or city and not isolated five-digit integers ) , we only extract state , city , and zip code values in an address context.2 for example , to extract a city we extract all strings that match the regular expressions ( [ a-z ] ( \ w ) + ( ) ? ) { 1,3 } and satisfy the context specification consisting of this string followed by an optional comma , white space , and a state name .
+we obtain states from a list that contains all state names and their abbreviations .
+for a web page referenced by a person-name query , we extract all the attribute values that match the regular expressions and satisfy the context specifications for the attributes .
+then when two web pages referenced by two citations for the same person-name query have the same value for a specific attribute or for several specific attributes , we can be reasonably confident that the identical person names in the two web pages refer to the same person .
+note that we make no attempt to determine whether an extracted attributes value is the attribute value of the person whose name is on the web page .
+links .
+we can obtain evidence about whether two citations refer to the same person by considering links ( urls ) among citations .
+people usually post information on only a few host servers , often on only one .
+thus , if two urls of two returned citations for a person-name query share a common host , we can be reasonably confident that they refer to the same person .
+figure 3 for example shows two citations for david embley that share the host name www.cs.byu.edu.
+besides hosting information on the same server , people often link one page about a person to another page about that same person .
+thus , if the url of one citation has the same host as one of the urls that belongs to the web page referenced by the other citation , we can be reasonably confident that they refer to the same person .
+figure 4 , for example , shows two citations and the web page for the second citation .
+the url of the first citation has the same host www.cs.byu.edu as the url http : / / www.cs.byu.edu / info / dwembley.html that belongs to the web page referenced by the second citation .
+to apply these ideas , there is an issue of interest to consider .
+it is common to have two different persons that have the same name in two citations that have a popular host like www.yahoo.com.
+because many names often appear on popular hosts , when two citations share a popular host , we have less confidence that they refer to the same person .
+thus , we need to find a way to determine if the host is popular so that we can observe this exception to the general rule .
+one solution might be to have a list of all popular hosts , but it is difficult to know and keep track of all of them .
+furthermore , host popularity is dynamic and changes over time .
+another solution , which we decided to adopt , is to find the number of pages that point to a host .
+the query link : siteurl in google shows all pages and gives a count of the number of pages that point to that url .
+for example , link : www.google.com shows and counts all the pages that point to googles home page . ( without having a simple way to obtain this count , it would be unreasonable to rely on this number . )
+we determined empirically that a host h is popular for person-name queries if more than 400 pages point to h .
+if two citations c1 and c2 that are results of a person- name query share the same non-popular host , or if the url of one citation c1 has the same non-popular host as one of the urls that belongs to the web page referenced by the other citation c2 , then we can be confident about grouping c1 and c2 together for the same person .
+page similarity .
+we can obtain evidence about whether two citations refer to the same person by considering the similarity between web pages referenced by the two returned citations .
+if two different web pages contain the same person name and the pages are similar , then we can be reasonably confident that they refer to the same person .
+to apply this idea , there are a number issues to consider .
+what are the useful shared words that we can consider ?
+how can we use shared words to determine page similarity ?
+how can we obtain a stop-word list to eliminate common words that appear in many web pages ?
+to answer these questions , we looked at many web pages referenced by person-name queries to see what kinds of words they share .
+we noticed that if two web pages refer to the same person , there are specific words associated with that person .
+for example , for david embley , who is a professor and a co-director of the data extraction research group in the computer science department at brigham young university , two adjacent words such as data extraction , computer science , and brigham young. appear in many web pages that have his name .
+as another example , many web pages that refer to sandra rogers contain lessons from the light , a book she wrote .
+using these examples as a guide , we have chosen to consider pairs of words that start with a capital letter and that are either adjacent or separated by a connector ( and , or , but ) or by a preposition which may be followed by an article ( a , an , the ) or by a single capital letter followed by dot .
+the form considered is thus cap-word ( connector i preposition ( article ) ? i ( capital-letterdot ) ) ?
+cap- word .
+cap-word is a word of two or more letters that starts with a capital letter .
+we call this pattern adjacent cap-word pairs .
+we must , however , ignore adjacent cap-word pairs such as home page and privacy policy that often occur on web pages .
+we eliminate these pairs by constructing a stop- word list , which is a list of frequently appearing adjacent cap-word pairs .
+to construct our list , we collected approximately 10,000 web documents taken at random from the open directory project , dmoz [ 4 ] .
+the open directory contains about 3.5 million web documents that are divided into categories ; each category also contains subcategories .
+we obtained the dmoz xml document that contains all listed categories and subcategories , and the urls of the web pages that are in the subcategories .
+this resulted in a list of urls that covers all the subcategories .
+from this list we obtained 10,000 documents from the 3,500,000 by selecting every 350th url .
+after we collected 10,000 web documents , we constructed all adjacent cap-word pairs .
+we sorted the pairs according to their frequency and considered all pairs with a frequency greater than two to be stop words .
+we consider the number of adjacent cap-word pairs as an indicator of the similarity between two web pages .
+in particular , we consider whether two web pages share exactly one , exactly two , exactly three , or four or more adjacent cap-word pairs .
+the greater the number of adjacent cap- word pairs , the greater the similarity between the pages .
+empirically , however , we found that four seems to be enough as long as we first eliminate adjacent cap-word pairs that appear in our stop list .
+confidence matrix construction .
+we construct a confidence matrix , one for each facet : attributes , links , and page similarity .
+the confidence matrix for each facet is an upper triangular matrix over all pairs of the n returned citations c1 , c2 , . , c " ..
+the value of each element ci ; ( i < j ) in the confidence matrix represents the confidence that two returned citations ci and c ; refer to the same person .
+the confidence value is 0 for a facet f if there is no evidence for f to indicate that citations ci and c ; may refer to the same person .
+when there is evidence that ci and c ; may refer to the same person for a facet f , ci ; is the conditional probability that ci and c ; refer to the same person given the evidence for f .
+in order to compute the conditional probabilities that represent confidence values , we construct a training set .
+we used the following criteria for the set of person names in the training set .
+first , the names set should contain male names , female names , and gender-neutral names .
+second , the names set should contain names such that the returned citations are grouped in different size groupssmall , medium , and large .
+third , the names set should contain names such that the returned citations are grouped into different numbers of groupsfew groups and many groups .
+using these criteria , we selected 9 person names : lynn larson , chris webb , dan smith , david embley , william walker , judy green , linda bishop , tracy jones , and sandra rogers .
+this name set contains male names ( dan , david , william ) , female names ( judy , linda , sandra ) , and gender-neutral names ( lynn , chris , tracy ) .
+every name in the name set returns groups of small ( 1-2 ) and medium ( 4-10 ) sizes ; only the name david embley contains a large group with more than 40 citations .
+the number of groups varies from a small number of groups such as two groups in case of david embley , to a medium number of groups such as 28 groups in case of sandra rogers , to a large number of groups such as 30 to 37 groups for the rest of the names .
+to construct our training data , we entered each name as a query for google , and we collected the first 50 returned citations for each name .
+for 50 returned citations there are 49 + 48 + + 2 + 1 1,225 comparison pairs .
+since we have 9 names , the total number of comparisons is 9 * 1225 = 11,025 .
+the values are yes , no , n / a ( not available ) , and p which means the host name is popular ( is referenced by more than 400 other sites ) .
+we use our training set to estimate the conditional probabilities as follows .
+for our attribute facet , we use the training set to estimate the probability that two citations refer to the same person , knowing that the web pages referenced by the citations have either the same phone , or email , or address zip code , or address city , or address state , or any combination of these attributes .
+for example , we estimate p ( same person yes i email = yes ) , which is the probability that two citations refer to the same person knowing that the web pages referenced by them have the same email address , by dividing the number of citation pairs that are related to the same person and have the same email by the number of citation pairs that have the same email address in the training set .
+for pairs , triples , quadruples , and quintuples of attributes , we also compute conditional probabilities .
+for example , we estimate p ( same person = yes i city = yes and state = yes ) which is the probability that two citations refer to the same person knowing that the web pages referenced by them share the same address city and state , by dividing the number of citation pairs that are related to the same person and have the same address city and state by the number of citation pairs that share same address city and state in the training set .
+for our link facet , we use our training set to estimate the probability that two citations refer to the same person knowing that the urls of the citations share the same non- popular host , or the url of one citation has the same non- popular host as one of the urls on the web page referenced by the other citation , or the urls of the citations share the same non-popular host and the url of one citation has the same non-popular host as one of the urls on the web page referenced by the other citation .
+for example , we estimate p ( same person = yes i host1 yes and host1 is non- popular ) by dividing the number of citation pairs that are related to the same person and have the same non-popular host by the number of citation pairs that share a common , non-popular host .
+for our page similarity facet , we use the training set to estimate the probability that two citations refer to the same person knowing that the web pages referenced by them share exactly one , or two , or three , or four or more pairs of two adjacent cap-word pairs .
+for example , we estimate p ( same person = yes i share2 = yes ) , which is the probability that two citations refer to the same person knowing that the web pages referenced by them share exactly two adjacent cap-word pairs in our training set , by dividing the number of citation pairs that are related to the same person and share two cap-word pairs by the number of citation pairs that share two cap-word pairs .
+final confidence matrix .
+we generate the final confidence matrix by combining the confidence matrices for the three facets using stanford certainty theory [ 9 ] .
+stanford certainty theory defines a confidence measure and generates some simple rules for combining independent evidence.4 if evidence from two independent observations supports the same result , stanford certainty theory gives the following rule to combine the evidence from these two independent observations .
+suppose cf ( e1 ) is the certainty factor associated with evidence e1 for some observation b and cf ( e2 ) is the certainty factor associated with evidence e2 for the same observation b , then the new certainty factor cf of b , called the compound certainty factor of b , is calculated by cf ( e1 ) + cf ( e2 ) - ( cf ( e1 ) ^ cf ( e2 ) ) .
+by using this rule repeatedly , it is possible to combine the results of evidence from any number of independent events that are used for determining b. thus , each element in the final matrix is the stanford certainity measure for all the corresponding values in the matrixes of all facets and represents the confidence value that the two citations refer to the same person .
+grouping algorithm .
+our grouping algorithm takes as an input the final confidence matrix , and it returns as output groups of the search-engine returned citations , such that the citations of each group refer to the same person .
+the idea of the grouping algorithm is that if we are highly confident about grouping two citations ci and c ; together in a set s1 , and we are highly confident about grouping two citations c ; and ck together in a set s2 , and s1 and s2 share one or more citations ( c ; in our example ) , then we are confident about grouping s1 and s2 together in one group s3 .
+we keep merging any two sets of citations that share one or more citations until no citation is shared between any two sets .
+the threshold we use for highly confident is 0.8 , which we determined empirically .
+example .
+as an example , we apply our technique to the first 10 returned citations for the person-name query kelly flanagan that are shown in figure 1 .
+let us label the first 10 returned citations c1 through c10 .
+figure 6 shows the confidence matrix for the attributes facet .
+pages referenced by the two citations c1 and c2 have the same zip , city , and state , which are provo and ut , and 84604 .
+from our training data we have p ( same person = yes i city = yes and state yes and zip = yes ) = 0.99 , so the confidence value that c1 and c2 are related to the same person is 0.99 .
+also , pages referenced by the two citations c1 and cs and the two citations c2 and cs have the same city and state , which are provo and ut .
+pages referenced by the two citations c4 and c7 have the same city and state , which are palm desert and california .
+from our training data we have p ( same person = yes i city = yes and state = yes ) = 0.96 , so the confidence value that c1 and cs are related to the same person is 0.96 , the confidence value that c2 and cs are related to the same person is 0.96 , and the confidence value that c4 and c7 are related to the same person is 0.96 .
+figure 7 shows the confidence matrix for the links facet .
+citations c1 and c2 have the same host name , and also c1 refers to the host of c2 .
+lfrom our training data we have p ( same person yes i host1 = yes and host1 is non-popular and host2 = yes and host2 is non-popular ) = 0.99 , so the confidence value that citations c1 and c2 are related to the same person is 0.99 .
+citations c5 and c6 have the same host name , and from the training data p ( same person = yes i host1 yes and host1 is non- popular ) = 0.99 .
+thus the confidence value that c5 and c6 are related to the same person is 0.99 .
+in addition , c3 refers to the host of c5 and c3 refers to the host of c6 .
+from the training data we have that p ( same person = yes i host2 = yes and host2 is non-popular ) = 0.99 .
+thus the confidence value that c3 and c5 are related to the same person is 0.99 , and the confidence value that c3 and c6 are related to a same person is 0.99 .
+figure 8 shows the confidence matrix of the page similarity facet .
+the citations c1 and c2 share more than four adjacent cap-word pairs which are associate professor , brigham young , performance evaluation , trace collection , computer organization , and computer architecture .
+also , the citations c2 and c3 share more than four adjacent cap-word pairs which are memory hierarchy , brent e. nelson , system-assisted disk , simulation technique , stochastic disk , winter simulation , chordal spoke , interconnection network , transaction processing , benchmarks using , performance studies , incomplete trace , and heng zho .
+from the training data p ( same person = yes i share ^ 4 = yes ) = 0.95 .
+thus , the confidence value that c1 and c2 are related to a same person is 0.95 , and the confidence value that c2 and c3 are related to a same person is 0.95 .
+citations c1 and cs share one adjacent cap-word pair , which is brigham young .
+also , citations c2 and cs share one adjacent cap-word pair , which is brigham young .
+from the training data p ( same person = yes i share1 = yes ) = 0.78 .
+thus , the confidence value that c1 and cs are related to a same person is 0.78 , and the confidence value that c2 and cs are related to a same person is 0.78 .
+in addition , citations c4 and c7 share three adjacent cap-word pairs , which are palm desert , real estate , and desert real .
+from the training data p ( same person = yes i share3 = yes ) = 0.92 .
+thus , the confidence value that c4 and c7 are related to a same person is 0.92. we apply the grouping algorithm on the final confidence matrix .
+experimental results .
+to test our system , we chose 10 arbitrary different names .
+we chose the names by opening an arbitrary page from a phone book and choosing an arbitrary name from the page .
+the names were : amanda miller , jared white , steven taylor , susan green , christopher young , adam wright , jason johnson , lily wu , william barry , and larry wilde .
+we entered each name as a query in our system , and the system returned the grouping result for the first 50 returned citations for each name .
+thus , the size of our test set was 500 citations .
+to evaluate the performance of our system , we used split and merge measures , which are unique to this study , but similar to the idea of edit distance [ 11 ] .
+for each of the 10 returned result sets , we first counted how many splits we should do over all the groups to make the citations in each group relate to one person .
+then , we counted how many merges we should do between the groups to ensure that no two groups relate to one person .
+for example , assume that the correct grouping result for eight returned citations c1 , c2 , c3 , c4 , c5 , cs , c7 , c8 is : group 1 : { c1 , c2 , c4 , cs , c71 , group 2 : { c3 , c81 , group 3 : { c51 , and the grouping result of our system is : group 1 : { c1 , c2 , c41 , group 2 : { c3 , cs , c71 , group 3 : { c5 , c81 .
+in order to fix the results that our system returns to match the correct results , we first split groups .
+we leave group 1 intact , we do one split of group 2 obtaining { c31 and { cs , c71 , and we do one split of group 3 , obtaining { c51 and { c81 .
+thus , the number of splits over all the citations is 0 + 1 + 1 = 2 .
+next we count how many merges are necessary .
+we should do one merge of { c1 , c2 , c41 with { cs , c71 and one merge of { c31 with { c81 .
+thus , the total number of merges is 2 .
+because the number of splits and merges can depend on the total number of citations , we normalize the split and merge scores to range between 0 and 1 .
+to normalize a set of n returned citations , we divide by n-1 because the maximum number of splits or merges is n-1 .
+for each name ( see table 1 ) we obtained normalized split and merge scores for each and all facets by taking the average score across all the names .
+table 1 shows that the average normalized score for splits for all facets is 0.004 and that the average normalized score for merges is 0.014 .
+the results indicate that our system works well because the closer the split and merge scores are to 0 , the better the performance .
+we also observe that no facet , by itself , performs as well as all facets together .
+for all names except amanda miller and jason johnson , the split scores were 0 for all the facets together and all the individual facets .
+that means the citations in each generated group ( except two ) related to the same person .
+in the case of amanda , there was a group of two citations that should be split .
+the web pages referenced by the two citations shared three cap-word pairs : official college , sports network , and student advantage .
+since these pairs are not on our stop word list , the confidence value that the two citations refer to the same person in the attribute facet matrix is 0.92 .
+this was the only non-zero confidence value which made the stanford measure in the final confidence matrix also 0.92 .
+thus , our grouping algorithm grouped the two citations together .
+in the case of jason johnson , one citation that refers to a football player was merged with 14 citations that refer to a baseball player .
+this happened because the web page referenced by one of the 14 citations contains www.pro-football-reference.com , which is the host name of the citation that is related to the football player .
+according to our system the host name www.pro-football-reference.com is a non-popular host because the number of pages that link to it is less than 400 .
+thus , the confidence value for the links facet was 0.99 , as was also the stanford measure in the final confidence matrix .
+concerning merges , when we considered each individual facet , there were many merges needed for all names .
+when we used all facets together , however , the number of merges became 0 for all but three names and was close to zero for these three .
+using a multi-faceted approach gave us a greater chance to gather evidence that two citations reference the same person or different persons .
+thus using a multi-faceted approach gave much better performance than using each facet separately .
+the following paragraphs discuses the cases that caused missing merges when using each facet separately and when using all facets together .
+for the attributes facet , there were two cases .
+web pages referenced by two citations that should have been merged did not share any attributes .
+in the 41 groups that should have been merged for larry wilde , for example , 1030 pairs ( out of 1036 pairs ) from distinct groups had no attributes in common .
+web pages referenced by two citations that should have been merged shared only a value for the attribute state .
+the confidence value to merge two citations knowing that the web pages referenced by them share only a state value is 0.49 , which is less than our threshold value of 0.80 .
+in the 41 groups that should have been merged for larry wilde , for example , 6 pairs from distinct groups shared only the state value .
+for the links facet , there were four cases .
+no link facet evidence was found between two citations that referred to the same person .
+in the 33 groups that should have been merged for larry wilde , for example , 1027 pairs ( out of 1031 pairs ) from distinct groups had no links facet evidence .
+two citations for the same person had only a popular common host .
+in the 19 groups that should have been merged for jason johnson , for example , 2 pairs ( out of 208 pairs ) from distinct groups had the same popular host name in common .
+one pair referred to the same person , and the other pair did not refer to the same person .
+the web page of one citation contained a popular host of another citation for the same person .
+in the 19 groups that should have been merged for jason johnson , for example , 6 pairs ( out of 208 pairs ) from distinct groups were such that in each pair a web page referenced by one of the two citations contained the host name of the url of the other citation .
+all hosts were popular ; 5 pairs referred to the same jason johnson , and one pair referred to two different jason johnsons .
+two citations had both of the previous cases .
+in the case of larry wilde , for example , there were 4 pairs such that the two citations in each pair had the same popular host and also a web page referenced by one citation contained the host name of the url of the other citation and that host was popular .
+all 4 pairs referred to the same person .
+for the page similarity facet , there were two cases .
+web pages referenced by two citations did not share any cap-word pair .
+in the 11 groups that should have been merged for larry wilde , for example , 417 pairs ( out of 484 ) from distinct groups did not share any cap-word pair .
+web pages referenced by two citations shared one cap- word pair , and these two citations referred to the same person .
+the confidence value to merge two citations knowing that the web pages referenced by them share only one cap-word pair is 0.78 , which is less than our threshold value of 0.80.5 in the 11 groups that should have been merged for larry wilde , for example , 67 pairs from distinct groups shared only one cap-word pair .
+for all facets together , there were two cases .
+the confidence value between two citations in the final confidence matrix was less than our threshold value .
+in the case of jason johnson , for example , for the results when using all facets together we needed to merge a group of 15 citations , a group of 6 citations , and a group of one citation .
+several pairs of citations from different groups that should have been merged shared one cap-word pair , but had no shared attributes and no links evidence .
+thus , sharing only one cap-word pair with a confidence value of 0.78 made the stanford measure in the final confidence matrix also 0.78 , which was less than our threshold .
+no evidence from any of the three facets was found between two citations in different groups that should 5it would be tempting to just lower our threshold to 0.78 , but our preliminary tests showed that lowering the threshold overly increased false merges .
+thus , we left the threshold as generally determined before running our tests. have been merged .
+in the case of larry wilde , for example , we need to merge a group of 41 citations , 2 groups of two citations , and 2 groups of one citation in one group .
+for these 5 groups that should have been merged , none of the 259 pairs from distinct groups had any evidence they should have been merged .
+in the case of lily wu we needed to merge a group of 5 citations with a group of one citation .
+no two citations from these two groups that should have been merged had any evidence they should have been merged .
+for groups that should have been merged , but no evidence or only weak evidence was found to group them , the question should arise , how did the human expert decide to group them ?
+this also leads to the question , is there something more the machine could do to group them ?
+one technique the human expert used was to look at pictures ( this technique is currently not possible for machines . )
+in case of jason johnson , for example , many citations from the different groups that should have been merged together contained a picture of the same baseball player .
+in the case of larry wilde two web pages that were referenced by 2 citations from one group that should have been merged shared the same picture with 2 citations from another group .
+another technique the human expert used was to look for unusual distinctive characteristics .
+in the case of larry wilde , for example , 3 citations from 3 groups that should have been merged contained distinctive quotes : never worry about the size of your christmas tree .
+in the eyes of chi ... , never worry about the size of your christmas tree .
+in the eyes of children , they are all 30 feet tall . , and christmas is the season when people run out of money before they run out of friends .
+from looking at the first two quotes ( even though the first quote was cut short ) the human expert was able to easily judge that their citations referred to the same person .
+since the third quote is about christmas , the human expert guessed that its citation may relate to the other two citations .
+note that we are not 100 % sure that the human expert was always correct .
+a final technique the human expert used was a deeper understanding of the meaning of distinguishing phrases .
+in the case of lily wu , for example , the titles of web pages referenced by two citations of the two groups that should have been merged were lutheran ministries in higher education and lutheran peace fellowship .
+our cap-word pairs are not strong enough to detect these similarities , but with a deeper understanding it is reasonable to infer a match .
+conclusions .
+we designed and implemented a system that can automatically group the returned citations from a search engine person-name query , such that each group of citations refers to the same person .
+we used a multi-faceted approach that considers three facets : attributes , links , and page similarity .
+we gave experimental evidence to show that our approach can be successful .
+in particular we tested 10 arbitrary names and found both a low normalized split score ( 0.004 ) and a low normalized merge score ( 0.014 ) .
+the results also showed that no individual facet scored better than using all facets together .
+thus , every individual facet and an appropriate combination of all facets appear to be necessary .
+as for future work , there is reason to believe that it may be useful to adjust thresholds based on name popularity .
+john smith is much more common than david embley , for example .
+to accomplish this research , we would first need to determine how to recognize if a name is popular or not .
+we would then need to determine how to set thresholds as a function of popularity .
+it would also be interesting to extend the research to deal with general proper-noun queries , which involve places and things as well as persons .
+the idea of using the multi-faceted approach would stay the same .
+we would , however , have to determine new attributes for each kind of proper noun .
+we would also have to obtain training data and use it to establish the conditional probabilities .
+we may also need to adjust the threshold values .

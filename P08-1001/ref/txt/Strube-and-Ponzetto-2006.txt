@@ -1,0 +1,167 @@
+wikirelate !
+computing semantic relatedness using wikipedia .
+abstract .
+wikipedia provides a knowledge base for computing word relatedness in a more structured fashion than a search engine and with more coverage than wordnet .
+in this work we present experiments on using wikipedia for computing semantic relatedness and compare it to wordnet on various benchmarking datasets .
+existing relatedness measures perform better using wikipedia than a baseline given by google counts , and we show that wikipedia outperforms wordnet when applied to the largest available dataset designed for that purpose .
+the best results on this dataset are obtained by integrating google , wordnet and wikipedia based measures .
+we also show that including wikipedia improves the performance of an nlp application processing naturally occurring texts .
+introduction .
+semantic relatedness indicates how much two concepts are related in a taxonomy by using all relations between them ( i.e. hyponymic / hypernymic , meronymic and any kind of functional relations including has -part , is-made-of , is-anattribute-of , etc . ) .
+when limited to hyponymy / hyperonymy ( i.e. is-a ) relations , the measure quantifies semantic similarity instead .
+semantic relatedness measures are used in many applications in natural language processing ( nlp ) such as word sense disambiguation ( patwardhan et al. , 2005 ) , information retrieval ( finkelstein et al. , 2002 ) , interpretation of noun compounds ( kim & baldwin , 2005 ) and spelling correction ( budanitsky & hirst , 2006 ) .
+most of the work dealing with relatedness and similarity measures has been developed using wordnet ( fellbaum , 1998 ) .
+while wordnet represents a well structured taxonomy organized in a meaningful way , questions arise about the need for a larger coverage .
+e.g. , wordnet 2.1 does not include information about named entities such as condoleezza rice , salvador allende or the rolling stones as well as specialized concepts such as exocytosis or p450 .
+in contrast , wikipedia provides entries on a vast number of named entities and very specialized concepts .
+the english version , as of 14 february 2006 , contains 971,518 articles with 18.4 million internal hyperlinks , thus providing a large coverage knowledge resource developed by a large community , which is very attractive for information extraction applications1 .
+in addition , since may 2004 it provides also a taxonomy by means of its categories : articles can be assigned one or more categories , which are further categorized to provide a category tree .
+in practice , the taxonomy is not designed as a strict hierarchy or tree of categories , but allows multiple categorization schemes to co-exist simultaneously .
+as of january 2006 , 94 % of the articles have been categorized into 91,502 categories .
+the strength of wikipedia lies in its size , which could be used to overcome current knowledge bases � limited coverage and scalability issues .
+such size represents on the other hand a challenge : the search space in the wikipedia category graph is very large in terms of depth , branching factor and multiple inheritance relations , which creates problems related to finding efficient mining methods .
+in addition , the category relations in wikipedia cannot only be interpreted as corresponding to is-a links in a taxonomy since they denote meronymic relations as well .
+as an example , the wikipedia page for the nigerian musician fela kuti belongs not only to the categories musical activists and saxophonists ( is-a ) but also to the 1938 births ( has -property ) 2 .
+this is due to the fact that , rather than being a well-structured taxonomy , the wikipedia category tree is an example of a folksonomy , namely a collaborative tagging system that enables the users to categorize the content of the encyclopedic entries .
+folksonomies as such do not strive for correct conceptualization in contrast to systematically engineered ontologies .
+they rather achieve it by collaborative approximation .
+in this paper we explore the idea of using wikipedia for computing semantic relatedness .
+we make use of the online encyclopedia and its folksonomy for computing the relatedness of words and evaluate the performance on standard datasets designed for that purpose .
+since the datasets are limited in size , we additionally apply these measures to a real-world nlp application , using semantic relatedness as a feature for a machine learning based coreference resolution system ( ponzetto & strube , 2006 ) .
+related work .
+approaches to measuring semantic relatedness that use lexical resources ( instead of distributional similarity of words , e.g.
+landauer & dumais ( 1997 ) and turney ( 2001 ) ) transform that resource into a network or graph and compute relatedness using paths in it .
+rada et al. ( 1989 ) traverse mesh , a term hierarchy for indexing articles in medline , and compute semantic relatedness straightforwardly in terms of the number of edges between terms in the hierarchy .
+jarmasz & szpakowicz ( 2003 ) use the same approach with roget � s thesaurus while hirst & st-onge ( 1998 ) apply a similar strategy to wordnet .
+since the edge counting approach relies on a uniform modeling of the hierarchy , researchers started to develop measures for computing semantic relatedness which abstract from this problem ( wu & palmer , 1994 ; resnik , 1995 ; leacock & chodorow , 1998 ; finkelstein et al. , 2002 ; banerjee & pedersen , 2003 , inter alia ) .
+those researchers , however , focused on developing appropriate measures while keeping wordnet as the de facto primary knowledge source .
+since wikipedia exists only since 2001 and has been considered a reliable source of information for an even shorter amount of time , not many researchers in nlp have worked with its content , and even less have used it as resource .
+few researchers have explored the use of wikipedia for applications such as question answering ( ahn et al. , 2004 ) and named entity disambiguation ( bunescu & pas � ca , 2006 ) and showed promising results .
+in our work we combine these two lines of research .
+we apply well established semantic relatedness measures originally developed for wordnet to the open domain encyclopedia wikipedia .
+this way we hope to encourage further research taking advantage of the resources provided by wikipedia .
+semantic relatedness measures .
+the measures we use for computing semantic relatedness fall into three broad categories .
+path based measures .
+these measures compute relatedness as a function of the number of edges in the taxonomy along the path between two conceptual nodes c1 and c2 the words w1 and w2 are mapped to ( e.g. via disambiguation and sense assignment ) .
+the simplest path-based measure is the straightforward edge counting method of rada et al. ( 1989 , pl , henceforth ) , which defines semantic distance as the number of nodes in the taxonomy along the shortest path between two conceptual nodes .
+accordingly , semantic relatedness is defined as the inverse score of the semantic distance .
+leacock & chodorow ( 1998 , lch ) propose a normalized path-length measure which takes into account the depth of the taxonomy in which the concepts are found where length ( c1 , c2 ) is the number of nodes along the shortest path between the two nodes ( as given by the edge counting method ) , and d is the maximum depth of the taxonomy .
+wu & palmer ( 1994 , wup ) present instead a scaled measure which takes into account the depth of the nodes together with the depth of their least common subsumer , lcs .
+information content based measures .
+the measure of resnik ( 1995 , res ) computes the relatedness between the concepts as a function of their information content , given by their probability of occurrence in a corpus .
+relatedness is modeled as � the extent to which they [ the concepts ] share information � , and is given by the information content , ic , of their least common subsumer .
+in the case of wikipedia we couple the resnik measure with an intrinsic information content measure relying on the hierarchical structure of the category tree ( seco et al. , 2004 ) , rather than computing the information content from the probabilities of occurrence of the concepts in a corpus .
+this method has been proven to correlate better with human judgements .
+the intrinsic information content of a category node n in the hierarchy is given as a function of its hyponyms , namely text overlap based measures .
+we finally use measures based on the relatedness between two words defined as a function of text ( i.e. gloss ) overlap ( lesk , 1986 ) .
+an example of such measure is the extended gloss overlap ( lesk ) measure of banerjee & pedersen ( 2003 ) .
+this measure computes the overlap score by extending the glosses of the concepts under consideration to include the glosses of related concepts in a hierarchy .
+in the case of wikipedia , since no relevant text is given in the category pages , text overlap measures are computed from article pages only .
+given two texts t1 and t2 taken as definitions for the words w1 and w2 , the overlap score overlap ( t1 , t2 ) is computed as en m2 for n phrasal m-word overlaps ( banerjee & pedersen , 2003 ) .
+in order to adapt the lesk measure to wikipedia , text overlap measures were computed from wikipedia � glosses � ( viz . , the first paragraph of text of the pages , gloss ) and full page texts ( text ) .
+the relatedness score is given by applying a double normalization step to the overlap score .
+we first normalize by the sum of text lengths and then take the output as the value of the hyperbolic tangent function in order to minimize the role of outliers skewing the score distribution .
+computing semantic relatedness with wikipedia .
+wikipedia mining works in our system as follows : given the word pairs i , j ( king and rook for instance ) we first retrieve the wikipedia pages which they refer to .
+we then hook to the category tree by extracting the categories the pages belong to .
+finally , we compute relatedness based on the pages extracted and the paths found along the category taxonomy .
+page retrieval and disambiguation .
+page retrieval for page pi / j is accomplished by first querying the page titled as the word i / j .
+next , we follow all redirects ( i.e.
+car redirecting to automobile ) and resolve ambiguous page queries , as many queries to wikipedia return a disambiguation page , namely pages hyperlinking to entries which are candidate targets for the given original query .
+for instance , querying king returns the wikipedia disambiguation page king , which points to other pages including monarch , king ( chess ) , king kong , king-fm ( a broadcasting station ) b.b. king ( the blues guitarist ) and martin luther king .
+as we are interested here in relatedness , we opt for an approach to disambiguation which maximizes relatedness , namely we let the page queries disambiguate each other .
+if a disambiguation page pi / j for querying word i / j is hit , we first get all the hyperlinks in the page pj / i obtained by querying the other word j / i without disambiguating .
+this is to bootstrap the disambiguation process , as well as it could be the case that both queries are ambiguous , e.g. king and rook .
+we take the other word j / i and all the wikipedia internal links of the page pj / i as a lexical association list l to be used for disambiguation � i.e. , we use the term list { rook , rook ( chess ) , rook ( bird ) , rook ( rocket ) , ... } for disambiguating the page king .
+links such as rook ( chess ) are split to extract the label between parentheses � i.e. , rook ( chess ) splits into rook and chess .
+if a link in pi / j contains any occurrence of a disambiguating term l e l ( i.e. the link king ( chess ) in the king page containing the term chess extracted from the rook page ) , the linked page is returned , else we return the first article linked in the disambiguation page . � this disambiguation strategy probably offers a less accurate solution than following all disambiguation page links .
+nevertheless it offers a more practical solution as many of those pages contain a large number of links .
+category tree search .
+the wikipedia pages suffice only to compute the text overlap measures .
+additionally , paths along the category tree are needed for computing path and information based measures .
+given the pages pi and pj , we extract the lists of categories ci and cj they belong to ( i.e.
+king ( chess ) belongs to the chess pieces category ) .
+that is , we assume that category links in the pages are the primitive concepts in the taxonomy which the words denote .
+given the category lists , for each category pair ( ci , cj ~ , ci e ci , cj e cj we perform a depth-limited search of maximum depth of 4 for a least common subsumer .
+we noticed that limiting the search improves the results .
+this is probably due to the upper regions of the wikipedia category tree being too strongly connected .
+accordingly , the value of the search depth was established during system prototyping on the datasets from miller & charles ( 1991 ) and rubenstein & goodenough ( 1965 ) .
+relatedness measure computation .
+finally , given the set of paths found between the category pairs , we compute the taxonomy based measures by selecting the paths satisfying the measure definitions , namely the shortest path for path-based measures and the path which maximizes information content for information content based measures .
+experiments .
+we evaluated the relatedness measures on three standard datasets , namely miller & charles � ( 1991 ) list of 30 noun pairs ( m & c ) , the 65 word synonymity list from rubenstein & goodenough ( 1965 , r & g ) of which m & c is a subset , and finally the wordsimilarity-353 test collection ( finkelstein et al. , 2002 , 353-tc ) 3 .
+as the 353-tc dataset includes two sets , we experiment both with the full list ( 353 word pairs ) , and its test data subset ( 153 pairs ) .
+following the literature on semantic relatedness , we evaluated performance by taking the pearson product-moment correlation coefficient r between the relatedness measure scores and the corresponding human judgements .
+for each dataset we report the correlation computed on all pairs , as well as the one obtained by disregarding missing pairs which could not be found .
+as a baseline , we compute for each word pair i and j the google correlation coefficient by taking the jaccard similarity coefficient on page hits .
+experiments were performed for each measure on all datasets .
+additionally , since the 353-tc dataset is large enough to be partioned into training and testing , we experiment on integrating different measures by performing regression using a support vector machine ( vapnik , 1995 ) to estimate the functional dependence of the human relatedness judgements on multiple relatedness scores .
+the learner was trained and tested using all available google , wordnet and wikipedia scores .
+we used an rbf kernel with degree 3 .
+model selection for optimal parameter estimation was performed as a grid search through cross-validation on the training data ( hsu et al. , 2006 ) .
+wikipedia perform better than the google baseline , which seems to suggest that using structured knowledge sources for relatedness computation yields more accurate results .
+while wordnet performs extremely well on the small datasets ( m & c and r & g ) , its performance drastically decreases when applied to a larger dataset such as 353-tc .
+wikipedia however does not perform as well on the smaller datasets but outperforms wordnet on 353-tc by a large margin .
+this is not due to coverage , as in the 353-tc dataset there are only 2 pairs containing at least one word not present in word- net , where these amount to 13 for wikipedia .
+the problems seem to be caused rather by sense proliferation .
+the measures are in fact computed by looking at all possible sense pairs for the given words ( as no word senses are given ) , and taking the best scoring ( e.g. shortest , more informative ) path .
+this allows for unplausible paths to be returned .
+as an example , the shortest path returned for the pair stock and jaguar uses an infrequent sense of stock ( � not used technically ; any animals kept for use or profit � ) , which was not the one intended by the human judges as they assigned a low correlation score to the pair .
+it should be noted however that this does not constitute a problem for wordnet itself , as it has to provide coverage , but rather for the relatedness measures .
+additionally no sense disambiguation is possible , as the input consists only of two , possibly unrelated , words .
+on the contrary , using wikipedia pages as taxonomy entry points , we have access to the page texts and hyperlinks , which can be used to disambiguate and subsequently limit and focus the search .
+as an example , using fertility to disambiguate egg , we correctly return the wikipedia page ovum , whereas the shortest path in wordnet makes use of the second sense for egg , namely � oval reproductive body of a fowl ( especially a hen ) used as food � 5 .
+in addition to this , wordnet seems to suffer in principle of a link proliferation problem , e.g. , the shortest path between egglch .
+the only statistically non-significant differences in performance were found between the lesk and both the wikipedia gloss and text measures on the m & c dataset .
+one could suggest to limit the search in wordnet as we did in wikipedia , though it should be noted that this is supposed to be taken care by the measures themselves , e.g. by scaling by the depth of the path nodes .
+in general , it seems that comparing wordnet and wikipedia on the 353-tc dataset reveals a classic coverage / precision dilemma .
+while wikipedia still suffers a more limited coverage than wordnet , by using it we can direct the path search via disambiguation using resources such as text and links .
+finkelstein et al. ( 2002 ) suggest that integrating a word- vector based relatedness measure with a wordnet based one is useful , as it accounts for word co-occurrences and helps recovering from cases in which the words cannot be found in the available resources , e.g. dictionary or ontology .
+accordingly , on the 353-tc test set we report the best performance by integrating all available knowledge sources .
+the score of r = 0.59 outperforms the combined wordnet � word-vector measure of finkelstein et al. ( 2002 ) ( r = 0.55 ) , with the correlation score dropping minimally when leaving the google scores out ( r = 0.58 ) .
+instead of integrating a word-vector based relatedness measure with a word- net based one , our results indicate that a competitive performance can be achieved also by simply using a different knowledge base such as wikipedia .
+in practice , we believe that it is extremely difficult to perform a fair comparison of the two knowledge sources when limiting the application to such small datasets .
+this is the reason why we do not perform additional experiments making use of other datasets from synonymity tests such as the 80 toefl ( landauer & dumais , 1997 ) , 50 esl ( turney , 2001 ) or 300 reader � s digest word power game ( jarmasz & szpakowicz , 2003 ) questions .
+besides , the only available � not-so-small � dataset for evaluating relatedness measures , namely the 353-tc dataset , has been criticized in the literature for having been built in a methodologically unsolid way and accordingly for not being able to provide a suitable benchmarking dataset ( jarmasz & szpakowicz , 2003 ) .
+these are all reasons why we turn in the next section to the application of such measures to a real-world nlp task , namely coreference resolution , where the relatedness between hundreds of thousands of word pairs has to be computed , thus providing a more reliable evaluation .
+we present in this section an extension of a machine learning based coreference resolver which uses relatedness scores as features for classifying referring expressions ( res ) as denoting the same discourse entities ( see ponzetto & strube ( 2006 ) for an in-depth description of the system ) .
+to establish a competitive baseline system , we re- implemented the machine learning based coreference resolver of soon et al. ( 2001 ) .
+coreference resolution is viewed as a binary classification task : given a pair of referring expressions ( res ) , the classifier has to decide whether they are coreferent or not .
+for learning coreference decisions , we used a maximum entropy ( berger et al. , 1996 ) model .
+instances are created following soon et al. ( 2001 ) .
+in order to test the effects of including semantic relatedness information within a coreference learner , the system is first run using the 12 features of the baseline model to be replicated , viz . , shallow surface features , such as the distance between the potentially coreferent expressions , string matching and linguistic form ( i.e. pronoun , demonstrative ) .
+we then explore the contribution of features capturing semantic relatedness .
+these are computed by taking the relatedness score of the re pairs , obtained by querying the head lemma of the res ( i.e. diver for the russian divers ) or , in the case of named entities , the full linguistic expression .
+no relatedness score is computed for pairs including pronouns .
+we evaluate four expanded feature sets , namely adding ( 1 ) wordnet features ; ( 2 ) wikipedia features ; ( 3 ) semantic role label features ( gildea & jurafsky , 2002 , srl ) ( 4 ) all available features .
+for all feature sets we determine the relevant features following an iterative procedure similar to the wrapper approach for feature selection ( kohavi & john , 1997 ) .
+the system was developed and tested with the ace 2003 training data corpus ( mitchell et al. , 2003 ) 6 .
+both the newswire ( nwire ) and broadcast news ( bnews ) sections where split into 60-20-20 % document-based partitions for training , development , and blind testing , and later per- partition merged ( merged ) for a document source independent system evaluation .
+we computed relatedness scores for 282,658 word pairs in total .
+we report in tables 2 and 3 the muc score ( vilain et al. , 1995 ) with performances above the baseline being highlighted in bold .
+this score is computed for those phrases which appear in both the key and the response .
+we discard therefore those responses not present in the key , as we are interested here in establishing the upper limit of the improvements given by our semantic features .
+in addition , we report the accuracy score for all three types of ace mentions , namely pronouns , common nouns and proper names .
+accuracy is the percentage of res of a given mention type correctly resolved divided by the total number of res of the same type given in the key .
+the results show that wordnet and wikipedia relatedness features tend to significantly increase performance on common nouns , that is , that both provide semantically relevant features for coreference resolution .
+as a consequence of having different knowledge sources accounting for the resolution of different re types , the best results are obtained by ( 1 ) combining features generated from different sources and ( 2 ) performing feature selection .
+when combining different feature sources , we note an accuracy improvement on pronouns and common nouns , as well as an increase in f-measure due to a higher recall .
+the optimal system configurations always include features from both wordnet and wikipedia .
+this supports the results of table 1 where the best results were found by integrating relatedness scores from different sources , thus suggesting that wordnet and wikipedia are complementary knowledge sources .
+more interestingly , it indicates that wikipedia can indeed be used as a resource for large-scale nlp applications .
+conclusions .
+in this paper we investigated the use of wikipedia for computing semantic relatedness measures and the application of these measures to a real-world nlp task such as coreference resolution .
+the results show that wikipedia provides a suitable encyclopedic knowledge base for extracting semantic information .
+while using wikipedia alone yields a slightly worse performance in our coreference resolution system as compared to wordnet , it showed nevertheless promising results .
+also , by using wikipedia we obtained the best semantic relatedness results on the 353-tc dataset .
+even if the taxonomic categorization feature has been introduced into wikipedia only two years ago , our results indicate that relatedness computed using the wikipedia taxonomy consistently correlates better with human judgements than a simple baseline based on google counts , and better than word- net for some datasets .
+in addition , just as wordnet , it can provide a useful knowledge source for adding semantic relatedness information to an nlp application such as a coreference resolution system .
+what is most interesting about our results is that they indicate that a collaboratively created folksonomy can actually be used in ai and nlp applications with the same effect as hand-crafted taxonomies or ontologies .
+even on a theoretical ground , it seems to be a wise choice to use knowledge generated collaboratively .
+this is because the wikipedia folksonomy is created on a large scale by the very same people whose knowledge we try to model in our applications .
+so , it is no surprise that it also works .
+instead of letting a few ontology experts decide upon the structure of the world , its thorough description can be continuously approximated by a large number of people who collaborate on wikipedia .
+everyone contributes their expertise by describing different aspects of the world and categorizing them .
+more concretely , if a project is able to induce in just a couple of years a taxonomy able to compete with wordnet on linguistic processing tasks , and given its exponential growth rate , we can only expect a bright future for automatic knowledge mining techniques with wikipedia 7 .

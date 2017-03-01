@@ -1,0 +1,211 @@
+extracting product features and opinions from reviews .
+abstract .
+consumers are often forced to wade through many on-line reviews in order to make an informed product choice .
+this paper introduces opine , an unsupervised information- extraction system which mines reviews in order to build a model of important product features , their evaluation by reviewers , and their relative quality across products .
+compared to previous work , opine achieves 22 % higher precision ( with only 3 % lower recall ) on the feature extraction task .
+opines novel use of relaxation labeling for finding the semantic orientation of words in context leads to strong performance on the tasks of finding opinion phrases and their polarity .
+introduction .
+the web contains a wealth of opinions about products , politicians , and more , which are expressed in newsgroup posts , review sites , and elsewhere .
+as a result , the problem of opinion mining has seen increasing attention over the last three years from ( turney , 2002 ; hu and liu , 2004 ) and many others .
+this paper focuses on product reviews , though our methods apply to a broader range of opinions .
+product reviews on web sites such as amazon.com and elsewhere often associate meta-data with each review indicating how positive ( or negative ) it is using a 5-star scale , and also rank products by how they fare in the reviews at the site .
+however , the readers taste may differ from the reviewers .
+for example , the reader may feel strongly about the quality of the gym in a hotel , whereas many reviewers may focus on other aspects of the hotel , such as the decor or the location .
+thus , the reader is forced to wade through a large number of reviews looking for information about particular features of interest .
+we decompose the problem of review mining into the following main subtasks : identify product features , identify opinions regarding product features , determine the polarity of opinions , rank opinions based on their strength .
+this paper introduces opine , an unsupervised information extraction system that embodies a solution to each of the above subtasks .
+opine is built on top of the knowitall web information-extraction system ( etzioni et al. , 2005 ) as detailed in section 3 .
+given a particular product and a corresponding set of reviews , opine solves the opinion mining tasks outlined above and outputs a set ofproduct features , each accompanied by a list of associated opinions which are ranked based on strength ( e.g. , abominable is stronger than bad ) .
+this output information can then be used to generate various types of opinion summaries .
+this paper focuses on the first 3 review mining subtasks and our contributions are as follows : we introduce opine , a review-mining system whose novel components include the use of relaxation labeling to find the semantic orientation of words in the context of given product features and sentences .
+we compare opine with the most relevant previous review-mining system ( hu and liu , 2004 ) and find that opines precision on the feature extraction task is 22 % better though its recall is 3 % lower on hus data sets .
+we show that 1 / 3 of this increase in precision comes from using opines feature assessment mechanism on review data while the rest is due to web pmi statistics .
+while many other systems have used extracted opinion phrases in order to determine the polarity of sentences or documents , opine is the first to report its precision and recall on the tasks of opinion phrase extraction and opinion phrase polarity determination in the context of known product features and sentences .
+on the first task , opine has a precision of 79 % and a recall of 76 % .
+on the second task , opine has a precision of 86 % and a recall of 89 % .
+the remainder of this paper is organized as follows : section 2 introduces the basic terminology , section 3 gives an overview of opine , describes and evaluates its main components , section 4 describes related work and section 5 presents our conclusion .
+terminology .
+a product class ( e.g. , scanner ) is a set of products ( e.g. , epson1200 ) .
+opine extracts the following types ofproduct features : properties , parts , features ofproduct parts , related concepts , parts and properties of related concepts ( see table 1 for examples of such features in the scanner domains ) .
+related concepts are concepts relevant to the customers experience with the main product ( e.g. , the company that manufactures a scanner ) .
+the relationships between the main product and related concepts are typically expressed as verbs ( e.g. , epson manufactures scanners ) or prepositions ( scanners from epson ) .
+features can be explicit ( good scan quality ) or implicit ( good scans implies good scanquality ) .
+opine also extracts opinion phrases , which are adjective , noun , verb or adverb phrases representing customer opinions .
+opinions can be positive or negative and vary in strength ( e.g. , fantastic is stronger than good ) .
+opine overview .
+solution .
+the steps of our solution are outlined in figure 1 above .
+opine parses the reviews using mini- par ( lin , 1998 ) and applies a simple pronoun-resolution module to parsed review data .
+opine then uses the data to find explicit product features ( e ) .
+opines feature assessor and its use of web pmi statistics are vital for the extraction of high-quality features ( see 3.2 ) .
+opine then identifies opinion phrases associated with features in e and finds their polarity .
+opines novel use of relaxation- labeling techniques for determining the semantic orientation of potential opinion words in the context of given features and sentences leads to high precision and recall on the tasks of opinion phrase extraction and opinion phrase polarity extraction ( see 3.3 ) .
+in this paper , we only focus on the extraction of explicit features , identifying corresponding customer opinions about these features and determining their polarity .
+we omit the descriptions of the opinion clustering , implicit feature generation and opinion ranking algorithms .
+the knowitall system .
+opine is built on top of knowitall , a web-based , domain-independent information extraction system ( etzioni et al. , 2005 ) .
+given a set of relations of interest , knowitall instantiates relation-specific generic extraction patterns into extraction rules which find candidate facts .
+knowitalls assessor then assigns a probability to each candidate .
+the assessor uses a form of point-wise mutual information ( pmi ) between phrases that is estimated from web search engine hit counts ( turney , 2001 ) .
+it computes the pmi between each fact and automatically generated discriminator phrases ( e.g. , is a scanner for the isa ( ) relationship in the context of the scanner class ) .
+given fact f and discriminator d , the computed pmi score is : the pmi scores are converted to binary features for a naive bayes classifier , which outputs a probability associated with each fact ( etzioni et al. , 2005 ) .
+finding explicit features .
+opine extracts explicit features for the given product class from parsed review data .
+first , the system recursively identifies both the parts and the properties of the given product class and their parts and properties , in turn , continuing until no candidates are found .
+then , the system finds related concepts as described in ( popescu et al. , 2004 ) and extracts their parts and properties .
+table 1 shows that each feature type contributes to the set of final features ( averaged over 7 product classes ) .
+in order to find parts and properties , opine first extracts the noun phrases from reviews and retains those with frequency greater than an experimentally set threshold .
+opines feature assessor , which is an instantiation of knowitalls assessor , evaluates each noun phrase by computing the pmi scores between the phrase and meronymy discriminators associated with the product class ( e.g. , of scanner , scanner has , scanner comes with , etc. for the scanner class ) .
+opine distinguishes parts from properties using wordnets is-a hierarchy ( which enumerates different kinds of properties ) and morphological cues ( e.g. , -iness , -ity suffixes ) .
+experiments : explicit feature extraction .
+in our experiments we use sets of reviews for 7 product classes ( 1621 total reviews ) which include the publicly available data sets for 5 product classes from ( hu and liu , 2004 ) .
+hus system is the review mining system most relevant to our work .
+it uses association rule mining to extract frequent review noun phrases as features .
+frequent features are used to find potential opinion words ( only adjectives ) and the system uses word- net synonyms / antonyms in conjunction with a set of seed words in order to find actual opinion words .
+finally , opinion words are used to extract associated infrequent features .
+the system only extracts explicit features .
+on the 5 datasets in ( hu and liu , 2004 ) , opines precision is 22 % higher than hus at the cost of a 3 % recall drop .
+there are two important differences between opine and hus system : a ) opines feature assessor uses pmi assessment to evaluate each candidate feature and b ) opine incorporates web pmi statistics in addition to review data in its assessment .
+in the following , we quantify the performance gains from a ) and b ) .
+in order to quantify the benefits of opines feature assessor , we use it to evaluate the features extracted by hus algorithm on review data ( hu + a / r ) .
+the feature assessor improves hus precision by 6 % .
+in order to evaluate the impact of using web pmi statistics , we assess opines features first on reviews ( op / r ) and then on reviews in conjunction with the web ( the corresponding methods are hu + a / r + w and opine ) .
+web pmi statistics increase precision by an average of 14.5 % .
+overall , 1 / 3 of opines precision increase over hus system comes from using pmi assessment on reviews and the other 2 / 3 from the use of the web pmi statistics .
+in order to show that opines performance is robust across multiple product classes , we used two sets of reviews downloaded from tripadvisor.com for hotels and amazon.com for scanners .
+two annotators labeled a set of unique 450 opine extractions as correct or incorrect .
+the inter-annotator agreement was 86 % .
+the extractions on which the annotators agreed were used to compute opines precision , which was 89 % .
+furthermore , the annotators extracted explicit features from 800 review sentences ( 400 for each domain ) .
+the interannotator agreement was 82 % .
+opines recall on the set of 179 features on which both annotators agreed was 73 % .
+finding opinion phrases and their polarity .
+this subsection describes how opine extracts potential opinion phrases , distinguishes between opinions and nonopinions , and finds the polarity of each opinion in the context of its associated feature in a particular review sentence .
+extracting potential opinion phrases .
+opine uses explicit features to identify potential opinion phrases .
+our intuition is that an opinion phrase associated with a product feature will occur in its vicinity .
+this idea is similar to that of ( kim and hovy , 2004 ) and ( hu and liu , 2004 ) , but instead of using a window of size k or the output of a noun phrase chunker , opine takes advantage of the syntactic dependencies computed by the minipar parser .
+our intuition is embodied by 10 extraction rules , some of which are shown in table 4 .
+if an explicit feature is found in a sentence , opine applies the extraction rules in order to find the heads of potential opinion phrases .
+each head word together with its modifiers is returned as a potential opinion phrase .
+word semantic orientation .
+opine finds the semantic orientation of a word w in the context of an associated feature f and sentence s .
+we restate this task as follows : task given a set of semantic orientation ( so ) labels ( { positive , negative , neutral } ) , a set of reviews and a set of tuples ( w , f , s ) , where w is a potential opinion word associated with feature f in sentence s , assign a so label to each tuple ( w , f , s ) .
+for example , the tuple ( sluggish , driver , i am not happy with this sluggish driver ) would be assigned a negative so label .
+note : we use word to refer to a potential opinion word w and feature to refer to the word or phrase which represents the explicit feature f .
+solution opine uses the 3-step approach below : given the set of reviews , opine finds a so label for each word w .
+given the set of reviews and the set of so labels for words w , opine finds a so label for each ( w , f ) pair .
+given the set of so labels for ( w , f ) pairs , opine finds a so label for each ( w , f , s ) input tuple .
+each of these subtasks is cast as an unsupervised collective classification problem and solved using the same mechanism .
+in each case , opine is given a set of objects ( words , pairs or tuples ) and a set of labels ( so labels ) ; opine then searches for a global assignment of labels to objects .
+in each case , opine makes use of local constraints on label assignments ( e.g. , conjunctions and disjunctions constraining the assignment of so labels to words ( hatzivassiloglou and mckeown , 1997 ) ) .
+a key insight in opine is that the problem of searching for a global so label assignment to words , pairs or tuples while trying to satisfy as many local constraints on assignments as possible is analogous to labeling problems in computer vision ( e.g. , model-based matching ) .
+opine uses a well-known computer vision technique , relaxation labeling ( hummel and zucker , 1983 ) , in order to solve the three subtasks described above .
+relaxation labeling overview .
+relaxation labeling is an unsupervised classification technique which takes as input : a set of objects ( e.g. , words ) , a set of labels ( e.g. , so labels ) , initial probabilities for each objects possible labels , the definition of an object os neighborhood ( a set of other objects which influence the choice of os label ) , the definition of neighborhood features , the definition of a supportfunction for an object label .
+the influence of an object os neighborhood on its label l is quantified using the support function .
+the support function computes the probability of the label l being assigned to o as a function of os neighborhood features .
+examples of features include the fact that a certain local constraint is satisfied ( e.g. , the word nice participates in the conjunction and together with some other word whose so label is estimated to be positive ) .
+relaxation labeling is an iterative procedure whose output is an assignment of labels to objects .
+at each iteration , the algorithm uses an update equation to reestimate the probability of an object label based on its previous probability estimate and the features of its neighborhood .
+the algorithm stops when the global label assignment stays constant over multiple consecutive iterations .
+we employ relaxation labeling for the following reasons : a ) it has been extensively used in computer-vision with good results b ) its formalism allows for many types of constraints on label assignments to be used simultaneously .
+as mentioned before , constraints are integrated into the algorithm as neighborhood features which influence the assignment of a particular label to a particular object .
+opine uses the following sources of constraints : conjunctions and disjunctions in the review text , manually-supplied syntactic dependency rule templates ( see table 5 ) .
+the templates are automatically instantiated by our system with different dependency relationships ( premodifier , postmodifier , subject , etc . ) in order to obtain syntactic dependency rules which find words with related so labels. automatically derived morphological relationships ( e.g. , wonderful and wonderfully are likely to have similar so labels ) .
+wordnet-supplied synonymy , antonymy , is-a and morphological relationships between words .
+for example , clean and neat are synonyms and so they are likely to have similar so labels .
+each of the so label assignment subtasks previously identified is solved using a relaxation labeling step .
+in the following , we describe in detail how relaxation labeling is used to find so labels for words in the given review sets .
+finding so labels for words .
+for many words , a word sense or set of senses is used throughout the review corpus with a consistently positive , negative or neutral connotation ( e.g. , great , awful , etc . ) .
+thus , in many cases , a word ws so label in the context of a feature f and sentence s will be the same as its so label in the context of other features and sentences .
+in the following , we describe how opines relaxation labeling mechanism is used to find a words dominant so label in a set of reviews .
+for this task , a words neighborhood is defined as the set of words connected to it through conjunctions , disjunctions and all other relationships previously introduced as sources of constraints .
+rl uses an update equation to re-estimate the probability of a word label based on its previous probability estimate and the features of its neighborhood ( see neighborhood features ) .
+at iteration m , let q ( w , l ) ( . ) denote the support function for label l of w and let p ( l ( w ) = l ) ( . ) denote the probability that l is the label of w .
+p ( l ( w ) = l ) ( . + 1 ) is computed as follows : rl update equation ( rangarajan , 2000 ) where l ' e { pos , neg , neutral } and a > 0 is an experimentally set constant keeping the numerator and probabilities positive .
+rls output is an assignment of dominant so labels to words .
+in the following , we describe in detail the initialization step , the derivation of the support function formula and the use of neighborhood features .
+rl initialization step opine uses a version of tur- neys pmi-based approach ( turney , 2003 ) in order to de- rive the initial probability estimates ( p ( l ( w ) = l ) ( 0 ) ) for a subset s of the words .
+opine computes a so score so ( w ) for each w in s as the difference between the pmi of w with positive keywords ( e.g. , excellent ) and the pmi of w with negative keywords ( e.g. , awful ) .
+when so ( w ) is small , or w rarely co-occurs with the key- words , w is classified as neutral .
+if so ( w ) > 0 , then w is positive , otherwise w is negative .
+opine then uses the labeled s set in order to compute prior probabilities p ( l ( w ) = l ) , l e { pos , neg , neutral } by computing the ratio between the number of words in s labeled l and is1 .
+such probabilities are used as initial probabil- ity estimates associated with the labels of the remaining words .
+neighborhood features .
+each type of word relationship which constrains the assignment of so labels to words ( synonymy , antonymy , etc . ) is mapped by opine to a neighborhood feature .
+this mapping allows opine to use simultaneously use multi- ple independent sources of constraints on the label of a particular word .
+in the following , we formalize this mapping .
+let t denote the type of a word relationship in r ( synbnym , antonym , etc . ) and let ak , t represent the labels assigned by ak to neighbors of a word w which are connected to w through a relationship of type t .
+finding ( word , feature ) so labels .
+this subtask is motivated by the existence of frequent words which change their so label based on associated features , but whose so labels in the context of the respective features are consistent throughout the reviews ( e.g. , in the hotel domain , hot water has a consistently positive connotation , whereas hot room has a negative one ) .
+in order to solve this task , opine first assigns each ( w , f ) pair an initial so label which is ws so label .
+the system then executes a relaxation labeling step during which syntactic relationships between words and , respectively , between features , are used to update the default so labels whenever necessary .
+for example , ( hot , room ) appears in the proximity of ( broken , fan ) .
+if roomand fan are conjoined by and , this suggests that hot and broken have similar so labels in the context of their respective features .
+if broken has a strongly negative semantic orientation , this fact contributes to opines belief that hot may also be negative in this context .
+since ( hot , room ) occurs in the vicinity of other such phrases ( e.g. , stifling kitchen ) , hot acquires a negative so label in the context of room .
+finding ( word , feature , sentence ) so labels .
+this subtask is motivated by the existence of ( w , f ) pairs ( e.g. , ( big , room ) ) for which ws orientation changes based on the sentence in which the pair appears ( e.g. , i hated the big , drafty room because i ended up freezing. vs. we had a big , luxurious room . )
+in order to solve this subtask , opine first assigns each ( w , f , s ) tuple an initial label which is simply the so label for the ( w , f ) pair .
+the system then uses syntactic relationships between words and , respectively , features in order to update the so labels when necessary .
+for example , in the sentence i hated the big , drafty room because i ended up freezing . , big and hate satisfy condition 2 in table 5 and therefore opine expects them to have similar so labels .
+since hate has a strong negative connotation , big acquires a negative so label in this context .
+in order to correctly update so labels in this last step , opine takes into consideration the presence of negation modifiers .
+for example , in the sentence i dont like a large scanner either , opine first replaces the positive ( w , f ) pair ( like , scanner ) with the negative labeled pair ( not like , scanner ) and then infers that large is likely to have a negative so label in this context .
+identifying opinion phrases .
+after opine has computed the most likely so labels for the head words of each potential opinion phrase in the context of given features and sentences , opine can extract opinion phrases and establish their polarity .
+phrases whose head words have been assigned positive or negative labels are retained as opinion phrases .
+furthermore , the polarity of an opinion phrase o in the context of a feature f and sentence s is given by the so label assigned to the tuple ( head ( o ) , f , s ) ( 3.3.6 shows how opine takes into account negation modifiers ) .
+experiments .
+in this section we evaluate opines performance on the following tasks : finding so labels of words in the context of known features and sentences ( so label extraction ) ; distinguishing between opinion and non-opinion phrases in the context of known features and sentences ( opinion phrase extraction ) ; finding the correct polarity of extracted opinion phrases in the context of known features and sentences ( opinion phrase polarity extraction ) .
+while other systems , such as ( hu and liu , 2004 ; turney , 2002 ) , have addressed these tasks to some degree , opine is the first to report results .
+we first ran opine on 13841 sentences and 538 previously extracted features .
+opine searched for a so label assignment for 1756 different words in the context of the given features and sentences .
+we compared opine against two baseline methods , pmi + + and hu + + .
+pmi + + is an extended version of ( turney , 2002 ) s method for finding the so label of a phrase ( as an attempt to deal with context-sensitive words ) .
+for a given ( word , feature , sentence ) tuple , pmi + + ignores the sentence , generates a phrase based on the word and the feature ( e.g. , ( clean , room ) : clean room ) and finds its so label using pmi statistics .
+if unsure of the label , pmi + + tries to find the orientation of the potential opinion word instead .
+the search engine queries use domain-specific keywords ( e.g. , scanner ) , which are dropped if they lead to low counts .
+hu + + is a wordnet-based method for finding a words context-independent semantic orientation .
+it extends hus adjective labeling method in a number of ways in order to handle nouns , verbs and adverbs in addition to adjectives and in order to improve coverage .
+hus method starts with two sets of positive and negative words and iteratively grows each one by including synonyms and antonyms from wordnet .
+the final sets are used to predict the orientation of an incoming word .
+experiments : so labels .
+on the task offinding so labels for words in the context ofgivenfeatures and review sentences , opine obtains higher precision than both baseline methods at a small loss in recall with respect to pmi + + .
+as described below , this result is due in large part to opines ability to handle context-sensitive opinion words .
+we randomly selected 200 ( word , feature , sentence ) tuples for each word type ( adjective , adverb , etc . ) and obtained a test set containing 800 tuples .
+two annotators assigned positive , negative and neutral labels to each tuple ( the inter-annotator agreement was 78 % ) .
+we retained the tuples on which the annotators agreed as the gold standard .
+we ran pmi + + and hu + + on the test data and compared the results against opines results on the same data .
+in order to quantify the benefits of each of the three steps of our method for finding so labels , we also compared opine with a version which only finds so labels for words and a version which finds so labels for words in the context of given features , but doesnt take into account given sentences .
+we have learned from this comparison that opines precision gain over pmi + + and hu + + is mostly due to to its ability to handle context- sensitive words in a large number of cases .
+although hu + + does not handle context-sensitive so label assignment , its average precision was reasonable ( 75 % ) and better than that of pmi + + .
+finding a words so label is good enough in the case of strongly positive or negative opinion words , which account for the majority of opinion instances .
+the methods loss in recall is due to not recognizing words absent from wordnet ( e.g. , depth-adjustable ) or not having enough information to classify some words in wordnet .
+pmi + + typically does well in the presence of strongly positive or strongly negative words .
+its high recall is correlated with decreased precision , but overall this simple approach does well .
+pmi + + s main shortcoming is misclassifying terms such as basic or visible which change orientation based on context .
+experiments : opinion phrases .
+in order to evaluate opine on the tasks of opinion phrase extraction and opinion phrase polarity extraction in the context ofknown features and sentences , we used a set of 550 sentences containing previously extracted features .
+the sentences were annotated with the opinion phrases corresponding to the known features and with the opinion polarity .
+we compared opine with pmi + + and hu + + on the tasks of interest .
+we found that opine had the highest precision on both tasks at a small loss in recall with respect to pmi + + .
+opines ability to identify a words so label in the context of a given feature and sentence allows the system to correctly extract opinions expressed by words such as big or small , whose semantic orientation varies based on context .
+related work .
+the key components of opine described in this paper are the pmi feature assessment which leads to high-precision feature extraction and the use of relaxation-labeling in order to find the semantic orientation of potential opinion words .
+the review-mining work most relevant to our research is that of ( hu and liu , 2004 ) and ( kobayashi et al. , 2004 ) .
+both identify product features from reviews , but opine significantly improves on both . ( hu and liu , 2004 ) doesnt assess candidate features , so its precision is lower than opines . ( kobayashi et al. , 2004 ) employs an iterative semi-automatic approach which requires human input at every iteration .
+neither model explicitly addresses composite ( feature of feature ) or implicit features .
+other systems ( morinaga et al. , 2002 ; kushal et al. , 2003 ) also look at web product reviews but they do not extract opinions about particular product features .
+opines use of meronymy lexico-syntactic patterns is similar to that of many others , from ( berland and charniak , 1999 ) to ( almuhareb and poesio , 2004 ) .
+recognizing the subjective character and polarity of words , phrases or sentences has been addressed by many authors , including ( turney , 2003 ; riloff et al. , 2003 ; wiebe , 2000 ; hatzivassiloglou and mckeown , 1997 ) .
+most recently , ( takamura et al. , 2005 ) reports on the use of spin models to infer the semantic orientation of words .
+the papers global optimization approach and use of multiple sources of constraints on a words semantic orientation is similar to ours , but the mechanism differs and they currently omit the use of syntactic information .
+subjective phrases are used by ( turney , 2002 ; pang and vaithyanathan , 2002 ; kushal et al. , 2003 ; kim and hovy , 2004 ) and others in order to classify reviews or sentences as positive or negative .
+so far , opines focus has been on extracting and analyzing opinion phrases corresponding to specific features in specific sentences , rather than on determining sentence or review polarity .
+conclusion .
+opine is an unsupervised information extraction system which extracts fine-grained features , and associated opinions , from reviews .
+opines use of the web as a corpus helps identify product features with improved precision compared with previous work .
+opine uses a novel relaxation-labeling technique to determine the semantic orientation of potential opinion words in the context of the extracted product features and specific review sentences ; this technique allows the system to identify customer opinions and their polarity with high precision and recall .

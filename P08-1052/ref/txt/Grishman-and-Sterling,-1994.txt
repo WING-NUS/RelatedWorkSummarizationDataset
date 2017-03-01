@@ -1,0 +1,103 @@
+generalizing automatically generated selectional patterns .
+abstract .
+frequency information on co-occurrence patterns can be automatically collected from a syntactically analyzed corpus ; tins information can then serve as the basis for selectional constraints when analyzing new text from the same domain .
+this information , however , is necessarily incomplete .
+we report on measurements of the degree of selectional coverage obtained with different sizes of corpora .
+we then describe a technique for using the corpus to identify selectionally similar terms , and for using this similarity to broaden the selectional coverage for a fixed corpus size .
+introduction .
+selectional constraints specify what combinations of words are acceptable or meaningful in particular syntactic relations , such as subject-verb-object or head- modifier relations .
+such constraints are necessary for the accurate analysis of natural language text .
+accordingly , the acquisition of these constraints is an essential yet time-consuming part of porting a natural language system to a new domain .
+several research groups have attempted to automate this process by collecting co-occurrence patterns ( e.g. , subject-verb-object patterns ) from a large training corpus .
+these patterns are then used as the source of selectional constraints in analyzing new text .
+the initial successes of this approach raise the question of how large a training corpus is required .
+any answer to this question must of course be relative to the degree of coverage required ; the set of selectional patterns will never be 100 % complete , so a large corpus will always provide greater coverage .
+we attempt to shed to some light on this question by processing a large corpus of text from a broad dornain ( business news ) and observing how selectional coverage increases with domain size .
+in many cases , there are limits on the amount of training text available .
+we therefore also consider how coverage can be increased using a fixed amount of text .
+the most straightforward acquisition procedures build selectional patterns containing only the specific word combinations found in the training corpus .
+greater coverage can be obtained by generalizing from the patterns collected so that patterns with semantically related words will also be considered acceptable .
+in most cases this has been done using manually-created word classes , generalizing from specific words to their classes [ 12,1,10 ] .
+if a pre-existing set of classes is used ( as in [ 10 ] ) , there is a risk that the classes available may not match the needs of the task .
+if classes are created specifically to capture selectional constraints , there may be a substantial manual burden in moving to a new domain , since at least some of the semantic word classes will be domain-specific .
+we wish to avoid this manual component by automatically identifying semantically related words .
+this can be done using the co-occurrence data , i.e. , by identifying words which occur in the same contexts ( for example , verbs which occur with the same subjects and objects ) .
+from the co-occurrence data one can compute a similarity relation between words [ 8,7 ] .
+this similarity information can then be used in several ways .
+one approach is to form word clusters based on this similarity relation [ 8 ] .
+this approach was taken by sekine et al. at 11 mist , who then used these clusters to generalize the semantic patterns [ 11 ] .
+pereira et al. [ 9 ] used a variant of this approach , " soft clusters " , in which words can be members of different clusters to different degrees .
+an alternative approach is to use the word similarity information directly , to infer information about the likelihood of a co-occurrence pattern from information about patterns involving similar words .
+this is the approach we have adopted for our current experiments [ 6 ] , and which has also been employed by dagan et al. [ 2 ] .
+we compute from the co-occurrence data a " confusion matrix " , which measures the interchangeability of words in particular contexts .
+we then use the confusion matrix directly to generalize the semantic patterns .
+acquiring semantic patterns .
+based on a series of experiments over the past two years [ 5,6 ] we have developed the following procedure for acquiring semantic patterns from a text corpus : generalizing semantic patterns .
+the procpdarc described above produces a set of frequencies and probability estimates based on specific words .
+the " traditional " approach to generalizilug this information has been to assign the words to a set , of semantic classes , and then to collect the frequency information on combinations of seri lantic classes [ 12,1 ] .
+since at least soiiic of these classes will be domain specific , there has been interest in automating the acquisition of these classes as well .
+' ibis can be done by clustering together words winch appear in the same context .
+starting from the file of triples , this involves : such a procedure was performed by sekine et al. at umist hal these clusters were then manually reviewed and the resulting clusters were used to generalize selectional patter [ 18 .
+a similar approach to word cluster formation was described by hirschman et al. in 1975 [ 81 .
+more recently , pereira tq al. [ 9 ] have described it word clustering method musing " soft clusters " ; in which a , word can belong to several clusters , with different cluster membership probabilities .
+cluster creation has the advantage that the clusters are amenable to manual review and correction , on the other hand , our experience indicates that successful cluster generation depends on rather delicate adjustment of the clustering criteria .
+we have therefore elected to try an approach which directly uses a form of similarity measure to smooth ( generalize ) the probabilities .
+co-occurrence smoothing is a method which has been recently proposed for smoothing n-gram models [ 3 ] .3 the core of this method involves the computation of a co-occurrence matrix ( a matrix of confusion probabilities ) pc ( wilivi ) , which indicates the probability of word wi occurring in contexts in which word wi occurs , averaged over these contexts .
+informally , we can say that a large value of pc ( wilv4 ) indicates that wi is selectionally ( semantically ) acceptable in the syntactic contexts where word u4 appears .
+for example , looking at the verb " convict " , we see that the largest values of pc ( convicl . , x ) are for x = " acquit " and a ; = " indict " , indicating that " convict " is selectionally acceptable in contexts where words " acquit " or " indict " appear ( see figure 4 for a larger example ) .
+how do we use this information to generalize the triples obtained from the corpus ?
+suppose we are interested in determining the acceptability of the pattern convict-object-owner , even though this triple does not appear in our training corpus .
+since " convict " can appear in contexts in which " acquit " or " indict " appear , and the patterns acquit-object-owner and indictobject-owner appear in the corpus , we can conclude that the pattern convict-object-owner is acceptable too .
+we wish to thank richard schwartz of bbn for referring us to this method ancl article. is the result of an incorrect parse ) , we apply a filter in generating pc : for i j , we generate a non-zero pc ( wilwi ) only if the wi and wj appear in at least two common contexts , and there is some common context in which both words occur at least twice .
+furthermore , if the value computed by the formula for pc is less than some threshold rc , the value is taken to be zero ; we have used rci - = 0.001 in the experiments reported below . ( these filters are not applied for the case i = j ; the diagonal elements of the confusion matrix are always computed exactly . )
+because these filters may yeild an un-normalized confusion matrix ( i.e. , ew . , prewiltio < 1 ) , we renormalize the matrix so that pco , ) , iwo 1 .
+a similar approach to pattern generalization , using a similarity measure derived from co-occurrence data , has been recently described by dagan et al. [ 2 ] .
+their approach differs from the one described here in two significant regards : their co-occurrence data is based on linear distance within the sentence , rather than on syntactic relations , and they use a different similarity measure , based on mutual information .
+the relative merits of the two similarity measures may need to be resolved empirically ; however , we believe that there is a virtue to our non-symmetric measure , because substitutibility in selectional contexts is not a symmetric relation .
+evaluation .
+evaluation metric .
+we have previously [ 5 ] described two methods for the evaluation of semantic constraints .
+for the current experiments , we have used one of these methods , where the constraints are evaluated against a set of manually classified semantic triples . '
+for this evaluation , we select a small test corpus separate from the training corpus .
+vve parse the corpus , regularize the parses , and extract triples just as we did for the semantic acquisition phase .
+we then manually classify each triple as valid or invalid , depending on whether or not it arises from the correct parse for the sentence . "
+test data .
+the training and lest corpora were taken from the wall street journal .
+in order to get higher-quality parses ( ) i ' these sentences , we disabled sonic of the recovery mechanist-as normally used in our parser .
+of the 57,366 sentences in our training corpus , we obtained complete parses for 31,414 and parses of initial substrings for an additional 12,441 sentences .
+these parses were then regularized and reduced to triples .
+we generated a total of 279,233 distinct triples from the corpus .
+the test corpus used to generate the triples which were manually classified ' consisted of i ( ) articles , also from the wall street journal , distinct , front those in the training set .
+these articles produced a test set containing a total of 1932 triples , of which 1107 were valid and 825 were invalid .
+results .
+growth with corpus size .
+we began by generating triples from the entire corpus and evaluating the selectional patterns as described above ; the resulting recall / precision curve generated by varying the threshold is shown in figure 1 .
+to see how pattern coverage improves with corpus size , we divided our training corpus into 8 segments and computed sets of triples based on the first segment , the first two segments , etc .
+we show in figure 2 a plot of recall vs. corpus size , both at a constant precision of 72 % and for maximum recall regardless of precision . '
+the rate of growth of the maxirman recall can be understood in terms of the frequency distribution of triples , in our earlier work pi we lit the growth data to curves of the form 1 - exp ( -fix ) , on the assumption that all selectional patterns are equally likely .
+this may have been a roughly accurate assumption for that application , involving semantic-class based patterns ( rather than word-based patterns ) , and a rather sharply circumscribed sublanguage ( medical reports ) . [ " or the ( word-level ) patterns described here , however , the distribution is quite skewed , with a small number of very-high-frequency patterns , ' which results in different growth curves .
+figure 3 plots the number of distinct triples per unit frequency , as a function of frequency , for the entire training corpus .
+to derive a growth curve for maximum recall , we will assume that the frequenc.y distribution for triples selected at random follows the same form .
+smoothing .
+in order to increase our coverage ( recall ) , we then applied the smoothing procedure to the triples from our training corpus .
+in testing our procedure , we first generated the confusion matrix pc and examined some of the entries .
+figure 4 shows the largest entries in pc for the noun " bond " , a c.orinnon word in the wall street journal .
+it is clear that ( with some odd exceptions ) roost of the words with high pc values are semantically related to the original word .
+to evaluate the effectiveness of our smoothing procedure , we have plotted recall vs. precision graphs for both unsmoothed and smoothed frequency data .
+the results are shown in figure 5 .
+over the range of precisions where the two curves overlap , the smoothed data performs better at low precision / high recall , whereas the unsmoothed data is better at high precision / low recall .
+in addition , smoothing substantially extends the level of recall which can be achieved for a given corpus size , although at some sacrifice in precision .
+intuitively we can understand why these curves should cross as they do .
+smoothing introduces a certain degree of additional error .
+as is evident from figure 4 , some of the confusion matrix entries are spurious , arising from such sources as incorrect parses and the conflation of word senses .
+in addition , some of the triples being generalized are themselves incorrect ( note that even at high threshold the precision is below 90 % ) .
+the net result is that a portion ( roughly 1 / 3 to 1 / 5 ) of the triples addled by smoothing are incorrect .
+at low levels of precision , this produces a net gain on the precision / recall curve ; at higher levels of precision , there is a net loss .
+in any event , smoothing does allow for substantially higher levels of recall than are possible without smoothing .
+conclusion .
+we have demonstrated how selectional patterns can be automatically acquired front a corpus , and how selechottal coverage gradually increases with the size of the training corpus .
+we have also demonstrated that for a given corpus size coverage can be significantly improved by using the corpus to identify selectionally related terms , and using these similarities to generalize the patterns observed in the training corpus .
+this is consistent with other recent , results using related techniques [ 2,9 ] .
+we believe that these techniques can be further improved in several ways .
+the experiments reported above have only generalized over the lirst ( head ) position of the triples ; we need to measure the effect of generalizing over the argument position as well .
+with larger corpora it may also be feasible to use larger pat-- terns , including in particular subject-verb-object patterns , and thus reduce the confusion due to treating different words senses as common contexts .

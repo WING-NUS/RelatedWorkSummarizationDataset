@@ -1,0 +1,215 @@
+just how mad are you ?
+finding strong and weak opinion clauses abstract .
+there has been a recent swell of interest in the automatic identification and extraction of opinions and emotions in text .
+in this paper , we present the first experimental results classifying the strength of opinions and other types of subjectivity and classifying the subjectivity of deeply nested clauses .
+we use a wide range of features , including new syntactic features developed for opinion recognition .
+in 10-fold cross validation experiments using support vector regression , we achieve improvements in mean-squared error over baseline ranging from 57 % to 64 % .
+introduction .
+there has been a recent swell of interest in the automatic identification and extraction of attitudes , opinions , and sentiments in text .
+strong motivation for this task comes from the desire to provide tools and support for information analysts in government , commercial , and political domains , who want to be able to automatically track attitudes and feelings in the news and on-line forums .
+how do people feel about the latest camera phone ?
+is there a change in the support for the new medicare bill ?
+a system that could automatically identify and extract opinions and emotions from text would be an enormous help to someone sifting through the vast amounts of news and web data , trying to answer these kinds of questions .
+researchers from many different areas of ai have been working on the automatic identification of opinions and related tasks .
+to date , most such work has focused on classification at the document or sentence level .
+document classification tasks include picking out editorials from among news articles and classifying reviews as positive or negative .
+a common sentence level task is to classify sentences as subjective or objective .
+however , for many applications , just identifying opinionated sentences may not be sufficient .
+in the news , it is not uncommon to find two or more opinions in a single sentence , or to find a sentence containing opinions as well as factual information .
+an information extraction system trying to distinguish between factual information ( which should be extracted ) and non-factual information ( which should be discarded or labeled uncertain ) would find it helpful to be able to pinpoint the particular clauses that contain opinions .
+this ability would also be important for multi-perspective question answering , which aims to present multiple answers to the user based on opinions derived from different sources , and for multi-document summarization systems , which need to summarize differing opinions and perspectives .
+many applications would benefit from being able to determine not just whether something is opinionated but also the strength of the opinion .
+flame detection systems want to identify strong rants and emotional tirades , while letting milder opinions pass through .
+information analysts need to recognize changes over time in the virulence expressed by persons or groups of interest , and to detect when rhetoric is heating up , or cooling down .
+this paper presents the first research in automatic opinion or sentiment classification to classify the clauses of every sentence in the corpus .
+also , where other research has focused on distinguishing between subjective and objective or positive and negative language , we address the task of classifying the strength of the opinions and emotions being expressed in individual clauses , considering clauses down to four levels deep .
+a strength of neutral corresponds to the absence of opinion and subjectivity , so our strength classification task subsumes the task of classifying language as subjective versus objective .
+because the variety of words and phrases that people use to express opinions is staggering , a system limited to a fixed vocabulary will be unable to identify opinionated language over a broad range of discourse .
+a broad-coverage approach will require knowledge of subjective language that is truly comprehensive in scope .
+in this spirit , we use a wide range of features for the experiments in this paper " new syntactic clues that we developed for opinion recognition , as well as a variety of subjectivity clues from the literature .
+we found that these features can be adapted to the task of strength recognition , and that the best classification results are achieved when all types of features are used .
+we present experiments in strength classification using boosting , rule learning , and support vector regression .
+in 10-fold cross validation experiments , we achieve significant improvements over baseline mean-squared error and accuracy for all algorithms .
+sentence ( 2 ) also contains an example of an expressive subjective element , namely " full of absurdities " .
+with expressive subjective elements , sarcasm , emotion , evaluation , etc. are expressed through the way something is described or through particular wording .
+the subjective strength of a word or phrase is the strength of the opinion , emotion , or other private state that it expresses .
+an annotated corpus of opinions .
+in 2003 , the multi-perspective question answering ( mpqa ) corpus of opinion annotations ( wilson and wiebe , 2003 ) was released .
+in the corpus , individual expressions are marked that correspond to explicit mentions of private states , speech events , and expressive subjective elements .
+a key aspect of the annotation project was that annotators were asked to judge all expressions in context .
+the result is an amazing variety of annotated expressions .
+out of all the subjective expressions marked in the mpqa corpus , fully 53 % are unique strings .
+each expression that is marked is characterized by a number of attributes : who is expressing the opinion , who or what is the target of the opinion , the type of attitude expressed by the opinion , and , key for our purposes , its subjective strength .
+in the annotation scheme , strength is marked as one of four values : neutral , low , medium , and high.1 neutral refers to the absence of opinion .
+sentence ( 3 ) gives examples of strength annotations in the mpqa corpus .
+inter-annotator agreement for strength ratings is challenging .
+it is not unusual for two annotators to identify the same expression in the text , but to differ in how they mark the boundaries .
+this in turn affects how they judge the strengths of the annotations .
+for example , ( 4 ) below shows how the same subjective phrase was judged by two annotators .
+also , different people have different mental scales for what they consider strong and weak .
+low strength to one annotator might be medium to another .
+for the annotations in the mpqa corpus , no specific attempt was made to align the strength scales of the different annotators .
+because of these challenges , as expected , absolute percent agreement for strength judgments on expressions is not high , on average 61 % .
+however , measuring how often two annotators agree in their ordering of annotations by strength yields an average pairwise agreement of 95 % , computed as follows .
+let sa and sb be the sets of annotations identified by annotators a and b respectively .
+if a pair of annotations , a e sa and b e sb , overlap , then a and b are a matched pair .
+let sab be all possible combinations of matched pairs ab .
+exploring strength .
+an examination of the annotated data shows not only that a huge variety of expressions have been marked , but that strong subjectivity in particular is expressed in many different ways .
+we can think of some words that are clearly strong , such as " reckless " and " praise " , as well as obvious modifications to these that increase or decrease their strength , as in " not reckless " , " very reckless " and " high praise . "
+it is unlikely , though , that expressions like " rhetorical petards " and " hell-bent " readily come to mind , both of which are marked in the annotations .
+expressions marked high often contain words that are very infrequent .
+for example , the word " petards " appears only once in the corpus .
+collocations like " at all " add punch to an expression , as in , " at all costs " and " not true at all . "
+it is also important to have knowledge of patterns like " expressed < direct-object > , " which can generalize to many different phrases , such as " expressed hope , " " expressed concern , " " expressed gratitude , " and " expressed some understanding . "
+also , there are syntactic modifications and syntactic patterns that have subjective force .
+besides those patterns that merely intensify a subjective word , for example " very < adjective > " , we find patterns that have a cumulative effect on strength : " terrorist and extremist , " and " criticize and condemn . "
+the clues used later in the strength classification experiments contain examples of all these kinds of subjective phenomena .
+as can be seen from earlier example ( 3 ) , sentences are often complex , with opinions of differing strengths being expressed by perhaps two or more agents .
+in ( 3 ) , there is low-strength support being expressed by the united states , as well as high-strength negative accusations coming from khatami .
+in the mpqa corpus , 31 % of sentences are made up of clauses that differ in strength by two or more strength ratings .
+this highlights the need to identify opinions at the clause level , as we do in our experiments .
+many other researchers are interested in polarity , another attribute of subjective language .
+we find some interesting interactions between polarity and strength in the data .
+the annotators were asked to judge the polarity of expressions that they marked , using an attribute called attitude-type that has values positive , negative , and other .
+the annotations show that annotators are often not comfortable with positive and negative : 22 % of all attitude-type labels are other .
+however , the annotations also reveal that the stronger the expression , the clearer the polarity .
+only 8 % of the high-strength annotations are marked as other , while 39 % of the low- strength annotations are so marked .
+in addition to stronger expressions having clearer polarity , stronger expressions of opinions and emotions also tend to be more negative in this corpus .
+only 33 % of low-strength annotations are negative , compared to 78 % of high-strength annotations .
+these observations lead us to believe that the strength of subjective expressions will be informative for recognizing polarity , and vice versa .
+subjectivity clues .
+in this section , we describe the information that we use for automatic strength classification .
+in addition to a wide variety of previously established subjectivity clues , we introduce a collection of new syntactic clues that are correlated with subjective language .
+previously established types of clues previous work in subjectivity identification has supplied the research community with a large stable of subjectivity clues .
+these clues ( prev ) include words and phrases culled from manually developed resources , others learned from annotated data , and others learned from unannotated data .
+due to the broad range of clues and their sources , the set of prev clues is not limited to a fixed word list or to words of a particular part of speech .
+the clues from manually developed resources include entries from ( levin , 1993 ; ballmer and brennenstuhl , 1981 ) , framenet lemmas with frame element experiencer ( baker et al. , 1998 ) , adjectives manually annotated for polarity ( hatzivassiloglou and mckeown , 1997 ) , and subjectivity clues listed in ( wiebe , 1990 ) .
+clues learned from annotated data include distributionally similar adjectives and verbs ( wiebe , 2000 ) and n-grams ( dave et al. , 2003 ; wiebe et al. , 2001 ) .
+from unannotated data , we have extraction patterns and subjective nouns learned using two different bootstrapping algorithms and a set of seed words ( riloff et al. , 2003 ; riloff and wiebe , 2003 ) .
+finally , low-frequency words , which require no training to identify ( wiebe et al. , 2001 ) , are also used as clues .
+a few of the prev clues require more explanation .
+first , extraction patterns are lexico-syntactic patterns typically used by information extraction systems to identify relevant information .
+riloff and wiebe ( 2003 ) show that autoslogts , an algorithm for automatically generating extraction patterns , is able to find extraction patterns that are correlated with subjectivity .
+an example of a subjective extraction pattern is < subj > dealt blow , which matches phrases like " the mistake dealt a stiff blow to his pride . "
+interestingly , low-frequency words are informative for subjectivity recognition .
+we use low frequency words as clues ; we consider a word to have low frequency if it appears < 3 times in the document containing it plus a 1-million word corpus of news articles .
+in addition , we use n-gram clues from ( wiebe et al. , 2001 ) that have fillers matching low-frequency words .
+when these clues were learned , the fillers matched low frequency words in the training data .
+when used during testing , the fillers are matched against low-frequency words in the test data .
+syntax clues .
+the syntactic clues are developed by using a mostly-supervised learning procedure .
+the training data is based on both a human annotated ( the mpqa ) corpus and a large unannotated corpus in which sentences are automatically identified as subjective or objective through a bootstrapping algorithm ( riloff and wiebe , 2003 ) .
+the learning procedure consists of three steps .
+first , we parse the training sentences in the mpqa corpus with a broad-coverage lexicalized english parser ( collins , 1997 ) .
+the output constituent trees are automatically converted into their dependency representations ( xia and palmer , 2001 ) .
+in a dependency representation , every node in the tree structure is a surface word ( i.e. , there are no abstract nodes such as np or vp ) , but each word may have additional attributes such as its part-of-speech ( pos ) tag .
+the parent word is known as the head , and its children are its modifiers .
+the edge between a parent and a child node specifies the grammatical relationship between the two words ( e.g. , subj , obj , and adj ) .
+figure 1 shows the dependency parse tree for a sentence , along with the corresponding constituent representation , for comparison .
+for this study , we use 48 pos tags and 24 grammatical relationships .
+next , we form five classes of syntactic clues from each word w in every dependency parse tree .
+for each class specified above , we also consider less specific variants that back off to only pos tags .
+for example , bilex ( t , r , t , ) considers the cases in which any word with a pos tag t is modified by a word with pos tag t , with grammatical relationship r .
+finally , we evaluate the collected clues .
+a clue is considered to be potentially useful if more than x % of its occurrences in the mpqa training data are in phrases marked as subjective , where x is a parameter tuned on development data ( in our experiments , we chose x = 70 % ) .
+potentially useful clues are further categorized into one of three reliability levels .
+first , a useful clue is highly reliable if it occurs frequently in the mpqa training data .
+for those that occur fewer than five times , we check their reliability on the larger corpus of automatically identified subjective and objective sentences .
+clues that do not occur in the larger unannotated corpus are considered not very reliable .
+clues that occur in the subjective set at least y times more than in the objective set are considered somewhat reliable ( y is tuned on the development data and is set to 4 in our experiments ) , and the rest are rejected as not useful clues .
+feature organization .
+given the large number of prev and syntax clues , we are faced with the question of how best to organize them into features for strength classification .
+we tried a representation in which each clue is a separate feature , but it gave poor results .
+instead , we adopt the strategy from ( riloff et al. , 2003 ) of aggregating clues into sets , and creating one feature per set .
+the value of each feature is the number of instances in the sentence or clause of all the members of the set .
+we define 29 features for the prev clues reflecting how they were presented in the original research .
+for example , there are two features for the polar adjectives in ( hatzivassiloglou and mckeown , 1997 ) , one for the set ofpositive adjectives and one for the set of negative adjectives .
+these 29 features are collectively called prev-type in the experiments below .
+in addition , we define 15 features for the syntax clues .
+for example , one feature represents the set of highly- reliable bilex clues .
+these features are called syntax-type .
+although the above sets of subjectivity clues were selected because of their correlation with subjective language , they are not necessarily geared to discriminate between strong and weak subjectivity , and the groupings of clues into sets were not created with strength in mind .
+we hypothesized that a feature organization that takes into consideration the potential strength of clues would do better for strength classification .
+to adapt the clues to strength classification , we use the annotations in the training data to filter the clues and organize them into new sets based on strength .
+for each clue c and strength rating s , we calculate the p ( strength ( c ) ) = s as the probability of c being in an annotation of strength s .
+for s = neutral , this is the probability of c being in a neutral-strength annotation or in no annotation at all .
+if p ( strength ( c ) ) = s > t , for some threshold t , we put c in the set for strength s .
+the value 0.25 was determined using experiments on a small amount of development data , held out from the experiment data for parameter tuning .
+it is possible for a clue to be in more than one set .
+when prev and syntax clues are used in this feature organization they are called prev-strength and syntax- strength .
+experiments in automatic strength .
+classification .
+it is important to classify the strength of clauses , but pinpointing subjectivity at deeper levels can be challenging because there is less information to use for classification .
+to study the feasibility of automatically classifying clauses by their subjective strength , we conducted a suite of experiments in which a strength classifier is trained based on the features previously described .
+we wished to confirm three hypotheses .
+first , it is possible to classify the strength of clauses , for those that are deeply nested as well as those at the sentence level .
+second , classifying the strength of subjectivity depends on a wide variety of features , including both lexical and syntactic clues .
+third , organizing features by strength is beneficial .
+to test our hypotheses , we performed the experiments under different settings , varying three factors : the learning algorithm used to train the classifiers , the depth of the clauses to be classified , and the types of features used .
+we vary the learning algorithm to explore its effect on the classification task .
+in our studies , the three machine learning algorithms are boosting , rule learning , and support vector regression .
+for boosting , we use boostexter ( schapire and singer , 2000 ) adaboost.hm with 1000 rounds of boosting .
+for rule learning , we use ripper ( cohen , 1995 ) .
+for support vector regression we use svmlight ( joachims , 1999 ) and discretize the resulting output into the ordinal strength classes .
+these algorithms were chosen because they have successfully been used for a number of natural language processing tasks .
+we vary the depth of clauses to determine the effect of clausal depth on system performance .
+in our experiments , clauses are determined based on the non-leaf verbs in the parse tree , parsed using the collins parser and converted to the dependency representation described earlier .
+the clause defined for " driven " ( level 1 ) is the entire sentence ; the clause for " refused " ( level 2 ) is " has refused to give up power " ; and the clause for " give " ( level 3 ) is " to give up power . "
+the gold standard strength ratings of sentences and clauses are based on the individual expression annotations : the strength of a sentence or clause is defined to be the highest strength rating of any expression in that sentence or clause .
+in setting up experiments for classifying nested clauses , either clauses of the same or different levels may be classified in the training and testing phases .
+in the experiments below , the training examples are always entire sentences regardless of the clause level being classified during testing .
+preliminary results showed that this configuration is better than training and testing at the same level .
+all experimental results reported are averages over 10- fold cross validation using 9313 sentences from the mpqa corpus .
+significance is measured using a 1-tailed t-test .
+for each experiment , both mean-squared error and classification accuracy are given .
+although raw accuracy is important , not all misclassifications should be weighted equally for the task of strength classification .
+if the true strength of a sentence or clause is high , classifying it as neutral ( off by 3 ) is a much worse error than classifying it as medium ( off by 1 ) .
+mean- squared error captures this distinction , and , for this task , it is perhaps more important than accuracy as a metric for evaluation .
+classification results .
+tables 1 and 2 show strength classification results for clauses of depth 1 " 4 .
+table 1 gives results for boostexter and table 2 gives results for ripper and svmlight .
+the first row of table 1 gives mse and accuracies for a baseline classifier that chooses the most frequent class .
+note that the distribution changes for clauses at different levels , giving higher baseline accuracies for more nested levels .
+the remaining rows in table 1 show the boostexter results using different sets of features .
+row 2 gives the results for a classifier trained using bag-of-words ( bag ) , where the words in each sentence are given to the classification algorithm as features .
+rows 3 and 4 give the results for classifiers using prev-type + syntax-type features and prev-strength + syntax-strength features .
+the next two rows give the results for combining the two feature organizations with bag-of-words .
+the last row of the table shows the results when the syntax-strength features are excluded from the best experiment .
+the results for strength classification are promising for clauses at all levels of nesting .
+in table 1 , all of the improvements over baseline in mse and accuracy are significant .
+the experiment in row 6 using bag + prev- strength + syntax-strength features gives the best results .
+the improvements in mse over baseline range from 48 % to 60 % , and the improvements in accuracy range from 23 % to 79 % .
+table 2 rows 1 and 3 give the results for the same feature set using ripper and svmlight .
+note that boostexter and ripper are non-ordinal classification algorithms , whereas support vector regression takes into account ordinal values .
+this difference is reflected in the results .
+the results are comparable for boostexter and ripper ( mse is not significantly different ; boostexter has slightly better accuracy ) .
+although accuracies are lower , the regression algorithm achieves much better mse , improving 10 % to 20 % over boostexter and 57 % to 64 % over baseline , coming closer to the true strength at all levels .
+the best experiments ( table 1 row 6 and table 2 rows 1 and 3 ) use all the features , supporting our hypothesis that using a wide variety of features is effective .
+for boosting , the improvements over bag-of-words are significant ( compare rows 2 and 6 in table 1 ) : from 20 % to 25 % for mse and from 7 % to 12 % for accuracy .
+results for ripper and svmlight ( not shown ) are similar .
+the new syntax clues contribute information over and above bag-of-words and the previous clues .
+for all learning algorithms and all clause levels , removing the syntax clues results in a significant difference in mse ( compare rows 6 and 7 in table 1 , rows 1 and 2 in table 2 , and rows 3 and 4 in table 2 ) .
+the differences in accuracy are also significant , with the exception of boostexter levels 1 and 2 and ripper level 4 .
+turning to feature organization , we see that organizing features by strength is beneficial .
+comparing rows 3 and 4 in table 1 , the strength-based organization shows significant improvements across the row .
+row 6 improves over row 5 for all values .
+all differences except for levels 3 and 4 mse are significant .
+results for ripper and svmlight using the strength-based feature organization ( not given ) show similar improvements .
+related work .
+research in automatic opinion and sentiment recognition includes distinguishing subjective from objective language ( yu and hatzivassiloglou , 2003 ; riloff et al. , 2003 ; riloff and wiebe , 2003 ) , distinguishing positive from negative language ( yu and hatzivassiloglou , 2003 ; turney and littman , 2003 ; pang et al. , 2002 ; dave et al. , 2003 ; nasukawa and yi , 2003 ; morinaga et al. , 2002 ) , and recognizing particular types of attitudes ( gordon et al. , 2003 ; liu et al. , 2003 ) .
+ours are the first results to automatically distinguishing between not only subjective and objective ( neutral ) language , but among weak , medium , and strong subjectivity as well .
+researchers who have identified opinions below the sentence level have restricted their attention to particular words and phrases ( turney and littman , 2003 ; pang et al. , 2002 ; dave et al. , 2003 ; nasukawa and yi , 2003 ; morinaga et al. , 2002 ; gordon et al. , 2003 ; liu et al. , 2003 ) .
+in contrast , this paper presents the first work classifying nested clauses in all sentences in the corpus .
+automatic opinion extraction is being applied in a number of interesting applications .
+tong ( 2001 ) tracks sentiment timelines in on-line discussions .
+many researchers classify reviews as positive and negative ( turney and littman , 2003 ; pang et al. , 2002 ; dave et al. , 2003 ; nasukawa and yi , 2003 ; morinaga et al. , 2002 ) .
+others perform automatic analyses of product reputations ( morinaga et al. , 2002 ; nasukawa and yi , 2003 ; yi et al. , 2003 ) .
+das and chen ( 2001 ) examine the relationship between public sentiment in message boards and stock prices .
+all such applications would benefit from the rich subjectivity analysis performed by our system .
+conclusions .
+this paper presents promising results in identifying opinions in deeply nested clauses and classifying their strengths .
+we use a wide range of features , including new syntactic features .
+in 10-fold cross-validation experiments using boosting , we achieve improvements over baseline mean-squared error ranging from 48 % to 60 % and improvements in accuracy ranging from 23 % to 79 % .
+experiments using support vector regression show even stronger mean-squared error results , with improvements ranging from 57 % to 64 % over baseline .
+applications such as question answering and summarization will benefit from the rich subjectivity analysis performed by our system .

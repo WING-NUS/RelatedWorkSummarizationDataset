@@ -1,0 +1,418 @@
+a latent dirichlet model for unsupervised entity resolution .
+abstract .
+entity resolution has received considerable attention in recent years .
+given many references to underlying entities , the goal is to predict which references correspond to the same entity .
+we show how to extend the latent dirichlet allocation model for this task and propose a probabilistic model for collective entity resolution for relational domains where references are connected to each other .
+our approach differs from other recently proposed entity resolution approaches in that it is a ) generative , b ) does not make pair-wise decisions and c ) captures relations between entities through a hidden group variable .
+we propose a novel sampling algorithm for collective entity resolution which is unsupervised and also takes entity relations into account .
+additionally , we do not assume the domain of entities to be known and show how to infer the number of entities from the data .
+we demonstrate the utility and practicality of our relational entity resolution approach for author resolution in two real-world bibliographic datasets .
+in addition , we present preliminary results on characterizing conditions under which relational information is useful .
+introduction .
+in many applications , there are a variety of ways of referring to the same underlying entity .
+given a collection of entity references , or references for short , we would like to a ) determine the collection of true underlying entities and b ) correctly map the references in the collection to these entities .
+this problem comes up in many guises throughout computer science .
+examples include computer vision , where we need to figure out when regions in two different images refer to the same underlying object ( the correspondence problem ) ; natural language processing where we would like to determine which noun phrases refer to the same underlying entity ( co-reference resolution ) ; and databases , where , when merging two databases or cleaning a database , we need to determine when two records are referring to the same underlying individual ( deduplication ) .
+we are interested in resolving references when they are connected to each other via relational links , as in the bibliographic domain where author names in papers are connected by co-author links .
+now entity resolution becomes collective in that resolution decisions depend on each other through the relational links .
+we show that collective entity resolution im proves performance over independent pair-wise resolution .
+there is a long history of work in both general and relational entity resolution .
+recently , generative [ 22 , 29 ] and discriminative [ 24 , 28 ] probabilistic approaches have been proposed as well as non-probabilistic algorithms [ 20 , 12 ] .
+our model differs from most of the above in that it is unsupervised , does not assume the underlying entities to be known , does not make pairwise decisions and explicitly models relations between entities using group membership .
+we introduce a generative probabilistic model for entity resolution that builds on the recently proposed latent dirichlet allocation model ( lda ) [ 6 ] .
+unlike most existing models , we do not introduce a decision variable for each potential duplicate pair of references , but instead have an entity label for each reference .
+to model collaborative relations between entities , we introduce a group label for each reference , so that entities coming from the same collaborative group are more likely to be observed in a relation .
+for author resolution , this means that we model collaborative groups to explain co-authorship relations .
+the generative process in our model may be viewed as an extension of the dirichlet process mixture model : the group labels in our model influence the choice of entities for each author reference in a paper .
+another contribution of this paper is an unsupervised gibbs sampling algorithm for collective entity resolution .
+it is unsupervised because we do not make use of a labeled training set and it is collective because the resolution decisions depend on each other through the group labels .
+further , the number of entities is not fixed in our model , and we propose a novel sampling strategy to estimate the most likely number of entities given the references .
+the paper is organized as follows .
+we present a motivating example in section 2 and related research in section 3 .
+in section 4 , we first adapt the lda model for document authors and extend it for entity resolution in section 5 .
+the sampling framework for inference is presented in section 6 .
+in section 7 and section 8 , we describe how entity attributes are modeled .
+section 9 describes our novel algorithm for determining the number of entities and in section 10 and section 11 we explore parameter choices and algorithmic improvements .
+finally , we present experimental results on real and synthetic data in section 12 and conclude in section 13 .
+a motivating example .
+in this section , we introduce a concrete bibliographic example to explain the entity resolution problem for authors and motivate our approach .
+consider as an example six real paper citations p1 through p6 from citeseer : each of the 6 papers has its own author references .
+for instance , the first paper p1 has four references c. walshaw , m. cross , m. g. everett and s. johnson .
+in all we have 21 references in the 6 papers .
+the goal is to find out how many different author entities these references correspond to and which reference maps to which entity .
+ground truth tells us that all of the ahos map to the same author entity , as do the everrets and the ullmans .
+the interesting case here is that of johnson .
+the four johnson references correspond to two johnson entities : those in papers p4 and p5 correspond to stephen c. johnson from bell labs , while those in papers p1 and p2 map to steve p. johnson from university of greenwich , london .
+however , going by just the names of the references it is not clear why stephen c. johnson is not s. johnson , when alfred v. aho is the same as a. aho .
+our goal will be to make use of the collaboration relationships to make these contrasting inferences simultaneously .
+we would like to be able to infer from the collaborations that there are two different collaboration groups in this example and authors are more likely to publish with other authors from the same group .
+as illustrated in fig . 1 , the first group g1 has aho , ullman and sethi as member authors .
+the other group g2 has walshaw , cross , everett and mcmanus .
+stephen c. johnson is associated with the first collaboration group , while s johnson from papers p1 and p2 is a different person since he is associated with the second collaboration group .
+in order to make these inferences , our model introduces an entity label and a group label for each reference , both of which are hidden and need to be inferred .
+the inference procedure is collective in that they cannot be made independently for each reference their relationships to other references need to be considered as well .
+also , the group and the entity labels are inter-dependent .
+the entity labels for figure 1 : author entities in two different collaboration groups and two generated papers .
+the ovals are the entities belonging to groups shown as encapsulating rectangles .
+dotted rectangles represent papers with author references shown as smaller solid rectangles .
+each paper is generated by the group above it. the two johnsons depend on their group labels , as we just saw .
+also , the group labels depend on the entity labels in turn .
+sethi from paper p6 and johnson from paper p5 belong to the same group since they are tied by the identical entity labels for the ahos and ullmans in the two papers .
+these two hidden variables are the key distinctions of our model in comparison to some other recent ones that have been proposed .
+most other approaches introduce a decision variable for each potential duplicate pair to infer whether or not they correspond to the same entity , while we introduce two variables for each reference in the data .
+as data sizes grow , we believe that this distinction has a significant impact .
+it is interesting to note the role of papers p3 and p6 in this collective inference for the johnsons though none of them contain a johnson reference .
+they help to reinforce our belief that there are two distinct tightly knit groups or communities where member authors collaborate strongly with each other .
+observe that frequent collaborations between walshaw and aho , and everett and ullman for example would have the opposite effect .
+then we would think there is one collaboration group , as opposed to two , and therefore all johnsons are more likely to be the same author .
+not surprisingly , inferring the entity labels exactly turns out to be intractable .
+in this paper , we propose an effective gibbs sampling approach for approximate inference .
+also , one critical aspect of the inference procedure is discovering the likely number of entity labels , since the actual entities are hidden from us .
+we show how the number of entities can be inferred as well .
+though we use the bibliographic domain of papers and authors , our model is applicable in a straight-forward manner for other domains where noisy references to person entities are observed together .
+examples include names of people traveling together on the same flight , names appearing together in the same email or groups of people attending the same meeting .
+furthermore , our approach can be generalized to model other resolution problems .
+we are investigating a very similar model for word sense resolution in natural language documents , where the references are word occurrences and the senses are the entities to be resolved .
+related work .
+there is a large body of work on deduplication , record linkage , and co-reference detection .
+the traditional approach to entity resolution considers similarity of textual attributes .
+there has been extensive work on approximate string matching algorithms [ 26 , 8 ] and adaptive algorithms that learn string similarity measures [ 4 , 9 , 33 ] .
+beyond applying standard machine learning techniques , other approaches use active learning [ 32 ] .
+in addition , data integration is an area of active research [ 17 , 26 , 23 ] .
+the groundwork for posing record linkage as a probabilistic classification problem was done by fellegi and sunter [ 13 ] .
+winkler [ 34 ] builds upon this work by introducing a latent match variable estimated using expectation maximization .
+more recently , hierarchical graphical models have been proposed [ 30 ] .
+probabilistic models that take into account interaction between different entity resolution decisions have been proposed for named entity recognition in natural language processing and for citation matching .
+mccallum et al. [ 24 ] employ conditional random fields ( crf ) for noun coreference and use clique templates with tied parameters where the decision for one pair affects another through their overlap .
+parag et al. [ 28 ] extend the crf model to merge evidence across multiple fields .
+more recently , culotta and mccallum [ 10 ] have considered relations between multiple types to deduplicate them jointly .
+however , all of these models consider pairwise decisions between potential duplicates and are supervised in that their parameters require training on labeled data .
+our approach is distinct in that the parameters do not require training and are estimated automatically from unlabeled data .
+also , we do not consider pairwise decisions which becomes prohibitive for bigger datasets .
+instead , we use an entity label for each reference .
+pasula et al. [ 29 ] propose a probabilistic relational model for the citation matching problem .
+this captures dependence between identities of co-authors of the same paper , but does not model collaborative probabilities between authors directly .
+daume and marcu [ 19 ] have recently proposed an extension to pasula et al.s model , where the number of clusters or entities is directly modeled by a dirichlet process and is similar in spirit to ours .
+however , we propose a three level model where the selection of author entities depends on the groups that they belong to .
+li et al. [ 22 ] propose a generative model for disambiguating entities in text documents that captures joint probabilities for co- occurrence .
+they show impressive benefits over a pairwise discriminative model .
+they model pairwise co-occurrence probabilities rather than group memberships and searching for the set of most likely entities is not a focus of their work .
+kalashnikov et al. [ 20 ] enhance feature-based similarity between an ambiguous reference and the many entity choices for it with relationship analysis between the entities , like affiliation and co-authorship .
+this is in the same spirit as our work , however they focus on the entity matching problem where the domain of entities is given and the right entity needs to be identified for each new reference .
+we focus on a more difficult problem where neither the entities nor the number of entities is known .
+non-probabilistic approaches that take relational features into account for data integration have been proposed [ 11 , 7 , 1 , 3 , 20 , 12 ] .
+chaudhuri et al. [ 7 ] make use of join information for deduplication but assume the secondary tables themselves to be clean .
+the notion of co-occurrence in dimensional hierarchies has also been proposed [ 1 ] , while other approaches look at weighted combinations of attribute and relational distance measures [ 3 ] .
+dong et al. [ 12 ] adopt a model similar to parag et al. [ 28 ] and resolve entities of multiple types by propagating relational evidences in a dependency graph .
+they adopt a pair-wise reconciliation approach so that the graph has nodes for all potential duplicate pairs and all pairs of similar attributes .
+we model collaborative groups using lda [ 6 ] which improves probabilistic latent semantic indexing [ 18 ] as a generative topic model for documents .
+the related author- topic model [ 31 ] recognizes the problem of duplicate authors ; here we propose a solution for it .
+kubica et al. [ 21 ] have proposed generative models for links using underlying groups , but they do not handle identity uncertainty .
+lda model for authors .
+in this section , we show how the lda model for topics and words in documents can be adapted to a group mixture model for author entities .
+we start with the simpler case where there is no ambiguity in the author references .
+in the next section , we expand the model to handle ambiguous author references .
+consider a collection of d documents and a set of a authors who write these documents .
+we have a set of r author references , { al , ... , ar } in these d documents .
+each document can have multiple authors and for now , we assume the authors of each document are observed .
+for the ith author reference , ai indicates which author it corresponds to and di denotes the document in which it occurs .
+further we introduce the notion of collaborative author groups .
+these are groups of authors which tend to co-author together .
+we will assume that there are t different groups .
+each author reference ai has an associated group label zi .
+the probabilistic model is shown using plate notation in figure 2 ( a ) .
+the probability distribution over authors for each group is represented as a multinomial with parameters 0j , so the probability p ( a = i | z = j ) of the ith author in the database being chosen for the j th group is oji .
+we have t different multinomials , one for each group .
+each paper d is modeled as a mixture over t groups .
+the distribution used is again a multinomial with parameters bd , so the probability pd ( z = j ) of the jth group being chosen for document d is bdj .
+each bd is drawn from a dirichlet distribution with hyper-parameters a ; similarly each oj is drawn from a dirichlet distribution with hyper-parameters 0 .
+to illustrate this generative process in the model , we show how the authors for paper p5 are chosen in fig . 1 .
+first , a distribution bd over collaborative groups is chosen for the paper .
+these are the likely groups that will contribute the authors of the document .
+each group has a distribution oi over likely authors .
+in our example , og1 has equal probability for aho , ullman , sethi and stephen c. johnson and 0 otherwise , while og2 chooses between walshaw , cross , everett , steve johnson and mcmanus with equal probability .
+note that our model allows an author to belong to multiple groups , though not illustrated here .
+the distribution bd that is chosen for paper p1 has probability 1 for group g1 and 0 probability for all other groups .
+now each author is chosen by first sampling a group zi from bd and then sampling an author from group zi .
+since bd for p1 has non-zero probability only for group g1 , it is the group that is chosen for every author in p1 .
+having selected g1 as the group for each author , the first draw from og1 yields aho as the first author , the second yields stephen c johnson and the third yields ullman .
+the authors for the other papers are selected similarly .
+note that in general more than one group may have non-zero probability in the distribution bd for a paper , so that authors for the same paper can come from multiple groups with smaller probability . 5 lda-er model for author resolution in the previous section , we assumed that the author identity can be determined unambiguously from each author reference .
+however , when we are dealing with author names , this is typically not the case .
+the same author may be represented in a variety of ways : alfred v. aho , alfred aho , av aho , etc .
+there may be mistakes due to typos or extraction errors .
+finally , two s. johnsons may not refer to the same author entity .
+one may refer to stephen c. johnson and another may refer to steve p. johnson .
+the result is that we are no longer sure of the mapping from the author reference to the author entity .
+we must resort to inference to identify the true author for each reference .
+to capture this , we will associate an attribute va with each author a .
+in addition , we add an extra level to the model that probabilistically modifies the author attributes va to generate the references r = { r1 , r2 , . .. , rr } .
+each reference is generated by first sampling a group z and then an author entity a as before .
+then , the author reference r is generated from a by modifying the attribute va according to a noise model n. we use a relatively sophisticated noise model that we explain in section 8 .
+the probability of generating an author reference r from a particular author entity is defined as p ( riva ) .
+the conditional probabilities for each reference are normalized to sum to 1 over all author entities .
+it is the reference r that is observed , while the entity a and group label z are hidden variables .
+the lda-er model is represented in figure 2 ( b ) .
+illustrating this in the context of our motivating example in fig . 1 , we have already seen how the three author entities are chosen for paper p1 .
+the attributes va for the three authors are alfred v. aho , stephen c. johnson and jeffrey d. ullman .
+however the complete / correct names do not always appear in papers or citations .
+in this case , the noise process modifies the attributes of the three selected entities to generate a. v. aho , s. c. johnson and j. d. ullman as the three author references in the paper .
+inference using gibbs sampling .
+in general , the integral in eq . ( 5.1 ) is intractable due to coupling between b and o. different approximations have been proposed , including variational methods [ 6 ] , gibbs sampling [ 16 ] and expectation propagation [ 25 ] .
+we extend the approach proposed by griffiths et al. [ 16 ] for our model .
+now b and 0 are not directly estimated as parameters .
+instead , we first construct the posterior distribution p ( z , a i r ) and then estimate b and 0 from this posterior distribution .
+we derive the joint probability from eq . ( 5.1 ) as : we construct a markov chain that converges to the posterior distribution p ( z , a i r ) and then draw samples from this markov chain .
+each state in the markov chain is an assignment of a group label and an author label to all r references .
+in the gibbs sampling approach , the labels for each reference are sequentially sampled conditioned on the current labels of all other references .
+by construction , this markov chain converges to the target posterior distribution .
+however , we first need to define the full conditional distribution p ( zi = t , ai = a i zi , ai , r ) , where zi is the set of all but the ith group label and ai of all but the ith author label .
+in words , this is the probability that the ith reference comes from the tth group and the ath author considering the current group and author assignment to all other references .
+the factorization makes intuitive sense .
+the first term is the probability of group t in document di , the second is the probability of author a in group t and the third is the probability of the author attribute va being modified into the ith reference .
+modeling author attributes .
+in the previous section , while the author labels were unobserved , we assumed that the author attribute values va are known .
+but in general , the author attributes will not be known and we now show how to infer their values from the references .
+the conditional distribution for sampling groups zi is not directly affected by the attributes .
+however , the attributes influence the assignment of author labels ai , since a reference ri is more likely to be assigned to an author with similar attributes .
+conversely , any author attribute vi depends on the references that have author label i .
+intuitively , vi should be set to the most likely value that explains the generation of the references assigned to author i .
+for example , if multiple a.v. aho and alfred aho references have been assigned author label i along with the reference alfred ah , then the author attribute vi is most likely to be alfred v. aho .
+the sampling algorithm now also samples the author attributes vi iteratively , conditioned on the references and current author assignments , along with sampling the group and entity labels for each reference .
+for free authors to which no references are currently assigned , their attributes cannot be estimated .
+they are assigned a free attribute ~ , that is equally likely to generate any reference attribute .
+noise model .
+the different ways of distorting or modifying an author attribute to an author reference in a paper is captured by the noise model n. the noise model handles first , middle and last names independently .
+the first name can be initialed with probability pfi , dropped with probability pfd or retained as a whole with probability pfr , where pfi + pfd + pfr = 1 .
+there are similar parameters pmi , pmd and pmr for the middle name .
+the probabilities for the first and middle initials being incorrect are pfir and pmir .
+last names and retained first or middle names may be corrupted by characters being inserted , deleted or replaced with probabilities pi , pd and pr respectively .
+the minimum numbers of insertion ( ni ) , deletion ( nd ) and replacement ( nr ) operations for modifying an author attribute v to a reference v ' are obtained using edit-distance for strings .
+then the generation probability is p ( v 'iv ) = pii . pndd . pnrr .
+determining number of entities .
+in the development up until now , we have considered the number of authors a to be given , when in practice this needs to be estimated .
+one of the contributions of this work is an unsupervised method for determining the number of entities .
+we propose a novel approach that avoids searching explicitly over the possible number of author entities and instead adapts it within our sampling framework .
+basic inference with gibbs sampling we first describe a novel but simple gibbs sampling algorithm for iteratively sampling the values of the hidden group and entity labels for each reference conditioned on the existing labels of all other references .
+equations 6.5 , 6.6 and 7.7 form the basis of this algorithm .
+we first sample a group label for each reference according to eq . ( 6.5 ) .
+next , we sample an entity label for each reference according to eq . ( 6.6 ) .
+the difference for the entities is that the number of entity labels is unknown and needs to be inferred by the algorithm .
+so we either choose an existing entity label or alternatively a hitherto unused one .
+for a new entity label , its observed occurrence count cat ( i ) ati is 0 .
+but the parameter 0 ensures a non-zero probability of a new label being chosen .
+also , the attribute va for a new entity is unknown .
+so we use a fixed value for the probability p ( ri i va ) for a new entity a that controls how frequently new entity labels are sampled .
+once all the entity labels are sampled , in the third step the attribute values are sampled for each of the existing entities according to eq . ( 7.7 ) .
+the iterations continue till convergence .
+there is a connection between this flavor of gibbs sampling inference for number of entities and the dirichlet process which we describe in the next subsection .
+relation to the dirichlet process .
+the dirichlet process was introduced by ferguson [ 14 ] and antoniak [ 2 ] as a non-parametric statistical approach that allows the complexity of the model to grow with increasing size of the data .
+in the context of our application , we would like the number of entities to be inferred in model rather than it being a fixed parameter , and we would like the model to be able to accommodate a greater number of entities as the number of references in the data grows .
+the dirichlet process can be imagined as a distribution over discrete distributions and is used as follows for choosing the number of components in a mixture model .
+a distribution ( or a component ) is first drawn from the dirichlet process , the parameters are then sampled from this distribution and finally the data is drawn using these parameters .
+drawing a parallel with our application , we can sample an entity first , choose the parameters ( the attribute ) for that entity and then finally generate the reference using the entity parameters .
+when the dirichlet process is integrated out , a clustering effect is observed in the conditional distribution for choosing the nth component given n 1 previous component draws .
+the probability of choosing one of the existing components is proportional to the number of times it has been chosen in the previous n 1 draws , while a new component has a nonzero probability of being sampled .
+in particular , let g0 be the baseline probability distribution over discrete components 77 and a be a scalar .
+exact inference is intractable in the dirichlet process mixture model but approximate inference techniques have been proposed [ 27 , 5 ] .
+of particular interest is the gibbs sampling strategy proposed by neal [ 27 ] .
+this algorithm iteratively samples the component label ai for the ith data object ri from the conditional distribution given the other labels : we may imagine lda-er as the dirichlet process mixture model augmented with a group structure above it that enables it to capture relations between the components or entities .
+in lda-er , a group zi = t is first sampled for the ith reference from the distribution over groups for the document and then an entity is sampled from it .
+in the dirichlet process , any previously existing entity may be chosen in this step depending on their prior counts .
+but in lda-er , the choice is controlled by the sampled group t .
+entities that have previously been associated with this sampled group are much more likely to be chosen .
+this distinction allows lda-er to model relations between entities .
+as in the dirichlet process , alternatively a new entity may be selected in lda-er .
+however , this new entity now becomes associated with group t and may be chosen for future references from this group .
+this difference is clearly observable from the conditional distributions in eq . ( 9.9 ) and eq . ( 6.6 ) .
+while the probability for choosing the kth entity in eq . ( 9.9 ) depends on ca ( -i ) a which is the number of previous occurrences of entity a , in eq . ( 6.6 ) it depends on cat ( -i ) at which is the number of joint occurrences of group t and entity a .
+this coupling of the group and entity labels distinguishes the lda-er model from the dirichlet process mixture model .
+block assignment for entity resolution .
+as has been noted in the case of naive gibbs sampling for inference in the dirichlet process mixture model [ 5 ] , iteratively estimating the group and entity label for each reference separately , as described in sec . 9.1 can be prohibitively slow .
+we now describe a novel algorithm that overcomes this problem by reassigning entity labels for a set of entities at the same time .
+this achieves an agglomerative clustering effect on the references .
+observe that for any assignment of entity labels to references , each entity label defines a cluster all references that have this entity label belong to this cluster .
+sampling a new label for each reference separately is equivalent to an individual reference migrating from one cluster to another .
+agglomerative clustering is significantly faster since pairs of clusters merge into one .
+we achieve the same effect with the new sampling algorithm that we propose .
+in addition , we allow existing clusters to split .
+the conditional probabilities for these choices for any particular entity cluster given the entity and group labels for all other references are derived from the joint distribution in eq . ( 6.2 ) .
+as in traditional gibbs sampling , these probabilities then form the transition probabilities in a markov process .
+we define a cluster by picking an author label j and consider the set s of reference indices that have j as their author label : s = { i i ai = j } .
+we assign new author labels to all references indexed by cluster s simultaneously .
+in general , the number of possible author assignments to s is exponential in isi and it is virtually impossible to enumerate all these different probabilities and sample from this distribution .
+instead , in our algorithm we restrict the space of candidates such that the cluster of references assigned to a particular author label may ( a ) merge with a cluster currently assigned to another author label , ( b ) stay unchanged or ( c ) split and have a part assigned to a hitherto unassigned author label j ' .
+case ( a ) is similar to two author clusters merging and the number of authors is effectively decreased by one .
+in case ( c ) , an author cluster splits into two and the number of authors is effectively increased by one .
+however , the number of possible partitions of s into j and j ' is still 2151 .
+the simple but restricted solution that we use is splitting to the set that last merged into label j via option ( a ) .
+we first consider assigning a single author label to all of cluster s .
+the full conditional distribution we need to derive is p ( a5 = i i z , a-5 , r ) which is the probability of all the labels a5 in cluster s being set to i conditioned on all references and group labels and all other author labels .
+for the case when we partition cluster s into s1 and s2 and assign two different author labels to them , the conditional probability looks very similar : observe that when one author label merges with another according to eq . ( 9.13 ) , the attribute of the freed author j changes from vj to the free attribute * .
+the difference in prior probabilities of the two attribute values leads to an additional term in the merge probability in eq . ( 9.13 ) : p ( * ) / p ( vj ) .
+similarly , when splitting the references assigned to author j between j and currently unassigned j ' , the attribute of author j ' changes to vj from * and the split probability has the additional term p ( vj , ) / p ( * ) .
+therefore , the higher the prior probability of * relative to other attributes , the higher will be the likelihood of a merge compared to a split .
+putting everything together , our entity resolution algorithm starts from an initial assignment of authors and groups to all references and iterates over three steps sequentially until convergence .
+first , it samples a group label for each reference .
+this has complexity o ( rt ) for r references and t group labels .
+then for each assigned author label , it samples the next author label for its current references .
+this requires o ( as ) operations for a author labels and a maximum of s potential duplicates per author .
+finally , it samples an attribute for each assigned author label , requiring o ( a ) operations .
+for each round of sampling authors and attributes , we do several iterations of group sampling to let the group labels stabilize for the current author assignments .
+note that all stages in an iteration are linear in the number of references and author labels allowing our model to scale to large datasets as we demonstrate in the experimental section .
+determining model parameters .
+we have described how the numbers of authors can be determined within the sampling procedure .
+the remaining aspects of the model are the number of groups and the dirichlet hyper-parameters .
+their choice affects performance in different ways .
+number of groups we begin by observing that the choice of the number of groups is subjective and not as critical as the number of entities .
+relationships among the same set of entities can be captured with different number of groups at different levels of resolution .
+while it is possible to estimate the likely number of groups from the data , it is an area of potential future research .
+here we consider the effect of varying number of groups on entity resolution .
+recall that our guiding intuition is to assign the same author label to sets of references when they are similar and have similar group distributions .
+when the number of groups t is too small , misleading similarities in group distributions are likely to be observed , leading to false positives .
+if t is too high , references to the same author can get split over different groups , making false negatives likely .
+in other words , lower t favors higher recall and lower precision , while higher t leads to lower recall with higher precision .
+hyper-parameters to appreciate the roles of a and 0 , note from eq . ( 6.5 ) that when a = 0 , a reference is forced to pick a group label from the other references in the same document .
+similarly , when 0 = 0 , a reference has to pick a group label from other references to the same author , and also an author label from other references with the same group label .
+in general , for low values of a and 0 , the model tends to overfit the data .
+this is particularly undesirable for entity resolution , since we need to estimate the number of authors and need to generalize from the current author assignments .
+to get a feel for what values are appropriate , observe that ta is the number of pseudo reference counts added to each document .
+since in most cases documents will have one or two authors , we set ta to be 0.25 .
+similarly , a0 is the number of pseudo references for each topic .
+we set 0 according to the number of references in the dataset and the number of topics used .
+a typical value for a0 is 5 .
+noise model parameters we iteratively estimate the noise parameters from data in a unsupervised manner .
+we start from an initial estimate that is typical of some datasets we explored .
+for instance , first names are initialed and dropped with probabilities 0.75 and 0.001 ( 0.25 and 0.7 for middle names ) and is incorrect with probability 0.0005 ( 0.001 for middle names ) .
+characters may be dropped , replaced or inserted , each with probability 0.0025 .
+after every author sampling step , we re-estimate the probabilities looking at each reference attribute and the attribute of the author it has been assigned to .
+however , the estimates from the initial iterations may not be good .
+for example , when all references are distinct entities , all corruption probabilities are estimated to be 0 .
+to prevent this , estimates are made to evolve slowly .
+a weighted combination of the current probabilities and the new estimates yields the probabilities for the next iteration .
+typically , we retain current estimates with weight 0.9 .
+algorithm refinements .
+unlike group labels , author labels for references are sampled from a restricted space .
+here we propose improvements for the sampling algorithm for inferring the author labels .
+bootstrapping author labels initialization of author labels is an issue both for convergence time and quality .
+one option is to assign the same initial label to any two references that have attributes v1 and v2 , where either v1 = v2 or v1 is an initialed form of v2 .
+however , for domains where last names repeat very frequently , like chinese , japanese or indian names , this can affect the initial accuracy quite adversely , from which it is hard to recover .
+for the case of such common last names1 , we propose an improved bootstrapping scheme .
+we assign the same author label to pairs only when they have document co-authors with the same initial author label .
+this improves bootstrap accuracy significantly for one of our datasets that has frequently repeating names .
+group evidence for author self loops recall that eq . ( 9.11 ) shows the group evidence for different transitions for cluster s .
+cat ( ^ s ) at is the number of references outside cluster s that have author label a and group label t .
+for any group t , it is the group evidence for merging with the cluster for author label a .
+however , if s is the cluster of references with author level j , then cat ( ^ s ) jt will be 0 for all group labels t , since there are no references outside cluster s with author label j .
+therefore , cluster s has little affinity to itself when considering group evidence and prefers merging with other clusters .
+note however that every cluster has higher attribute affinity to itself than to other clusters .
+we introduce a scalar parameter that allows us to have additional control on the rate of cluster merges .
+we consider a small fraction 6 of cat ( s ) jt as external group evidence for j .
+the higher the value of6 , the stronger has to be the evidence to cause an existing author label to merge with another label or to split into two .
+experimental evaluation .
+we begin by evaluating our algorithm on two real citation datasets .
+we compare our collaborative entity resolution model ( lda-er ) with the best attribute-based models .
+next , to gain further understanding of the conditions under which entity resolution benefits from collaborative group information , we evaluate our model on a broad range of synthetic datasets with varying relational structure .
+results on citation data we first perform experimental evaluations on two citation datasets .
+the first is the citeseer dataset containing citations to papers from four different areas in machine learning , originally created by giles et al. [ 15 ] .
+this has 2,892 references to 1,165 authors , contained in 1,504 documents .
+the second dataset is significantly larger ; arxiv ( hep ) contains papers from high energy physics used in kdd cup 20032 .
+this has 58,515 references to 9,200 authors , contained in 29,555 papers .
+the authors for both datasets have been hand-labeled .
+to evaluate our algorithms , we measure the performance of our model for detecting duplicates in terms of precision , recall and f1 on pairwise duplicate decisions .
+it is practically infeasible to consider all pairs , particularly for hep , so as others have done , we employ a blocking approach to extract the potential duplicates .
+this approach retains 99 % of the true duplicates for both datasets .
+we use a simple scheme for attribute priors , where common last names are set to be 10 times more likely than other last names , and the free attribute ~ is 10 times more likely than common names .
+when sampling group labels given the entity assignments at each step , we iterate until the log-likelihood converges .
+typically for the first few steps , we perform 50 group sampling iterations for each author iteration .
+thereafter we proceed with 20 group iterations for each author iteration .
+the f1 converges in about 30 author iterations for citeseer and 50 author iterations for hep .
+on a 3.2ghz dell precision 670 intel xeon server , this takes between 2.5 and 10 minutes for citeseer and between 2 and 12 hours for hep depending on the number of groups .
+as discussed in section 11.2 , we use a small fraction ( 6 = 0.5 % ) of group evidence for self probabilities .
+as a baseline ( attr ) , we compare with the hybrid softtf-idf measure [ 8 ] that has been shown to outperform other unsupervised approaches for text-based entity resolution .
+essentially , it augments the tf-idf similarity for matching token sets with approximate token matching using a secondary string similarity measure .
+jaro-winkler is reported to be the best secondary similarity measure for softtf-idf .
+we also experiment with the jaro and the scaled levenstein measures .
+however , directly using an off-theshelf string similarity measure for matching names results in very poor recall .
+from domain knowledge about names , we know that first and middle names may be initialed or dropped .
+a black-box string similarity measure would unfairly penalize such cases .
+to deal with this , attr uses string similarity only for last names and retained first and middle names .
+in addition , it uses drop probabilities pdropf and pdropm for dropped first and middle names , initial probabilities pfi and pmi for correct initials and pfir and pmir for incorrect initials .
+the probabilities we used are 0.75 , 0.001 and 0.001 for correctly initialing , incorrectly initialing and dropping the first name , while the values for the middle name are 0.25 , 0.7 and 0.002 .
+we calculated the probabilities from the labeled datasets and then hand-tuned them for performance .
+our observation is that baseline resolution performance does not vary significantly as these values are varied over reasonable ranges .
+attr only reports pairwise match decisions , which are often inconsistent globally .
+we also evaluate a second baseline attr * which takes a transitive closure over the pair- wise decisions in attr .
+both attr and attr * need a similarity threshold for deciding duplicates and determining the right threshold is a problem for these algorithms .
+one of the strengths of lda-er is that it does not require any similarity threshold .
+for comparison , we consider the best f1 that can be achieved by the baselines over all thresholds .
+table 1 records baseline performance with various string similarity measures coupled with softtf-idf .
+note that the best baseline performance is with jaro as secondary string similarity for citeseer and scaled levenstein for hep .
+it is also worth noting that a baseline without initial and drop probabilities scores below 0.5 f1 using jaro and jarowinkler for both datasets .
+it is higher with scaled levenstein ( 0.7 ) but still significantly below the augmented baseline .
+transitive closure affects the baseline differently in the two datasets .
+while it adversely affects precision for hep , it improves recall for citeseer .
+table 2 shows the best performance of each of the three algorithms for each dataset .
+note that the recall includes blocking , so that the highest recall achievable is 0.993 for citeseer and 0.991 for hep .
+lda-er outperforms both forms of the baseline for both datasets for all string similarity measures and the improvements are statistically significant .
+for citeseer , lda-er gets close to the highest possible recall with very high accuracy .
+this means that it is able to retrieve almost all duplicates correctly .
+improvement over the baseline is greater for hep in terms of f1 .
+also , ldaer reduces error rate over the baseline by 22 % for citeseer ( from 0.9 % to 0.7 % ) and by 20 % for hep ( from 2.4 % to 1.9 % ) .
+also , hep has more than 64,6000 true duplicate pairs , so that a 1 % improvement in f1 translates to more than 6 , 400 correct pairs .
+looking more closely at the resolution decisions from citeseer , we were able to identify some interesting combination of decisions by lda-er that would be difficult or impossible for an attribute-only model .
+there are instances in the dataset where reference pairs are very similar but correspond to different author entities .
+examples include ( liu j , lu j ) and ( chang c , chiang c ) .
+lda-er correctly predicts that these are not duplicates .
+at the same time , there are other pairs that are not any more similar in terms of attributes than the examples above and yet are duplicates .
+these are also correctly predicted by lda-er by leveraging common collaboration patterns .
+the following are examples : ( john m f , john m st ) , ( reisbech c , reisbeck c k ) , ( shortlie e h , shortclie e h ) , ( tawaratumida s , tawaratsumida sukoya ) , ( elliott g , elliot g l ) , ( mahedevan s , mahadevan sridhar ) , ( livezey b , livezy b ) , ( brajinik g , brajnik g ) , ( kaelbing l p , kaelbling leslie pack ) , ( littmann michael l , littman m ) , ( sondergaard h , sndergaard h ) and ( dubnick cezary , dubnicki c ) .
+an example of a particularly pathological case is ( minton s , minton andrew b ) , which is the result of a parse error .
+the attribute-only baselines cannot make the right prediction for both these sets of examples simultaneously , whatever the decision threshold , since they consider names alone .
+we were also interested in exploring how the number of collaborative groups affects the performance of our entity resolution algorithm .
+table 3 records the performance of the group model on the two datasets with varying number of groups .
+while we observe a general trend where precision improves and recall suffers with more groups , note that the f1 is largely stable over a range of groups .
+properties of collaborative graphs while the lda-er model shows improvement for both citation datasets , the improvement is much more significant for the hep dataset .
+on investigating why our model shows a larger improvement for hep than for citeseer , we found some notable differences between the datasets .
+we call a reference ambiguous if there is more than one author entity with that last name and first initial .
+there is a significant difference in reference ambiguity between the two datasets only 0.5 % of the references in citeseer are ambiguous while 9 % of hep references are ambiguous .
+a second difference is in the density of the author collaboration graph .
+the average number of collaborators per author is 2.15 in citeseer and 4.5 in hep .
+finally , a third significant difference relates to the sample size .
+while the ratio of the number of references to the number of authors is 2.5 for citeseer , for hep it is 6.36 .
+on the other hand , one of the features that is preserved for both datasets is the average number of references per document , which is 1.9 for both .
+in order to investigate which of these features is responsible for the performance difference , we ran our algorithm on a range of synthetically generated datasets .
+this allowed us to investigate the conditions under which our model is most likely to lead to significant improvements over algorithms which do not take into account collaborative structure .
+due to space constraints , we provide only the outline of the data generator ; it is reasonably sophisticated .
+it attempts to mimic the way authors of academic papers are generated by the underlying collaborative pattern among researchers .
+there are two phases in this generative process .
+first , a collaborative graph is created in steps , where in each step a collaborative edge is added between two authors .
+each author is given a name sampled from us census data .
+by sampling from the top k % of this distribution we can control the percentage of ambiguous names in the data .
+other parameters allow us to control the number of authors and the average collaboration degree .
+in the second stage , documents are created from this collaborative graph by first sampling an initiator author , who chooses randomly from collaborators to select co-authors for that document .
+the author names for each document are modified by a noise model to generate the references .
+various parameters allow us to control the number of documents generated , the average number of authors per document and the level of noise in the references .
+in our setup for experiments with synthetic data , we vary the synthetic dataset parameters one at a time holding the others constant .
+the default values of the parameters are set to reflect the features of the real datasets .
+the datasets have 1000 authors with an average of 4.5 collaborators .
+we generate 3000 documents with an average of 2 references per document and 15 % ambiguous references .
+we explore varying the fraction of ambiguous references , the ratio of references to authors , the average number of collaborators and average number of references per document .
+since the results are averaged over different datasets , we present only the improvement in f1 measure observed for the group model over attr * .
+figure 3 summarizes the trends that we observe .
+one significant improvement trend is over varying ambiguity in the references .
+as shown in figure 3 ( a ) , it climbs sharply from 0.01 for 10 % ambiguity ( as in hep ) to 0.06 for 27 % reference ambiguity .
+figure 3 ( b ) shows that lda-er naturally benefits from higher sample sizes for the author references .
+figure 3 ( c ) shows that lda-er benefits from a greater number of authors per document .
+however , no statistically significant trends emerged from our experiments with varying collaboration degree keeping other factors like sample size fixed ; some experiments showed larger improvements with higher degree , however the results were not consistent .
+more thoroughly characterizing properties of the collaborative graph structure that lead to improved entity resolution is an interesting area for future work .
+conclusions .
+in this paper , we have developed a probabilistic generative model for collectively resolving entities in relational data .
+it is novel in that it does not make pair-wise decisions and introduces a group variable to capture relationships between entities .
+our model may be viewed as extending the dirichlet process mixture model to capture relations between entities or components .
+we propose an unsupervised approach for collective inference in our model that does not require any labeled training data .
+in addition , we present a novel sampling strategy to estimate the number of entities automatically from the references .
+we have demonstrated the utility of the proposed model on two real-world citation datasets .
+additionally , we have identified some of the conditions under which these models are expected to provide greater benefit .
+areas for future work include extending the models to resolve multiple entity classes and better characterization of collaborative graphs amenable to these models .

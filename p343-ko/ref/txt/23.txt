@@ -1,0 +1,230 @@
+type checking in open-domain question answering .
+abstract .
+open domain question answering ( qa ) systems have to bridge the potential vocabulary mismatch between a question and its candidate answers .
+one can view this as a recall problem and address it accordingly .
+recall oriented strategies to qa may generate considerable amounts of noise .
+to combat this , many open domain qa systems contain an explicit filtering or re-ranking component , which often check whether the answer is of the correct semantic type .
+particular classes of questions expect specific answer types to which all of their answers should belong .
+we compare two kinds of strategies for answer type checking for open domain qa .
+one is redundancy-based and builds on the intuition that the amount of implicit knowledge which connects an answer to a question can be estimated by exploiting the redundancy of information available on the web .
+the other is knowledge-intensive , and exploits structured and semi-structured data sources to determine , with high confidence , the semantic type of suggested answers .
+introduction .
+question answering ( qa ) is one of several recent attempts to realize information pinpointing as a refinement of the traditional document retrieval task .
+in response to a user 's question , a qa system has to return an answer instead of a ranked list of relevant documents from which the user has to extract an answer herself .
+the way in which qa is currently evaluated at the text retrieval conference ( trec , [ 22 ] ) requires a high degree of precision on the systems part [ 22 ] .
+systems have to return exact answers : strings of one or more words , usually describing a named entity , that form the complete and non-redundant answer to a given question .
+this requirement gives qa a strong high-precision character .
+at the same time , however , open domain qa systems have to bridge the potential vocabulary mismatch between a question and its candidate answers .
+because of this , recall is a serious issue for most qa systems .
+now , the typical qa system architecture is a single processing stream that performs four steps in a sequential fashion : question analysis , search , extraction of answer candidates , and answer selection [ 8 , 15 , 17 , 18 ] .
+the early steps are usually non-exact steps , aimed at maintaining recall at an acceptable level .
+the underlying assumption is that much of the noise picked up in the early steps will be filtered out in the final step .
+thus , many systems contain a filtering or re-ranking component aimed at promoting correct answers and demoting incorrect ones .
+we focus on one particular kind of filtering : answer type checking , that is , checking whether a given answer candidate belongs to the expected semantic type ( or set of types ) .
+to many of the factoid questions used in the trec qa track , a small number of semantic types can be associated that all reasonable answers to those questions can be expected to belong to .
+on top of the usually coarse-grained expected answer types used for extracting answer candidates ( such as person , location , date or organization ) , it is often possible ( and necessary ) to identify more precisely whether we are looking for .
+todays named entity extraction technology is able to recognize the course-grained types with high accuracy , but recognizing fine-grained semantic types is not a solved problem .
+moreover , many open domain qa systems work with noisy , incomplete , and often ungrammatical text snippets returned by search engines ; on such input it is hard to obtain accurate recognition of semantic types .
+in this setting answer type checking can provide an important sanity check to weed out incorrect answers .
+how can we operationalize answer type checking ?
+we discuss two strategies , both using freely available on-line resources .
+first , for an increasing number of domains , such as geography , movies , and medicine , reliable wide-coverage structured or semi-structured data sources are available that can be used for answer type checking .
+moreover , assuming these sources are available locally , access to them is efficient and answer type checking can be decomposed into shallow taxonomical reasoning steps combined with look-ups .
+for domains without such resources , or to make up for gaps in existing resources , redundancy-based approaches , bootstrapped with patterns capturing the expected answer types , can be used instead .
+the aim of this paper is to study the potential impact of answer type checking on the performance of open domain qa systems .
+we break this general issue up into more manageable issues , each of which we aim to address in this paper : ( 1 ) does type checking ( generally ) improve the performance of open domain qa systems ? ( 2 ) how do knowledge-intensive and redundancy-base type checking compare ?
+are they complementary ?
+both questions have to be answered while keeping in mind that the external knowledge sources that we employ are usually domain-specific .
+can our results be transferred from one knowledge source and domain to others ?
+we describe algorithms for knowledge-intensive and redundancy- based answer type checking ( in sections 3 and 4 ) .
+to be able to assess knowledge-intensive answer type checking , we need access to fairly rich knowledge sources .
+for this reason , we carried out an experimental evaluation and comparison of the two methods on location questions .
+we report on our experiments in section 5 and conclude in section 6 .
+we start out by discussing related work , in section 2 .
+related work .
+as with any information access task , recall oriented strategies to qa may generate considerable amounts of noise .
+to combat this , many systems participating in the trec qa track contain an explicit filtering or re-ranking component , and in some cases this involves answer type checking .
+in their trec 2002 system , bbn used a number of constraints to re-rank candidate answers [ 24 ] ; one of these is checking whether the answer is of the correct location sub-type .
+lccs qa system has an answer selection process that is very knowledge- intensive [ 16 ] .
+it incorporates lots of ai-like technology , by attempting to prove candidate answers from text , with feedback loops and sanity-checking , using extensive lexical resources .
+other systems using knowledge-intensive type checking include ibms ( that uses the cyc knowledge base [ 2 , 19 ] ) , and the university of edinburghs ( that uses subtle reasoning mechanisms [ 4 ] ) .
+some systems take the use of external knowledge sources a step further by relying almost exclusively on such sources for answers , and , as a final step , finding justification for the externally found answers in the text collection used as part of the trec qa track [ 11 ] .
+while systems that find their answers externally use many of the same resources as systems that use knowledge-intensive answer type checking , they obviously use them in a different way , not as a filtering mechanism .
+in contrast to these knowledge-intensive methods , we mention a redundancy-based approach due to magnini et al. [ 12 ] .
+they employ the redundancy of the web to re-rank ( rather than filter out ) candidate answers found in the collection , by using web search engine hit counts for question and answer terms .
+the idea is to quantitatively estimate the amount of implicit knowledge connecting an answer to a question by comparison of the number of co-occurrences of answer and keywords in the question .
+our redundancy-based type-checking method refines this method by bootstrapping co-occurrence statistics with admissible answer types ( section 3 and 4 ) .
+recently , several qa teams adopted complex architectures involving multiple streams that implement different answering strategies [ 2 , 3 , 5 , 10 , 9 ] .
+here , one can exploit the idea that similar answers coming from different sources are more reliable , so the answer selection module should favor candidate answers found by multiple streams .
+in this paper we do not exploit this type of redundancy as a means of filtering or re-ranking , but refer to [ 5 , 10 , 1 , 9 ] .
+ontology-based type checking .
+many qa-systems attempt to answer questions as follows : a question type is determined and relevant documents are retrieved from which a list of candidate answers is extracted .
+an answer selection process then orders the candidate answers and the top one is returned .
+the expected answer type ( s ) ( or eat ( s ) ) of a question restrict ( s ) the admissible answers within a particular domain , such as geography , to more specific semantic classes , such as river , country or tourist attraction .
+these semantic classes are often organized in ontologies , which are , in the simplest case , just sets of concepts equipped with hierarchical relations .
+if we take the semantic concepts as our answer types , these ontologies provide the structure and the reasoning which is necessary to automate answer type checking .
+if a candidate answer is known not to be an instance of any eat associated with a question , it can immediately be excluded from the answer selection process .
+we will refer to this use of eats as answer type checking by filtering .
+for filtering , a knowledge-intensive approach seems ideally suited : for each candidate answer we try to extract a found answer type ( fat ) from knowledge and data sources , i.e. , a most specific semantic type of which it is an instance .
+because of the inherent incompleteness of knowledge and data sources in open domain applications , it may be impossible to determine a fat for every candidate answer .
+instead , we propose to determine the likelihood that the expected answer type is indeed a correct semantic type for a candidate answer and to re-rank the candidate answers according to this measure .
+for re-ranking , redundancy-based strategies are an obvious choice , the assumption being that the number of co- occurrences of answers and answer types allows us to quantify the relation between a questions eat and a candidate answer .
+filtering .
+from various information sources we can often reliably determine a most specific concept of which a particular answer is an instance .
+in our case we use the gns [ 7 ] and gnis [ 6 ] databases and w ornnet [ 14 ] to relate geographical answers with one or more semantic types ( its found answer type ( fat ) ) .
+as answers may be ambiguous , we often need to associate a number of fats to each candidate answer .
+then , a candidate answer is correctly typed for a question if one of the found answer types of is compatible to one of the expected answer types of .
+the notion of compatibility need not be symmetric .
+given the found and expected answer types and a notion of compatibility of two types and , the basic algorithm for filtering is as follows : re-ranking .
+re-ranking does not depend on a found answer type of a candidate answer but on the likelihood that is both correct and has an answer type .
+more precisely , any implementation has to define a measure for the correctness of the type for which needs to be merged with the confidence or the ranking of ( or both ) determined in the answer selection process .
+our measure of correct typing is defined by co-occurrence of a description of the eat and the candidate answers on the web .
+the general strategy for re-ranking is then : for each candidate answer of a question for each expected answer type calcalculate the likelihood that is correct and that is the correct type , based on the probability that is a correct type for , and the original confidence and / or the rank of return the candidate answers reordered by this likelihood requirements .
+the strategies for type checking outlined above require some basic ingredients : an ontology of answer types has to be formalized , and each question has to be mapped to an expected answer type ( eat ) ; furthermore , every implementation of filtering has to provide mechanisms to determine fats and a notion of compatibility of fats and eats .
+finally , an implementation of re-ranking must define measures for the likelihood of correct typing .
+building a type checker .
+to assess the effectiveness of type checking we implemented filtering and re-ranking for the geography domain and added it to our own qa system , quartz [ 20 ] .
+we take our ( expected ) answer types from the set of synsets in wordnet [ 14 ] .
+synsets are sets of words with the same intended meaning ( in some context ) .
+they are hierarchically ordered by the hypernym ( more general ) and hyponym ( more specific ) relations .
+a sibling of a type is a hyponym of a hypernym which is different from .
+finally , the ancestor ( descendant ) relation is the transitive closure of the hypernym relation ( the hyponym relation , respectively ) .
+wordnet contains many synsets in the geography domain .
+there are general concepts describing administrative units ( e.g. , cities or counties ) or geological formations ( e.g. , volcanoes or beaches ) , but also instances such as particular states or countries .
+wordnet provides an easy-to-use ontology of types for answer type checking in the geography domain .
+we will benefit two-fold : first , we can make use of the relative size of the geography fragment of wordnet , and secondly , we get simple mappings from the questions and the candidate answers almost for free .
+let us describe first how we map questions to expected answer types .
+expected answer type extraction .
+we determine eats of a question by a simple pattern-based analysis of the questions .
+using wordnet , we created a list of about 300 geographical features describing elements of nature , structures , or administrative units .
+a simple strategy is to study the first feature out of the list which occurs in a question .
+in most cases the synsets containing are reasonable eats for .
+note , that there could be more than one eat for one feature as we do not do any word-sense disambiguation .
+only few eats are not found by this simple strategy .
+take , for example , questions such as dublin is the capital of which country ? , where the eat is the synset containing the feature country ( and not capital ) .
+answer type extraction with hand-crafted patterns achieves a reasonable accuracy for most of our location questions ( 90 % ) .
+however , more robust eat extraction methods need to be investigated to make the approach portable to other domains .
+knowledge-intensive filtering .
+our implementation of knowledge-intensive filtering uses wordnet and two publicly available name information systems .
+the geographic names information system ( gnis ) contains information about almost 2 million physical and cultural features throughout the united states and its territories [ 6 ] .
+sorted by state , gnis contains information about geographic names , including the county , a feature type , geographical location etc .
+the geonet names server ( gns ) is the official repository of foreign place-name decisions ... and contains 3.95 million features with 5.42 million names [ 7 ] .
+some candidate answers , such as germany to trec question 1496 , what country is berlin in ? occur directly in wordnet .
+given our use of wordnet as ontology of types we choose all the synsets containing the word germany as found answer types ( fats ) .
+unfortunately , this case is an exception : most names are not contained in wordnet .
+the gns and gnis databases , however , associate almost every possible geographical name with a geographic feature type .
+both gnis and gns provide mappings from feature types to natural language descriptions .
+the fats determined by the data-base entries are therefore simply those synsets containing precisely these descriptions .
+in very few cases we had to adapt the coding by hand to ensure getting the intended wordnet synsets .
+a simple example is the gns type ppl , referring to a populated place , which we map to the synsets containing the word city .
+in the case of complex candidate answers , i.e. , answers containing more than one word , the fats are separately determined for the complex answer string as well as for its constituent given the methods we described above .
+we also need a notion of compatibility between answer types .
+our definition is based on the wordnet hierarchy : a fat is compatible with an eat , abbreviated by if it is more specific than or equal to the eat.2 formally , this means that holds if , and only , if is an ancestor of , or if equals .
+redundancy-based re-ranking .
+no data source can be complete ; in the previous section we presented a strategy for re-ranking based on the likelihood that the eat of the question is the semantic type for a candidate answer .
+we implemented a purely redundancy-based method that is based on the assumption that co-occurrences of words in a large corpus ( such as the web ) can provide significant statistical information about the relation between words .
+we define two simple measures for the correctness of an eat with respect to a candidate answer based on the probability that a description of the eat and occur together in the same documents .
+remember that is a set of synsets , which were chosen in the eat extraction process , because the question contains a particular feature .
+for our algorithm we simply choose this feature as the canonical description of the synset .
+the number of web-pages a term occurs in will be called the hit-count of and abbreviated as . is the total number of web pages indexed by our search engine .
+the two measures are then defined as follows .
+conditional type probability is the probability that the expected answer type occurs in a document given that it contains the candidate answer .
+the assumption is that the eat is often used to describe the most important properties of an instance .
+ctp is very similar to point- wise mutual information ( pmi ) [ 13 ] .
+as long as there is only one eat for a question , it produces the same ranking because the hit- counts for the eat remain constant .
+normalized conditional type probability : .
+a drawback of conditional type probability is that it only works if ( as we expect ) the answer implies the type .
+it may happen that the answer itself occurs very often in a different context and does not always imply the answer type .
+e.g. , this occurs if a particular string refers to several different answers .
+the normalized conditional type probability compensates for this .
+with ctp and normalized ctp we implemented two measures which are natural in the context of linking an expected answer type and a candidate answer .
+to re-order the set of candidate answers we also need strategies to combine the new measures with the confidence and ranking that the answer selection process gave to a candidate answer .
+the notion of compatibility can be more complex depending on the ontology , the reasoning and the available data sources .
+if we consider more complex answer types , such as conjunctive ones , we may have to relax the definition .
+e.g. , assume we have a complex eat river & german & muddy .
+in this case an answer with a fat german & river could be compatible to the eat even though the fat is not more specific than the eat .
+we implemented additional , more complex measures such as the ones introduced in [ 12 ] , but none of them improved over nctp in our experiments .
+experimental evaluation .
+one of the main goals of our type checker was a proof of concept , i.e. , to evaluate whether type checking could actually be successfully integrated in a qa system , at least for a particular domain .
+however , because the specialization to a particular domain is very much against the spirit of open domain qa , we had to address the issue of incompleteness of knowledge sources by introducing both redundancy based and knowledge-intensive strategies for type checking .
+in this section we discuss our experience with filtering and re-ranking given a number of experiments we conducted .
+particular focus was put on the following issues : what are the advantages of each of the two strategies ?
+and : what helps and what hinders each method ?
+experiments we evaluated the output of our qa system on 261 location questions from previous trec qa topics and on 578 location questions from an on-line trivia collection [ 21 ] , both without and with type-checking .
+these were fed to our own quartz system , and the list of candidate answers returned by it was subjected to answer type checking .
+we used two evaluation measures : the mean reciprocal rank ( mrr : the mean over all questions of 1 over the rank of the first correct answer , if any ) [ 23 ] , and the number ( and percentage ) of correct answers .
+for 594 of the 839 questions we determined over 40 different expected answer types .
+the types country , city , capital , state , and river were the most common and assigned to over 60 % of the questions .
+we evaluated the eat extraction process by hand and found an accuracy of over 90 % .
+to establish a realistic upperbound on the performance of answer type checking , we went through all the questions and their candidate answers by hand and checked how much human type-checking improves the results .
+then we compared the performance of knowledge intensive filtering and redundancy based re-ranking ( rbrr ) .
+to study the influence of the use of databases on filtering , we ran both the algorithm described in the previous section and a version using only w ornnet to find the fats .
+this latter method will be denoted by kif-wn below , the full version simply as kif .
+for re-ranking we combined the two measures ctp and nctp with equal and reciprocal merging to get the 4 runs : rbrr-ctp-equal , rbrr-ctp-recip , rbrr-nctp-equal and rbrr-nctp-recip .
+results table 1 summarizes the main empirical results of our experiments .
+for each of the strategies and implementations we give the total number and the average of correct answers , as well as the mrr .
+the results show that type checking is useful , and that it can successfully be applied .
+knowledge intensive filtering can significantly improve the overall performance of a qa system for geography questions , but even the best available strategy performs significantly worse than a human expert .
+what surprised us was that adding the gnis and gns database to the filtering lead to a substantial drop in performance compared to the filtering method based on wornnet alone .
+finally , redundancy based re-ranking failed to make a significant positive difference on the overall performance , which even dropped for the reciprocal merging strategy .
+error analysis to obtain a better understanding of our results we look at them in more detail .
+in which cases does knowledge intensive filtering fail ?
+knowledge intensive filtering does not achieve the potential improvement of 36 % obtained with human type-checking , both because we do not exclude enough answers and because we incorrectly exclude correct answers .
+there are three conceptually interesting reasons for these errors .
+first , incompleteness : there are rare question types , such as tourist attraction or motorway , where the candidate answer ( and its type ) is simply unknown to the knowledge sources .
+in other cases insufficient information is available about a specific instance .
+e.g. , neither wornnet , nor gns and gnis , contain the information that rotterdam is a port , or palermo a regional capital .
+second , representation : some errors are directly due to the way information is represented in wornnet .
+e.g. , the synset quito , which has a synset containing country as ancestor ( via hypernyms capital , seat and center ) .
+this is due to the ambiguity of the term country which denotes both a political entity and a region .
+and third , linguistics : we sometimes fail to map answers to the correct synset .
+e.g. , the answer indian to the question in which ocean are the group of islands called the seychelles ? is not mapped to the correct synset indian ocean .
+finally , the answer african to the question what is the second largest continent in the world ? is mistakenly excluded because we do not map the adjective to the corresponding noun .
+where does it harm to use databases ?
+a surprising result was that the inclusion of information from the gns and the gnis database decreased the accuracy of filtering .
+there are two main reasons .
+first , wornnet is sufficiently ignorant : consider the question what province is montreal in ? where the candidate answer shanghai was originally higher ranked that the correct answer quebec .
+the database gnis knows that shanghai is a province whereas wornnet does not , and ( incorrectly ) excludes shanghai as falsely typed .
+second , data is highly ambiguous : knowledge intensive filtering with the gnis and gns database may fail because countries are usually not filtered from questions with eat containing the word city .
+the reason is that almost every country name , such as france , china , island or scotland , is also a name of a city .
+the examples show that filtering with w ornnet alone combines type-checking and sanity checking .
+this works fine because both our question set and wornnet are biased toward questions about europe or america .
+however , for more specific questions we will need more information as a fall-back because we cannot use the incompleteness wornnet as a sanity check any more .
+in this case our primary task is to reduce the ambiguity of the data in the databases .
+why does re-ranking fail to make a positive impact ?
+re- ranking with our best re-ranking strategy rbrr-nctp-equal brings the correct answer to the top in 29 cases .
+but there are almost as many questions ( 25 ) for which the correct answer is mistakenly ranked lower .
+here are two examples .
+first , semantics versus word- usage : for knowledge intensive filtering with databases , candidate answers are often semantically ambiguous .
+an example is the correct answer m6 to the question which motorway links birmingham and lancaster ? .
+the term m6 has many readings , of which the one referring to the motorway is only a very special one ( that simply drowns amidst other readings ) .
+second , complex answers produce non-representative hit-counts : the previous observation can be generalized .
+the more specific a candidate answer the more likely it is to co-occur with the expected answer type .
+this is because it gets semantically more constrained and the natural semantic ambiguity of the candidate answer is reduced .
+a number of errors of our re-ranking strategy can be traced back to this problem : whenever a name is constrained in any way , such as in eastern afghanistan , the likelihood that it is correctly typed increases .
+the effect of this problem is magnified in our experiments , because our qa system has a tendency to produce very specific candidate answers ( which have low hit-counts ) .
+lessons learned there is little we can do about the incompleteness of the knowledge sources and the way the information is represented .
+to improve knowledge intensive filtering we will therefore have to focus on more linguistically informed methods to improve the quality of the mappings from questions to eats , and from candidate answers to fats .
+a more technical problem is to counterbalance the effect that complex answers produce non-representative hit-counts .
+a closer look at the experimental results show that the nctp scores for the correct answer are usually better than for ctp .
+but although we introduced nctp for this purpose the results are not good enough yet .
+there are two things we can do : to define a new measure which gives a stronger impetus to more common candidate answers , and to avoid the negative effect of the tiling to the type-checking .
+conceptually more interesting is the problem of reducing semantic ambiguity .
+combining methods to reduce semantic ambiguity .
+both knowledge intensive filtering with databases and redundancy-based re-ranking suffer from semantic ambiguity : candidate answers can be interpreted in many ways .
+prospective solutions could use the questions eat to provide context for restricting the possible interpretations of candidate answers .
+in both cases knowledge intensive and redundancy-based methods have to be combined : to disambiguate fats for filtering we propose to use hit-counts to establish the confidence in the fats , and disambiguation for redundancy- based type-checking makes use of sets of types that are near the eat in wordnet .
+we omit the details due to lack of space .
+conclusion .
+many open domain qa systems answer questions by first extracting a huge number of candidate answers from a document collection , and then picking the most promising one from the list .
+one criteria for this answer selection is whether the candidate answer is of the semantic type which is expected by the question .
+we presented two strategies for answer type checking , filtering and re-ranking , which we implemented using knowledge intensive methods for the former , and a redundancy-based approach for the latter .
+our experimental findings clearly show the merits of answer type checking in general , but there is a mixed message about the two approaches .
+knowledge intensive filtering substantially improves the number of correct answers , but redundancy-based re-ranking does not .
+interestingly , the inclusion of two enormous data-sources actually leads to a decrease in performance .
+both problems can be explained by the semantic ambiguity of the candidate answer , in both cases the types of candidate answers are determined incorrectly because no use is made of the context provided by the question .
+in current research we combined knowledge intensive and redundancy-based approaches , where an implementation of one of them showed first promising results .
+our evaluation is very specific for the large class of questions about geography that we considered this is an ideal domain for knowledge intensive approaches .
+nevertheless , we believe that our approach can be ported to other domains .
+as we made explicit in the paper , what is required is an ontology of types , mechanisms to extract the eats and mappings from candidate answers to fats .
+fortunately , the redundancy-based approach is domain independent , so that we expect to be able to apply substantial parts of our general strategy in other domains .

@@ -1,0 +1,185 @@
+self-tuning in graph-based reference disambiguation .
+abstract .
+nowadays many data mining / analysis applications use the graph analysis techniques for decision making .
+many of these techniques are based on the importance of relationships among the interacting units .
+a number of models and measures that analyze the relationship importance ( link structure ) have been proposed ( e.g. , centrality , importance and page rank ) and they are generally based on intuition , where the analyst intuitively decides a reasonable model that fits the underlying data .
+in this paper , we address the problem of learning such models directly from training data .
+specifically , we study a way to calibrate a connection strength measure from training data in the context of reference disambiguation problem .
+experimental evaluation demonstrates that the proposed model surpasses the best model used for reference disambiguation in the past , leading to better quality of reference disambiguation .
+introduction .
+many modern data mining and data analysis applications employ decision making capabilities that view the underlying dataset as a graph and then compute the relationship / link importance using various link analysis measures / models including node importance , centrality [ 32 ] , and page rank [ 5 ] .
+many of these models are intuition-based and depend on the underlying dataset .
+in general , since the importance measures are data-driven , a domain analyst decides which measure fits the data best .
+in the absence of domain analyst , an arbitrary model can be used ; however , the results might not be optimal .
+but , what if there is training data available wherein given any two nodes in the graph it is known which node should be more central / important / etc .
+can one design measures that are not purely intuition-based but also take into account such information ?
+in this paper we provide an answer to that question for one of the graph link analysis measures , called connection strength ( cs ) .
+given any two nodes u and v in the graph g , the connection strength c ( u , v ) returns how strongly u and v are interconnected to each other in g. we study this measure in the context of reference disambiguation problem .
+in [ 8,1618,21 ] a methodology that successfully applies the cs measure to better the disambiguation quality has been proposed .
+reference disambiguation often comes up when entities in a real world dataset contain references to other entities .
+frequently , entities are represented using properties / descriptions that may not uniquely identify them leading to ambiguity .
+for instance , a dataset may store information about two distinct individuals john smith and jane smith , both of whom are referred to as j. smith ambiguously .
+references may also be uncertain due to differences in the representations of the same entity and errors in data entries ( e.g. , john smith misspelled as jon smith ) .
+the goal of reference disambiguation is for each reference to correctly identify the unique entity it refers to .
+it is crucial to preprocess and clean the dataset before applying any data mining / analysis applications ; because the quality of the output depends on the quality of the input data .
+consequently , a large number of database and machine learning approaches have been proposed for solving the reference disambiguation and related disambiguation challenges , such as entity resolution and record linkage [ 1 , 4 , 7 , 9,10,19 , 20 , 23 , 24 , 27 , 28 , 31 ] .
+recently , some domain-independent data cleaning approaches for reference disambiguation has been proposed [ 16 , 25 ] , that systematically exploits features and relationships among entities for the purpose of disambiguation .
+the approach in [ 16 ] , which we employ to test our adaptive solution , views the dataset as a graph of entities that are linked to each other via relationships .
+the model first utilizes a feature based method to identify a set of candidate entities for a reference .
+graph theoretic techniques are then used to discover and analyze relationships that exist between the entity containing the reference and the set of candidates .
+to illustrate the cap , consider a simple publication scenario , where authors write papers , and authors are affiliated with some organizations .
+for instance , some paper p1 might mention j. smith as its author .
+the dataset might contain only two people who have similar names : john and jane smith .
+then r = j. smith , x = p1 , y1 = john smith , and y2 = jane smith .
+to decide if the j. smith is jane or john , the cap proposes to compare two sets of paths in the entity-relationship graph that exist between x and y1 and between x and y2 .
+the main contribution of this paper is a supervised learning algorithm that learns the importance of relationships , or cs , among the classified entities and makes the approach self-tunable to any underlying domain so that the participation of the domain analyst is minimized significantly .
+the rest of this paper is organized as follows .
+section 2 covers related work .
+section 3 defines the problem of reference disambiguation and the essence of the disambiguation approach we use .
+an adaptive model for cs is discussed in section 4 .
+the empirical evaluation of the proposed solution is covered in section 5 .
+finally , section 6 concludes the paper .
+related work .
+in this section we give a brief overview of the existing connection strength models ( section 2.1 ) and the reference disambiguation techniques ( section 2.2 ) .
+connection strength models .
+the connection strength c ( u , v ) between two nodes u and v reflects how strongly these nodes are related to each other via relationships in the graph .
+generally , a domain expert decides a mathematical model to compute c ( u , v ) , which describes the underlying dataset best .
+various research communities have proposed measures that are directly related to c ( u , v ) .
+below we summarize some of the principal models .
+diffusion kernels on graphs in kernel methodology [ 29 ] is directly related to connection strength .
+diffusion kernel methods view the underlying dataset as a graph g = ( v , e ) , where v is a set of entities and e is a set of edges which define the base similarities between entities .
+the base similarity for entities x , y e v represents the degree of attraction between x and y .
+moreover , the base similarities are used to compute indirect similarities by combining the direct similarities in a particular way , see [ 29 ] for details .
+another model of measuring cs is random walks in graphs .
+it has been extensively studied , including our previous work [ 16,17 ] .
+the model uses the probability of reaching node v from node u by random walks in g to compute c ( u , v ) .
+relevant importance in graphs [ 33 ] is a generalized version of page rank algorithm [ 5 ] .
+it studies the relevant importance of a set of nodes with respect to a set of root nodes .
+the connection strength in this study is the importance of node t given node r ( i.e. , i ( tlr ) ) .
+electric circuit model is also a cs model which uses the electric networks principles to find the connection subgraphs between two nodes u and v [ 11 ] .
+that model views the graph as an electric circuit consisting of resistors , and compute c ( u , v ) as the amount of electric current that goes from u to v. disambiguation .
+reference disambiguation problem is related to the record de-duplication , record linkage , and object consolidation problems [ 7,15 , 22 ] and often arises when different information sources are merged to create a single database .
+the differences between record linkage and reference disambiguation can be intuitively viewed using the relational terminology as follows : while the record linkage problem consists of determining when two records are the same , reference disambiguation corresponds to ensuring that references in a database point to the correct entities .
+in the reference disambiguation problem , for each reference , a set of possible candidates is given and the task is to pinpoint the correct entity in this set .
+on the other hand , the object consolidation problem aims to correctly group / cluster the references that refer to the same object without knowing the possible entities in the dataset .
+the traditional approach to these problems is to analyze the textual similarities among the object features to make a disambiguation decision .
+such approaches are called feature-based similarity ( fbs ) techniques [ 12,13 , 26 ] .
+recently , a number of techniques have been proposed that go beyond the traditional approach [ 1,3,8,10,1619,23,27,30 ] .
+ananthakrishna et al [ 1 ] presented relational deduplication in data warehouses where there is dimensional hierarchy over the relations .
+bhattacharya and getoor introduced a method which requires that social groups function as cliques [ 3 ] .
+this model expects that there are strong correlations between pairs or sets of entities , such that they often co-occur in information sources .
+bekkerman and mccallum studied the disambiguation of name references in a linked environment [ 2 ] .
+their model utilizes the hyperlinks and distance between the pages where ambiguous names are found .
+minkov et al [ 25 ] introduced extended similarity metrics for documents and other objects embedded in graphs , facilitated by a lazy graph walk .
+they also introduced a learning algorithm which adjusts the ranking of possible candidates based on the edges in the paths traversed .
+in this paper , we employ the algorithm presented in [ 16,17 ] to test our adaptive connection strength model .
+the algorithm uses a graphical methodology ; the disambiguation decisions are made not only based on object features like in the traditional approach , but also based on the inter-object relationships , including indirect ones that exist among objects .
+the essence of the adaptive model is to be able to learn the importance of various connections on past data in the context of reference disambiguation .
+problem definition .
+we now formally define the reference disambiguation problem .
+assume dataset d contains a set of entities x. each entity x e x itself consists of one or more attributes x.a1 , x.a2 , ... , and it might also contain several references x.r1 , x.r2 , ..
+. to other entities in x. let r be the set of all references .
+each reference r e r is essentially a description and may itself contain one or more attributes .
+for each reference r e r the option set sr of that reference is known .
+it contains all entities in x to which r might potentially refer : sr = jyr1 , yr2 , . . . , yrn , . } .
+for r its sr is initially determined either by ad hoc techniques , domain knowledge , or by choosing all entities whose feature-based similarity exceed a certain threshold .
+the true ( unknown to the algorithm ) entity to which r refers to is denoted as r * .
+then the goal of reference disambiguation is to pick the right yrj ( i.e. , r * ) from sr to which r really refers to .
+we denote the entity in the context of which reference r is made as xr .
+the employed reference disambiguation approach resolves each reference r e r by analyzing direct and indirect relationships that exist between xr and each member of sr. for that , it views the dataset d as an undirected entity-relationship graph g , where node represent entities and edges represent relationships .
+in essence , g can be viewed as an instantiation of the e / r diagram for d. the approach relies on the cap principle ( section 1 ) , which can be reformulated in terms of connection strength as : for r its r * is likely to be such element yrj from sr that c ( xr , yrj ) ^ c ( xr , yr ~ ) for all ~ = ~ j .
+to make the definition clear , let us assume that we use the publication dataset for reference disambiguation .
+in the publication domain authors write papers .
+we might have a paper p1 that mentions j. smith as its author .
+dataset d might contain two authors who match that description : john smith and jane smith , where the actual author of p1 is john .
+then r = j. smith , xr = p1 , r * = john smith , and sr = { john smith , jane smith } .
+solution .
+the core of the approach in [ 16,17 ] that we employ to test our adaptive solution is a connection strength model , called wm .
+it is a fixed mathematical model and based on some intuitive assumptions which are true for many datasets .
+in this section we first describe how an adaptive cs model can be created ( section 4.1 ) .
+then we give an example adaptive cs model ( section 4.2 ) which is used in this paper .
+finally , we discuss the self-tuning algorithm ( section 4.3 ) .
+adaptive connection strength model .
+assume that we can classify each path that the disambiguation algorithm finds in graph g into a finite set of path types st = { t1 , t2 , ... , tn } .
+namely , there is a function t ( p , g ) ^ st such that for any given path p and graph g , maps it to one of those path types .
+if any two paths p1 and p2 are of the same type tj , then they are treated as identical by the algorithm .
+then , for any two nodes u and v we can characterize the connections among them with a path-type count vector tuv = ( c1 , c2 , ... , cn ) , where each ci is the number of paths of type ti that exist between u and v. the existing cs models differ in classification of path types and in the way of assigning weights to path types .
+furthermore , these are generally chosen by the algorithm designer .
+path type model .
+to classify the paths we use a model which we refer to as path type model ( ptm ) .
+it classifies paths by looking at the types of edges the path is comprised of .
+namely , ptm views each path as a sequence of edges ( e1 , e2 , ... , ek ) , where each edge has a type associated with it .
+this sequence of edge types ( ( e1 , e2 , . .. , ek ) ) are treated as a string and ptm assigns different weights to each string .
+for example , in the publications domain authors write papers and are affiliated with organizations .
+hence there are two types of edges that correspond to the two types of relationships : e1 for writes and e2 for is affiliated with .
+learning algorithm .
+the cap principle in the reference disambiguation problem allows us to calibrate a cs model directly from data and apply it in the context of reference disambiguation .
+because of the likely part in the cap , many of the inequalities in the system ( 2 ) should hold , but some of them might not .
+that is , system ( 2 ) might be overconstrained and might not have a solution .
+the employed reference disambiguation approach also states that for reference r the connection strength evidence for the right option y , j = r * should visibly outweigh that for the wrong ones y , e, 1 = ~ j .
+here a is a parameter that allows to vary the contribution of the two different objectives .
+it is a real number between 0 and 1 , whose optimal value can be determined by varying a on training data and observing the effect on the quality of the disambiguation .
+system ( 4 ) essentially converts the learning task into solving the corresponding linear programming problem , and linear programming , in general , is known to have efficient solutions [ 14 ] .
+all c ( u , v ) in ( 4 ) should be computed according to ( 1 ) and adding a normalization constraint that all weights should be in [ 0 , 1 ] domain : 0 < wi < 1 , for all i .
+the task becomes to compute the best combination of weights w1 , w2 , ... , wn that minimizes the objective , e.g. using any off-the-shelf linear programming solver .
+experimental results .
+we experimentally study our method using real and synthetic datasets taken from two domains : movies ( section 5.1 ) and publications ( section 5.2 ) .
+we compare the learning approach ( ptm ) against the best existing model used for disambiguation so far : the random walk model ( wm ) [ 17 ] , which we will refer to as randomwalk .
+randomwalk model computes c ( u , v ) as the probability to reach node v from node u via random walks in graph g , such that the probability to follow an edge is proportional to the weight of the edge .
+we report the results in terms of accuracy1 , which is defined as the fraction of correctly resolved references .
+experiments on the movies domain .
+we use the stanford movies dataset2 .
+a sample entity-relationship graph for this dataset is illustrated in figure 1 .
+the dataset contains three different entity types : movies ( 11,453 entities ) , studios ( 992 entities ) and people ( 22,121 entities ) and there are five types of relationships : actors , directors , producers , producing studios and distributing studios .
+when studying the accuracy of disambiguation , we use a method of testing commonly employed by many practitioners , including the recent kdd cup .
+we introduce uncertainty in the dataset manually in a controlled fashion and then analyze the resulting accuracy of various methods .
+specifically , we disambiguate references from movies to directors , by making them uncertain .
+first , a fraction f : 0 < f < 1 of all director references is chosen to be made uncertain , while the rest remain certain .
+each to-be-uncertain director reference r is made ambiguous by modifying it such that it either points to two directors instead of one ( i.e. , c = is i = 2 ) or points to c directors where c is distributed according to the pmf in figure 2 ( i.e. , c = is , i pmf ) .
+here c stands for the cardinality of st .
+training and testing is performed for the same values of f and c , but the director references chosen to be ambiguous are different in training and test data .
+figures 3 and 4 study the effect of the parameter a , that controls the contribution of various objectives in system ( 4 ) from section 4.3 , on the accuracy of various approaches , for different combinations of f and c .
+we performed the experiments for two different cardinalities ( c = 2 and c pmf ) and four different fractions of ambiguous entities ( f = 10.25,0.5,0.75 , 11 ) .
+in these experiments , the optimal a was found to be approximately 0.10 .
+when a is set to its best value , ptm visibly outperforms the state-of-the-art model , randomwalk .
+as the number of ambiguous references increases , the improvement with the ptm against the randomwalk method becomes more significant .
+for example , the improvement with ptm for f = 0.25 and c = 2 is 2.7 % , whereas it is 9.18 % , when f = 1 and c = 2 .
+experiments on the publications domain .
+dataset .
+we now present the results on synpub dataset , which is from [ 16 ] and emulates citeseer dataset .
+it contains four different types of entities : author , paper , department , and organization and three types of relationships : author- paper , author-department , and department-organization .
+we generated five different sets of datasets .
+each set contains a training and ten different testing datasets , the parameters are same for all datasets ; however , the authors to be disambiguated are different .
+each dataset has different types and levels of uncertainty ( see [ 17 ] ) and contains 5000 papers , 1000 authors , 25 organizations , and 125 departments .
+the least ambigious datasets are in set 4 , while the most ambiguous ones are either in set 5 or set 1 , see table 1 .
+results .
+for each training dataset , we selected the optimal a value , which is 0.10 for datasets 1 , 2 , and 5 and 0.01 for dataset 3 and 4 .
+then these optimal values were used in testing .
+the average accuracy of different testings are reported in table 1 .
+since the results of ptm and randomwalk are essentially identical , we performed another experiment with a different path classification model , hybrid model .
+this model is the combination of ptm with randomwalk , such that it takes into account the node degrees in addition to the edge types in a path .
+accuracy results with the hybrid model is the same as the other two models .
+so we can conclude that randomwalk model is a good model for this specific setting .
+however , it may not work ideally for every instance of the publications domain .
+to show that , we performed some additional experiments .
+our intuition in these experiments is that when creating the synpub dataset , the analyst has chosen to project from citeseer relationships of only a few carefully chosen types that wouold work well with randomwalk , i.e. the three types discussed above , while purposefully pruning away relationship types that are less important for disambiguation and would confuse randomwalk model .
+in other words , the analyst has contributed his intelligence to that unintelligent model .
+we gradually added random noise to one of the datasets , namely dataset 5 , by introducing relationships of a new type { that represent random meaningless relationships .
+the random relationships were added to the false cases only .
+that is , the added relationships are between the reference r and the candidates ( yrj ) e { sr ^ r * } .
+figure 5 examines the effect of this noise on the accuracy of randomwalk and ptm techniques .
+it shows that both of the techniques obtain very high accuracy compared to the standard approach , shown as fbs , which does not use relationships for disambiguation .
+initially , randomwalk and ptm has the same accuracy .
+but as the level of noise increases , the accuracy of randomwalk drastically drops below that of ptm and fbs .
+ptm is an intelligent technique that learns the importance of various relationships and can easily handle noise { its curve stays virtually flat .
+notice , since fbs does not use any relationships , including the random noise , its curve stays flat as well .
+discussions and conclusion .
+our results show that adaptive connection strength model always outperforms the state-of-the-art randomwalk model .
+there are many advantages of self- tunable cs model in the context of reference disambiguation .
+first of all , it minimizes the analyst participation , which is important since nowadays various data-integration solutions are incorporated in real database management systems ( dbms ) , such as microsoft sql server dbms [ 6 ] .
+having a less analyst- dependent technique makes that operation of wide applicability , so that non- expert users can apply it to their datasets .
+the second advantage of such a cs model is that it expects to increase the quality of the disambiguation technique .
+there are also less obvious advantages .
+for example , the technique is able to detect which path types are marginal in their importance .
+thus , the algorithm that discovers paths when computing c ( u , v ) can be sped up , since the path search space can be reduced by searching only for important paths .
+speeding up the algorithm that discovers paths is important since it is the bottleneck of the overall disambiguation approach [ 16,17 ] .

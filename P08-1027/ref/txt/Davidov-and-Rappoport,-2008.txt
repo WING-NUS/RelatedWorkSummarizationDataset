@@ -1,0 +1,259 @@
+unsupervised discovery of generic relationships using pattern clusters and its evaluation by automatically generated sat analogy questions .
+abstract .
+we present a novel framework for the discovery and representation of general semantic relationships that hold between lexical items .
+we propose that each such relationship can be identified with a cluster of patterns that captures this relationship .
+we give a fully unsupervised algorithm for pattern cluster discovery , which searches , clusters and merges high- frequency words-based patterns around randomly selected hook words .
+pattern clusters can be used to extract instances of the corresponding relationships .
+to assess the quality of discovered relationships , we use the pattern clusters to automatically generate sat analogy questions .
+we also compare to a set of known relationships , achieving very good results in both methods .
+the evaluation ( done in both english and russian ) substantiates the premise that our pattern clusters indeed reflect relationships perceived by humans .
+introduction .
+semantic resources can be very useful in many nlp tasks .
+manual construction of such resources is labor intensive and susceptible to arbitrary human decisions .
+in addition , manually constructed semantic databases are not easily portable across text domains or languages .
+hence , there is a need for developing semantic acquisition algorithms that are as unsupervised and language independent as possible .
+a fundamental type of semantic resource is that of concepts ( represented by sets of lexical items ) and their inter-relationships .
+while there is relatively good agreement as to what concepts are and which concepts should exist in a lexical resource , identifying types of important lexical relationships is a rather difficult task .
+most established resources ( e.g. , wordnet ) represent only the main and widely accepted relationships such as hypernymy and meronymy .
+however , there are many other useful relationships between concepts , such as noun-modifier and inter-verb relationships .
+identifying and representing these explicitly can greatly assist various tasks and applications .
+there are already applications that utilize such knowledge ( e.g. , ( tatu and moldovan , 2005 ) for textual entailment ) .
+one of the leading methods in semantics acquisition is based on patterns ( see e.g. , ( hearst , 1992 ; pantel and pennacchiotti , 2006 ) ) .
+the standard process for pattern-based relation extraction is to start with hand-selected patterns or word pairs expressing a particular relationship , and iteratively scan the corpus for co-appearances of word pairs in patterns and for patterns that contain known word pairs .
+this methodology is semi-supervised , requiring pre- specification of the desired relationship or hand- coding initial seed words or patterns .
+the method is quite successful , and examining its results in detail shows that concept relationships are often being manifested by several different patterns .
+in this paper , unlike the majority of studies that use patterns in order to find instances of given relationships , we use sets of patterns as the definitions of lexical relationships .
+we introduce pattern clusters , a novel framework in which each cluster corresponds to a relationship that can hold between the lexical items that fill its patterns slots .
+we present a fully unsupervised algorithm to compute pattern clusters , not requiring any , even implicit , pre- specification of relationship types or word / pattern seeds .
+our algorithm does not utilize preprocessing such as pos tagging and parsing .
+some patterns may be present in several clusters , thus indirectly addressing pattern ambiguity .
+the algorithm is comprised of the following stages .
+first , we randomly select hook words and create a context corpus ( hook corpus ) for each hook word .
+second , we define a meta-pattern using high frequency words and punctuation .
+third , in each hook corpus , we use the meta-pattern to discover concrete patterns and target words co-appearing with the hook word .
+fourth , we cluster the patterns in each corpus according to co-appearance of the target words .
+finally , we merge clusters from different hook corpora to produce the final structure .
+we also propose a way to label each cluster by word pairs that represent it best .
+since we are dealing with relationships that are unspecified in advance , assessing the quality of the resulting pattern clusters is non-trivial .
+our evaluation uses two methods : sat tests , and comparison to known relationships .
+we used instances of the discovered relationships to automatically generate analogy sat tests in two languages , english and russian1 .
+human subjects answered these and real sat tests .
+english grades were 80 % for our test and 71 % for the real test ( 83 % and 79 % for russian ) , showing that our relationship definitions indeed reflect human notions of relationship similarity .
+in addition , we show that among our pattern clusters there are clusters that cover major known noun-compound and verb-verb relationships .
+in the present paper we focus on the pattern cluster resource itself and how to evaluate its intrinsic quality .
+in ( davidov and rappoport , 2008 ) we show how to use the resource for a known task of a totally different nature , classification of relationships between nominals ( based on annotated data ) , obtaining superior results over previous work .
+section 2 discusses related work , and section 3 presents the pattern clustering and labeling algorithm .
+section 4 describes the corpora we used and the algorithm s parameters in detail .
+sections 5 and 1turney and littman ( 2005 ) automatically answers sat tests , while our focus is on generating them . 6 present sat and comparison evaluation results . 2 related work extraction of relation information from text is a large sub-field in nlp .
+major differences between pattern approaches include the relationship types sought ( including domain restrictions ) , the degrees of supervision and required preprocessing , and evaluation method .
+relationship types .
+there is a large body of related work that deals with discovery of basic relationship types represented in useful resources such as wordnet , including hypernymy ( hearst , 1992 ; pantel et al. , 2004 ; snow et al. , 2006 ) , synonymy ( davidov and rappoport , 2006 ; widdows and dorow , 2002 ) and meronymy ( berland and charniak , 1999 ; girju et al. , 2006 ) .
+since named entities are very important in nlp , many studies define and discover relations between named entities ( hasegawa et al. , 2004 ; hassan et al. , 2006 ) .
+work was also done on relations between verbs ( chklovski and pantel , 2004 ) .
+there is growing research on relations between nominals ( moldovan et al. , 2004 ; girju et al. , 2007 ) .
+degree of supervision and preprocessing .
+while numerous studies attempt to discover one or more pre-specified relationship types , very little previous work has directly attempted the discovery of which main types of generic relationships actually exist in an unrestricted domain .
+turney ( 2006 ) provided a pattern distance measure that allows a fully unsupervised measurement of relational similarity between two pairs of words ; such a measure could in principle be used by a clustering algorithm in order to deduce relationship types , but this was not discussed .
+unlike ( turney , 2006 ) , we do not perform any pattern ranking .
+instead we produce ( possibly overlapping ) hard clusters , where each pattern cluster represents a relationship discovered in the domain .
+banko et al. ( 2007 ) and rosenfeld and feldman ( 2007 ) find relationship instances where the relationships are not specified in advance .
+they aim to find relationship instances rather than identify generic semantic relationships .
+thus , their representation is very different from ours .
+in addition , ( banko et al. , 2007 ) utilize supervised tools such as a pos tagger and a shallow parser .
+davidov et al. ( 2007 ) proposed a method for unsupervised discovery of concept-specific relations .
+that work , like ours , relies on pattern clusters .
+however , it requires initial word seeds and targets the discovery of relationships specific for some given concept , while we attempt to discover and define generic relationships that exist in the entire domain .
+studying relationships between tagged named entities , ( hasegawa et al. , 2004 ; hassan et al. , 2006 ) proposed unsupervised clustering methods that assign given sets of pairs into several clusters , where each cluster corresponds to one of a known set of relationship types .
+their classification setting is thus very different from our unsupervised discovery one .
+several recent papers discovered relations on the web using seed patterns ( pantel et al. , 2004 ) , rules ( etzioni et al. , 2004 ) , and word pairs ( pasca et al. , 2006 ; alfonseca et al. , 2006 ) .
+the latter used the notion of hook which we also use in this paper .
+several studies utilize some preprocessing , including parsing ( hasegawa et al. , 2004 ; hassan et al. , 2006 ) and usage of syntactic ( suchanek et al. , 2006 ) and morphological ( pantel et al. , 2004 ) information in patterns .
+several algorithms use manually- prepared resources , including wordnet ( moldovan et al. , 2004 ; costello et al. , 2006 ) and wikipedia ( strube and ponzetto , 2006 ) .
+in this paper , we do not utilize any language-specific preprocessing or any other resources , which makes our algorithm relatively easily portable between languages , as we demonstrate in our bilingual evaluation .
+evaluation method .
+evaluation for hypernymy and synonymy usually uses wordnet ( lin and pantel , 2002 ; widdows and dorow , 2002 ; davidov and rappoport , 2006 ) .
+for more specific lexical relationships like relationships between verbs ( chklovski and pantel , 2004 ) , nominals ( girju et al. , 2004 ; girju et al. , 2007 ) or meronymy subtypes ( berland and charniak , 1999 ) there is still little agreement which important relationships should be defined .
+thus , there are more than a dozen different type hierarchies and tasks proposed for noun compounds ( and nominals in general ) , including ( nastase and szpakowicz , 2003 ; girju et al. , 2005 ; girju et al. , 2007 ) .
+there are thus two possible ways for a fair evaluation .
+a study can develop its own relationship definitions and dataset , like ( nastase and szpakowicz , 2003 ) , thus introducing a possible bias ; or it can accept the definition and dataset prepared by another work , like ( turney , 2006 ) .
+however , this makes it impossible to work on new relationship types .
+hence , when exploring very specific relationship types or very generic , but not widely accepted , types ( like verb strength ) , many researchers resort to manual human-based evaluation ( chklovski and pantel , 2004 ) .
+in our case , where relationship types are not specified in advance , creating an unbiased benchmark is very problematic , so we rely on human subjects for relationship evaluation .
+pattern clustering algorithm .
+our algorithm first discovers and clusters patterns in which a single ( hook ) word participates , and then merges the resulting clusters to form the final structure .
+in this section we detail the algorithm .
+the algorithm utilizes several parameters , whose selection is detailed in section 4 .
+we refer to a pattern contained in our clusters ( a pattern type ) as a pattern and to an occurrence of a pattern in the corpus ( a pattern token ) as a pattern instance .
+hook words and hook corpora .
+as a first step , we randomly select a set of hook words .
+hook words were used in e.g. ( alfonseca et al. , 2006 ) for extracting general relations starting from given seed word pairs .
+unlike most previous work , our hook words are not provided in advance but selected randomly ; the goal in those papers is to discover relationships between given word pairs , while we use hook words in order to discover relationships that generally occur in the corpus .
+only patterns in which a hook word actually participates will eventually be discovered .
+hence , in principle we should select as many hook words as possible .
+however , words whose frequency is very high are usually ambiguous and are likely to produce patterns that are too noisy , so we do not select words with frequency higher than a parameter fc .
+in addition , we do not select words whose frequency is below a threshold fb , to avoid selection of typos and other noise that frequently appear on the web .
+we also limit the total number n of hook words .
+our algorithm merges clusters originating from different hook words .
+using too many hook words increases the chance that some of them belong to a noisy part in the corpus and thus lowers the quality of our resulting clusters .
+for each hook word , we now create a hook corpus , the set of the contexts in which the word appears .
+each context is a window containing w words or punctuation characters before and after the hook word .
+we avoid extracting text from clearly unformatted sentences and our contexts do not cross paragraph boundaries .
+the size of each hook corpus is much smaller than that of the whole corpus , easily fitting into main memory ; the corpus of a hook word occurring h times in the corpus contains at most 2hw words .
+since most operations are done on each hook corpus separately , computation is very efficient .
+note that such context corpora can in principle be extracted by focused querying on the web , making the system dynamically scalable .
+it is also possible to restrict selection of hook words to a specific domain or word type , if we want to discover only a desired subset of existing relationships .
+thus we could sample hook words from nouns , verbs , proper names , or names of chemical compounds if we are only interested in discovering relationships between these .
+selecting hook words randomly allows us to avoid using any language-specific data at this step .
+pattern specification .
+in order to reduce noise and to make the computation more efficient , we did not consider all contexts of a hook word as pattern candidates , only contexts that are instances of a specified meta-pattern type .
+following ( davidov and rappoport , 2006 ) , we classified words into high-frequency words ( hfws ) and content words ( cws ) .
+a word whose frequency is more ( less ) than fh ( fc ) is considered to be a hfw ( cw ) .
+unlike ( davidov and rappoport , 2006 ) , we consider all punctuation characters as hfws .
+our patterns have the general form [ prefix ] cw1 [ infix ] cw2 [ postfix ] where prefix , infix and postfix contain only hfws .
+to reduce the chance of catching cw ~ s that are parts of a multiword expression , we require prefix and postfix to have at least one word ( hfw ) , while infix is allowed to contain any number of hfws ( but recall that the total length of a pattern is limited by window size ) .
+a pattern example is such x as y and .
+during this stage we only allow single words to be in cw slots2 .
+discovery of target words .
+for each of the hook corpora , we now extract all pattern instances where one cw slot contains the hook word and the other cw slot contains some other ( target ) word .
+to avoid the selection of common words as target words , and to avoid targets appearing in pattern instances that are relatively fixed multiword expressions , we sort all target words in a given hook corpus by pointwise mutual information between hook and target , and drop patterns obtained from pattern instances containing the lowest and highest l percent of target words .
+local pattern clustering .
+we now have for each hook corpus a set of patterns .
+all of the corresponding pattern instances share the hook word , and some of them also share a target word .
+we cluster patterns in a two-stage process .
+first , we group in clusters all patterns whose instances share the same target word , and ignore the rest .
+for each target word we have a single pattern cluster .
+second , we merge clusters that share more than s percent of their patterns .
+a pattern can appear in more than a single cluster .
+note that clusters contain pattern types , obtained through examining pattern instances .
+global cluster merging .
+the purpose of this stage is to create clusters of patterns that express generic relationships rather than ones specific to a single hook word .
+in addition , the technique used in this stage reduces noise .
+for each created cluster we will define core patterns and unconfirmed patterns , which are weighed differently during cluster labeling ( see section 3.6 ) .
+we merge clusters from different hook corpora using the following algorithm : we start from the smallest clusters because we expect these to be more precise ; the best patterns for semantic acquisition are those that belong to small clusters , and appear in many different clusters .
+at the end of this algorithm , we have a set of pattern clusters where for each cluster there are two subsets , core patterns and unconfirmed patterns .
+labeling of pattern clusters .
+to label pattern clusters we define a hits measure that reflects the affinity of a given word pair to a given cluster .
+for a given word pair ( w1 , w2 ) and cluster c with n core patterns pcore and m unconfirmed patterns p unconf .
+in this formula , appears in means that the word pair appears in instances of this pattern extracted from the original corpus or retrieved from the web during evaluation ( see section 5.2 ) .
+thus if some pair appears in most of patterns of some cluster it receives a high hits value for this cluster .
+the top 5 pairs for each cluster are selected as its labels. a e ( 0 .. 1 ) is a parameter that lets us modify the relative weight of core and unconfirmed patterns .
+corpora and parameters .
+in this section we describe our experimental setup , and discuss in detail the effect of each of the algorithms parameters .
+languages and corpora .
+the evaluation was done using corpora in english and russian .
+the english corpus ( gabrilovich and markovitch , 2005 ) was obtained through crawling the urls in the open directory project ( dmoz.org ) .
+it contains about 8.2g words and its size is about 68gb of untagged plain text .
+the russian corpus was collected over the web , comprising a variety of domains , including news , web pages , forums , novels and scientific papers .
+it contains 7.5g words of size 55gb untagged plain text .
+aside from removing noise and sentence duplicates , we did not apply any text preprocessing or tagging .
+parameters .
+our algorithm uses the following parameters : fc , fh , fb , w , n , l , s and a .
+we used part of the russian corpus as a development set for determining the parameters .
+on our development set we have tested various parameter settings .
+a detailed analysis of the involved parameters is beyond the scope of this paper ; below we briefly discuss the observed qualitative effects of parameter selection .
+naturally , the parameters are not mutually independent .
+fc ( upper bound for content word frequency in patterns ) influences which words are considered as hook and target words .
+more ambiguous words generally have higher frequency .
+since content words determine the joining of patterns into clusters , the more ambiguous a word is , the noisier the resulting clusters .
+thus , higher values of fc allow more ambiguous words , increasing cluster recall but also increasing cluster noise , while lower ones increase cluster precision at the expense of recall .
+fh ( lower bound for hfw frequency in patterns ) influences the specificity of patterns .
+higher values restrict our patterns to be based upon the few most common hfws ( like the , of , and ) and thus yield patterns that are very generic .
+lowering the values , we obtain increasing amounts of pattern clusters for more specific relationships .
+the value we use for fh is lower than that used for fc , in order to allow as hfws function words of relatively low frequency ( e.g. , through ) , while allowing as content words some frequent words that participate in meaningful relationships ( e.g. , game ) .
+however , this way we may also introduce more noise .
+fb ( lower bound for hook words ) filters hook words that do not appear enough times in the corpus .
+we have found that this parameter is essential for removing typos and other words that do not qualify as hook words .
+n ( number of hook words ) influences relationship coverage .
+with higher n values we discover more relationships roughly of the same specificity level , but computation becomes less efficient and more noise is introduced .
+w ( window size ) determines the length of the discovered patterns .
+lower values are more efficient computationally , but values that are too low result in drastic decrease in coverage .
+higher values would be more useful when we allow our algorithm to support multiword expressions as hooks and targets .
+l ( target word mutual information filter ) helps in avoiding using as targets common words that are unrelated to hooks , while still catching as targets frequent words that are related .
+low l values decrease pattern precision , allowing patterns like give xplease ymore , where x is the hook ( e.g. , alex ) and y the target ( e.g. , some ) .
+high values increase pattern precision at the expense of recall . 5 ( minimal overlap for cluster merging ) is a clusters merge filter .
+higher values cause more strict merging , producing smaller but more precise clusters , while lower values start introducing noise .
+in extreme cases , low values can start a chain reaction of total merging. a ( core vs. unconfirmed weight for hits labeling ) allows lower quality patterns to complement higher quality ones during labeling .
+higher values increase label noise , while lower ones effectively ignore unconfirmed patterns during labeling .
+in our experiments we have used the following values ( again , determined using a development set ) for these parameters : fc : 1 , 000 words per million ( wpm ) ; fh : 100 wpm ; fb : 1.2 wpm ; n : 500 words ; w : 5 words ; l : 30 % ; 5 : 2 / 3 ; a : 0.1 .
+sat-based evaluation .
+as discussed in section 2 , the evaluation of semantic relationship structures is non-trivial .
+the goal of our evaluation was to assess whether pattern clusters indeed represent meaningful , precise and different relationships .
+there are two complementary perspectives that a pattern clusters quality assessment needs to address .
+the first is the quality ( precision / recall ) of individual pattern clusters : does each pattern cluster capture lexical item pairs of the same semantic relationship ? does it recognize many pairs of the same semantic relationship ?
+the second is the quality of the cluster set as whole : does the pattern clusters set allow identification of important known semantic relationships ? do several pattern clusters describe the same relationship ?
+manually examining the resulting pattern clusters , we saw that the majority of sampled clusters indeed clearly express an interesting specific relationship .
+examples include familiar hypernymy clusters such as3 { such x as y , x such as y , y and other x , } with label ( pets , dogs ) , and much more specific clusters like { buy y accessory for x ! , shipping y for x , y is availablefor x , y are availableforx , y are available for x systems , yfor x } , labeled by ( phone , charger ) .
+some clusters contain overlapping patterns , like yfor x , but represent different relationships when examined as a whole .
+we addressed the evaluation questions above using a sat-like analogy test automatically generated from word pairs captured by our clusters ( see below in this section ) .
+in addition , we tested coverage and overlap of pattern clusters with a set of 35 known relationships , and we compared our patterns to those found useful by other algorithms ( the next section ) .
+quantitatively , the final number of clusters is 508 ( 470 ) for english ( russian ) , and the average cluster size is 5.5 ( 6.1 ) pattern types . 55 % of the clusters had no overlap with other clusters .
+sat analogy choice test .
+our main evaluation method , which is also a useful application by itself , uses our pattern clusters to automatically generate sat analogy questions .
+the questions were answered by human subjects .
+we randomly selected 15 clusters .
+this allowed us to assess the precision of the whole cluster set as well as of the internal coherence of separate clusters ( see below ) .
+for each cluster , we constructed a sat analogy question in the following manner .
+the header of the question is a word pair that is one of the label pairs of the cluster .
+the five multiple choice items include : ( 1 ) another label of the cluster ( the correct answer ) ; ( 2 ) three labels of other clusters among the 15 ; and ( 3 ) a pair constructed by randomly selecting words from those making up the various cluster labels .
+in our sample there were no word pairs assigned as labels to more than one cluster4 .
+as a baseline for comparison , we have mixed these questions with 15 real sat questions taken from english and russian sat analogy tests .
+in addition , we have also asked our subjects to write down one example pair of the same relationship for each question in the test .
+as an example , from one of the 15 clusters we have randomly selected the label ( glass , water ) .
+the correct answer selected from the same cluster was ( schoolbag , book ) .
+the three pairs randomly selected from the other 14 clusters were ( war , death ) , ( request , license ) and ( mouse , cat ) .
+the pair randomly selected from a cluster not among the 15 clusters was ( milk , drink ) .
+among the subjects proposals for this question were ( closet , clothes ) and ( wallet , money ) .
+we computed accuracy of sat answers , and the correlation between answers for our questions and the real ones ( table 1 ) .
+three things are demonstrated about our system when humans are capable of selecting the correct answer .
+first , our clusters are internally coherent in the sense of expressing a certain relationship , because people identified that the pairs in the question header and in the correct answer exhibit the same relationship .
+second , our clusters distinguish between different relationships , because the three pairs not expressing the same relationship as the header were not selected by the evaluators .
+third , our cluster labeling algorithm produces results that are usable by people .
+the test was performed in both english and russian , with 10 ( 6 ) subjects for english ( russian ) .
+the subjects ( biology and cs students ) were not involved with the research , did not see the clusters , and did not receive any special training as preparation .
+inter-subject agreement and kappa were 0.82 , 0.72 ( 0.9 , 0.78 ) for english ( russian ) .
+as reported in ( turney , 2005 ) , an average high-school sat grade is 57 .
+table 1 shows the final english and russian grade average for ours and real sat questions .
+we can see that for both languages , around 80 % of the choices were correct ( the random choice baseline is 20 % ) .
+our subjects are university students , so results higher than 57 are expected , as we can see from real sat performance .
+the difference in grades between the two languages might be attributed to the presence of relatively hard and uncommon words .
+it also may result from the russian test being easier because there is less verb-noun ambiguity in russian .
+we have observed a high correlation between true grades and ours , suggesting that our automatically generated test reflects the ability to recognize analogies and can be potentially used for automated generation of sat-like tests .
+the results show that our pattern clusters indeed mirror a human notion of relationship similarity and represent meaningful relationships .
+they also show that as intended , different clusters describe different relationships .
+analogy invention test .
+to assess recall of separate pattern clusters , we have asked subjects to provide ( if possible ) an additional pair for each sat question .
+on each such pair we have automatically extracted a set of pattern instances that capture this pair by using automated web queries .
+then we calculated the hits value for each of the selected pairs and assigned them to clusters with highest hits value .
+the numbers of pairs provided were 81 for english and 43 for russian .
+we have estimated precision for this task as macro-average of percentage of correctly assigned pairs , obtaining 87 % for english and 82 % for russian ( the random baseline of this 15-class classification task is 6.7 % ) .
+it should be noted however that the human-provided additional relationship examples in this test are not random so it may introduce bias .
+nevertheless , these results confirm that our pattern clusters are able to recognize new instances of relationships of the same type .
+evaluation using known information .
+we also evaluated our pattern clusters using relevant information reported in related work .
+discovery of known relationships .
+to estimate recall of our pattern cluster set , we attempted to estimate whether ( at least ) a subset of known relationships have corresponding pattern clusters .
+as a testing subset , we have used 35 relationships for both english and russian . 30 relations are noun compound relationships as proposed in the ( nastase and szpakowicz , 2003 ) classification scheme , and 5 relations are verb-verb relations proposed by ( chklovski and pantel , 2004 ) .
+we have manually created sets of 5 unambiguous sample pairs for each of these 35 relationships .
+for each such pair we have assigned the pattern cluster with best hits value .
+the middle column of table 2 shows the average number of clusters per relationship .
+ideally , if for each relationship all 5 pairs are assigned to the same cluster , the average would be 1 .
+in the worst case , when each pair is assigned to a different cluster , the average would be 5 .
+we can see that most of the pairs indeed fall into one or two clusters , successfully recognizing that similarly related pairs belong to the same cluster .
+the column on the right shows the overlap between different clusters , measured as the average number of shared pairs in two randomly selected clusters .
+the baseline in this case is essentially 5 , since there are more than 400 clusters for 5 word pairs .
+we see a very low overlap between assigned clusters , which shows that these clusters indeed separate well between defined relations .
+discovery of known pattern sets .
+we compared our clusters to lists of patterns reported as useful by previous papers .
+these lists included patterns expressing hypernymy ( hearst , 1992 ; pantel et al. , 2004 ) , meronymy ( berland and charniak , 1999 ; girju et al. , 2006 ) , synonymy ( widdows and dorow , 2002 ; davidov and rappoport , 2006 ) , and verb strength + verb happens- before ( chklovski and pantel , 2004 ) .
+in all cases , we discovered clusters containing all of the reported patterns ( including their refinements with domain- specific prefix or postfix ) and not containing patterns of competing relationships .
+conclusion .
+we have proposed a novel way to define and identify generic lexical relationships as clusters of patterns .
+each such cluster is set of patterns that can be used to identify , classify or capture new instances of some unspecified semantic relationship .
+we showed how such pattern clusters can be obtained automatically from text corpora without any seeds and without relying on manually created databases or language- specific text preprocessing .
+in an evaluation based on an automatically created analogy sat test we showed on two languages that pairs produced by our clusters indeed strongly reflect human notions of relation similarity .
+we also showed that the obtained pattern clusters can be used to recognize new examples of the same relationships .
+in an additional test where we assign labeled pairs to pattern clusters , we showed that they provide good coverage for known noun-noun and verb-verb relationships for both tested languages .
+while our algorithm shows good performance , there is still room for improvement .
+it utilizes a set of constants that affect precision , recall and the granularity of the extracted cluster set .
+it would be beneficial to obtain such parameters automatically and to create a multilevel relationship hierarchy instead of a flat one , thus combining different granularity levels .
+in this study we applied our algorithm to a generic domain , while the same method can be used for more restricted domains , potentially discovering useful domain-specific relationships .

@@ -1,0 +1,255 @@
+benchmarking natural-language parsers for biological applications using dependency graphs .
+abstract .
+interest is growing in the application of syntactic parsers to natural language processing problems in biology , but assessing their performance is difficult because differences in linguistic convention can falsely appear to be errors .
+we present a method for evaluating their accuracy using an intermediate representation based on dependency graphs , in which the semantic relationships important in most information extraction tasks are closer to the surface .
+we also demonstrate how this method can be easily tailored to various application-driven criteria .
+results : using the genia corpus as a gold standard , we tested four open-source parsers which have been used in bioinformatics projects .
+we first present overall performance measures , and test the two leading tools , the charniak-lease and bikel parsers , on subtasks tailored to reflect the requirements of a system for extracting gene expression relationships .
+these two tools clearly outperform the other parsers in the evaluation , and achieve accuracy levels comparable to or exceeding native dependency parsers on similar tasks in previous biological evaluations .
+conclusion : evaluating using dependency graphs allows parsers to be tested easily on criteria chosen according to the semantics of particular biological applications , drawing attention to important mistakes and soaking up many insignificant differences that would otherwise be reported as errors .
+generating high-accuracy dependency graphs from the output of phrase-structure parsers also provides access to the more detailed syntax trees that are used in several natural- language processing techniques .
+background .
+in the last few years , natural language processing ( nlp ) has become a rapidly-expanding field within bioinformatics , as the literature keeps growing exponentially [ 1 ] beyond the ability of human researchers to keep track of , at least without computer assistance .
+nlp methods have been used successfully to extract various classes of data from biological texts , including protein-protein interactions [ 2 ] , protein function assignments [ 3 ] , regulatory networks [ 4 ] and gene-disease relationships [ 5 ] .
+although much headway has been made using text processing methods based on linear pattern matching ( e.g. regular expressions ) , the diversity and complexity of natural language has caused many researchers to integrate more sophisticated parsing methods into their biological nlp pipelines [ 6,7 ] .
+this enables nlp systems to take into account the grammatical content of each sentence , including deeply nested structures , and dependencies between widely separated words or phrases that are hard to capture with superficial patterns .
+general-purpose full-sentence parsers fall into two broad categories depending on the formalisms they use to model language and the corresponding outputs they produce .
+constituent parsers ( or treebank parsers ) recursively break the input text down into clauses and phrases , and produce a tree structure where the root represents the sentence as a whole and the leaves represent words ( see figure 1 ) .
+dependency parsers model language as a set of relationships between words , and do not make widespread use of concepts like ' phrase ' or ' clause ' . instead they produce a graph for each sentence , where each node represents a word , and each arc a grammatical dependency such as that which holds between a verb and its subject ( see figure 2 ) .
+while constituent parsers are closer to the theoretical models of language employed in mainstream linguistics , dependency parsers are popular in applied nlp circles because the grammatical relationships that they specify are not entirely unlike the semantic relationships encoding logical predicates to which an nlp developer would like to be able to reduce a sentence .
+however , there is no such thing as a standard grammar for dependency parsers .
+each parser uses a different set of dependency types and a different set of attachment rules , meaning that there is often disagreement between dependency parsers regarding graph topology and arc labels [ 8,9 ] .
+this means that evaluating dependency parsers , and comparing the results of one to another , can be somewhat fraught with complexity .
+due to the impact on computational linguistics of the penn treebank ( ptb ) [ 10 ] , a vast collection of hand- annotated constituent trees for many thousands of sentences drawn mostly from news reports , there is on the other hand a de facto standard for constituent parsers to follow .
+this means that there are several high-performance parsers available , trained on the ptb , which produce a pre-defined set of clause , phrase and word category ( part-of-speech or pos ) labels .
+there are also standardised evaluation measures by which these parsers are benchmarked against a set-aside portion of the original treebank .
+the most frequently published scores for parser performance use precision and recall measures based on the presence or absence of constituents in each parser 's output , compared to the gold standard .
+these are sometimes referred to as geig or parseval measures , and although their limitiations are well known [ 11,12 ] for example , they have problems distinguishing between genuine errors which would affect the output of nlp applications , and minor differences of convention ( see figures 3 and 4 ) which would not they are still in wide use .
+a constituent ( phrase structure ) tree .
+the phrase structure of the sentence " two homologues of the rhombotin gene have now been isolated " from the genia treebank .
+the definitions of the linguistic labels used in this and all other diagrams are given in the list of abbreviations section .
+the impact of the ptb is also such that both the major linguistic annotation projects for molecular biology corpora [ 13,14 ] employ largely ptb-like conventions , although the amount of annotated biological text is currently at least an order of magnitude less than that which is available in the general-english domain .
+although the quantities available are insufficient for retraining parsers , evaluation of the performance of parsers for bioinformatics applications is possible given a meaningful evaluation technique .
+although a dependency graph for a sentence will not , typically , contain as much information as a constituent tree for the same sentence , it is possible to transform the tree structure into a dependency graph by employing a set of deterministic mapping functions [ 9 ] .
+the mapping procedure often results in the elimination of redundant information found in the tree structure , and thus tends to level out many of the insignificant differences in convention between alternative constituent parses ( see figures 5 and 6 ) .
+this process therefore provides a convenient way to evaluate constituent parsers on those aspects of their output that most affect meaning , as well as forming a useful intermediate representation between phrase structure and logical predicates .
+furthermore , given such a framework , it becomes easy to define application-specific evaluation criteria reflecting the requirements that will be placed upon a parser in a biological nlp scenario .
+using this approach , we have evaluated several leading open-source parsers on general syntactic accuracy , as well as their ability to extract dependencies important to correct interpretation of a corpus of texts relating to biomolecular interactions in humans .
+the parsers are scored on their ability to correctly generate the grammatical dependencies in each sentence , by comparing the corresponding dependency graphs from their output and from the constituent structure of the original treebank .
+the results are presented below .
+results and discussion .
+the software packages used in our evaluation are the bikel parser [ 15 ] , the collins parser [ 16 ] , the stanford parser [ 17,18 ] and the charniak parser [ 19 ] including a modified version known herein as the charniak-lease parser [ 20 ] .
+all of these are widely used by the computational linguistics community , and have been employed to parse molecular biology data ( see related work section ) , despite having been developed and trained on sentences from the penn treebank .
+while it may be the case that , over the coming years , enough consistently-annotated biological treebank data becomes available to make retraining parsers on biological text a feasible proposition , this is by no means true yet .
+furthermore , when choosing which parser to retrain with such data as and when it becomes available , one would wish to pick one which had already demonstrated good cross-domain portability , since the biomedical domain in fact encompasses multiple subdomains with distinct sublanguages [ 21 ] .
+we tested at least two versions of each parser as it is by no means certain a priori that the best-performing version on the ptb will likewise perform best on biological text .
+our gold standard corpus was 1757 sentences from the genia treebank [ 13 ] , which were mapped from their original tree structures to dependency graphs by the same deterministic algorithm from the stanford toolkit that we used to convert the output of each parser [ 9 ] .
+see the methods section for more details of our parsing pipeline .
+overall parse accuracy .
+for each parser , we calculated two scores , constituent effectiveness ( fconst ) and dependency effectiveness ( fdep ) against the original constituent trees in the treebank , and their dependency graph equivalents , respectively ( see tables 1 and 2 ) .
+these scores are measures of tree or graph similarity between the parser output and the gold standard corpus , penalising false negatives and false positives see the methods section for the formulae used to calculate them .
+when comparing the parsers ' output in terms of dependency graphs rather than raw trees that is , using fdep rather than fconst there is a much less gradual spread , with the three front-runners being clearly separated from the rest .
+note that the fdep scores given in table 2 use the strictest criterion for a match between a dependency in the parse and the corresponding dependency in the gold standard .
+a match is only recorded if an arc with the same start node , end node and label ( dependency type ) exists .
+this is is important as the type of a dependency can be crucial for correct interpretation , discriminating for example between the subject and direct object of a verb .
+however , many assessments of dependency parsers use a weaker matching criterion which disregards the dependency type , and thus only takes into account the topology of the graph and not the arc labels .
+for comparison purposes , the mean scores using this weaker untyped criterion are given in table 3 ( see also the related work section ) .
+note that the rank order of the parsers is the same when using the less strict matching criterion , apart from some slippage by the lexicalised version of the stanford parser , suggesting that this parser 's scores on the strict test are boosted by comparatively good dependency type identification .
+all scores in this paper use the strict matching criterion unless otherwise specified .
+parser effectiveness based on comparison of constituent trees to the genia treebank , summed over entire corpus .
+the overall effectiveness scores for some of the parsers are distorted , however , by the fact that they encountered sentences which could not be parsed at all ( table 4 ) .
+it is useful to separate out the effects on the mean scores of complete parse failures as opposed to individual errors in successfully-parsed sentences .
+the fdep scores in table 5 show the mean effectiveness for each parser averaged only over those sentences which resulted in a successful parse .
+the bikel parser version 0.9.9c claims in its release notes that the parser has a new robustness feature meaning that it " should always produce some kind of a parse for every input sentence " ( original emphasis ) [ 22 ] , but this does not appear to be true for biological texts .
+however , it is an improvement over version 0.9.9 ( not featured in this investigation ) which we found to suffer from 440 failures ( 25 % of the corpus ) on the genia treebank [ 12 ] .
+the parse failures for all of the parsers tended to occur in longer , more complex sentences .
+the highest-scoring parsers overall , the charniak-lease parser and the bikel parser , achieve very similar scores .
+therefore , we decided to subject these two parsers to a series of tests designed to determine where the strengths and weaknesses of each lay when assessed on tasks important to biological language processing applications .
+we used the older version of the bikel parser ( 0.9.8 ) as it suffered only one failure , as opposed to two by version 0.9.9c.
+prepositional phrase attachment one problem that is frequently cited as hard for parsers is the correct attachment of prepositional phrases modifiers attached to nouns or verbs that convey additional information regarding time , duration , location , manner , cause and so on .
+it is important to correctly attach such modifiers as errors can alter the meaning of a sentence considerably .
+for example , consider the phrase " induction of nf-kb during monocyte differentiation by hiv type 1 infection . "
+is it the induction ( correct ) or the differentiation ( incorrect ) which is caused by the infection ?
+furthermore , the targets of many biological interactions are expressed in prepositional phrases , e.g.
+" x binds to y " the bold section is a prepositional phrase .
+however this problem is non-trivial because correct attachment relies on the use of background knowledge ( for humans ) , or an approximation of background knowledge based on frequencies of particular words in particular positions in the training corpus ( for parsers ) .
+these frequencies are often sparse , and for previously unseen words ( e.g. many of the technical terms in biology ) they will be missing altogether .
+to assess the potential impact of this phenomenon , we tested the two best parsers on their ability to correctly generate dependencies between prepositions and both the parser effectiveness based on comparison of dependency graphs to the graphs generated from the genia treebank , summed over the entire corpus. head words of the phrases they modify and the head words of the modifying phrases , by calculating f4 scores over just these arcs . ( we did not penalise the bikel parser for missing dependencies in the one sentence it failed to parse at all , in any of these tasks . )
+for example , in the phrase " inducing nf-kb expression in the nuclei , " the modifying phrase of the preposition " in " is " the nuclei " " nuclei " being the head of this phrase and the modified word is " inducing " . the results are given in table 6 .
+surprisingly , both parsers scored slightly higher on the harder portion of this task ( attaching prepositions to the appropriate modified words ) than they did across all dependency types , where both achieved an f4 of 77.0 as shown in table 5 .
+on the easier portion of this task ( attaching prepositions to the appropriate modifying words ) , both scored considerably higher .
+this ran contrary to our expectations , and indicates that the conventional ' folk wisdom ' that prepositional phrase attachment is a particularly hard task is not necessarily true within the constrained environment of biological texts .
+reconstructing co-ordinating conjunctions .
+another syntactic phenomenon that is problematic for similar reasons is co-ordinating conjunction the joining on an equal footing of two equivalent grammatical units ( e.g. two noun phrases ) by a conjunction such as ' and ' or ' or ' . since the scope of the conjunction relies on extra-linguistic knowledge or assumptions , there are often several equally grammatical but semantically quite different readings available .
+an example of this is given in figures 7 and 8 .
+the correct reading ( figure 7 ) refers to the cloning of gata-1 genes from mice and humans " mouse " and " human " are both attached directly to " genes " . an alternative , grammatical , yet incorrect reading is shown in figure 8 , where " human " is attached to " genes " , but " mouse " is attached directly to " cloned " , implying that some human genes and a whole mouse were cloned .
+to measure the ability of the parsers to make the right choices in these situations , we recalculated the fdep score over only those subgraphs ( in the parse or the gold standard ) whose root words are at either end of a conjunction dependency .
+for example , if we were comparing the incorrect parse in figure 8 to the sentence in figure 7 , our gold standard would consist of all the dependencies from figure 7 that go to or from the words " mouse " and " human " , as these are connected by the conjunction and .
+our test set would consist of all the dependencies in figure 8 that connect to any of the words " the " , " mouse " , " human " , " gata-1 " and " genes " , as the conjunction joins the words " mouse " and " genes " upon which the words " the " , " human " and " gata-1 " depend .
+true and false positive counts , and thus precision , recall and fdep ( see methods section ) can then be calculated over just these dependencies .
+it would not be sufficient to compare the conjunction dependency alone between the two graphs as this would not measure the extent of this initial error 's consequences .
+in some circumstances , such as nested coordinations involving complex multiword phrases e.g.
+" the octamer site and the y , x1 and x2 boxes " these consequences can be particularly far-reaching .
+both parsers ' scores on this task ( table 7 ) were slightly lower than their averages of 77.0 across all dependency types , but not spectacularly lower .
+detecting negation .
+reliably distinguishing between positive and negative assertions and determining the scope of negation markers are perennial difficulties in nlp , and have been well studied in the medical informatics context [ 23,24 ] .
+it is not uncommon in information extraction projects to skip sentences containing negation words [ 4 ] , but ' not ' appears in 10 % of the sentences in our test corpus , and this figure does not count all the other ways of negating a statement in english .
+thus a case should be made for attempting to tackle the problem in a more methodical way .
+in order to gain some initial insight into whether dependency parses might be of use here , we calculated the fdep score for all dependency arcs beginning or ending at any of these words : ' not ' , ' n 't ' , ' no ' , ' none ' , ' negative ' , ' without ' , ' absence ' , ' cannot ' , ' fail ' , ' failure ' , ' never ' , ' without ' , ' unlikely ' , ' exclude ' , ' disprove ' , ' insignificant ' . the results ( table 8 ) are encouraging and the use of dependency graphs in resolving negations warrants further investigation .
+the difference between these two parsers is much clearer in this task than in any of the others , and demonstrates that the charniak-lease parser may be particularly suited to tackling this problem , as it scores higher than its all-dependencies average while the bikel parser scores considerably lower .
+verb argument assignment .
+although there are uncountably many ways to express most logical predicates in natural language , molecular biology texts and abstracts in particular are generally rather constrained and essentially designed for the efficient reporting of sequences of facts , observations and inferences .
+as a result , much of the important semantic content in this genre is encoded in the form of declarative statements , where a main verb expresses a single predicate more or less exactly , and its syntactic arguments ( the subject , direct object and any indirect or prepositional objects ) correspond to the entities over which the predicate holds .
+this being the case , it is important that the arguments of content-bearing verbs are assigned correctly .
+failing to recover the subject or object of a verb will render it less useful not completely useless , however , since we may like to know e.g. that " x inhibits b cell ig secretion " even if we do not yet know what x is .
+furthermore , most biologically-important predicates are very much directional , meaning that a confusion between subject and object at the level of syntax will lead to a disastrous reversal of the roles of agent and target at the level of semantics .
+put more simply , " x phosphorylates y " and " y phosphorylates x " are very different statements .
+in order to detect any latent parsing problems that might hinder this process , we chose one of the most common biological predicate verbs in the corpus ( ' induce ' in any of its forms ) and divided the dependency types that can hold between it and its ( non-prepositional ) arguments into two sets : those which one would expect to find linking it to its agent , and those which one would expect to find linking it to its target .
+for example , in the statement " cortivazol significantly induced gr mrna , " ' cortivazol ' is the agent and ' gr mrna ' is the target .
+we then calculated an f4 score for each parser over these dependencies only , counting as a match those which connect the correct two nodes and which are from the correct set , even if the exact dependency type is different .
+for example , if the gold standard contained a nominal _ subject dependency between two nodes , and the parse contained a clausal _ subject dependency between the same two nodes , this would count as a match since both are in the agent dependencies set .
+the resulting fdep scores are given in table 9 , together with a breakdown of false negatives ( recall errors ) : the numbers of mismatches ( substitutions for dependencies from the other set ) , non-matches ( substitutions for dependencies from neither set ) , and completely missing dependencies .
+the scores for both parsers are very high , with the charniak-lease parser only mis-categorising one out of 145 instances of arguments for ' induce ' ( putting it in the wrong category ) and proposing only three other erroneous arguments for this verb in the whole corpus .
+these results bode well for the semantic accuracy of information extraction systems based on these principles .
+error analysis .
+our previous experiences with parser evaluation have indicated the importance of correct pos tagging for accurate parsing ; this is demonstrated by the difference in performance between the charniak-lease parser , and the other newer version of the charniak parser which does not have the benefit of biomedical-domain pos tagging .
+to measure the consequences of pos errors , we counted the number of false negatives ( recall errors ) in the outputs of our two leading parsers where either one or two of the words which should have been joined by the missing dependency were incorrectly tagged . ( remember that , since the strict matching criterion is being applied here , a recall error means that a dependency of a specific type is missing ; it will often be the case that another dependency of a different type has been substituted . )
+also , in a very small minority of cases , it is possible for nodes to be present in a dependency graph from the gold standard , but actually missing from the same graph in a parser 's output , or vice versa .
+this comes about since punctuation symbols are not always retained as nodes in the graph in the same way that words are .
+if a word is mistakenly treated as a discardable punctuation symbol , it will be omitted from the dependency graph .
+this can come about as a result of a pos tagging error , an error in the stanford algorithm or a mismatch between the conventions used by a parser or the gold standard and those used by the stanford algorithm 's developers .
+conversely , if a punctuation symbol is treated as a word for the same reasons , it may be present as a node in its own right in the resulting graph even if it would otherwise have been suppressed .
+therefore , we also counted the number of missing dependencies in each parser 's output where one or both of the nodes that the dependency should have connected were also missing .
+the results of both of these tests are given in table 10 .
+the results one in five missing dependencies being associated with at least one pos error for the charniak-lease parser , and almost one in three for the bikel parser should provide all the more motivation for the development and refinement of biological pos tagging software .
+in addition , we counted the missing dependencies for each parser by type , in order to get an idea of which types were the most problematic .
+the results ( table 11 ) are rather interesting .
+the same five types ( out of roughly 50 ) account for the majority of errors in both cases , although there is some difference in the relative proportions .
+one in five missing dependencies are of the generic dependent type , which the stanford algorithm produces when it cannot match a syntactic construction in a phrase structure tree to a more specific type of dependency .
+the presence of large numbers of dependent arcs in the graphs of the gold standard corpus indicates that the genia annotators are using syntactic constructions that are unfamiliar to the stanford algorithm .
+on closer inspection , we discovered that one fifth of the dependent arcs missed by each parser had been substituted for more specific dependencies joining the same words ; it is impossible for us to judge by comparison to genia whether the types of these dependencies are truly correct or not .
+computational efficiency .
+full syntactic parsing is a computationally demanding process , and although it is trivial to parallelise by parsing separate sentences on separate cpus , processing speed is nevertheless an important consideration .
+we measured the parsing time of the 1757-sentence corpus using the gnu time utility , calculating the total processor time for each parser as the sum of the user and system times for the process .
+the charniak-lease parser took 1 h : 18 m : 36 s while the bikel parser took much longer at 7 h : 21 m : 08 s .
+these times do not include pre- or post-processing scripts , or the time required to generate the dependency graphs , although these are minor compared to the actual parsing process .
+all processes were running on one processor of a 3 ghz smp linux pc .
+the difference between these two results is startling .
+the bikel parser is written in java and the charniak parser in c + + , but this in itself does not explain the difference .
+analysis of the time command 's output indicated that the bikel parser had vastly greater memory requirements , and while the charniak-lease parser ran without needing to swap any of its data out to the hard disk , the bikel parser made very frequent use of the swapfile .
+the newer version of the bikel parser , while not quite as robust , made a time saving of over 50 % compared to its predecessor , which indicates that comptutational speedups are possible and practical with bikel 's architecture .
+the other parsers in the evaluation varied hugely , ranging from slightly under an hour ( for the model 1 collins parser ) to nearly 10 hours ( for the lexicalised stanford parser ) .
+conclusion .
+we have presented a method for evaluating treebank parsers based on dependency graphs that is particularly suitable for analysing their capabilities with respect to semantically-important tasks crucial to biological information extraction systems .
+applying this method to various versions of four popular , open-source parsers that have been deployed in the bioinformatics domain has produced some interesting and occasionally surprising results relevant to previous and future nlp projects in this domain .
+in terms of overall parse accuracy , the charniak-lease parser a version of the venerable charniak parser enhanced with access to a biomedical vocabulary for postagging purposes and version 0.9.8 of the bikel parser achieved joint highest results .
+both parsers relied on good pos tagging to achieve their scores , with large proportions of the dependency recall errors being attributable to pos errors .
+an interesting comparison can be drawn here between the charniak-lease parser , for which just over 20 % of the missing dependencies connect to at least one incorrectly-tagged word , and the original charniak parser , which uses a pos-tagging component trained on newspaper english , and for which almost 60 % of the recall errors relate to at least one incorrectly-tagged word .
+both parsers performed well on tasks simulating the semantic requirements of a real-world nlp project based on dependency graph analysis , and achieved mostly similar scores .
+the reconstruction of co-ordinating conjunctions ( e.g.
+' and ' / ' or ' constructs ) was slightly more difficult than average for each parser , and the correct attachment of negation words ( e.g.
+' not ' or ' without ' ) proved problematic for the bikel parser , although the charniak-lease parser was more successful on this task .
+both parsers identified the arguments of the verb ' induce ' almost perfectly when we relaxed the matching criterion to allow substitutions between agent-argument dependencies ( e.g.
+nominal _ subject and clausal _ subject ) and between target-argument dependencies ( e.g.
+direct _ object and indirect _ object ) .
+practical considerations .
+there are two additional criteria upon which one might choose a parser for an information extraction project , all other things being equal : robustness and computational efficiency .
+on the former criterion , the charniak-lease parser is slightly more desirable , as it did not fail to parse any of the sentences in the corpus , whereas version 0.9.8 of the bikel parser failed on one sentence .
+this seems to reflect an architectural difference between the two parsers ; the version of the charniak parser tested here did not suffer any failures either , and neither did two previous versions that we tested in earlier experiments , whereas the later version of the bikel parser tested here failed twice ( and was itself a bugfix release for a version that failed a staggering 440 times on our corpus ) .
+in terms of efficiency , the charniak parser family is the clear winner , with the charniak-lease parser taking a fraction of the time of the bikel parser to produce slightly better results .
+advantages of dependency graphs .
+given that none of the parsers in this evaluation use dependency grammars natively , one might ask two questions .
+firstly , what are the practical advantages of translating the output of treebank-style constituent parsers into dependency graphs ?
+and secondly , how do the graphs thus generated compare to the raw output of dependency parsers on biological texts ?
+we will address the latter question below in the related work section .
+in answer to the former question , the benefits are manifold and apply to both the evaluation process and the engineering of nlp applications .
+we hope that the semantic evaluation tasks presented in this paper demonstrate the ease by which application-specific benchmarks can be designed and applied with reference to dependency graphs .
+granted , one could conceive of similar phrase-structure tree-based algorithms to test the positioning of , say , negation words with respect to the words they modify , but these would require the comparison of two subtrees and would therefore require much more coding and processing than their dependency equivalents .
+indeed , since several subtrees can result in the same grammatical relation ( e.g.
+figures 3 and 4 ) , one would have to manually account for a degree of allowable variation .
+furthermore , some application-specific tests such as the analysis of arguments for the verb ' induce ' in our investigation would be impossible using raw constituent trees .
+this kind of information is not explicitly represented in constituent trees , but rather is implicit ( albeit buried rather deeply ) in the phrase structures and the rules of english , and to test such relations from trees alone requires the design and implementation of mapping rules that would essentially result in dependency structures anyway .
+that said , there is more information in a constituent tree than in its dependency equivalent , and there are many algorithms that make use of the richness of trees in order to tackle such problems as pronoun resolution [ 25 ] , labelling phrases with semantic roles such as cause , experiencer , result or instrument [ 26 ] , automatic document summarisation [ 27 ] , unsupervised lexicon acquisition [ 28 ] , and the assignment of functional category tags like temporal , manner , location or purpose to phrases [ 29 ] .
+all of these features may be of use in a fully-featured nlp system , so it is desirable to retain the original phrase-structure representation of each sentence as well as the final dependency graph .
+therefore , a parsing pipeline that produces both a constituent tree and a dependency graph has an advantage over one that produces only one of these .
+related work .
+the inspiration for this paper came from the observation that constituent parsers are beginning to appear in bioinformatics papers on a wide variety of topics , but without any analysis of how well they perform as isolated components in broader projects .
+for example , the bikel parser has been used to produce rough treebanks for human correction in a biological treebanking initiative [ 30 ] .
+subtrees from the collins parser have been used as features in a protein interaction extractor [ 2 ] and in a classifier for semantic relations between biomedical phrases [ 31 ] .
+the charniak parser has been employed to assist in the re- ranking of search results in a search engine for genomics documents [ 32 ] and in the acquisition of causal chains from texts about protein interactions [ 33 ] .
+the stanford parser has been used to provide syntactic clues for identifying key clinical terms in the medical domain [ 34 ] and gene and protein names in the biological domain [ 35 ] , although we disagree with the latter paper that unlexicalised parsers those that represent words simply by their pos tags are more suited to the biological domain than lexicalised parsers equipped with a general-english lexicon .
+while the relative positions of the lexicalised and unlexicalised versions of the stanford parser in our study depend on which evaluation measure is used , both versions were consistently out-performed by the bikel and charniak-lease parsers , both of whose parsing engines are lexicalised with a general-english vocabulary .
+a thorough analysis of the effectiveness of these parsers in this domain is vital to identifying the source of errors , to developing workarounds for these errors , and indeed to selecting the right parser to begin with .
+the work reported here builds on a previous paper on the same subject [ 12 ] but the dependency-based approach circumvents many of the limitations of constituent-based evaluation that were identified in the course of that investigation .
+however , there have been a few papers that deal with the bench- marking of parsers of various kinds on biological or biomedical tasks .
+lease and charniak [ 20 ] , in introducing the modified version of the charniak parser that performed so well here , present some comparative scores for various versions of the parser on both the genia treebank and the penn treebank , but they use constituent-based precision , recall and f-measure ( fconst ) and therefore implicitly suffer from the inability of such measures to distinguish between differences of meaning and convention ( as discussed above in the background section ) .
+grover et al. [ 36 ] present several experiments on parsing medline abstracts with three hand-crafted grammars .
+first they demonstrate that although the low-coverage but high-accuracy anlt parser [ 37 ] can return a successful parse on only 39.5 % of the sentences in their 79-sentence test set , 77.2 % of those sentences ( 30.5 % overall ) were parsed perfectly .
+this strategy seems somewhat dubious for real-world applications , however , since a parse with a handful of minor errors is surely more desirable in practice than no parse at all .
+the anlt parser also returns a set of logical predicates representing the sentence ; whether this is more or less useful for application development than a dependency graph remains to be seen .
+they then present some experiments on using the cass [ 38 ] and tsg [ 39 ] parsers to correctly interpret compound nouns which encode predicate relationships , differentiating for example between ' treatment response ' = response to treatment , and ' aerosol administration ' = administration by aerosol .
+their results for this unique investigation are interesting and encouraging , but it is unfortunate that they do not apply the anlt parser to the compound noun task , and conversely , they do not provide general measures of coverage and accuracy for the cass and tsg parsers .
+other papers have been published on the behaviour of native dependency parsers on biomedical text .
+the paper by pyysalo et al. [ 8 ] is perhaps the closest to our own work .
+they compare the free link grammar parser [ 40 ] to a commercial parser , the connexor machinese syntax parser [ 41 ] , both of which have been used in bioinformatics [ 7,42 ] .
+the parsers use different dependency grammars , so the authors prepared a 300-sentence protein-protein interaction corpus with a dual annotation scheme that accommodated the major differences between the two parsers ' dependency types .
+they also disregarded dependency types , as well as directions , as the link parser 's ' links ' are not explicitly directional , resulting in an even looser matching criterion than the loose criterion mentioned in our results section .
+the link parser can return multiple parses in ranked order of likelihood , and taking only the first parse for each sentence , it achieved a recall of 72.9 % , and parsed 7.0 % of sentences perfectly , although the same group shows elsewhere [ 43 ] that this figure may be raised slightly by using an independently-trained re-ranker .
+the connexor parser returns a single parse for each sentence ; it scored 80.0 % for recall and also achieved 7.0 % perfect parses .
+for comparison , our best parser ( charniak-lease ) achieved an overall recall of 81.0 % and parsed an impressive 23.1 % of sentences perfectly , even given a slightly stricter dependency matching criterion .
+the authors also scored the parsers on their ability to return perfect interaction subgraphs minimal subgraphs joining two protein names and the word or phrase stating their interaction although we disagree that a perfect interaction subgraph is necessarily a pre-requisite for successful retrieval of an actual interaction . ( neither is it sufficient , since a negation word might be outside the interaction subgraph yet still able to completely reverse its meaning . )
+schneider et al. [ 44 ] present results comparable to ours for the pro3gres parser [ 45 ] on performing several specific syntactic tasks over a small subset of genia .
+their general approach is very similar to ours , but they do not provide performance indicators over all dependency types , and they chunk multi-word terms into single elements before parsing .
+they report fdep scores of 88.5 and 92.0 for identifying the subjects and objects of verbs respectively , although it is not clear whether or not these relation types are defined as broadly as the categories we used above in the study of the verb ' induce ' , where the charniak-lease parser scored 98.0 and the bikel parser scored 97.0 , averaged across both agent and target relations .
+they also report fdep scores of 83.5 and 83.0 for prepositional modification of nouns and verbs respectively , which are slightly better than our best parsers ' scores on this task ; their system contains a module specifically written to correct ambiguous prepositional phrase attachments . ( note that the fdep scores reported here are calculated from the individual precision and recall scores given in the original schneider et al.
+paper . )
+one factor common to the pyysalo et al. paper and the schneider et al. paper is the small size of the evaluation datasets ( 300 and 100 sentences respectively ) since both required the manual preparation of a dependency corpus tailored to the parsers under inspection .
+another advantage of producing dependency parses from constituent parses is that we can make use of the larger and rapidly- growing body of treebank-annotated biological text .
+since this project was begun , the genia treebank has grown from 200 to 500 medline abstracts , and the bioie project [ 14 ] has released 642 abstracts annotated in a similar format .
+the stanford algorithm provides a de facto standard for comparing a variety of constituent parsers and treebanks at the dependency level ; if the dependency parser community were to adopt the same set of grammatical relations as standard , then native dependency parsers could be compared to constituent parsers and to biological treebanks fairly and transparently .
+the use of dependency graph analysis as an evaluation tool is not a new idea , having been discussed by the nlp community for several years , but to the best of our knowledge the application of such methods to specific problem domains like bioinformatics is a recent development .
+an early proposal along these lines [ 46 ] also acknowledged that inconsequential differences exist between different dependency representations of the same text , and included some suggested ways to exclude these phenomena , although without a comprehensive treatment .
+while such differences do exist , we believe that dependency graphs are much less prone to this problem than constituent trees .
+the same paper also discussed the mapping of constituent trees to dependency graphs via phrasal heads ; the stanford toolkit relies on a more sophisticated version of this process .
+its author later used this approach to evaluate his own minipar dependency parser [ 47 ] .
+later , the eagle and sparkle projects used hierarchically-classified grammatical relations , which are comparable to the stanford toolkit 's dependency types , to evaluate parsers in several languages [ 48-50 ] .
+similar scoring measures have been proposed for partial parsers [ 51,52 ] those parsers which only return complete syntactic analyses of parts of each sentence .
+however , despite the well-known issues with constituent-based methods and the wealth of research on alternatives such as these , constituent precision and recall ( along with supplementary information like number of crossing brackets per sentence ) remain the de facto standard for reporting parser accuracy .
+methods .
+preparing the corpus .
+we took the initial release of the genia treebank , which contains 200 abstracts from medline matching the query terms human , blood cell and transcription factor , corrected several minor errors , and removed a small number of truncated sentences .
+this left us with 45406 tokens ( words and punctuation symbols ) in 1757 sentences , from which we stripped all annotations .
+before parsing , the words in the corpus needed to be assigned pos tags .
+we did not use the gold standard pos tags as this would not reflect the typical use case for a parser , where the text is completely unseen .
+the charniak and charniak-lease parsers perform pos-tagging internally , but the difference between them is that while the original charniak parser learns to pos-tag as part of the parsing engine 's training process and therefore is distributed with a general-english pos-tagging vocabulary learnt from the penn treebank the charniak-lease parser has a decoupled pos-tagging module which can be trained separately , and is provided pre-trained on a different part of the genia corpus from that which is included in the genia treebank . ( note that it still uses lexical statistics learnt from the penn treebank for the actual syntactic parsing step as there is not yet sufficient syntactically- annotated biological text for retraining the parsing engine . )
+the other parsers in the experiment expect pre- tagged text , for which we used the medpost tagger [ 53 ] which is trained on text from a variety of medline abstracts .
+parsing the corpus .
+all the parsers were invoked with default compile-time and command-line options , with the exception that all resource limits were set to their most generous levels to allow for particularly long / complex sentences .
+some post- processing was required to normalise punctuation symbols and deal with other formatting issues , and to insert ' dummy ' trees with no nesting each time one of the parsers completely failed to process a sentence .
+prior to scoring , some additional operations were carried out on both the gold standard treebank and the parser output files .
+prt labels were replaced with advp , and nac and nx labels were replaced with np , as these constituent types are not used in genia .
+any constituents with a single daughter of the same type were removed , as were all constituents that did not cover any words in the sentence , and top nodes ( s1 nodes in the case of the charniak parser ) which are meaningless top-level container constituents inserted by the parsers at the root of every sentence as a processing convenience .
+the penn treebank defines a set of grammatical function suffixes on constituents , such as -lgs for logical subset , - loc for location and -tmp for temporal modifier , that allow certain aspects of meaning to be represented more specifically than a purely syntactic annotation allows .
+genia uses a subset of these suffixes , the stanford parser can generate a different subset , and the dependency graph generation algorithm can use another subset to provide additional clues for identifying the correct dependency to hold between two words .
+however , since these subsets do not match , and the other parsers in the evaluation do not produce any function suffixes at all , we completely discarded them in order to maintain a level playing field .
+there is a tool which adds these suffixes probabilistically to raw trees [ 29 ] , but it was designed for the charniak parser and is very sensitive to small differences in output between different parsers ; its performance on biological text is untested so far and this would make an interesting experiment .
+generating the dependency graphs .
+we will not discuss in detail the system for mapping from phrase structure trees to dependency graphs as it is described thoroughly in [ 9 ] and in the documentation for the stanford nlp tools [ 54 ] .
+briefly , it defines a taxonomy of directed , labelled grammatical relations , from the most general default type , dependent , to highly specific types such as nominal _ passive _ subject or phrasal _ verb _ particle .
+each type has a list of allowable source constituents , target constituents and local tree structures that may hold between source and target ; these definitions can include both structural constraints and lexical constraints ( e.g. lists of valid words within the constituents ) .
+the algorithm attempts to match the patterns against the supplied tree structure of a sentence , from most specific to most general , and when a match is found , a dependency arc is added to the output graph from the head word of the source constituent to the head word of the target constituent . ( a head word of a constituent is the word that is central to that constituent 's meaning , upon which all the other words within it ultimately depend ; e.g. the head of a verb phrase is the verb itself , and the head of a noun phrase is the rightmost noun . )
+the algorithm also provides the facility to ' collapse ' graphs into a slightly simplified form , replacing certain words such as prepositions or possessives with dependencies , and optionally adding extra dependencies that make the semantics of each sentence slightly more explicit ( at the expense of making the sentence 's graph potentially cyclic rather than guaranteed acyclic ) .
+when scoring the parsers ' overall performance , we used the collapsed versions of the dependency graphs with all additional dependencies added in , as this is the kind of graph one would find most useful in an information extraction project .
+the specific subtasks for the charniak-lease and bikel parsers however used the unmodified graphs as these allowed a more fine-grained analysis of behaviour .
+scoring the parsers .
+the effectiveness scores fconst and fdep are constituent tree and dependency graph similarity measures , respectively .
+they are the harmonic mean of the precision ( p ) and recall ( r ) values achieved by each parser , and are thus designed to penalise parsers who favour one at the expense of the other : precision is the proportion of constituents or dependents in the parsed corpus that are actually present in the gold standard : for brevity , individual precision and recall scores have not been reported in this study .
+in constituent terms , and considering successfully parsed sentences only , all parsers scored slightly higher on precision than they did on recall , indicating that they were producing somewhat sparser trees than the genia annotators .
+in dependency terms , on the other hand , all parsers scored almost exactly the same for precision and recall on successfully parsed sentences .
+this suggests that omitted dependencies were usually replaced with a single erroneous arc .
+list of abbreviations .
+the following list covers the linguistic abbreviations used in phrase-structure tree diagrams in this paper only .
+see [ 10 ] for explanations of their names and a comprehensive list .
+abc designed and wrote the perl scripts and java classes used in the experiment , analysed the results and drafted the manuscript .
+ajs participated in the experimental design and data analysis , and co-edited the manuscript .
+both authors were involved in planning the study , and both read and approved the final manuscript .

@@ -1,0 +1,96 @@
+Characterizing Semantic Relations.
+(Turney and Littman 2005) characterize the relationship
+between two words as a vector with coordinates
+corresponding to the Web frequencies of 128 fixed
+phrases like “X for Y ” and “Y for X” instantiated
+from a fixed set of 64 joining terms like for, such
+as, not the, is *, etc. These vectors are used in a
+nearest-neighbor classifier to solve SAT verbal analogy
+problems, yielding 47% accuracy. The same approach
+is applied to classifying noun-modifier pairs:
+using the Diverse dataset of (Nastase and Szpakowicz 2003), (Turney and Littman 2005) achieve F-measures of
+26.5% with 30 fine-grained relations, and 43.2%
+with 5 course-grained relations.
+(Turney 2005) extends the above approach by introducing
+the latent relational analysis (LRA), which
+uses automatically generated synonyms, learns suitable
+patterns, and performs singular value decomposition
+in order to smooth the frequencies. The full
+algorithm consists of 12 steps described in detail in
+(Turney, 2006b). When applied to SAT questions,
+it achieves the state-of-the-art accuracy of 56%. On
+the Diverse dataset, it yields an F-measure of 39.8%
+with 30 classes, and 58% with 5 classes.
+(Turney 2006a) presents an unsupervised algorithm
+for mining the Web for patterns expressing
+implicit semantic relations. For example, CAUSE
+(e.g., cold virus) is best characterized by “Y * causes
+X”, and “Y in * early X” is the best pattern for
+TEMPORAL (e.g., morning frost). With 5 classes,
+he achieves F-measure=50.2%.
+Noun-Noun Compound Semantics.
+(Lauer 1995) reduces the problem of noun compound
+interpretation to choosing the best paraphrasing
+preposition from the following set: of, for, in,
+at, on, from, with or about. He achieved 40% accuracy
+using corpus frequencies. This result was improved
+to 55.7% by (Lapata and Keller 2005) who
+used Web-derived n-gram frequencies.
+(Barker and Szpakowicz 1998) use syntactic clues
+and the identity of the nouns in a nearest-neighbor
+classifier, achieving 60-70% accuracy.
+(Rosario and Hearst 2001) used a discriminative
+classifier to assign 18 relations for noun compounds
+from biomedical text, achieving 60% accuracy.
+(Rosario et al. 2002) reported 90% accuracy with
+a “descent of hierarchy” approach which characterizes
+the relationship between the nouns in a bioscience
+noun-noun compound based on the MeSH
+categories the nouns belong to.
+(Girju et al. 2005) apply both classic (SVM and
+decision trees) and novel supervised models (semantic
+scattering and iterative semantic specialization),
+using WordNet, word sense disambiguation, and a
+set of linguistic features. They test their system
+against both Lauer’s 8 prepositional paraphrases and
+another set of 21 semantic relations, achieving up to
+54% accuracy on the latter.
+In a previous work (Nakov and Hearst, 2006), we
+have shown that the relationship between the nouns
+in a noun-noun compound can be characterized using
+verbs extracted from the Web, but we provided
+no formal evaluation.
+(Kim and Baldwin 2006) characterized the semantic
+relationship in a noun-noun compound using
+the verbs connecting the two nouns by comparing
+them to predefined seed verbs. Their approach
+is highly resource intensive (uses WordNet, CoreLex
+and Moby’s thesaurus), and is quite sensitive to the
+seed set of verbs: on a collection of 453 examples
+and 19 relations, they achieved 52.6% accuracy with
+84 seed verbs, but only 46.7% with 57 seed verbs.
+Paraphrase Acquisition.
+Our method of extraction of paraphrasing verbs and
+prepositions is similar to previous paraphrase acquisition
+approaches. (Lin and Pantel 2001) extract
+paraphrases from dependency tree paths whose
+ends contain semantically similar sets of words by
+generalizing over these ends. For example, given
+“X solves Y”, they extract paraphrases like “X finds
+a solution to Y”, “X tries to solve Y”, “X resolves
+Y”, “Y is resolved by X”, etc. The approach is extended
+by (Shinyama et al. 2002), who use named
+entity recognizers and look for anchors belonging
+to matching semantic classes, e.g., LOCATION,
+ORGANIZATION. The idea is further extended by
+(Nakov et al. 2004), who apply it in the biomedical
+domain, imposing the additional restriction that the
+sentences from which the paraphrases are extracted
+cite the same target paper.
+Word Similarity.
+Another important group of related work is on using
+syntactic dependency features in a vector-space
+model for measuring word similarity, e.g., (Alshawi and Carter, 1994), (Grishman and Sterling, 1994),
+(Ruge, 1992), and (Lin, 1998). For example, given a
+noun, (Lin 1998) extracts verbs that have that noun
+as a subject or object, and adjectives that modify it.

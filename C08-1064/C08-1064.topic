@@ -1,0 +1,21 @@
+<topic index> 0 </topic index>
+<title> scaling translation models </title>
+<keywords> scale;translation;models; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> size of main memory </title>
+<keywords> size;memory;processing; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> preprocessing bottleneck </title>
+<keywords> parallel;processing; </keywords>
+
+<topic index> 0.3 </topic index>
+<title> decoding speed and memory usage </title>
+<keywords> decoding;speed;memory;usage;use;pattern matching; </keywords>
+
+<topic index> 0.4 </topic index>
+<title> discriminative methods </title>
+<keywords> discriminative;train;learning;features; </keywords>
+
+

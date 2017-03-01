@@ -1,0 +1,157 @@
+named entity transliteration and discovery from multilingual comparable corpora .
+abstract .
+named entity recognition ( ner ) is an important part of many natural language processing tasks .
+most current approaches employ machine learning techniques and require supervised data .
+however , many languages lack such resources .
+this paper presents an algorithm to automatically discover named entities ( nes ) in a resource free language , given a bilingual corpora in which it is weakly temporally aligned with a resource rich language .
+we observe that nes have similar time distributions across such corpora , and that they are often transliterated , and develop an algorithm that exploits both iteratively .
+the algorithm makes use of a new , frequency based , metric for time distributions and a resource free discriminative approach to transliteration .
+we evaluate the algorithm on an english-russian corpus , and show high level of nes discovery in russian .
+introduction .
+named entity recognition has been getting much attention in nlp research in recent years , since it is seen as a significant component of higher level nlp tasks such as information distillation and question answering , and an enabling technology for better information access .
+most successful approaches to ner employ machine learning techniques , which require supervised training data .
+however , for many languages , these resources do not exist .
+moreover , it is often difficult to find experts in these languages both for the expensive annotation effort and even for language specific clues .
+on the other hand , comparable multilingual data ( such as multilingual news streams ) are increasingly available ( see section 4 ) .
+in this work , we make two independent observations about named entities encountered in such corpora , and use them to develop an algorithm that extracts pairs of nes across languages .
+specifically , given a bilingual corpora that is weakly temporally aligned , and a capability to annotate the text in one of the languages with nes , our algorithm identifies the corresponding nes in the second language text , and annotates them with the appropriate type , as in the source text .
+the first observation is that nes in one language in such corpora tend to co-occur with their counterparts in the other .
+e.g. , figure 1 shows a histogram of the number of occurrences of the word hussein and its russian transliteration in our bilingual news corpus spanning years 2001 through late 2005 .
+one can see several common peaks in the two histograms , largest one being around the time of the beginning of the war in iraq .
+the word russia , on the other hand , has a distinctly different temporal signature .
+we can exploit such weak synchronicity of nes across languages as a way to associate them .
+in order to score a pair of entities across languages , we compute the similarity of their time distributions .
+the second observation is that nes are often transliterated or have a common etymological origin across languages , and thus are phonetically similar .
+figure 2 shows an example list of nes and their possible russian transliterations .
+approaches that attempt to use these two characteristics separately to identify nes across languages would have significant shortcomings .
+transliteration based approaches require a good model , typically handcrafted or trained on a clean set of transliteration pairs .
+on the other hand , time sequence similarity based approaches would incorrectly match words which happen to have similar time signatures ( e.g.
+taliban and afghanistan in recent news ) .
+we introduce an algorithm we call co-ranking which exploits these observations simultaneously to match nes on one side of the bilingual corpus to their counterparts on the other .
+we use a discrete fourier transform ( arfken , 1985 ) based metric for computing similarity of time distributions , and we score nes similarity with a linear transliteration model .
+for a given ne in one language , the transliteration model chooses a top ranked list of candidates in another language .
+time sequence scoring is then used to re-rank the candidates and choose the one best temporally aligned with the ne .
+that is , we attempt to choose a candidate which is both a good transliteration ( according to the current model ) and is well aligned with the ne .
+finally , pairs of nes and the best candidates are used to iteratively train the transliteration model .
+a major challenge inherent in discovering transliterated nes is the fact that a single entity may be represented by multiple transliteration strings .
+one reason is language morphology .
+for example , in russian , depending on a case being used , the same noun may appear with various endings .
+another reason is the lack of transliteration standards .
+again , in russian , several possible transliterations of an english entity may be acceptable , as long as they are phonetically similar to the source .
+thus , in order to rely on the time sequences we obtain , we need to be able to group variants of the same ne into an equivalence class , and collect their aggregate mention counts .
+we would then score time sequences of these equivalence classes .
+for instance , we would like to count the aggregate number of occurrences of herzegovina , hercegovina on the english side in order to map it accurately to the equivalence class of that ne � s variants we may see on the russian side of our corpus ( e.g. ) .
+one of the objectives for this work was to use as little of the knowledge of both languages as possible .
+in order to effectively rely on the quality of time sequence scoring , we used a simple , knowledge poor approach to group ne variants for russian .
+in the rest of the paper , whenever we refer to a named entity , we imply an ne equivalence class .
+note that although we expect that better use of language specific knowledge would improve the results , it would defeat one of the goals of this work .
+previous work .
+there has been other work to automatically discover ne with minimal supervision .
+both ( cucerzan and yarowsky , 1999 ) and ( collins and singer , 1999 ) present algorithms to obtain nes from untagged corpora .
+however , they focus on the classification stage of already segmented entities , and make use of contextual and morphological clues that require knowledge of the language beyond the level we want to assume with respect to the target language .
+the use of similarity of time distributions for information extraction , in general , and ne extraction , in particular , is not new . ( hetland , 2004 ) surveys recent methods for scoring time sequences for similarity . ( shinyama and sekine , 2004 ) used the idea to discover nes , but in a single language , english , across two news sources .
+a large amount of previous work exists on transliteration models .
+most are generative and consider the task of producing an appropriate transliteration for a given word , and thus require considerable knowledge of the languages .
+for example , ( abduljaleel and larkey , 2003 ; jung et al. , 2000 ) train english-arabic and english-korean generative transliteration models , respectively . ( knight and graehl , 1997 ) build a generative model for backward transliteration from japanese to english .
+while generative models are often robust , they tend to make independence assumptions that do not hold in data .
+the discriminative learning framework argued for in ( roth , 1998 ; roth , 1999 ) as an alternative to generative models is now used widely in nlp , even in the context of word alignment ( taskar et al. , 2005 ; moore , 2005 ) .
+we make use of it here too , to learn a discriminative transliteration model that requires little knowledge of the target language .
+in essence , the algorithm we present uses temporal alignment as a supervision signal to iteratively train a discriminative transliteration model , which can be viewed as a distance metric between and english ne and a potential transliteration .
+on each iteration , it selects a set of transliteration candidates for each ne according to the current model ( line 6 ) .
+it then uses temporal alignment ( with thresholding ) to select the best transliteration candidate for the next round of training ( lines 8 , and 9 ) .
+once the training is complete , lines 4 through 10 are executed without thresholding for each ne in to discover its counterpart in .
+time sequence generation and matching .
+in order to generate time sequence for a word , we divide the corpus into a sequence of temporal bins , and count the number of occurrences of the word in each bin .
+we then normalize the sequence .
+we use a method called the f-index ( hetland , 2004 ) to implement the similarity function on line 8 of the algorithm .
+we first run a discrete fourier transform on a time sequence to extract its fourier expansion coefficients .
+the score of a pair of time sequences is then computed as a euclidian distance between their expansion coefficient vectors .
+equivalence classes .
+as we mentioned earlier , an ne in one language may map to multiple morphological variants and transliterations in another .
+identification of the entity � s equivalence class of transliterations is important for obtaining its accurate time sequence .
+in order to keep to our objective of requiring as little language knowledge as possible , we took a rather simplistic approach to take into account morphological ambiguities of nes in russian .
+two words were considered variants of the same ne if they share a prefix of size five or longer .
+at this point , our algorithm takes a simplistic approach also for the english side of the corpus � each unique word had its own equivalence class although , in principle , we can incorporate works such as ( li et al. , 2004 ) into the algorithm .
+a cumulative distribution was then collected for such equivalence classes .
+transliteration model .
+unlike most of the previous work to transliteration , that consider generative transliteration models , we take a discriminative approach .
+we train a linear model to decide whether a word is a transliteration of an ne .
+the words in the pair are partitioned into a set of substrings and up to a particular length ( including the empty string ) .
+couplings of the substrings from both sets produce features we use for training .
+note that couplings with the empty string represent insertions / omissions .
+we build a feature vector by coupling sub- strings from the two sets : we use the observation that transliteration tends to preserve phonetic sequence to limit the number of couplings .
+for example , we can disallow the coupling of substrings whose starting positions are too far apart : thus , we might not consider a pairing in the above example .
+in our experiments , we paired substrings if their positions in their respective words differed by -1 , 0 , or 1 .
+we use the perceptron ( rosenblatt , 1958 ) algorithm to train the model .
+the model activation provides the score we use to select best transliterations on line 6 .
+our version of perceptron takes examples with a variable number of features ; each example is a set of all features seen so far that are active in the input .
+as the iterative algorithm observes more data , it discovers and makes use of more features .
+this model is called the infinite attribute model ( blum , 1992 ) and it follows the perceptron version in snow ( roth , 1998 ) .
+positive examples used for iterative training are pairs of nes and their best temporally aligned ( thresholded ) transliteration candidates .
+negative examples are english non-nes paired with random russian words .
+experimental study .
+we ran experiments using a bilingual comparable english-russian news corpus we built by crawling a russian news web site ( www. lenta. ru ) .
+the site provides loose translations of ( and pointers to ) the original english texts .
+we collected pairs of articles spanning from 1 / 1 / 2001 through 12 / 24 / 2004 .
+the corpus consists of 2,022 documents with 0-8 documents per day .
+the corpus is available on our web page at http : / / l2r.cs.uiuc.edu / cogcomp / .
+the english side was tagged with a publicly available ner system based on the snow learning architecture ( roth , 1998 ) , that is available at the same site .
+this set of english nes was hand-pruned to remove incorrectly classified words to obtain 978 single word nes .
+in order to reduce running time , some limited preprocessing was done on the russian side .
+all classes , whose temporal distributions were close to uniform ( i.e. words with a similar likelihood of occurrence throughout the corpus ) were deemed common and not considered as ne candidates .
+unique words were grouped into 15,594 equivalence classes , and 1,605 of those classes were discarded using this method .
+insertions / omissions features were not used in the experiments as they provided no tangible benefit for the languages of our corpus .
+unless mentioned otherwise , the transliteration model was initialized with a subset of 254 pairs of nes and their transliteration equivalence classes .
+negative examples here and during the rest of the training were pairs of randomly selected non-ne english and russian words .
+in each iteration , we used the current transliteration model to find a list of 30 best transliteration equivalence classes for each ne .
+we then computed time sequence similarity score between ne and each class from its list to find the one with the best matching time sequence .
+if its similarity score surpassed a set threshold , it was added to the list of positive examples for the next round of training .
+positive examples were constructed by pairing each english ne with each of the transliterations from the best equivalence class that surpasses the threshold .
+we used the same number of positive and negative examples .
+for evaluation , random 727 of the total of 978 ne pairs matched by the algorithm were selected and checked by a language expert .
+accuracy was computed as the percentage of those nes correctly discovered by the algorithm .
+ne discovery .
+figure 3 shows the proportion of correctly discovered ne transliteration equivalence classes throughout the run of the algorithm .
+the figure also shows the accuracy if transliterations are selected according to the current transliteration model ( top scoring candidate ) and sequence matching alone .
+the transliteration model alone achieves an accuracy of about 47 % , while the time sequence alone gets about 41 % .
+the combined algorithm achieves about 66 % , giving a significant improvement .
+in order to understand what happens to the transliteration model as the algorithm proceeds , let us consider the following example .
+figure 4 shows parts of transliteration lists for ne forsyth for two iterations of the algorithm .
+the weak transliteration model selects the correct transliteration ( italicized ) as the 24th best transliteration in the first iteration .
+time sequence scoring function chooses it to be one of the training examples for the next round of training of the model .
+by the eighth iteration , the model has improved to select it as a best transliteration .
+not all correct transliterations make it to the top of the candidates list ( transliteration model by itself is never as accurate as the complete algorithm on figure 3 ) .
+that is not required , however , as the model only needs to be good enough to place the correct transliteration anywhere in the candidate list .
+not surprisingly , some of the top transliteration candidates start sounding like the ne itself , as training progresses .
+on figure 4 , candidates for forsyth on iteration 7 include fross and fossett .
+rate of improvement vs. initial example set size .
+we ran a series of experiments to see how the size of the initial training set affects the accuracy of the model as training progresses ( figure 5 ) .
+although the performance of the early iterations is significantly affected by the size of the initial training example set , the algorithm quickly improves its performance .
+as we decrease the size from 254 , to 127 , to 85 examples , the accuracy of the first iteration drops by roughly 10 % each time .
+however , starting at the 6th iteration , the three are with 3 % of one another .
+these numbers suggest that we only need a few initial positive examples to bootstrap the transliteration model .
+the intuition is the following : the few examples in the initial training set produce features corresponding to substring pairs characteristic for english-russian transliterations .
+model trained on these ( few ) examples chooses other transliterations containing these same substring pairs .
+in turn , the chosen positive examples contain other characteristic substring pairs , which will be used by the model to select more positive examples on the next round , and so on .
+conclusions .
+we have proposed a novel algorithm for cross lingual ne discovery in a bilingual weakly temporally aligned corpus .
+we have demonstrated that using two independent sources of information ( transliteration and temporal similarity ) together to guide ne extraction gives better performance than using either of them alone ( see figure 3 ) .
+we developed a linear discriminative transliteration model , and presented a method to automatically generate features .
+for time sequence matching , we used a scoring metric novel in this domain .
+as supported by our own experiments , this method outperforms other scoring metrics traditionally used ( such as cosine ( salton and mcgill , 1986 ) ) when corpora are not well temporally aligned .
+in keeping with our objective to provide as little language knowledge as possible , we introduced a simplistic approach to identifying transliteration equivalence classes , which sometimes produced erroneous groupings ( e.g. an equivalence class for ne lincoln in russian included both lincoln and lincolnshire on figure 6 ) .
+this approach is specific to russian morphology , and would have to be altered for other languages .
+for example , for arabic , a small set of prefixes can be used to group most ne variants .
+we expect that language specific knowledge used to discover accurate equivalence classes would result in performance improvements .
+future work .
+in this work , we only consider single word named entities .
+a subject of future work is to extend the algorithm to the multi-word setting .
+many of the multi-word nes are translated as well as transliterated .
+for example , mount in mount rainier will probably be translated , and rainier - transliterated .
+if a dictionary exists for the two languages , it can be consulted first , and , if a match is found , transliteration model can be bypassed .
+the algorithm can be naturally extended to comparable corpora of more than two languages .
+pair- wise time sequence scoring and transliteration models should give better confidence in ne matches .
+it seems plausible to suppose that phonetic features ( if available ) would help learning our transliteration model .
+we would like to verify if this is indeed the case .
+the ultimate goal of this work is to automatically tag nes so that they can be used for training of an ner system for a new language .
+to this end , we would like to compare the performance of an ner system trained on a corpus tagged using this approach to one trained on a hand-tagged corpus .

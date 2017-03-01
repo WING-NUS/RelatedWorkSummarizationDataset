@@ -1,0 +1,144 @@
+an information-theoretic definition of similarity .
+abstract .
+similarity is an important and widely used concept .
+previous definitions of similarity are tied to a particular application or a form of knowledge representation .
+we present an information- theoretic definition of similarity that is applicable as long as there is a probabilistic model .
+we demonstrate how our definition can be used to measure the similarity in a number of different domains .
+introduction .
+similarity is a fundamental and widely used concept .
+many similarity measures have been proposed , such as information content [ resnik , 1995b ] , mutual information [ hindle , 1990 ] , dice coefficient [ frakes and baeza-yates , 1992 ] , cosine coefficient [ frakes and baeza-yates , 1992 ] , distance-based measurements [ lee et al. , 1989 ; rada et al. , 1989 ] , and feature contrast model [ tversky , 1977 ] .
+mcgill etc. surveyed and compared 67 similarity measures used in information retrieval [ mcgill et al. , 1979 ] .
+a problem with previous similarity measures is that each of them is tied to a particular application or assumes a particular domain model .
+for example , distance-based measures of concept similarity ( e.g. , [ lee et al. , 1989 ; rada et al. , 1989 ] ) assume that the domain is represented in a network .
+if a collection of documents is not represented as a network , the distance-based measures do not apply .
+the dice and cosine coefficients are applicable only when the objects are represented as numerical feature vectors .
+another problem with the previous similarity measures is that their underlying assumptions are often not explicitly stated .
+without knowing those assumptions , it is impossible to make theoretical arguments for or against any particular measure .
+almost all of the comparisons and evaluations of previous similarity measures have been based on empirical results .
+this paper presents a definition of similarity that achieves two goals : universality : we define similarity in information- theoretic terms .
+it is applicable as long as the domain has a probabilistic model .
+since probability theory can be integrated with many kinds of knowledge representations , such as first order logic [ bacchus , 1988 ] and semantic networks [ pearl , 1988 ] , our definition of similarity can be applied to many different domains where very different similarity measures had previously been proposed .
+moreover , the universality of the definition also allows the measure to be used in domains where no similarity measure has previously been proposed , such as the similarity between ordinal values .
+theoretical justification : the similarity measure is not defined directly by a formula .
+rather , it is derived from a set of assumptions about similarity .
+in other words , if the assumptions are deemed reasonable , the similarity measure necessarily follows .
+the remainder of this paper is organized as follows .
+the next section presents the derivation of a similarity measure from a set of assumptions about similarity .
+sections 3 through 6 demonstrate the universality of our proposal by applying it to different domains .
+the properties of different similarity measures are compared in section 7 .
+definition of similarity .
+since our goal is to provide a formal definition of the intuitive concept of similarity , we first clarify our intuitions about similarity .
+intuition 1 : the similarity between a and b is related to their commonality .
+the more commonality they share , the more similar they are .
+intuition 2 : the similarity between a and b is related to the differences between them .
+the more differences they have , the less similar they are .
+intuition 3 : the maximum similarity between a and b is reached when a and b are identical , no matter how much commonality they share .
+our goal is to arrive at a definition of similarity that captures the above intuitions .
+however , there are many alternative ways to define similarity that would be consistent with the intuitions .
+in this section , we first make a set of additional assumptions about similarity that we believe to be reasonable .
+a similarity measure can then be derived from those assumptions .
+in order to capture the intuition that the similarity of two objects are related to their commonality , we need a measure of commonality .
+our first assumption is : assumption 1 : the commonality between a and b is measured by i ( common ( a , b ) ) . where common ( a , b ) is a proposition that states the commonalities between a and b ; i ( s ) is the amount of information contained in a proposition s .
+we also need a measure of the differences between two objects .
+since knowing both the commonalities and the differences between a and b means knowing what a and b are , we assume : assumption 2 : the differences between a and b is measured by i ( description ( a , b ) ) | i ( common ( a , b ) ) , where description ( a , b ) is a proposition that describes what a and b are .
+intuition 1 and 2 state that the similarity between two objects are related to their commonalities and differences .
+we assume that commonalities and differences are the only factors .
+assumption 3 : the similarity between a and b , sim ( a , b ) , is a function of their commonalities and differences .
+that is , sim ( a , b ) = f ( i ( common ( a , b ) ) , i ( description ( a , b ) ) ) the domain of f is { ( x , y ) ix > 0 , y > 0 , y > x } .
+intuition 3 states that the similarity measure reaches a constant maximum when the two objects are identical .
+we assume the constant is 1 .
+assumption 4 : the similarity between a pair of identical objects is 1 .
+when a and b are identical , knowing their commonalities means knowing what they are , i.e. , i ( common ( a , b ) ) = i ( description ( a , b ) ) .
+therefore , the function f must have the property : dx > 0 , f ( x , x ) = 1 .
+when there is no commonality between a and b , we assume their similarity is 0 , no matter how different they are .
+for example , the similarity between depth-first search and leather sofa is neither higher nor lower than the similarity between rectangle and interest rate .
+assumption 5 : dy > 0 , f ( 0 , y ) = 0 .
+suppose two objects a and b can be viewed from two independent perspectives .
+their similarity can be computed separately from each perspective .
+for example , the similarity between two documents can be calculated by comparing the sets of words in the documents or by comparing their stylistic parameter values , such as average word length , average sentence length , average number of verbs per sentence , etc .
+we assume that the overall similarity of the two documents is a weighted average of their similarities computed from different perspectives .
+the weights are the amounts of information in the descriptions .
+in other words , we make the following assumption : from the above assumptions , we can proved the following theorem : similarity theorem : the similarity between a and b is measured by the ratio between the amount of information needed to state the commonality of a and b and the information needed to fully describe what a and b are .
+since similarity is the ratio between the amount of information in the commonality and the amount of information in the description of the two objects , if we know the commonality of the two objects , their similarity tells us how much more information is needed to determine what these two objects are .
+in the next 4 sections , we demonstrate how the above definition can be applied in different domains .
+many features have ordinal values .
+for example , the quality attribute can take one of the following values excellent , good , average , bad , or awful .
+none of the previous definitions of similarity provides a measure for the similarity between two ordinal values .
+we now show how our definition can be applied here .
+if the quality of x is excellent and the quality of y is average , the maximally specific statement that can be said of both x and y is that the quality of x and y are between average and excellent .
+therefore , the commonality between two ordinal values is the interval delimited by them .
+suppose the distribution of the quality attribute is known ( figure 1 ) .
+the following are four examples of similarity calculations : the results show that , given the probability distribution in figure 1 , the similarity between excellent and good is much higher than the similarity between good and average ; the similarity between excellent and average is much higher than the similarity between good and bad .
+feature vectors .
+feature vectors are one of the simplest and most commonly used forms of knowledge representation , especially in case- based reasoning [ aha et al. , 1991 ; stanfill and waltz , 1986 ] and machine learning .
+weights are often assigned to features to account for the fact that the dissimilarity caused by more important features is greater than the dissimilarity caused by less important features .
+the assignment of the weight parameters is generally heuristic in nature in previous approaches .
+our definition of similarity provides a more principled approach , as demonstrated in the following case study .
+string similarity .
+a case study .
+consider the task of retrieving from a word list the words that are derived from the same root as a given word .
+for example , given the word eloquently , our objective is to retrieve the other related words such as ineloquent , ineloquently , eloquent , and eloquence .
+to do so , assuming that a morphological analyzer is not available , one can define a similarity measure between two strings and rank the words in the word list in descending order of their similarity to the given word .
+the similarity measure should be such that words derived from the same root as the given word should appear early in the ranking .
+the third similarity measure is based on our proposed definition of similarity under the assumption that the probability of a trigram occurring in a word is independent of other trigrams in the word : table 1 shows the top 10 most similar words to grandiloquent according to the above three similarity measures .
+to determine which similarity measure ranks higher the words that are derived from the same root as the given word , we adopted the evaluation metrics used in the text retrieval conference [ harman , 1993 ] .
+we used a 109,582- word list from the ai repository.1 the probabilities of trigrams are estimated by their frequencies in the words .
+let w denote the set of words in the word list and wroot denote the subset of w that are derived from root .
+let ( w1 , ... , wn ) denote the ordering of w { w } in descending similarity to w according to a similarity measure .
+the average precision values are then averaged over all the words in wroot .
+the results on 5 roots are shown in table 2 .
+it can be seen that much better results were achieved with sim than with the other similarity measures .
+the reason for this is that simedit and simtri treat all characters or trigrams equally , whereas sim is able to automatically take into account the varied importance in different trigrams .
+word similarity .
+in this section , we show how to measure similarities between words according to their distribution in a text corpus [ pereira et al. , 1993 ] .
+similar to [ alshawi and carter , 1994 ; grishman and sterling , 1994 ; ruge , 1992 ] , we use a parser to extract dependency triples from the text corpus .
+a dependency triple consists of a head , a dependency type and a modifier .
+for example , the dependency triples in i have a brown dog consist of : we can view dependency triples extracted from a corpus as features of the heads and modifiers in the triples .
+suppose ( avert obj duty ) is a dependency triple , we say that duty has the feature obj-of ( avert ) and avert has the feature obj ( duty ) .
+other words that also possess the feature obj-of ( avert ) include default , crisis , eye , panic , strike , war , etc . , which are also used as objects of avert in the corpus .
+the fourth column in table 3 shows the amount of information contained in each feature .
+if the features in table 3 were all the features of duty and sanction , the similarity between duty and sanction would be : we parsed a 22-million-word corpus consisting of wall street journal and san jose mercury with a principle-based broad-coverage parser , called principar [ lin , 1993 ; lin , 1994 ] .
+parsing took about 72 hours on a pentium 200 with 80mb memory .
+from these parse trees we extracted about 14 million dependency triples .
+the frequency counts of the dependency triples are stored and indexed in a 62mb dependency database , which constitutes the set of feature descriptions of all the words in the corpus .
+using this dependency database , we computed pairwise similarity between 5230 nouns that occurred at least 50 times in the corpus .
+the words with similarity to duty greater than 0.04 are listed in ( 3 ) in descending order of their similarity .
+the following is the entry for duty in the random house thesaurus [ stein and flexner , 1984 ] .
+two words are a pair of respective nearest neighbors ( rnns ) if each is the others most similar word .
+our program found 622 pairs of rnns among the 5230 nouns that occurred at least 50 times in the parsed corpus .
+table 4 shows every 10th rnn .
+some of the pairs may look peculiar .
+detailed examination actually reveals that they are quite reasonable .
+for example , the 221 ranked pair is captive and westerner .
+it is very unlikely that any manually created thesaurus will list them as near-synonyms .
+we manually examined all 274 occurrences of westerner in the corpus and found that 55 % of them refer to westerners in captivity .
+some of the bad rnns , such as ( avalanche , raft ) , ( audition , rite ) , were due to their relative low frequencies , 2 which make them susceptible to accidental commonalities , such as : semantic similarity [ resnik , 1995b ] refers to similarity between two concepts in a taxonomy such as the wordnet [ miller , 1990 ] or cyc upper ontology .
+the semantic similarity between two classes c and c ' is not about the classes themselves .
+when we say rivers and ditches are similar , we are not comparing the set of rivers with the set of ditches .
+instead , we are comparing a generic river and a generic ditch .
+therefore , we define sim ( c ~ c ' ) to be the similarity between x and x ' if all we know about x and x ' is that x e c and x ' e c ' .
+there have been many proposals to use the distance between two concepts in a taxonomy as the basis for their similarity [ lee et al. , 1989 ; rada et al. , 1989 ] .
+resnik [ resnik , 1995b ] showed that the distance-based similarity measures do not correlate to human judgments as well as his measure .
+resniks similarity measure is quite close to the one proposed here : simresnik ( a , b ) = 21i ( common ( a , b ) ) .
+for example , in figure 2 , simresnik ( hill , coast ) = -log p ( geological-formation ) .
+resnik [ resnik , 1995a ] evaluated three different similarity measures by correlating their similarity scores on 28 pairs of concepts in the wordnet with assessments made by human subjects [ miller and charles , 1991 ] .
+we adopted the same data set and evaluation methodology to compare simresnik , simwu & palmer and sim .
+table 5 shows the similarities between 28 pairs of concepts , using three different similarity measures .
+column miller & charles lists the average similarity scores ( on a scale of 0 to 4 ) assigned by human subjects in miller & charless experiments [ miller and charles , 1991 ] .
+our definition of similarity yielded slightly higher correlation with human judgments than the other two measures .
+comparison between different similarity measures .
+one of the most commonly used similarity measure is call dice coefficient .
+commonality and difference : while most similarity measures increase with commonality and decrease with difference , simdist only decreases with difference and simresnik only takes commonality into account .
+triangle inequality : a distance metrics must satisfy the triangle inequality : dist ( a , c ) g dist ( a , b ) + dist ( b , c ) .
+consequently , simdist has the property that simdist ( a , c ) cannot be arbitrarily close to 0 if none of simdist ( a , b ) and simdist ( b , c ) is 0 .
+this can be counter-intuitive in some situations .
+for example , in figure 3 , a and b are similar in which is a weighted average of the similarity between a and b in each of the two perspectives .
+maximum similarity values : with most similarity measures , the maximum similarity is 1 , except simresnik , which have no upper bound for similarity values .
+application domains : the similarity measure proposed in this paper can be applied in all the domains listed in table 6 , including the similarity of ordinal values , where none of the other similarity measures is applicable .
+conclusion .
+similarity is an important and fundamental concept in ai and many other fields .
+previous proposals for similarity measures are heuristic in nature and tied to a particular domain or form of knowledge representation .
+in this paper , we present a universal definition of similarity in terms of information theory .
+the similarity measure is not directly stated as in earlier definitions , rather , it is derived from a set of assumptions .
+in other words , if one accepts the assumptions , the similarity measure necessarily follows .
+the universality of the definition is demonstrated by its applications in different domains where different similarity measures have been employed before .

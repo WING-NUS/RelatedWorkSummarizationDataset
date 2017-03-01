@@ -1,0 +1,212 @@
+automatic paraphrase acquisition from news articles .
+abstract .
+paraphrases play an important role in the variety and complexity of natural language documents .
+however they adds to the difficulty of natural language processing .
+here we describe a procedure for obtaining paraphrases from news article .
+a set of paraphrases can be useful for various kinds of applications .
+articles derived from different newspapers can contain paraphrases if they report the same event of the same day .
+we exploit this feature by using named entity recognition .
+our basic approach is based on the assumption that named entities are preserved across paraphrases .
+we applied our method to articles of two domains and obtained notable examples .
+although this is our initial attempt to automatically extracting paraphrases from a corpus , the results are promising .
+introduction .
+expressing one thing in other words , or paraphrasing , plays an important role in the variety and complexity of natural language documents .
+one can express a single event in thousands of ways in natural language sentences .
+a creative writer uses lots of paraphrases to state a single fact .
+this greatly adds to the difficulty of natural language processing .
+many natural language applications , such as information retrieval , machine translation , question answering , text summarization , or information extraction , are required to handle these expressions correctly .
+however analyzing these expressions in semantic level is rather difficult task .
+so we hope to build a paraphrase database to find expressions which have the same meaning .
+however , building such databases by hand is still difficult .
+there are two reasons : the first reason is that there are too many possible language expressions used in paraphrases for someone to come up with .
+even if several people work on this task , it is still laborious to cover many common expressions .
+the second reason is that expressions considered as paraphrases are different from domain to domain .
+even if two expressions can be regarded as the same meaning in a certain domain , it is not possible to generalize them to other domains .
+so we are trying to create a system that automatically acquires paraphrases from given corpora of a specific domain .
+even though their usage is limited to a certain domain , it is much useful for many applications .
+in this paper , we describe an approach to automatic paraphrase acquisition from corpora .
+our main focus is information extraction ( ie ) .
+in an ie application , a system uses patterns to capture events which are relevant to a certain domain .
+although there have been several efforts to obtain such patterns automatically , little work has addressed the problem of capturing the semantic knowledge of such patterns , which is crucial for ie .
+using a paraphrase database , we can connect one pattern to another .
+we expect this will reduce the cost of creating ie knowledge by hand .
+although our approach aims to collect paraphrases for ie applications , our method can be applied to other purposes also .
+challenges .
+to acquire paraphrases automatically , we focused on news articles that describe the same event .
+take a look at the examples in table 1 .
+these headlines are taken from several news articles on the same day .
+if we can find these articles in different newspapers on a certain day , it is likely that they contain similar expressions ; i.e. paraphrases .
+however , the difficulty of paraphrase acquisition is to recognize that one sentence has the same meaning as another .
+these expressions may differ from the others not only in lexical properties , but also in syntactic features .
+by looking at table 1 , one can easily observe that a simple criterion is not enough to find paraphrases .
+our basic concept is to use named entity ( ne ) to find such expressions reporting the same event .
+ne is a proper expression such as names of organizations , persons , locations , dates , or numerical expressions [ 2 ] .
+in table 1 , bush , new york and $ 20 billion are regarded as nes .
+since they are indispensable to report an event , nes are often preserved across different newspapers .
+therefore we can expect that if two sentences share several comparable nes , it is likely that they are reporting the same event .
+this way , we can find the comparable expressions , or paraphrases from corpora by using nes .
+so far we have applied our method to two domains in japanese newspapers and obtained some notable examples .
+there are a few approaches for obtaining paraphrases automatically .
+barzilay et al. used parallel translations derived from one original document [ 1 ] .
+they targeted literary works and used word alignment techniques developed for mt .
+however the syntactic variety of the resultant expressions is limited since they used only part-of-speech tags to identify the syntactic properties .
+in addition , compared with our method using newspapers , their resources are relatively scarce .
+torisawa et al. proposed a learning method for automatic paraphrasing of japanese noun phrases [ 6 ] .
+but this is also limited to a certain type of noun phrases .
+algorithm .
+overview .
+as we stated in the previous section , our approach is based on the following assumption : nes are preserved across paraphrases .
+so if the portions of each sentence in the articles share several comparable nes , they are likely to be expressing the same meaning ; in other words , they are paraphrases .
+the expectation increases as the number of nes shared by the portions increases .
+paraphrase acquisition goes as follows .
+first we find articles of a certain domain from two newspapers .
+we use an existing ir system to obtain articles from a given class of events , such as murders or personnel affairs .
+then we find pairs of articles which report the same event .
+in this stage we use a tf / idf based method developed for topic detection and tracking ( tdt ) .
+next we compare all the sentences in each article to find pairs of sentences sharing comparable nes .
+then we extract appropriate portions of sentences using a dependency tree .
+a dependency tree can be used later to reconstruct a original phrase .
+if the number of comparable nes which both portions contain exceeds a certain threshold , we adopt them as paraphrases .
+finally we generalize an ne as a variable in retrieved phrases so that these phrases can be applied to other sentences .
+the overall process is illustrated in figure 1 .
+additionally , we need to consider the domain of the expressions .
+otherwise our method yields a lot of noise .
+for example , two expressions bush has expressed his confidence in koizumis reforms and bush and koizumi watched a demonstration of horseback archery are both found in the articles of the same day and both contain the comparable nes ( bush and koizumi ) , but they are not paraphrases .
+so we try to filter out such noise using a set of ie patterns obtained from the same articles in advance .
+in this way we can limit our patterns to only those concerning a certain domain .
+sudo et al. described a procedure for automatically gathering common patterns appearing frequently in a set of articles about a given topic [ 5 ] .
+each ie pattern has slots which can be filled by nes .
+for example , the sentence vice president osamu kuroda of nihon yamamura glass corp. was promoted to president. contains four patterns found for the personnel domain , as shown in figure 2 .
+nes in these patterns are generalized into slots which hold the type of the nes and the case roles of each node are preserved .
+we apply these obtained patterns to the articles itself , and then find paraphrases only among those which matches to any of patterns .
+this means we find paraphrases among these ie patterns .
+actually this is done by linking two ie patterns as paraphrases .
+these links form a set of equivalence classes , in which each pattern conveys the same meaning ( see figure 3 ) .
+details .
+preprocessing articles .
+first we obtain pairs of articles of a certain domain from two newspapers , as a source of both ie patterns and paraphrases .
+first we obtain relevant articles for a domain from one newspaper , and then we find articles which report the same event from the other newspaper .
+in this experiment , we used a stochastic-based ir system by murata et al. [ 3 ] to get articles of a specified domain .
+we pick up the most relevant 300 articles for a domain .
+for each relevant article of one of the newspaper , we search for an article corresponding to the first article from the other newspaper .
+this is done by calculating the similarity between two articles and taking the one whose similarity is the best .
+since this task is very similar to the task defined in tdt [ 8 ] , we used a technique developed in tdt .
+we implemented this part based on the university of massachusetts system , which worked the best for our purpose [ 4 ] .
+the similarity sa ( a , , a2 ) of two articles a , and a2 is defined as follows .
+here w , and w2 are vectors with elements w , i and w2i for article a , and a2 , with dimension equal to the number of nes in the corpus. f ( wi ) is the number of times ne wi occurs in the article. df ( wi ) is the document ( article ) frequency , which is the number of articles containing the ne wi. dl is the document length .
+c is the number of articles , and avgdl is the average article length .
+we apply this metric to the nes appearing in an article and adopt the article pairs whose similarity is above a certain threshold .
+in this stage we use a simple dictionary-based ne tagging system to pick up nes , instead of the one used in later stage .
+this system picks up only words which are not contained in a common noun dictionary and doesnt recognize the type of nes .
+acquiring ie patterns .
+next we run the ie pattern acquisition system for the pairs of articles [ 5 ] .
+this system performs ne tagging and dependency analysis , and picks several paths of nodes in a dependency tree as ie patterns .
+in this experiment , we use ie patterns which appears more then once in the corpus and contain at lease one ne .
+preprocessing sentences .
+now we take a closer look at a pair of articles which report the same event .
+we mark all nes using an statistical ne tagging system [ 7 ] .
+next we apply a dependency analyzer to the sentences .
+here juman and knp were used as the morphological analyzer and dependency analyzer respectively .
+thus we have a set of ne-tagged dependency trees for each article .
+here we apply the obtained ie patterns to the sentences .
+drop a sentence that doesnt match any of patterns .
+then an instance of the pattern for a matched sentence is created and attached to the sentence .
+the variables in these patterns are filled with the actual nes .
+this stage is illustrated in figure 4 .
+suppose sentence a and b contain paraphrases .
+sentence a matches pattern 1 and sentence b matches pattern 2 .
+these patterns are attached to each sentences and each slot in the patterns is filled with the actual ne ( here , post , slot is filled with the actual ne president ) .
+extracting paraphrases .
+now we can get paraphrases .
+first we take pairs of similar sentences .
+to penalize frequently occurring nes , this is done by calculating tf / idf based similarity in terms of comparable nes for all possible pairs of sentences .
+sentence similarity ss ( 8 , , 82 ) of sentence 8 , and 82 is defined as follows .
+here w , and w2 are vectors with elements w , i and w2i for article 8 , and 82. f ( wi ) is the number of nes which are comparable to wi in the sentence. df ( wi ) is the number of sentences in the article , which contain nes that is comparable to wi .
+c is the number of nes in the article .
+we use substring matching to compare two nes .
+this is because several nes referring to one entity can take various forms , such as bush , george w. bush , or mr. bush .
+since we use japanese newspaper for this experiment , we regard two nes as comparable if one begins with the half of the beginning string of the other .
+then take pairs whose similarity is above a certain threshold .
+if each ie pattern attached to the sentences shares the same number of comparable nes , link the two patterns as paraphrases .
+in figure 4 , each sentence in the pair shares four comparable nes ( nihon yamamura glass , president , vice president , and osamu kuroda ) .
+moreover , the variables in pattern 1 and 2 also have the same type ( post , ) and content ( president ) .
+so we can conclude these two patterns are paraphrases .
+experiments .
+we used oneyear of two japanese newspapers ( mainichi and nikkei ) in this experiment .
+first we obtained the most relevant 300 articles from mainichi newspaper ( total of 111373 articles ) for two domains , arrest events and personnel affairs ( hiring and firing of executives ) .
+the descriptions and narratives we gave to the ir system are shown in table 2 .
+next we find the corresponding articles of nikkei newspaper from 181086 articles ( see table 3 ) .
+the pairs whose similarity is below a certain threshold were dropped at this time .
+we got 294 pairs of articles in arrest events , and 289 pairs of articles in personnel affairs .
+next we ran an ie pattern acquisition system for those articles .
+after dropping the patterns which appear only once , we got 725 patterns and 157 patterns respectively .
+then we ran the paraphrase acquisition system for each pair or articles , and finally got total 136 pairs of paraphrases ( a link between two ie patterns ) .
+the number of article pairs , obtained ie patterns and obtained paraphrases pairs are shown in table 4 .
+evaluation .
+we evaluated our results in two respects : precision and coverage .
+to measure the precision and coverage , first we need to make the answer data .
+this is done by manually classifying the ie patterns for each domain .
+although these patterns describe the same event ( promotion ) , the information they capture is different .
+the former pattern captures the new post someone is promoted to .
+however the latter captures the old post someone is promoted from .
+so we put these patterns in different classes .
+this way , we get several clusters of patterns for each domain .
+we take only patterns which form a cluster and drop single-element patterns which do not have a paraphrase among the patterns .
+the result of manual classification in this experiment is shown in table 5 .
+we got 111 distinct clusters for arrest events and 20 for personnel affairs .
+now we describe how to measure precision and coverage .
+if the two patterns in a pair are both in the same cluster , it is correct ; otherwise , it is incorrect .
+thus we measured the precision by counting how many paraphrase pairs are correct .
+the results are shown in table 6 .
+in arrest events domain , we got correct 26 pairs out of 53 pairs and the precision was 49 % .
+in personnel affairs domain , we got correct 78 pairs out of 83 pairs and the precision was 94 % .
+we got quite high precision in personnel affairs .
+some examples of obtained correct and incorrect paraphrases are shown in figure 6 .
+next we define the coverage , how well the system covers all the clusters we get .
+in this experiment , we linked two ie patterns as paraphrases .
+we exploit this feature to measure the coverage by calculating how many additional links are necessary to connect all the patterns in every cluster .
+see figure 5 .
+in this figure , cluster 1 has four obtained links .
+but the cluster is split into two subclusters .
+so we need at least one additional link to unify these subclusters .
+the results are shown in table 7 .
+in the arrest domain , links were discovered in 6 of the 111 clusters . 230 additional links would be needed to connect the patterns within all the clusters .
+the coverage in the arrest domain was 9 % .
+in the personnel affairs domain , links were discovered in 5 clusters of the 20 clusters . 57 additional links would be needed to connect the patterns within all the clusters .
+the coverage in the personnel affairs domain was 47 % .
+the coverage in the arrest domain was not high .
+discussion .
+although this is our initial attempt at automatically extracting paraphrases from a corpus , the results are promising .
+in particular , we obtained expressions which are different in structure , such as [ someone ] was promoted to post , and the promotion to post , was decided .
+we also obtained expressions which can be regarded as paraphrases not in general , but in this particular domain .
+for example , to admit ( mitomeru ) and to testify ( kyoujutsu suru ) are generally not regarded as synonyms .
+but this semantic relationship is quite useful in several applications such as ie and ir .
+however , many problems remain .
+we reviewed our results in terms of the precision and the coverage : precision .
+currently , the precision in arrest events is not high .
+there are two reasons .
+first , the average number of nes in the sentence of arrest events is low .
+this makes the obtained ie patterns short .
+generally the more nes contained in a pair of patterns , the more likely they are paraphrases .
+however , there were only 41 patterns out of 725 patterns in arrest events containing two or more nes .
+second , the expressions used in the sentences of arrest events is varied .
+this makes the obtained ie patterns varied also .
+for example , there are 206 patterns in arrest events that contain only one personne .
+however , they are so varied that they have predicates murder , die , run , abduct , rob , testify , and so on .
+since our method only considers the nes contained in these patterns , a wrong pair of patterns can be regarded as paraphrases in this domain .
+a possible solution for this problem is to use not only nes but also other words to find similar sentences .
+or , attaching contextual information like co-occurring words to ie patterns may improve the precision in actual use of paraphrases .
+another source of difficulty is the calculation of the sentence similarity .
+currently we use only nes for the calculation .
+however , sentences which contains few nes are likely to be misidentified .
+so considering other words is needed for calculating sentence similarity .
+moreover , it is natural that comparable nes appear in more various forms which cannot be covered by current ne matching method , like new york city , nyc , or the city .
+to solve this problem , we may need to consider co-reference information also .
+we are planning to refine the ne matching method in future .
+coverage .
+in this experiment , the variety of obtained paraphrases are still limited .
+however we can expect the coverage to increase as we use more articles .
+a more serious problem is that current ie patterns are limited to a single path in a dependency tree [ 5 ] .
+another possible problem is that not all sentences can be cleanly divided .
+a phrase used in one sentence may have inherently composite meanings and describe two events at once , whereas they are separated in the other sentence .
+these patterns may reduce the overall coverage .

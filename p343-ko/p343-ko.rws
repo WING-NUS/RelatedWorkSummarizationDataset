@@ -1,0 +1,45 @@
+To identify relevant answers from a list of extracted candidates,
+several answer selection approaches have used external
+semantic resources. One of the most common approaches
+relies on WordNet, CYC and gazetteers for answer
+validation or answer reranking. In this approach, answer
+candidates are either removed or discounted if they are not
+found within the resource’s hierarchy corresponding to the
+expected answer type of the question [26, 17, 3, 6]. The
+Web also has been used for answer reranking by exploiting
+search engine results produced by queries containing the
+answer candidate and question keywords [15]. Wikipedia’s
+structured information has been used for answer type checking [2].
+Although each of these approaches uses one or more semantic
+resources to independently support an answer, few
+have considered the potential benefits of combining resources
+together as evidence. There was an attempt to combine
+geographical databases with WordNet for type checking of
+location questions [23]. However, the experimental results
+show that the combination did not improve performance because
+of the increased semantic ambiguity which accompanies broader coverage of location names. This is evidence
+that the method of combining potential answers may matter
+as much as the choice of resources.
+Collecting evidence from similar answer candidates to boost
+the confidence of a specific answer candidate is also important
+for answer selection. As answer candidates are extracted
+from different documents, they may contain identical,
+similar or complementary text snippets. Some previous
+work [19, 11] has used heuristic methods like manually
+compiled rules to cluster evidence from similar answer candidates.
+Graph-based clustering was also used to consider
+non-transitiveness in similarity [11].
+Similarity detection is more important in list questions
+which require a set of unique answers. In many systems,
+cutoff threshold has been used to select the most probably
+top N answers [8, 13] or exhaustive search to find all possible
+candidates has been applied [27].
+Although previous work has utilized evidence from similar
+answer candidates for a specific answer candidate, the
+algorithms only modeled each answer candidate separately
+and did not consider both answer relevance and answer correlation
+to prevent the biased influence of incorrect similar
+answers. As far as we know, no previous work has jointly
+modeled the correctness of available answer candidates in a
+formal probabilistic framework, which is very important for
+generating an accurate and comprehensive answer list.

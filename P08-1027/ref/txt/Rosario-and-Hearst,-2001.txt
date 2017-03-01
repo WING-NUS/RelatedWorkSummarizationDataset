@@ -1,0 +1,161 @@
+classifying the semantic relations in noun compounds via a domain-specific lexical hierarchy .
+abstract .
+we are developing corpus-based techniques for identifying semantic relations at an intermediate level of description ( more specific than those used in case frames , but more general than those used in traditional knowledge representation systems ) .
+in this paper we describe a classification algorithm for identifying relationships between two-word noun compounds .
+we find that a very simple approach using a machine learning algorithm and a domain-specific lexical hierarchy successfully generalizes from training instances , performing better on previously unseen words than a baseline consisting of training on the words themselves .
+introduction .
+we are exploring empirical methods of determining semantic relationships between constituents in natural language .
+our current project focuses on biomedical text , both because it poses interesting challenges , and because it should be possible to make inferences about propositions that hold between scientific concepts within biomedical texts ( swanson and smalheiser , 1994 ) .
+one of the important challenges of biomedical text , along with most other technical text , is the proliferation of noun compounds .
+a typical article title is shown below ; it consists a cascade of four noun phrases linked by prepositions : open-labeled long-term study of the efficacy , safety , and tolerability of subcutaneous sumatriptan in acute migraine treatment .
+the real concern in analyzing such a title is in determining the relationships that hold between different concepts , rather than on finding the appropriate attachments ( which is especially difficult given the lack of a verb ) .
+and before we tackle the prepositional phrase attachment problem , we must find a way to analyze the meanings of the noun compounds .
+our goal is to extract propositional information from text , and as a step towards this goal , we clas sify constituents according to which semantic relationships hold between them .
+for example , we want to characterize the treatment-for-disease relationship between the words of migraine treatment versus the method-of-treatment relationship between the words of aerosol treatment .
+these relations are intended to be combined to produce larger propositions that can then be used in a variety of interpretation paradigms , such as abductive reasoning ( hobbs et al. , 1993 ) or inductive logic programming ( ng and zelle , 1997 ) .
+note that because we are concerned with the semantic relations that hold between the concepts , as opposed to the more standard , syntax-driven computational goal of determining left versus right association , this has the fortuitous effect of changing the problem into one of classification , amenable to standard machine learning classification techniques .
+we have found that we can use such algorithms to classify relationships between two-word noun compounds with a surprising degree of accuracy .
+a one-out-of-eighteen classification using a neural net achieves accuracies as high as 62 % .
+by taking advantage of lexical ontologies , we achieve strong results on noun compounds for which neither word is present in the training set .
+thus , we think this is a promising approach for a variety of semantic labeling tasks .
+the reminder of this paper is organized as follows : section 2 describes related work , section 3 describes the semantic relations and how they were chosen , and section 4 describes the data collection and ontologies .
+in section 5 we describe the method for automatically assigning semantic relations to noun compounds , and report the results of experiments using this method .
+section 6 concludes the paper and discusses future work .
+related work .
+several approaches have been proposed for empirical noun compound interpretation .
+lauer and dras ( 1994 ) point out that there are three components to the problem : identification of the compound from within the text , syntactic analysis of the compound ( left versus right association ) , and the interpretation of the underlying semantics .
+several researchers have tackled the syntactic analysis ( lauer , 1995 ; pustejovsky et al. , 1993 ; liberman and sproat , 1992 ) , usually using a variation of the idea of finding the subconstituents elsewhere in the corpus and using those to predict how the larger compounds are structured .
+we are interested in the third task , interpretation of the underlying semantics .
+most related work relies on hand-written rules of one kind or another .
+finin ( 1980 ) examines the problem of noun compound interpretation in detail , and constructs a complex set of rules .
+vanderwende ( 1994 ) uses a sophisticated system to extract semantic information automatically from an on-line dictionary , and then manipulates a set of hand-written rules with hand- assigned weights to create an interpretation .
+rindflesch et al. ( 2000 ) use hand-coded rule based systems to extract the factual assertions from biomedical text .
+lapata ( 2000 ) classifies nominalizations according to whether the modifier is the subject or the object of the underlying verb expressed by the head noun.1 in the related sub-area of information extraction ( cardie , 1997 ; riloff , 1996 ) , the main goal is to find every instance of particular entities or events of interest .
+these systems use empirical techniques to learn which terms signal entities of interest , in order to fill in pre-defined templates .
+our goals are more general than those of information extraction , and so this work should be helpful for that task .
+however , our approach will not solve issues surrounding previously unseen proper nouns , which are often important for information extraction tasks .
+there have been several efforts to incorporate lexical hierarchies into statistical processing , primarily for the problem of prepositional phrase ( pp ) attachment .
+the current standard formulation is : given a verb followed by a noun and a prepositional phrase , represented by the tuple v , n1 , p , n2 , determine which of v or n1 the pp consisting of p and n2 attaches to , or is most closely associated with .
+because the data is sparse , empirical methods that train on word occurrences alone ( hindle and rooth , 1993 ) have been supplanted by algorithms that generalize one or both of the nouns according to class- membership measures ( resnik , 1993 ; resnik and hearst , 1993 ; brill and resnik , 1994 ; li and abe , 1998 ) , but the statistics are computed for the particular preposition and verb .
+it is not clear how to use the results of such analysis after they are found ; the semantics of the relationship between the terms must still be determined .
+in our framework we would cast this problem as finding the relationship r ( p , n2 ) that best characterizes the preposition and the np that follows it , and then seeing if the categorization algorithm determines their exists any relationship r ' ( n1 , r ( p , n2 ) ) or r ' ( v , r ( p , n2 ) ) .
+the algorithms used in the related work reflect the fact that they condition probabilities on a particular verb and noun .
+resnik ( 1993 ; 1995 ) use classes in wordnet ( fellbaum , 1998 ) and a measure of conceptual association to generalize over the nouns .
+brill and resnik ( 1994 ) use brills transformation-based algorithm along with simple counts within a lexical hierarchy in order to generalize over individual words .
+li and abe ( 1998 ) use a minimum description length-based algorithm to find an optimal tree cut over wordnet for each classification problem , finding improvements over both lexical association ( hindle and rooth , 1993 ) and conceptual association , and equaling the transformation-based results .
+our approach differs from these in that we are using machine learning techniques to determine which level of the lexical hierarchy is appropriate for generalizing across nouns .
+noun compound relations .
+in this work we aim for a representation that is intermediate in generality between standard case roles ( such as agent , patient , topic , instrument ) , and the specificity required for information extraction .
+we have created a set of relations that are sufficiently general to cover a significant number of noun compounds , but that can be domain specific enough to be useful in analysis .
+we want to support relationships between entities that are shown to be important in cognitive linguistics , in particular we intend to support the kinds of inferences that arise from talmys force dynamics ( talmy , 1985 ) .
+it has been shown that relations of this kind can be combined in order to determine the directionality of a sentence ( e.g. , whether or not a politician is in favor of , or opposed to , a proposal ) ( hearst , 1990 ) .
+in the medical domain this translates to , for example , mapping a sentence into a representation showing that a chemical removes an entity that is blocking the passage of a fluid through a channel .
+the problem remains of determining what the appropriate kinds of relations are .
+in theoretical linguistics , there are contradictory views regarding the semantic properties of noun compounds ( ncs ) .
+levi ( 1978 ) argues that there exists a small set of semantic relationships that ncs may imply .
+downing ( 1977 ) argues that the semantics of ncs cannot be exhausted by any finite listing of relationships .
+between these two extremes lies warrens ( 1978 ) taxonomy of six major semantic relations organized into a hierarchical structure .
+we have identified the 38 relations shown in table 1 .
+we tried to produce relations that correspond to the linguistic theories such as those of levi and warren , but in many cases these are inappropriate .
+levis classes are too general for our purposes ; for example , she collapses the location and time relationships into one single class in and therefore field mouse and autumnal rain belong to the same class .
+warrens classification schema is much more detailed , and there is some overlap between the top levels of warrens hierarchy and our set of relations .
+for example , our cause ( 2-1 ) for flu virus corresponds to her causer-result of hay fever , and our person afflicted ( migraine patient ) can be thought as warrens belonging-possessor of gunman .
+warren differentiates some classes also on the basis of the semantics of the constituents , so that , for example , the time relationship is divided up into time-animate entity of weekend guests and time-inanimate entity of sunday paper .
+our classification is based on the kind of relationships that hold between the constituent nouns rather than on the semantics of the head nouns .
+for the automatic classification task , we used only the 18 relations ( indicated in bold in table 1 ) for which an adequate number of examples were found in the current collection .
+many ncs were ambiguous , in that they could be described by more than one semantic relationship .
+in these cases , we simply multi-labeled them : for example , cell growth is both activity and change , tumor regression is ending / reduction and change and bladder dysfunction is location and defect .
+our approach handles this kind of multi-labeled classification .
+two relation types are especially problematic .
+some compounds are non-compositional or lexicalized , such as vitamin k and e2 protein ; others defy classification because the nouns are subtypes of one another .
+this group includes migraine headache , guinea pig , and hbv carrier .
+we placed all these ncs in a catch-all category .
+we also included a wrong category containing word pairs that were incorrectly labeled as ncs.2 the relations were found by iterative refinement based on looking at 2245 extracted compounds ( described in the next section ) and finding commonalities among them .
+labeling was done by the authors of this paper and a biology student ; the ncs were classified out of context .
+we expect to continue development and refinement of these relationship types , based on what ends up clearly being use2the percentage of the word pairs extracted that were not true ncs was about 6 % ; some examples are : treat migraine , ten patient , headache more .
+we do not know , however , how many ncs we missed .
+the errors occurred when the wrong label was assigned by the tagger ( see section 4 ) . ful downstream in the analysis .
+the end goal is to combine these relationships in ncs with more that two constituent nouns , like in the example intranasal migraine treatment of section 1 . 4 collection and lexical resources to create a collection of noun compounds , we performed searches from medline , which contains references and abstracts from 4300 biomedical journals .
+we used several query terms , intended to span across different subfields .
+we retained only the titles and the abstracts of the retrieved documents .
+on these titles and abstracts we ran a part-of-speech tagger ( cutting et al. , 1991 ) and a program that extracts only sequences of units tagged as nouns .
+we extracted ncs with up to 6 constituents , but for this paper we consider only ncs with 2 constituents .
+the unified medical language system ( umls ) is a biomedical lexical resource produced and maintained by the national library of medicine ( humphreys et al. , 1998 ) .
+we use the metathesaurus component to map lexical items into unique concept ids ( cuis ) .3 the umls also has a mapping from these cuis into the mesh lexical hierarchy ( lowe and barnett , 1994 ) ; we mapped the cuis into mesh terms .
+there are about 19,000 unique main terms in mesh , as well as additional modifiers .
+there are 15 main subhierarchies ( trees ) in mesh , each corresponding to a major branch of medical ontology .
+for example , tree a corresponds to anatomy , tree b to organisms , and so on .
+the longer the name of the mesh term , the longer the path from the root and the more precise the description .
+for example migraine is c10.228.140.546.800.525 , that is , c ( a disease ) , c10 ( nervous system diseases ) , c10.228 ( central nervous system diseases ) and so on .
+we use the mesh hierarchy for generalization across classes of nouns ; we use it instead of the other resources in the umls primarily because of meshs hierarchical structure .
+for these experiments , we considered only those noun compounds for which both nouns can be mapped into mesh terms , resulting in a total of 2245 ncs . 5 method and results because we have defined noun compound relation determination as a classification problem , we can make use of standard classification algorithms .
+in particular , we used neural networks to classify across all relations simultaneously .
+we ran the experiments creating models that used different levels of the mesh hierarchy .
+for example , for the nc flu vaccination , flu maps to the mesh term d4.808.54.79.429.154.349 and vaccination to g3.770.670.310.890.
+flu vaccination for model 4 would be represented by a vector consisting of the concatenation of the two descriptors showing only the first four levels : d4.808.54.79 g3.770.670.310 ( see table 2 ) .
+when a word maps to a general mesh term ( like treatment , y11 ) zeros are appended to the end of the descriptor to stand in place of the missing values ( so , for example , treatment in model 3 is y 110 , and in model 4 is y 110 0 , etc . ) .
+the numbers in the mesh descriptors are categorical values ; we represented them with indicator variables .
+that is , for each variable we calculated the number of possible categories c and then represented an observation of the variable as a sequence of c binary variables in which one binary variable was one and the remaining c 1 binary variables were zero .
+we also used a representation in which the words themselves were used as categorical input variables ( we call this representation lexical ) .
+for this collection of ncs there were 1184 unique nouns and therefore the feature vector for each noun had 1184 components .
+in table 3 we report the length of the feature vectors for one noun for each model .
+the entire nc was described by concatenating the feature vectors for the two nouns in sequence .
+the ncs represented in this fashion were used as input to a neural network .
+we used a feed-forward network trained with conjugate gradient descent .
+the network had one hidden layer , in which a hyperbolic tangent function was used , and an output layer representing the 18 relations .
+a logistic sigmoid function was used in the output layer to map the outputs into the interval ( 0 , 1 ) .
+the number of units of the output layer was the number of relations ( 18 ) and therefore fixed .
+the network was trained for several choices of numbers of hidden units ; we chose the best-performing networks based on training set error for each of the models .
+we subsequently tested these networks on held-out testing data .
+we compared the results with a baseline in which logistic regression was used on the lexical features .
+given the indicator variable representation of these features , this logistic regression essentially forms a table of log-odds for each lexical item .
+we also compared to a method in which the lexical indicator variables were used as input to a neural network .
+this approach is of interest to see to what extent , if any , the mesh-based features affect performance .
+note also that this lexical neural-network approach is feasible in this setting because the number of unique words is limited ( 1184 ) such an approach would not scale to larger problems .
+in table 4 and in figure 1 we report the results from these experiments .
+neural network using lexical features only yields 62 % accuracy on average across all 18 relations .
+a neural net trained on model 6 using the mesh terms to represent the nouns yields an accuracy of 61 % on average across all 18 relations .
+note that reasonable performance is also obtained for model 2 , which is a much more general representation .
+table 4 shows that both methods achieve up to 78 % accuracy at including the correct relation among the top three hypothesized .
+multi-class classification is a difficult problem ( vapnik , 1998 ) .
+in this problem , a baseline in which the algorithm guesses yields about 5 % accuracy .
+we see that our method is a significant improvement over the tabular logistic-regression-based approach , which yields an accuracy of only 31 percent .
+additionally , despite the significant reduction in raw information content as compared to the lexical representation , the mesh-based neural network performs as well as the lexical-based neural network . ( and we again stress that the lexical-based neural network is not a viable option for larger domains . )
+figure 2 shows the results for each relation .
+mesh-based generalization does better on some relations ( for example 14 and 15 ) and lexical on others ( 7 , 22 ) .
+it turns out that the test set for relationship 7 ( produces on a genetic level ) is dominated by ncs containing the words alleles and mrna and that all the ncs in the training set containing these words are assigned relation label 7 .
+a similar situation is seen for relation 22 , time ( 2-1 ) .
+in the test set examples the second noun is either recurrence , season or time .
+in the training set , these nouns appear only in ncs that have been labeled as belonging to relation 22 .
+on the other hand , if we look at relations 14 and 15 , we find a wider range of words , and in some cases the words in the test set are not present in the training set .
+in relationship 14 ( purpose ) , for example , vaccine appears 6 times in the test set ( e.g. , varicella vaccine ) .
+in the training set , ncs with vaccine in it have also been classified as instrument ( antigen vaccine , polysaccharide vaccine ) , as object ( vaccine development ) , as subtype of ( opv vaccine ) and as wrong ( vaccines using ) .
+other words in the test set for 14 are varicella which is present in the trainig set only in varicella serology labeled as attribute of clinical study , drainage which is in the training set only as location ( gallbladder drainage and tract drainage ) and activity ( bile drainage ) .
+other test set words such as immunisation and carcinogen do not appear in the training set at all .
+in other words , it seems that the meshk-based categorization does better when generalization is required .
+additionally , this data set is dense in the sense that very few testing words are not present in the training data .
+this is of course an unrealistic situation and we wanted to test the robustness of the method in a more realistic setting .
+the results reported in table 4 and in figure 1 were obtained splitting the data into 50 % training and 50 % testing for each relation and we had a total of 855 training points and 805 test points .
+of these , only 75 examples in the testing set consisted of ncs in which both words were not present in the training set .
+we decided to test the robustness of the meshbased model versus the lexical model in the case of unseen words ; we are also interested in seeing the relative importance of the first versus the second noun .
+therefore , we split the data into 5 % training ( 73 data points ) and 95 % testing ( 1587 data points ) and partitioned the testing set into 4 subsets as follows ( the numbers in parentheses are the numbers of points for each case ) : figure 4 shows the accuracy for the mesh based- model for the the four cases of table 5 .
+it is interesting to note that the accuracy for case 1 ( first noun not present in the training set ) is much higher than the accuracy for case 2 ( second noun not present in the training set ) .
+this seems to indicate that the second noun is more important for the classification that the first one .
+conclusions .
+we have presented a simple approach to corpus- based assignment of semantic relations for noun compounds .
+the main idea is to define a set of relations that can hold between the terms and use standard machine learning techniques and a lexical hierarchy to generalize from training instances to new examples .
+the initial results are quite promising .
+in this task of multi-class classification ( with 18 classes ) we achieved an accuracy of about 60 % .
+these results can be compared with vanderwende ( 1994 ) who reports an accuracy of 52 % with 13 classes and lapata ( 2000 ) whose algorithm achieves about 80 % accuracy for a much simpler binary classification .
+we have shown that a class-based representation performes as well as a lexical-based model despite the reduction of raw information content and despite a somewhat errorful mapping from terms to concepts .
+we have also shown that representing the nouns of the compound by a very general representation ( model 2 ) achieves a reasonable performance of aout 52 % accuracy on average .
+this is particularly important in the case of larger collections with a much bigger number of unique words for which the lexical-based model is not a viable option .
+our results seem to indicate that we do not lose much in terms of accuracy using the more compact mesh representation .
+we have also shown how mesh-besed models out perform a lexical-based approach when the number of training points is small and when the test set consists of words unseen in the training data .
+this indicates that the mesh models can generalize successfully over unseen words .
+our approach handles mixed-class relations naturally .
+for the mixed class defect in location , the algorithm achieved an accuracy around 95 % for both defect and location simultaneously .
+our results also indicate that the second noun ( the head ) is more important in determining the relationships than the first one .
+in future we plan to train the algorithm to allow different levels for each noun in the compound .
+we also plan to compare the results to the tree cut algorithm reported in ( li and abe , 1998 ) , which allows different levels to be identified for different subtrees .
+we also plan to tackle the problem of noun compounds containing more than two terms .

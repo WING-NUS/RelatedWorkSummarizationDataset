@@ -1,0 +1,184 @@
+object recognition as machine translation : learning a lexicon for a fixed image vocabulary .
+abstract .
+we describe a model of object recognition as machine translation .
+in this model , recognition is a process of annotating image regions with words .
+firstly , images are segmented into regions , which are classified into region types using a variety of features .
+a mapping between region types and keywords supplied with the images , is then learned , using a method based around em .
+this process is analogous with learning a lexicon from an aligned bitext .
+for the implementation we describe , these words are nouns taken from a large vocabulary .
+on a large test set , the method can predict numerous words with high accuracy .
+simple methods identify words that cannot be predicted well .
+we show how to cluster words that individually are difficult to predict into clusters that can be predicted well for example , we cannot predict the distinction between train and locomotive using the current set of features , but we can predict the underlying concept .
+the method is trained on a substantial collection of images .
+extensive experimental results illustrate the strengths and weaknesses of the approach .
+introduction .
+there are three major current types of theory of object recognition .
+one reasons either in terms of geometric correspondence and pose consistency ; in terms of template matching via classifiers ; or by correspondence search to establish the presence of suggestive relations between templates .
+a detailed review of these strategies appears in [ 4 ] .
+these types of theory are at the wrong scale to address core issues : in particular , what counts as an object ? ( usually addressed by choosing by hand objects that can be recognised using the strategy propounded ) ; which objects are easy to recognise and which are hard ? ( not usually addressed explicitly ) ; and which objects are indistinguishable using our features ? ( current theories typically cannot predict the equivalence relation imposed on objects by the use of a particular set of features ) .
+this paper describes a model of recognition that offers some purchase on each of the questions above , and demonstrates systems built with this model .
+annotated images and auto-annotation .
+there are a wide variety of datasets that consist of very large numbers of annotated images .
+examples include the corel dataset ( see figure 1 ) , most museum image collections ( e.g. http : / / www.thinker.org / fam / thinker.html ) , the web archive ( http : / / www. archive. org ) , and most collections of news photographs on the web ( which come with captions ) .
+typically , these annotations refer to the content of the annotated image , more or less specifically and more or less comprehensively .
+for example , the corel annotations describe specific image content , but not all of it ; museum collections are often annotated with some specific material the artist , date of acquisition , etc. but often contain some rather abstract material as well .
+there exist some methods that cluster image representations and text to produce a representation of a joint distribution linking images and words [ 1 , 2 ] .
+this work could predict words for a given image by computing words that had a high posterior probability given the image .
+this process , referred to as auto-annotation in those papers , is useful in itself ( it is common to index images using manual annotations [ 7,12 ] ; if one could predict these annotations , one could save considerable work ) .
+however , in this form auto-annotation does not tell us which image structure gave rise to which word , and so it is not really recognition .
+in [ 8 ] , mori et.al. proposed a method for annotating image grids using cooccurences .
+in [ 9,10 ] , maron et al. study automatic annotation of images , but work one word at a time , and offer no method of finding the correspondence between words and regions .
+this paper shows that it is possible to learn which region gave rise to which word .
+recognition as translation .
+one should see this process as analogous to machine translation .
+we have a representation of one form ( image regions ; french ) and wish to turn it into another form ( words ; english ) .
+in particular , our models will act as lexicons , devices that predict one representation ( words ; english ) , given another representation ( image regions ; french ) .
+learning a lexicon from data is a standard problem in machine translation literature ( a good guide is melameds thesis [ 11 ] ; see also [ 5,6 ] ) .
+typically , lexicons are learned from a form of dataset known as an aligned bitext a text in two languages , where rough correspondence , perhaps at the paragraph or sentence level , is known .
+the problem of lexicon acquisition involves determining precise correspondences between words of different languages .
+datasets consisting of annotated images are aligned bitexts we have an image , consisting of regions , and a set of text .
+while we know the text goes with the image , we dont know which word goes with which region .
+as the rest of this paper shows , we can learn this correspondence using a variant of em .
+this view of recognition as translation renders several important object recognition problems amenable to attack .
+in this model , we can attack : what counts as an object ? by saying that all words ( or all nouns , etc . ) count as objects ; which objects are easy to recognise ? by saying that words that can be reliably attached to image regions are easy to recognise and those that cannot , are not ; and which objects are indistinguishable using our features ? by finding words that are predicted with about the same posterior probability given any image group such objects are indistinguishable given the current feature set .
+using em to learn a lexicon .
+we will segment images into regions and then learn to predict words using regions .
+each region will be described by some set of features .
+in machine translation , a lexicon links discrete objects ( words in one language ) to discrete objects ( words in the other language ) .
+however , the features naturally associated with image regions do not occupy a discrete space .
+the simplest solution to this problem is to use k-means to vector quantize the image region representation .
+we refer to the label associated with a region by this process as a blob .
+in the current work , we use all keywords associated with each image .
+if we need to refer to the abstract model of a word ( resp. blob ) rather than an instance and the context doesnt make the reference obvious , we will use the term word token ( resp. blob token ) .
+the problem is to use the training data set to construct a probability table linking blob tokens with word tokens .
+this table is the conditional probability of a word token given a blob token .
+the difficulty in learning this table is that the data set does not provide explicit correspondence we dont know which region is the train .
+this suggests the following iterative strategy : firstly , use an estimate of the probability table to predict correspondences ; now use the correspondences to refine the estimate of the probability table .
+this , in essence , is what em does .
+we can then annotate the images by first classifying the segments to find the corresponding blobs , and then finding the corresponding word for each blob by choosing the word with the highest probability .
+fig . 3 .
+example : each word is predicted with some probability by each blob , meaning that we have a mixture model for each word .
+the association probabilities provide the correspondences ( assignments ) between each word and the various image segments .
+assume that these assignments are known ; then computing the mixture model is a matter of counting .
+similarly , assume that the association probabilities are known ; then the correspondences can be predicted .
+this means that em is an appropriate estimation algorithm .
+em algorithm for finding the correspondence between blobs and words .
+we use the notation of figure 2 .
+when translating blobs to words , we need to estimate the probability p ( anj = i ) that in image n , a particular blob bi is associated with a specific word wj .
+we do this for each image as shown in figure 3 .
+we use model 2 of brown et. al. [ 3 ] , which requires that we sum over all the possible assignments of words to blobs .
+we can carry out this optimisation using an em algorithm , which iterates between the following two steps .
+applying and refining the lexicon .
+after obtaining the probability table , we can annotate image regions in any test image .
+we do this by assigning words to some or all regions .
+we first determine the blob corresponding to each region by vector quantisation .
+we now choose the word with the highest probability given the blob and annotate the region with this word .
+there are several important variants available .
+controlling the vocabulary by refusing to predict .
+the process of learning the table prunes the vocabulary to some extent , because some words may not be the word predicted with highest probability for any blob .
+however , even for words that remain in the vocabulary , we dont expect all predictions to be good .
+in particular , some blobs may not predict any word with high probability , perhaps because they are too small to have a distinct identity .
+it is natural to establish a threshold and require that p ( word | blob ) > threshold before predicting the word .
+this is equivalent to assigning a null word to any blob whose best predicted word lies below this threshold .
+the threshold itself can be chosen using performance measures on the training data , as in section 4 .
+this process of refusing to predict prunes the vocabulary further , because some words may never be predicted with sufficient probability .
+in turn , this suggests that once a threshold has been determined , a new lexicon should be fitted using only the reduced vocabulary .
+in practice , this is advantageous ( section 4 ) , probably because reassigning probability stolen by words that cannot be predicted improves correspondence estimates and so the quality of the lexicon .
+clustering indistinguishable words .
+generally , we do not expect to obtain datasets with a vocabulary that is totally suitable for our purposes .
+some words may be visually indistinguishable , like cat and tiger , or train and locomotive . ( some examples are shown in figure 11 ) .
+other words may be visually distinguishable in principle , but not using our features , for example eagle and jet , both of which occur as large dark regions of roughly the same shape in aerial views .
+finally , some words may never appear apart sufficiently often to allow the correspondence to be disentangled in detail .
+this can occur because one word is a modifier for example , in our data set , polar reliably predicts bear or because of some relation between the concepts for example , in our data set , either mare or foals almost quite reliably predicts horses but in either case , there is no prospect of learning the correspondence properly .
+there are some methods for learning to form compounds like polar bear [ 11 ] , but we have not yet experimented with them .
+all this means that there are distinctions between words we should not attempt to draw based on the particular blob data used .
+this suggests clustering the words which are very similar .
+each word is replaced with its cluster label ; prediction performance should ( and does , section 4 ) improve .
+in order to cluster the words , we obtain a similarity matrix giving similarity scores for words .
+to compare two words , we use the symmetrised kullbackleibler ( kl ) divergence between the conditional probability of blobs , given the words .
+this implies that two words will be similar if they generate similar image blobs at similar frequencies .
+we then apply normalised cuts on the similarity matrix to obtain the clusters [ 13 ] .
+at each stage , we set the number of clusters to 75 % of the current vocabulary .
+experimental results .
+we train using 4500 corel images .
+there are 371 words in total in the vocabulary and each image has 4-5 keywords .
+images are segmented using normalized cuts [ 13 ] .
+only regions larger than a threshold are used , and there are typically 5- 10 regions for each image .
+regions are then clustered into 500 blobs using k- means .
+we use 33 features for each region ( including region color and standard deviation , region average orientation energy ( 12 filters ) , region size , location , convexity , first moment , and ratio of region area to boundary length squared ) .
+we emphasize that we chose a set of features and stuck with it through the experimental procedure , as we wish to study mechanisms of recognition rather than specific feature sets .
+evaluating annotation .
+annotation is relatively easy to evaluate , because the images come from an annotated set .
+we use 500 images from a held-out test set to evaluate annotation performance .
+a variety of metrics are possible ; the receiver operating curve is not particularly helpful , because there are so many words .
+instead , we evaluate the performance of a putative retrieval system using automatic annotation .
+the class confusion matrix is also not helpful in our case , because the number of classes is 371 , and we have a very sparse matrix .
+evaluation method : each image in the test set is automatically annotated , by taking every region larger than the threshold , quantizing the region to a blob , and using the lexicon to determine the most likely word given that blob ; if the probability of the word given the blob is greater than the relevant threshold , then the image is annotated with that word .
+we now consider retrieving an image from the test set using keywords from the vocabulary and the automatically established annotations .
+we score relevance by looking at the actual annotations , and plot recall and precision .
+base results : only 80 words from the 371 word vocabulary can be predicted ( others do not have the maximum value of the probability for any blob ) .
+we set the minimum probability threshold to zero , so that every blob predicts a word .
+as figure 5 shows , we have some words with very high recall values , and we have some words with low recall .
+the precision values shown in the figure dont vary much on the whole , though some words have very high precision .
+for these words , the recall is not high , suggesting that we can also predict some low frequency words very well .
+table 1 shows recall and precision values for some good words for which recall is higher than 0.4 and precision is higher than 0.15 .
+the effect of retraining : since we can predict only 80 words , we can reduce our vocabulary only to those words , and run em algorithm again .
+as figure 5 shows , the results for the refitted words are very similar to the original ones .
+however , we can predict some words with higher recall and higher precision .
+table 2 shows the recall and precision values for the selected good words after retraining .
+the number of good words are more than the original ones ( compare with table 1 ) , since the words have higher probabilities .
+the effect of the null probability : we compare the recall and precision values for test and training data on some chosen words .
+as can be seen in figure 6 , the results are very similar for both test and training data .
+we also experiment with the effect of null threshold by changing it between 0 and 0.4 .
+by increasing the null threshold the recall decreases .
+the increase in the precision values shows that our correct prediction rate is increasing .
+when we increase the null threshold enough , some words cannot be predicted at all , since their highest prediction rate is lower than the null threshold .
+therefore , both recall and precision values become 0 after some threshold .
+table 1 and table 2 shows that , with the increasing null threshold values , the number of words decreases but we have more reliable words .
+since null word prediction decreases the word predictions , recall decreases .
+the increase in the precision shows that null word prediction increases the quality of the prediction .
+the effect of word clustering : we also compute recall and precision after clustering the words .
+as figure 5 shows , recall values of the clusters are higher than recall values of the single words .
+table 3 shows that we have some very nice clusters which have strong semantic or visual relations like kit-horses-mare-foals , leaf-flowers-plants-vegetables or pool-athlete-vines-swimmers and the results are better when we cluster the words ( compare with table 1 ) .
+correspondence .
+evaluation method : because the data set contains no correspondence information , it is hard to check correspondence canonically or for large volumes of data ; table 3 .
+some good clusters , where the recall values are greater than 0.4 , and precision values are greater than 0.15 when null threshold is 0 .
+cluster numbers shows how many times we cluster the words and run em algorithm again .
+most of the clusters appear to represent real semantic and visual clusters ( e.g.kit -horses -mare -foals , leaf-flowers-plants-vegetables , pool-athlete-vines-swimmers ) .
+the recall and precision values are higher than those for single words ( compare with table 1 ) .
+base results : we worked with a set of 100 test images for checking the correspondence results .
+the prediction rate is computed by counting the average number of times that the blob predicts the word correctly .
+for some good words ( e.g : ocean ) we have up to 70 % correct prediction as shown in figure 7 ; this means that , on this test set , when the word ocean is predicted , 70 % of the time it will be predicted on an ocean region .
+this is unquestionably object recognition .
+it is more difficult to assess the rate at which regions are missed .
+if one is willing to assume that missing annotations ( for example , the ocean appears in the picture , but the word ocean does not appear in the annotation ) are unbiased , then one can estimate the rate of false negatives from the annotation performance data .
+in particular , words with a high recall rate in that data are likely to have a low false negative rate .
+some examples are shown in figures 8 and 9 .
+we can predict some words like sky , tree , grass always correctly in most of the images .
+we can predict the words with high recall correctly , but we cannot predict some words which have very low recall .
+the effect of the null prediction : figure 10 shows the effect of assigning null words .
+we can still predict the well behaved words with higher probabilities .
+in figure 7 we show that null prediction generally increases the prediction rate for the words that we can predict .
+fig . 10 .
+result of assigning null .
+some low probability words are assigned to null , but the high probability words remain same .
+this increases the correct prediction rate for the good words , however we may still have wrong predictions as in the last figure .
+the confusion between grass and foals in the second figure is an example of correspondence problem .
+since foals almost always occur with grass in the data , if there is nothing to tell the difference we cannot know which is which .
+the effect of word clustering : in figure 11 we show the effect of clustering words .
+as can be seen generally similar words are grouped into one ( e.g. train-locomotive , horse-mare ) .
+figure 7 shows that the prediction rate genarally increases when we cluster the words .
+discussion .
+this method is attractive , because it allows us to attack a variety of otherwise inaccessible problems in object recognition .
+it is wholly agnostic with respect to features ; one could use this method for any set of features , and even for feature sets that vary with object definition .
+it may be possible to select features by some method that attempts to include features that improve recognition performance .
+there is the usual difficulty with lexicon learning algorithms that a bias in correspondence can lead to problems ; for example , in a data set consisting of parliamentry proceedings we expect the english word house to translate to the french word chambre .
+we expect but have not so far found similar occasional strange behaviour for our problem .
+we have not yet explored the many interesting further ramifications of our analogy with translation .
+automated discovery of non-compositional compounds .
+a greedy algorithm for determining that some elements of a lexicon should be grouped might deal with compound words ( as in [ 11 ] ) , and might be used to discover that some image regions should be grouped together before translating them .
+exploiting shape .
+typically , a set of regions should map to a single word , because their compound has distinctive structure as a shape .
+we should like to learn a grouping process at the same time as the lexicon is constructed .
+joint learning of blob descriptions and the lexicon .
+we are currently studying methods that cluster regions ( rather than quantizing their representation ) to ensure that region clusters are improved by word information .

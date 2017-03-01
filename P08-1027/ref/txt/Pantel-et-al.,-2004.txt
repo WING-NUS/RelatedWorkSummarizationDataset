@@ -1,0 +1,187 @@
+towards terascale knowledge acquisition .
+abstract .
+although vast amounts of textual data are freely available , many nlp algorithms exploit only a minute percentage of it .
+in this paper , we study the challenges of working at the terascale .
+we present an algorithm , designed for the terascale , for mining is-a relations that achieves similar performance to a state-of-the-art linguistically-rich method .
+we focus on the accuracy of these two systems as a function of processing time and corpus size .
+introduction .
+the natural language processing ( nlp ) community has recently seen a growth in corpus-based methods .
+algorithms light in linguistic theories but rich in available training data have been successfully applied to several applications such as machine translation ( och and ney 2002 ) , information extraction ( etzioni et al. 2004 ) , and question answering ( brill et al. 2001 ) .
+in the last decade , we have seen an explosion in the amount of available digital text resources .
+it is estimated that the internet contains hundreds of terabytes of text data , most of which is in an unstructured format .
+yet , many nlp algorithms tap into only megabytes or gigabytes of this information .
+in this paper , we make a step towards acquiring semantic knowledge from terabytes of data .
+we present an algorithm for extracting is-a relations , designed for the terascale , and compare it to a state of the art method that employs deep analysis of text ( pantel and ravichandran 2004 ) .
+we show that by simply utilizing more data on this task , we can achieve similar performance to a linguistically- rich approach .
+the current state of the art co- occurrence model requires an estimated 10 years just to parse a 1 tb corpus ( see table 1 ) .
+instead of using a syntactically motivated co-occurrence approach as above , our system uses lexico-syntactic rules .
+in particular , it finds lexico-pos patterns by making modifications to the basic edit distance algorithm .
+once these patterns have been learnt , the algorithm for finding new is-a relations runs in o ( n ) , where n is the number of sentences .
+in semantic hierarchies such as wordnet ( miller 1990 ) , an is-a relation between two words x and y represents a subordinate relationship ( i.e. x is more specific than y ) .
+many algorithms have recently been proposed to automatically mine is-a ( hyponym / hypernym ) relations between words .
+here , we focus on is-a relations that are characterized by the questions " what / who is x ? "
+for example , table 2 shows a sample of 10 is-a relations discovered by the algorithms presented in this paper .
+in this table , we call azalea , tiramisu , and winona ryder instances of the respective concepts flower , dessert and actress .
+these kinds of is-a relations would be useful for various purposes such as ontology construction , semantic information retrieval , question answering , etc .
+the main contribution of this paper is a comparison of the quality of our pattern-based and co- occurrence models as a function of processing time and corpus size .
+also , the paper lays a foundation for terascale acquisition of knowledge .
+we will show that , for very small or very large corpora or for situations where recall is valued over precision , the pattern-based approach is best .
+relevant work .
+previous approaches to extracting is-a relations fall under two categories : pattern-based and cooccurrence-based approaches .
+pattern-based approaches .
+marti hearst ( 1992 ) was the first to use a pattern-based approach to extract hyponym relations from a raw corpus .
+she used an iterative process to semi-automatically learn patterns .
+however , a corpus of 20mb words yielded only 400 examples .
+our pattern-based algorithm is very similar to the one used by hearst .
+she uses seed examples to manually discover her patterns whearas we use a minimal edit distance algorithm to automatically discover the patterns .
+riloff and shepherd ( 1997 ) used a semiautomatic method for discovering similar words using a few seed examples by using pattern-based techniques and human supervision .
+berland and charniak ( 1999 ) used similar pattern-based techniques and other heuristics to extract meronymy ( part-whole ) relations .
+they reported an accuracy of about 55 % precision on a corpus of 100,000 words .
+girju et al. ( 2003 ) improved upon berland and charniak 's work using a machine learning filter .
+mann ( 2002 ) and fleischman et al. ( 2003 ) used part of speech patterns to extract a subset of hyponym relations involving proper nouns .
+our pattern-based algorithm differs from these approaches in two ways .
+we learn lexico-pos patterns in an automatic way .
+also , the patterns are learned with the specific goal of scaling to the terascale ( see table 2 ) .
+co-occurrence-based approaches .
+the second class of algorithms uses co- occurrence statistics ( hindle 1990 , lin 1998 ) .
+these systems mostly employ clustering algorithms to group words according to their meanings in text .
+assuming the distributional hypothesis ( harris 1985 ) , words that occur in similar grammatical contexts are similar in meaning .
+curran and moens ( 2002 ) experimented with corpus size and complexity of proximity features in building automatic thesauri .
+cbc ( clustering by committee ) proposed by pantel and lin ( 2002 ) achieves high recall and precision in generating similarity lists of words discriminated by their meaning and senses .
+however , such clustering algorithms fail to name their classes .
+caraballo ( 1999 ) was the first to use clustering for labeling is-a relations using conjunction and apposition features to build noun clusters .
+recently , pantel and ravichandran ( 2004 ) extended this approach by making use of all syntactic dependency features for each noun .
+syntactical co-occurrence approach .
+much of the research discussed above takes a similar approach of searching text for simple surface or lexico-syntactic patterns in a bottom-up approach .
+our co-occurrence model ( pantel and ravichandran 2004 ) makes use of semantic classes like those generated by cbc .
+hyponyms are gen- erated in a top-down approach by naming each group of words and assigning that name as a hypo- nym of each word in the group ( i.e. , one hyponym per instance / group label pair ) .
+the input to the extraction algorithm is a list of semantic classes , in the form of clusters of words , which may be generated from any source .
+for ex- ample , following are two semantic classes discov- ered by cbc : the extraction algorithm first labels concepts ( a ) and ( b ) with fruit and host respectively .
+then , is-a relationships are extracted , such as : apple is a fruit , pear is a fruit , and david letterman is a host .
+an instance such as pear is assigned a hypernym fruit not because it necessarily occurs in any par- ticular syntactic relationship with the word fruit , but because it belongs to the class of instances that does .
+the labeling of semantic classes is performed in three phases , as outlined below .
+phase i. in the first phase of the algorithm , feature vec- tors are extracted for each word that occurs in a semantic class .
+each feature corresponds to a grammatical context in which the word occurs .
+for example , " catch " is a verb-object context .
+if the word wave occurred in this context , then the con- text is a feature of wave .
+phase ii .
+following ( pantel and lin 2002 ) , a committee for each semantic class is constructed .
+a committee is a set of representative elements that unambiguously describe the members of a possible class .
+for example , in one of our experiments , the committees for semantic classes ( a ) and ( b ) from section 3 were : phase iii .
+by averaging the feature vectors of the committee members of a particular semantic class , we obtain a grammatical template , or signature , for that class .
+for example , figure 1 shows an excerpt of the grammatical signature for semantic class ( b ) .
+the vector is obtained by averaging the feature vectors of the words in the committee of this class .
+the " v.subj.n.joke " feature indicates a subject-verb relationship between the class and the verb joke while " n.appo.n.host " indicates an apposition relationship between the class and the noun host .
+the two columns of numbers indicate the frequency and mutual information scores .
+to name a class , we search its signature for certain relationships known to identify class labels .
+these relationships , automatically learned in ( pantel and ravichandran 2004 ) , include appositions , nominal subjects , such as relationships , and like relationships .
+we sum up the mutual information scores for each term that occurs in these relationships with a committee of a class .
+the highest scoring term is the name of the class .
+the syntactical co-occurrence approach has worst-case time complexity o ( n2k ) , where n is the number of words in the corpus and k is the feature- space ( pantel and ravichandran 2004 ) .
+just to parse a 1 tb corpus , this approach requires approximately 10.2 years ( see table 2 ) .
+scalable pattern-based approach .
+we propose an algorithm for learning highly scalable lexico-pos patterns .
+given two sentences with their surface form and part of speech tags , the algorithm finds the optimal lexico-pos alignment .
+for example , consider the following 2 sentences : applying a pos tagger ( brill 1995 ) gives the following output : algorithm .
+we present an algorithm for learning patterns at multiple levels .
+multilevel representation is defined as the different levels of a sentence such as the lexical level and pos level .
+consider two strings a ( 1 , n ) and b ( 1 , m ) of lengths n and m respectively .
+let a1 ( 1 , n ) and a2 ( 1 , n ) be the level 1 ( lexical level ) and level 2 ( pos level ) representations for the string a ( 1 , n ) .
+similarly , let b1 ( 1 , m ) and b2 ( 1 , m ) be the level 1 and level 2 representations for the string b ( 1 , m ) .
+the algorithm consists of two parts : calculation of the minimal edit distance and retrieval of an optimal pattern .
+the minimal edit distance algorithm calculates the number of edit operations ( insertions , deletions and replacements ) required to change one string to another string .
+the optimal pattern is retrieved by keeping track of the edit operations ( which is the second part of the algorithm ) .
+implementation and filtering .
+the above algorithm takes o ( y2 ) time for every pair of strings of length at most y .
+hence , if there are x strings in the collection , each string having at most length y , the algorithm has time complexity o ( x 2y2 ) to extract all the patterns in the collection .
+applying the above algorithm on a corpus of 3gb with 50 is-a relationship seeds , we obtain a set of 600 lexico-pos .
+following are two of them : note that we store different pos variations of the anchors x and y. as shown in example 1 , the pos variations of the anchor x are ( jj nn , jj nn nn , nn ) .
+the variations for anchor y are ( jj jj nn , jj , etc . ) .
+the reason is quite straightforward : we need to determine the boundary of the anchors x and y and a reasonable way to delimit them would be to use pos information .
+all the patterns produced by the multi-level pattern learning algorithm were generated from positive examples .
+from amongst these patterns , we need to find the most important ones .
+this is a critical step because frequently occurring patterns have low precision whereas rarely occurring patterns have high precision .
+from the information extraction point of view neither of these patterns is very useful .
+we need to find patterns with relatively high occurrence and high precision .
+we apply the log likelihood principle ( dunning 1993 ) to compute this score .
+the top 15 patterns according to this metric are listed in table 3 ( we omit the pos variations for visibility ) .
+some of these patterns are similar to the ones discovered by hearst ( 1992 ) while other patterns are similar to the ones used by fleischman et al. ( 2003 ) .
+time complexity .
+to extract hyponym relations , we use a fixed number of patterns across a corpus .
+since we treat each sentences independently from others , the algorithm runs in linear time o ( n ) over the corpus size , where n is number of sentences in the corpus .
+experimental results .
+in this section , we empirically compare the pattern-based and co-occurrence-based models presented in section 3 and section 4 .
+the focus is on the precision and recall of the systems as a function of the corpus size .
+experimental setup .
+we use a 15gb newspaper corpus consisting of trec9 , trec 2002 , yahoo !
+news 0.5gb , ap newswire 2gb , new york times 2gb , reuters 0.8gb , wall street journal 1.2gb , and various online news website 1.5gb.
+for our experiments , we extract from this corpus six data sets of different sizes : 1.5mb , 15 mb , 150 mb , 1.5gb , 6gb and 15gb .
+for the co-occurrence model , we used minipar ( lin 1994 ) , a broad coverage parser , to parse each data set .
+we collected the frequency counts of the grammatical relationships ( contexts ) output by minipar and used them to compute the pointwise mutual information vectors described in section 3.1 .
+for the pattern-based approach , we use brill 's pos tagger ( 1995 ) to tag each data set .
+precision .
+we performed a manual evaluation to estimate the precision of both systems on each dataset .
+for each dataset , both systems extracted a set of is-a relationships .
+six sets were extracted for the pattern-based approach and five sets for the co- occurrence approach ( the 15gb corpus was too large to process using the co-occurrence model ~ see dependency parsing time estimates in table 2 ) .
+from each resulting set , we then randomly selected 50 words along with their top 3 highest ranking is-a relationships .
+for example , table 4 shows three randomly selected names for the pattern-based system on the 15gb dataset .
+for each word , we added to the list of hypernyms a human generated hypernym ( obtained from an annotator looking at the word without any system or word- net hyponym ) .
+we also appended the wordnet hypernyms for each word ( only for the top 3 senses ) .
+each of the 11 random samples contained a maximum of 350 is-a relationships to manually evaluate ( 50 random words with top 3 system , top 3 wordnet , and human generated relationship ) .
+we presented each of the 11 random samples to two human judges .
+the 50 randomly selected words , together with the system , human , and wordnet generated is-a relationships , were randomly ordered .
+that way , there was no way for a judge to know the source of a relationship nor each system 's ranking of the relationships .
+for each relationship , we asked the judges to assign a score of correct , partially correct , or incorrect .
+we then computed the average precision of the system , human , and wordnet on each dataset .
+we also computed the percentage of times a correct relationship was found in the top 3 is-a relationships of a word and the mean reciprocal rank ( mrr ) .
+for each word , a system receives an mrr score of 1 / m , where m is the rank of the first name judged correct .
+table 5 shows the results comparing the two automatic systems .
+table 6 shows similar results for a more lenient evaluation where both correct and partially correct are judged correct .
+for small datasets ( below 150mb ) , the pattern- based method achieves higher precision since the co-occurrence method requires a certain critical mass of statistics before it can extract useful class signatures ( see section 3 ) .
+on the other hand , the pattern-based approach has relatively constant precision since most of the is-a relationships selected by it are fired by a single pattern .
+once the co-occurrence system reaches its critical mass ( at 150mb ) , it generates much more precise hyponyms .
+the kappa statistics for our experiments were all in the range 0.78 - 0.85 .
+table 7 and table 8 compare the precision of the pattern-based and co-occurrence-based methods with the human and wordnet hyponyms .
+the variation between the human and wordnet scores across both systems is mostly due to the relative cleanliness of the tokens in the co-occurrencebased system ( due to the parser used in the approach ) .
+wordnet consistently generated higher precision relationships although both algorithms approach wordnet quality on 6gb ( the pattern- based algorithm even surpasses wordnet precision on 15gb ) .
+furthermore , wordnet only generated a hyponym 40 % of the time .
+this is mostly due to the lack of proper noun coverage in wordnet .
+on the 6 gb corpus , the co-occurrence approach took approximately 47 single pentium-4 2.5 ghz processor days to complete , whereas it took the pattern-based approach only four days to complete on 6 gb and 10 days on 15 gb .
+recall .
+the co-occurrence model has higher precision than the pattern-based algorithm on most datasets .
+datesets .
+however , figure 2 shows that the pattern-based approach extracts many more relationships .
+semantic extraction tasks are notoriously difficult to evaluate for recall .
+to approximate recall , we defined a relative recall measure and conducted a question answering ( qa ) task of answering definition questions .
+relative recall .
+although it is impossible to know the number of is-a relationships in any non-trivial corpus , it is possible to compute the recall of a system relative to another system 's recall .
+the recall of a system a , ra , is given by the following formula : hence , figure 3 shows the relative recall of a = pattern- based approach relative to b = co-occurrence model .
+because of sparse data , the pattern-based approach has much higher precision and recall ( six times ) than the co-occurrence approach on the small 15mb dataset .
+in fact , only on the 150mb dataset did the co-occurrence system have higher recall .
+with datasets larger than 150mb , the co- occurrence algorithm reduces its running time by filtering out grammatical relationships for words that occurred fewer than k = 40 times and hence recall is affected ( in contrast , the pattern-based approach may generate a hyponym for a word that it only sees once ) .
+definition questions .
+following fleischman et al. ( 2003 ) , we select the 50 definition questions from the trec2003 ( voorhees 2003 ) question set .
+these questions are of the form " who is x ? " and " what is x ? "
+for each question ( e.g. , " who is niels bohr ? " , " what is feng shui ? " ) we extract its respective instance ( e.g. , " neils bohr " and " feng shui " ) , look up their corresponding hyponyms from our is-a table , and present the corresponding hyponym as the answer .
+we compare the results of both our systems with wordnet .
+we extract at most the top 5 hyponyms provided by each system .
+we manually evaluate the three systems and assign 3 classes " correct ( c ) " , " partially correct ( p ) " or " incorrect ( i ) " to each answer .
+this evaluation is different from the evaluation performed by the trec organizers for definition questions .
+however , by being consistent across all systems during the process , these evaluations give an indication of the recall of the knowledge base .
+we measure the performance on the top 1 and the top 5 answers returned by each system .
+table 9 and table 10 show the results .
+the corresponding scores for wordnet are 38 % accuracy in both the top-1 and top-5 categories ( for both strict and lenient ) .
+as seen in this experiment , the results for both the pattern-based and cooccurrence-based systems report very poor performance for data sets up to 150 mb .
+however , there is an increase in performance for both systems on the 1.5 gb and larger datasets .
+the performance of the system in the top 5 category is much better than that of wordnet ( 38 % ) .
+there is promise for increasing our system accuracy by re- ranking the outputs of the top-5 hypernyms .
+conclusions .
+there is a long standing need for higher quality performance in nlp systems .
+it is possible that semantic resources richer than wordnet will enable them to break the current quality ceilings .
+both statistical and symbolic nlp systems can make use of such semantic knowledge .
+with the increased size of the web , more and more training data is becoming available , and as banko and brill ( 2001 ) showed , even rather simple learning algorithms can perform well when given enough data .
+in this light , we see an interesting need to develop fast , robust , and scalable methods to mine semantic information from the web .
+this paper compares and contrasts two methods for extracting is-a relations from corpora .
+we presented a novel pattern-based algorithm , scalable to the terascale , which outperforms its more informed syntactical co-occurrence counterpart on very small and very large data .
+albeit possible to successfully apply linguistically-light but data-rich approaches to some nlp applications , merely reporting these results often fails to yield insights into the underlying theories of language at play .
+our biggest challenge as we venture to the terascale is to use our new found wealth not only to build better systems , but to improve our understanding of language .

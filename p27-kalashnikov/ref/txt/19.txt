@@ -1,0 +1,213 @@
+improving author coreference by resource-bounded information gathering from the web .
+abstract .
+accurate entity resolution is sometimes impossible simply due to insufficient information .
+for example , in research paper author name resolution , even clever use of venue , title and co-authorship relations are often not enough to make a confident coreference decision .
+this paper presents several methods for increasing accuracy by gathering and integrating additional evidence from the web .
+we formulate the coreference problem as one of graph partitioning with discriminatively-trained edge weights , and then incorporate web information either as additional features or as additional nodes in the graph .
+since the web is too large to incorporate all its data , we need an efficient procedure for selecting a subset of web queries and data .
+we formally describe the problem of resource bounded information gathering in each of these contexts , and show significant accuracy improvement with low cost .
+introduction .
+machine learning and web mining researchers are increasingly interested in using search engines to gather information for augmenting their models , e.g. [ etzioni et al. , 2004 ] , [ mccallum and li , 2003 ] , [ dong et al. , 2004 ] .
+however , it is impossible to query for the entire web , and this gives rise to the problem of efficiently selecting which queries will provide the most benefit .
+we refer to this problem as resource- bounded information gathering from the web .
+we examine this problem in the domain of entity resolution .
+given a large set of entity names ( each in their own context ) , the task is to determine which names are referring to the same underlying entity .
+often these coreference merging decisions are best made , not merely by examining separate pairs of names , but relationally , by accounting for transitive dependencies among all merging decisions .
+following previous work , we thus formulate entity resolution as graph partitioning with edge weights based on many features with parameters learned by maximum entropy [ mccallum and wellner , 2004 ] , and in this paper explore a relational , graph-based approach to resource-bounded information gathering .
+the specific entity resolution domain we address is research paper author coreference .
+the vertices in our coreference graphs are citations , each containing an author name with the same last name and first initial.1 coreference in this domain is extremely difficult .
+although there is a rich and complex set of features that are often helpful , in many situations they are not sufficient to make a confident decision .
+consider , for example , the following two citations both containing a d. miller .
+the publication years are close ; and the titles both relate to computer science , but there is not a specific topical overlap ; miller is a fairly common last name ; and there are no co-author names in common .
+furthermore , in the rest of the larger citation graph , there is not a length-two path of coauthor name matches indicating that some of the co-authors here may have themselves co-authored a third paper .
+so there is really insufficient evidence to indicate a match despite the fact that these citations do refer to the same miller .
+in this paper , we present two different mechanisms for augmenting the coreference graph partitioning problem by incorporating additional helpful information from the web .
+in both cases , a web search engine query is formed by conjoining the titles from two citations .
+the first mechanism changes the edge weight between the citation pair by adding a feature indicating whether or not any web pages were returned by the query .
+the second mechanism uses one of the returned pages ( if any ) to create an additional vertex in the graph , for which edge weights are then calculated to all the other vertices .
+the additional transitive relations provided by the new vertex can provide significant helpful information .
+for example , if the new vertex is a home page listing all of an authors publications , it will pull together all the other vertices that should be coreferent .
+gathering such external information for all vertex pairs in the graph is prohibitively expensive , however .
+thus , methods that acknowledge time , space and network resource limitations , and effectively select just a subset of the possible queries are of interest .
+learning and inference under resource limitations has been studied in various forms .
+for example , the value of information , as studied in decision theory , measures the expected benefit of queries [ zilberstein and lesser , 1996 ] .
+budgeted learning , rather than selecting training instances , selects new features [ kapoor and greiner , 2005 ] .
+resource-bounded reasoning studies the trade offs between computational commodities and value of the computed results [ zilberstein , 1996 ] .
+active learning aims to request human labeling of a small set of unlabeled training examples [ thompson et al. , 1999 ] , for example , aiming to reduce label entropy on a sample [ roy and mccallum , 2001 ] .
+in this paper we employ a similar strategy , and compare it with two baseline approaches , showing on 10 different data sets that leveraging web queries can reduce f1 error by 10.47 % , and furthermore that , by using our proposed resource-bounded approach , 47.7 % of this gain can be achieved with only 4 % of the web queries .
+we also suggest that our problem setting will be of interest to theoretical computer science , since it is a rich extension to correlational clustering [ bansal et al. , 2002 ; demaine and immorlica , 2003 ] .
+conditional entity resolution models .
+we are interested in obtaining an optimal set of coreference assignments for all mentions contained in our database .
+in our approach , we first learn maximum entropy or logistic regression models for pairwise binary coreference classifications .
+we then combine the information from these pairwise models using graph-partitioning-based methods so as to achieve a good global and consistent coreference decision .
+we use the term , mention to indicate the appearance of an author name in a citation and use xi to denote mention i = 1 , ... , n .
+let yij represent a binary random variable that is true when mentions xi and xj refer to the same underlying author entity .
+for each pair of mentions we define a set of l feature functions fl ( xi , xj , yi , j ) acting upon a pair of mentions .
+from these feature functions we can construct a local model given by where zx = py exp ( al fl ( xi , xj , yij ) ) .
+in mccallum and wellner [ 2003 ] a conditional random field with a form similar to ( 1 ) is constructed which effectively couples a collection of pairwise coreference models using equality transitivity functions f * ( yij , yjk , yik ) to ensure globally consistent configurations .
+these functions ensure that the coupled model assigns zero probability to inconsistent configurations by evaluating to oo for inconsistent configurations and 0 for consistent configurations .
+the complete model for the conditional distribution of all binary match variables given all mentions x can then be expressed as .
+as in wellner and mccallum [ 2002 ] , the parameters a can be estimated in local fashion by maximizing the product of equation 1 over all edges in a labeled graph exibiting the true partitioning .
+when fl ( xi , xj , 1 ) = fl ( xi , xj , 0 ) it is possible to construct a new undirected and fully connected graph consisting of nodes for mentions , edge weights e [ oo , oo ] defined by pl al ( xi , xj , yij ) and with sign defined by the value of yij .
+in our work here we define a graph in a similar fashion as follows .
+let g0 = < v0 , e0 > be a weighted , undirected and fully connected graph , where v0 = { v1 , v2 , ... , vn } is the set of vertices representing mentions and e0 is the set of edges where ei = < vj , vk > is an edge whose weight wij is given by p ( yij = 1lxi , xj ) p ( yij = 0lxi , xj ) or the difference in the probabilities that that the citations vj and vk are by the same author .
+note that the edge weights defined in this manner are in [ 1 , + 1 ] .
+the edge weights in e0 are noisy and may contain inconsistencies .
+for example , given the nodes v1 , v2 and v3 , we might have a positive weight on < v1 , v2 > as well as on < v2 , v3 > , but a high negative weight on < v1 , v3 > .
+our objective is to partition the vertices in graph g0 into an unknown number of m non- overlapping subsets , such that each subset represents the set of citations corresponding to the same author .
+we define our objective function as f = pij wij f ( i , j ) where f ( i , j ) = 1 when xi and xj are in the same partition and 1 otherwise . [ bansal et al. , 2002 ] provide two polynomial-time approximation schemes ( ptas ) for partitioning graphs with mixed positive and negative edge weights .
+we obtain good empirical results with the following stochastic graph partitioning technique , termed here n-run stochastic sampling .
+algorithm 1 .
+n-run stochastic sampling : we define a distribution over all edges in g0 , p ( wi ) a e ~ wit where t acts as temperature .
+at each iteration , we draw an edge from this distribution and merge the two vertices .
+edge weights to the new vertex formulated by the merge are set to the average of its constituents and the distribution over the edges is recalculated .
+merging stops when no positive edges remain in the graph .
+this procedure is then repeated r = 1 ... n times and the partitioning with the maximum f is then selected .
+coreference leveraging the web .
+the first method may be accomplished in author coreference , for example , by querying a web search engine as follows .
+clean and concatenate the titles of the citations , issue this query and examine attributes of the returned hits .
+in this case , a hit indicates the presence of a document on the web that mentions both these titles and hence , some evidence that they are by the same author .
+let fg be this new boolean feature .
+this feature is then added to an augmented classifier that is then used to determine edge weights .
+in the second method , a new vertex can be obtained by querying the web in a similar fashion , but creating a new vertex by using one of the returned web pages as a new mention .
+various features f ( ) will measure compatibility between the other citation mentions and the new web mention , and with similarly estimated parameters a , edge weights to the rest of the graph can be set .
+in this case , we expand the graph g0 , by adding a new set of vertices , v1 and the corresponding new set of edges , e1 to create a new , fully connected graph , g ' .
+although we are not interested in partitioning v1 , we hypothesize that partitioning g ' would improve the optimization of t on g0 .
+this can be explained as follows .
+let v1 , v2ev0 , v3ev1 , and the edge < v1 , v2 > has an incorrect , but high negative edge weight .
+however , the edges < v1 , v3 > and < v2 , v3 > have high positive edge weights .
+then , by transitivity , partitioning the graph g ' will force v1 and v2 to be in the same subgraph and improve the optimization of t on g0 .
+as an example , consider the references shown in fig . 1 .
+let us assume that based on the evidence present in the citations , we are fairly certain that the citations a , b and c are by h. wang 1 and that the citations e and f are by h. wang 2 .
+let us say we now need to determine the authorship of citation d. we now add a set of additional mentions from the web , 11 , 2 , .. 101 .
+the adjacency matrix of this expanded graph is shown in fig . 2 .
+the darkness of the circle represents the level of affinity between two mentions .
+let us assume that the web mention 1 ( e.g. the web page of h. wang 1 ) is found to have strong affinity to the mentions d , e and f. therefore , by transitivity , we can conclude that mention d belongs to the group 2 .
+similarly , values in the lower right region could also help disambiguate the mentions through double transitivity .
+resource bounded web usage .
+under the constraint on resources , however , we must select only a subset of edges in e0 , for which we can obtain the corresponding piece of information ii .
+let e3 c e0 , be this set and i3 be the subset of information obtained that corresponds to each of the elements in e3 .
+the size of e3 is determined by the amount of resources available .
+our objective is to find the subset e3 that will optimize the function t on graph g0 after obtaining i3 and applying graph partitioning .
+similarly , in the case of expanded graph g ' , given the constraint on resources , we must select v3 ' c v1 , to add to the graph .
+note that in the context of information gathering from the web , iv1 i is in the billions .
+even in the case when iv1 i is much smaller , we may choose to calculate the edge weights for only a subset of e1 .
+let e ' 3 c e1 be this set .
+the sizes of v3 ' and e ' 3 are determined by the amount of resources available .
+our objective is to find the subsets v3 ' and e ' 3 that will optimize the function t on graph g0 by applying graph partitioning on the expanded graph .
+we now present the procedure for the selection of e3 .
+algorithm 2 .
+centroid based resource bounded information gathering and graph partitioning for each cluster of vertices that have been assigned the same label under a given partitioning , we define the centroid as the vertex vc with the largest sum of weights to other members in its cluster .
+denote the subset of vertex centroids obtained from clusters as vc . ( we can also optionally pick multiple centroids from each cluster . )
+we begin with graph g0 obtained from the base features of the classifier .
+we use the following criteria for finding the best order of queries : expected entropy , gravitational force , uncertainty-based and random .
+the uncertainty criteria uses the entropy of the binary classifier for each edge .
+for each of these criteria , we follow this procedure .
+this selection criteria is inspired by the inverse squared law of the gravitational force between two bodies .
+it is defined as f = p m * m2,2 where p is a constant , m , and m2 are analogous to masses of two bodies and d is the distance between them .
+this criteria ranks highly partitions that are near each other and large , and thus high-impact candidates for merging .
+let vj and vk be the two vertices connected by ei .
+let cj and ck be their corresponding clusters .
+we calculate the value of f as described above , where m , and m2 are the number of vertices in cj and ck respectively .
+we define d = xwi , where wi is the weight on the edge ei and x is a parameter that we tune for our method .
+theoretical problem .
+there has been recent interest in the general problem of correlational clustering [ bansal et al. , 2002 ; demaine and immorlica , 2003 ] .
+we now present a new class of problems that are concerned with resource bounded information gathering under graph partitioning .
+consider the matrix as presented in fig.2.
+suppose we care about the partitioning in the upper left part of the matrix , and all the values in the upper right part of the matrix are hidden .
+as we have seen before , obtaining these values would impact the graph partitioning in the section that we care about .
+now , suppose , we have access to an adversarial oracle , who unveils these values in the requested order .
+in the worst case , no useful information is obtained till the last value is unveiled .
+in the best case , however , requesting a small fraction of the values , leads to perfect partitioning in the section that we care about .
+the question that we now ask is , what is the best possible order to request these values .
+making reasonable assumptions about the nature of the oracle and imposing restrictions on the edge weights makes this problem interesting and useful .
+this is one way to formulate this problem .
+this paper opens up many such possibilities for the theory community .
+experimental results .
+dataset and infrastructure .
+we use the google api for searching the web .
+the data sets used for these experiments are a collection of hand labeled citations from the dblp and rexa corpora ( see table 1 ) .
+the portion of dblp data , which is labeled at pennstate university is referred to as penn .
+each dataset refers to the citations authored by people with the same last name and first initial .
+the hand labeling process involved carefully segregating these into subsets where each subset represents papers written by a single real author .
+the rbig corpus consists of a collection of web documents which is created as follows .
+for every dataset in the dblp corpus , we generate a pair of titles and issue queries to google .
+then , we save the top five results and label them to correspond with the authors in the original corpus .
+the number of pairs in this case corresponds to the sum of the products of the number of web documents and citations in each dataset .
+all the corpora are split into training and test sets roughly based on the total number of citations in the datasets .
+we keep the individual datasets intact because it would not be possible to test graph partitioning performance on randomly split citation pairs .
+baseline , web information as a feature and effect of graph partitioning .
+the maximum entropy classifier described in section 2 is built using the following features .
+we use the first and middle names of the author in question and the number of overlapping co-authors .
+the us census data helps us determine how rare the last name of the author is .
+we use several different similarity measures on the titles of the two citations like the cosine similarity between the words , string edit distance , tf-idf measure and the number of overlapping bigrams and trigrams .
+we also look for similarity in author emails , institution affiliation and the venue of publication if available .
+we use a greedy agglomerative graph partitioner in this set of experiments and are interested in investigating the effect of using a stochastic partitioner .
+the baseline column in table 2 shows the performance of this classifier .
+note that there is a large number of negative examples in this dataset and hence we prefer pairwise f1 over accuracy as the main evaluation metric .
+table 2 shows that graph partitioning significantly improves pairwise f1 .
+we also use area under the roc curve for comparing the performance of the pairwise classifier , with and without the web feature .
+note that these are some of the best results in author coreference and hence qualify as a good baseline for our experiments with the use of web .
+it is difficult to make direct comparison with other coreference schemes [ han et al. , 2005 ] due to the difference in the evaluation metrics .
+table 2 compares the performance of our model in the absence and in the presence of the google title feature .
+as described before , these are two completely identical models , with the difference of just one feature .
+the f1 values improve significantly after adding this feature and applying graph partitioning .
+expanding the graph by adding web mentions .
+in this case , we augment the citation graph by adding documents obtained from the web .
+we build three different kinds of pairwise classifiers to fill the entries of the matrix shown in fig 2 .
+the first classifier , between two citations , is the same as the one described in the previous section .
+the second classifier , between a citation and a web mention , predicts whether they both refer to the same real author .
+the features for this second classifier include , occurrence of the citations author and coauthor names , title words , bigrams and trigrams in the web page .
+the third classifier , between two web mentions , predicts if they both refer to the same real author or not .
+due to the sparsity of training data available at this time , we set the value of zero in this region of the matrix , indicating no preference .
+we now run the greedy agglomerative graph partitioner on this larger matrix and finally , measure the results on the upper left matrix .
+we compare the effects of using web as a feature and web as a mention on the dblp corpus .
+we use the rbig corpus for this experiment .
+table 3 shows that the use of web as a mention improves the overall performance .
+note that alternative query schemes may yield better results .
+applying the resource bounded criteria for selective querying .
+we now turn to the experiments that use different criteria for selectively querying the web .
+we present the results on test datasets from dblp and rexa corpora .
+as described earlier in section 4 , the query candidates are the edges connecting centroids of initial clustering .
+we use multiple centroids and pick top 20 % tightly connected vertices in each cluster .
+we experiment with ordering these query candidates according to the four criteria : expected entropy , gravitational force , uncertainty-based and random .
+for each of the queries in the proposed order , we issue a query to google and incorporate the result into the binary classifier with an additional feature .
+if the prediction from this classifier is greater than a threshold ( t = 0.5 ) , we force merge the two nodes together .
+if lower , we have two choices .
+we can impose the force split , in accordance with the definition of expected entropy .
+we call this approach split and merge .
+the second choice is to not impose the force split because , in practice , google is not an oracle and absence of co-occurence of two citations on the web is not an evidence that they refer to different people .
+we call this approach merge only .
+the third choice is to simply incorporate the result of the query into the edge weight .
+after each query , we rerun the stochastic partitioner and note the precision , recall and f1 .
+this gives us a plot for a single dataset .
+note that the number of proposed queries in each dataset is different .
+we get an average plot by sampling the result of each of the datasets for a fixed number of points , n ( n = 100 ) .
+we interpolate when queries fewer than n are proposed .
+we then average across these datsets and calculate the area under these curves , as shown in table 4 .
+these curves measure the effectiveness of a criteria in achieving maximum possible benefit with least effort .
+hence , a curve that rises the fastest , and has the maximum area under the curve is most desired .
+expected entropy approach , gives the best performance on f1 measure , as expected .
+it is interesting to note that the gravitational-force-based criteria does better than the expected entropy criteria on recall , but worse on the precision .
+this is because this approach captures the sizes of the two clusters and hence tends to merge large clusters , without paying much attention to the purity of the resulting clusters .
+the expected entropy approach , on the other hand , takes this into account and hence emerges as the best method .
+both the criteria work better than uncertainty-based and random , except an occasional spike .
+all four methods are sensitive to the noise in data labeling , result of the web queries and sampling in stochastic graph partitioning , as reflected by the spikes in the curves .
+however , these results show that expected entropy approach is the best way to achieve maximum returns on investment and proves to be a promising approach to solve this class of problems , in general .
+resource bounded querying for additional web mentions .
+we now present the results for efficiently querying the web and adding new mentions to the graph .
+we start with initial partitioning of citations for data sets in the dblp corpus .
+we then pick up to two or three tightly connected citations in each cluster , clean their titles and remove stop words to form a query .
+fig . 3 shows the comparison of the result of these queries with the result of performing all pairwise queries .
+by adding only 14.86 % of the nodes to the graph , we can achieve 91.25 % of the original f1 .
+in other words , we gain most of the benefit by using a small fraction of the queries .
+note that the resulting graph is smaller and hence is faster to process .
+conclusions and future work .
+we have formulated a new class of problems : resource bounded information gathering from the web in the context of correlational clustering , and have proposed several methods to achieve this goal in the domain of entity resolution .
+our current approach yields positive results and can be applied for coreference of other object types , e.g. automatic product categorization .
+we believe that this problem setting has the potential to bring together ideas from the areas of active learning , relational learning , decision theory and graph theory , and apply them in a real world domain .
+in future work we will explore alternative queries , ( including input from more than two citations ) , as well as various new ways of efficiently selecting candidate queries .
+we are interested in investigating more sophisticated querying criteria in the case of web-as-a-mention .
+additional theoretical work in the form of new formulations and bound proofs for these methods are also anticipated . 8 acknowledgments this work was supported in part by the center for intelligent information retrieval , in part by the central intelligence agency , the national security agency and national science foundation under nsf grant # iis-0326249 , and in part by the defense advanced research projects agency ( darpa ) , through the department of the interior , nbc , acquisition services division , under contract number nbchd030010 , and microsoft research under the memex funding program .
+any opinions , findings and conclusions or recommendations expressed in this material are the authors and do not necessarily reflect those of the sponsor .
+we thank aron culotta , avrim blum , sridhar mahadevan , katrina ligett and arnold rosenberg for interesting discussions .

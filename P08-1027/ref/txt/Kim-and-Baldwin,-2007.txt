@@ -1,0 +1,114 @@
+melb-kb : nominal classification as noun compound interpretation .
+abstract .
+in this paper , we outline our approach to interpreting semantic relations in nominal pairs in semeval-2007 task # 4 : classification of semantic relations between nominals .
+we build on two baseline approaches to interpreting noun compounds : sense collocation , and constituent similarity .
+these are consolidated into an overall system in combination with co-training , to expand the training data .
+our two systems attained an average f-score over the test data of 58.7 % and 57.8 % , respectively .
+introduction .
+this paper describes two systems entered in semeval-2007 task # 4 : classification of semantic relations between nominals .
+a key contribution of this research is that we examine the compatibility of noun compound ( nc ) interpretation methods over the extended task of nominal classification , to gain empirical insight into the relative complexity of the two tasks .
+the goal of the nominal classification task is to identify the compatibility of a given semantic relation with each of a set of test nominal pairs , e.g. between climate and forest in the fragment the climate in the forest with respect to the content- container relation .
+semantic relations ( or srs ) in nominals represent the underlying interpretation of the nominal , in the form of the directed relation between the two nominals .
+the proposed task is a generalisation of the more conventional task of interpreting noun compounds ( ncs ) , in which we take a nc such as cookie jar and interpret it according to a pre-defined inventory of semantic relations ( levi , 1979 ; vanderwende , 1994 ; barker and szpakowicz , 1998 ) .
+examples of semantic relations are make , 1 , as exemplified in apple pie where the pie is made from apple ( s ) , and possessor , as exemplified in family car where the car is possessed by a family .
+in the semeval-2007 task , sr interpretation takes the form of a binary decision for a given nominal pair in context and a given sr , in judging whether that nominal pair conforms to the sr .
+seven relations were used in the task : cause-effect , instrument-agency , product-producer , origin-entity , theme- tool , part-whole and content-container .
+our approach to the task was to : ( 1 ) naively treat all nominal pairs as ncs ( e.g. the climate in the forest is treated as an instance of climate forest ) ; and ( 2 ) translate the individual binary classification tasks into a single multiclass classification task , in the interests of benchmarking existing sr interpretation methods over a common dataset .
+that is , we take all positive training instances for each sr and pool them together into a single training dataset .
+for each test instance , we make a prediction according to one of the seven relations in the task , which we then map onto a binary classification for final evaluation purposes .
+this mapping is achieved by determining which binary sr classification the test instance was sourced from , and returning a positive classification if the predicted sr coincides with the target sr , and a negative classification if not .
+we make three ( deliberately naive ) assumptions in our approach to the nominal interpretation task .
+first , we assume that all the positive training instances correspond uniquely to the sr in question , despite the task organisers making it plain that there is semantic overlap between the srs .
+as a machine learning task , this makes the task considerably more difficult , as the performance for the standard baselines drops considerably from that for the binary tasks .
+second , we assume that each nominal pair maps onto a nc .
+this is clearly a misconstrual of the task , and intended to empirically validate whether such an approach is viable .
+in line with this assumption , we will refer to nominal pairs as ncs for the remainder of the paper .
+third and finally , we assume that the sr annotation of each training and test instance is insensitive to the original context , and use only the constituent words in the nc to make our prediction .
+this is for direct comparability with earlier research , and we acknowledge that the context ( and word sense ) is a strong determinant of the sr in practice .
+our aim in this paper is to demonstrate the effectiveness of general-purpose sr interpretation over the nominal classification task , and establish a new baseline for the task .
+the remainder of this paper is structured as follows .
+we present our methods in section 2 and depict the system architectures in section 4 .
+we then describe and discuss the performance of our methods in section 5 and conclude the paper in section 6 .
+approach .
+we used two basic nc interpretation methods .
+the first method uses sense collocations as proposed by moldovan et al. ( 2004 ) , and the second method uses the lexical similarity of the component words in the nc as proposed by kim and baldwin ( 2005 ) .
+note that neither method uses the context of usage of the nc , i.e. the only features are the words contained in the nc .
+sense collocation method .
+moldovan et al. ( 2004 ) proposed a method called semantic scattering for interpreting ncs .
+the intuition behind this method is that when the sense collocation of ncs is the same , their sr is most likely the same .
+for example , the sense collocation of automobile factory is the same as that of carfactory , because the senses of automobile and car , and factory in the two instances , are identical .
+as a result , the two ncs have the semantic relation make .
+the semantic scattering model is outlined below .
+note that in limited cases , the same sense collocation can lead to multiple srs .
+however , since we do not take context into account in our method , we make the simplifying assumption that a given sense collocation leads to a unique sr .
+constituent similarity method .
+in earlier work ( kim and baldwin , 2005 ) , we proposed a simplistic general-purpose method based on the lexical similarity of unseen ncs with training instances .
+that is , the semantic relation of a test instance is derived from the train instance which has the highest similarity with the test instance , in the form of a 1-nearest neighbour classifier .
+for example , assuming the test instance chocolate milk and training instances apple juice and morning milk , we would calculate the similarity between modifier chocolate and each of apple and morning , and head noun milk and each ofjuice and milk , and find , e.g. , the similarities .71 and .27 , and .83 and 1.00 respectively .
+we would then add these up to derive the overall similarity for a given nc and find that apple juice is a better match .
+from this , we would assign the sr of make from apple juice to chocolate milk .
+the similarity scores are calculated using the method of wu and palmer ( 1994 ) as implemented in wordnet : : similarity ( patwardhan et al. , 2003 ) .
+this is done for each pairing of wordnet senses of each of the two words in question , and the overall lexical similarity is calculated as the average across the pairwise sense similarities .
+the final classification is derived from the training instance which has the highest lexical similarity with the test instance in question .
+co-training .
+as with many semantic annotation tasks , sr tagging is a time-consuming and expensive process .
+at the same time , due to the inherent complexity of the sr interpretation task , we require large amounts of training data in order for our methods to perform well .
+in order to generate additional training data to train our methods over , we experiment with different co-training methodologies for each of our two basic methods .
+co-training for the sense collocation method .
+for the sense collocation method , we experiment with a substitution method whereby we replace one constituent in a training nc instance by a similar word , and annotate the new instance with the same sr as the original nc .
+for example , car in car factory ( sr = make ) has similar words automobile , vehicle , truck from the synonym , hypernym and sister word taxonomic relations , respectively .
+when car is replaced by a similar word , the new noun compound ( s ) ( i.e. automobile / vehicle / truck factory ) share the same sr as the original car factory .
+note that each constituent in our original example is tagged for word sense , which we use both in accessing sense-specific substitution candidates ( via wordnet ) , and sense-annotating the newly generated ncs .
+substitution is restricted to one constituent at a time in order to avoid extreme semantic variation .
+this procedure can be repeated to generate more training data .
+however , as the procedure goes further , we introduce increasingly more noise .
+in our experiments , we use this co-training method with the sense collocation method to expand the size and variation of training data , using synonym , hypernym and sister word relations .
+for our experiment , we ran the expansion procedure for only one iteration in order to avoid generating excessive amounts of incorrectly-tagged ncs .
+co-training for the constituent similarity method .
+our experiments with the constituent similarity method over the trial data showed , encouragingly , that there is a strong correlation between the strength of overall similarity with the best-matching training nc , and the accuracy of the prediction .
+from this , we experimented with implementing the constituent similarity method in a cascading architecture .
+that is , we batch evaluate all test instances on each iteration , and tag those test instances for which the best match with a training instance is above a preset threshold , which we decrease on each iteration .
+in subsequent iterations , all tagged test instances are included in the training data .
+hence , on each iteration , the number of training instances is increasing .
+as our threshold , we used a starting value of 0.85 , which was decreased down to 0.65 in increments of 0.05 .
+architectures .
+in section 4.1 and section 4.2 , we describe the architecture of our two systems .
+architecture .
+figure 1 presents the architecture of our first system , which interleaves sense collocation and constituent similarity , and includes co-training for each .
+there are five steps in this system .
+first , we apply the basic sense collocation method relative to the original training data .
+if the sense collocation between the test and training instances is the same , we judge the predicted sr to be correct .
+second , we apply the similarity method described in section 2.2 over the original training data .
+however , we only classify test instances where the final similarity is above a threshold of 0.8 .
+third , we apply the sense collocation co-training method and re-run the sense collocation method over the expanded training data from the first two steps .
+since the sense collocations in the expanded training data have been varied through the advent of hypernyms and sister words , the number of sense collocations in the expanded training data is much greater than that of the original training data ( 937 vs. 16,676 ) .
+fourth , we apply the constituent similarity co- training method over the consolidated training data ( from both sense collocation and constituent similarity co-training ) with the threshold unchanged at 0.8 .
+finally , we apply the constituent similarity method over the combined training data , without any threshold ( to guarantee a sr prediction for every test instance ) .
+however , since the generated training instances are more likely to contain errors , we decrement the similarity values for generated training instances by 0.2 , to prefer predictions based on the original training instances . 4.2 architecture ( ii ) we perform iterative co-training as described in section 3.2 , with the slight variation that we hold off reducing the threshold if more than 10 % of the test instances are tagged on a given iteration , giving other test instances a chance to be tagged at a higher threshold level relative to newly generated training instances .
+the residue of test instances on completion of the final iteration ( threshold = 0.6 ) are tagged according to the best-matching training instance , irrespective of the magnitude of the similarity .
+evaluation .
+we group our evaluation into two categories : ( a ) doesn � t use wordnet 2 .1 or the query context ; and ( b ) uses wordnet 2.1 only ( again without the query context ) .
+of our two basic methods the sense collocation method and co-training method are based on wordnet 2 . 1 only , while the constituent similarity method is based indirectly on wordnet 2 . 1 , but doesn � t preserve wordnet 2 .1 sense information .
+hence , our first system is category b while our second system is ( arguably ) category a. table 1 presents the three baselines for the task , and the results for our two systems ( system i and system ii ) .
+the performance for both systems exceeded all three baselines in terms of accuracy , and all but the all true baseline ( i.e. every instance is judged to be compatible with the given sr ) in terms of f-score and recall .
+tables 2 and 3 show the performance of the teams which performed in the task , in categories a and b. team 220 in table 2 is our second system , and team 220 in table 3 is our first system .
+in figures 3 and 4 , we present a breakdown of the performance our first and second system , respectively , over the individual semantic relations .
+our approaches performed best for the product- producer sr , and worst for the part-whole sr .
+in general , our systems achieved similar performance on most srs , with only part-whole being notably worse .
+the lower performance of part- whole pulls down our overall performance considerably .
+tables 4 and 5 show the number of tagged and untagged instances for each step of system i and system ii , respectively .
+the first system tagged more than half of the data in the fifth ( and final ) step , where it weighs up predictions from the original and expanded training data .
+hence , the performance of this approach relies heavily on the similarity method and expanded training data .
+additionally , the difference in quality between the original and expanded training data will influence the performance of the approach appreciably .
+on the other hand , the number of instances tagged by the second system is well distributed across each iteration .
+however , since we accumulate generated training instances on each step , the relative noise level in the training data will increase across iterations , impacting on the final performance of the system .
+over the trial data , we noticed that the system predictions are appreciably worse when the similarity value is low .
+in future work , we intend to analyse what is happening in terms of the overall system performance at each step .
+this analysis is key to improving the performance of our systems .
+recall that we are generalising from the set of binary classification tasks in the original task , to a multiclass classification task .
+as such , a direct comparison with the binary classification baselines is perhaps unfair ( particularly all true , which has no correlate in a multiclass setting ) , and it is if anything remarkable that our system compares favourably compared to the baselines .
+similarly , while we clearly lag behind other systems participating in the task , we believe we have demonstrated that nc interpretation methods can be successfully deployed over the more general task of nominal pair classification .
+conclusion .
+in this paper , we presented two systems entered in the semeval-2007 classification of semantic relations between nominals task .
+both systems are based on baseline nc interpretation methods , and the naive assumption that the nominal classification task is analogous to a conventional multiclass nc interpretation task .
+our results compare favourably with the established baselines , and demonstrate that nc interpretation methods are compatible with the more general task of nominal classification .

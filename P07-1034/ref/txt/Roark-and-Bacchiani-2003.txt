@@ -1,0 +1,166 @@
+supervised and unsupervised pcfg adaptation to novel domains .
+abstract .
+this paper investigates adapting a lexicalized probabilistic context-free grammar ( pcfg ) to a novel domain , using maximum a posteriori ( map ) estimation .
+the map framework is general enough to include some previous model adaptation approaches , such as corpus mixing in gildea ( 2001 ) , for example .
+other approaches falling within this framework are more effective .
+in contrast to the results in gildea ( 2001 ) , we show f-measure parsing accuracy gains of as much as 2.5 % for high accuracy lexicalized parsing through the use of out-of-domain treebanks , with the largest gains when the amount of in- domain data is small .
+map adaptation can also be based on either supervised or unsupervised adaptation data .
+even when no in-domain treebank is available , unsupervised techniques provide a substantial accuracy gain over unadapted grammars , as much as nearly 5 % f-measure improvement .
+introduction .
+a fundamental concern for nearly all data-driven approaches to language processing is the sparsity of labeled training data .
+the sparsity of syntactically annotated corpora is widely remarked upon , and some recent papers present approaches to improving performance in the absence of large amounts of annotated training data .
+johnson and riezler ( 2000 ) looked at adding features to a maximum entropy model for stochastic unification-based grammars ( subg ) , from corpora that are not annotated with the subg , but rather with simpler treebank annotations for which there are much larger treebanks .
+hwa ( 2001 ) demonstrated how active learning techniques can reduce the amount of annotated data required to converge on the best performance , by selecting from among the candidate strings to be annotated in ways which promote more informative examples for earlier annotation .
+hwa ( 1999 ) and gildea ( 2001 ) looked at adapting parsing models trained on large amounts of annotated data from outside of the domain of interest ( out-of-domain ) , through the use of a relatively small amount of in-domain annotated data .
+hwa ( 1999 ) used a variant of the inside-outside algorithm presented in pereira and schabes ( 1992 ) to exploit a partially labeled out-of-domain treebank , and found an advantage to adaptation over direct grammar induction .
+gildea ( 2001 ) simply added the out-of-domain treebank to his in-domain training data , and derived a very small benefit for his high accuracy , lexicalized parser , concluding that even a large amount of out-of-domain data is of little use for lexicalized parsing .
+statistical model adaptation based on sparse in-domain data , however , is neither a new problem nor unique to parsing .
+it has been studied extensively by researchers working on acoustic modeling for automatic speech recognition ( asr ) ( legetter and woodland , 1995 ; gauvain and lee , 1994 ; gales , 1998 ; lamel et al. , 2002 ) .
+one of the methods that has received much attention in the asr literature is maximum a posteriori ( map ) estimation ( gauvain and lee , 1994 ) .
+in map estimation , the parameters of the model are considered to be random variables themselves with a known distribution ( the prior ) .
+the prior distribution and the maximum likelihood distribution based on the in-domain observations then give a posterior distribution over the parameters , from which the mode is selected .
+if the amount of in- domain ( adaptation ) data is large , the mode of the posterior distribution is mostly defined by the adaptation sample ; if the amount of adaptation data is small , the mode will nearly coincide with the mode of the prior distribution .
+the intuition behind map estimation is that once there are sufficient observations , the prior model need no longer be relied upon .
+bacchiani and roark ( 2003 ) investigated map adaptation of n-gram language models , in a way that is straightforwardly applicable to probabilistic context-free grammars ( pcfgs ) .
+indeed , this approach can be used for any generative probabilistic model , such as part-of-speech taggers .
+in their language modeling approach , in-domain counts are mixed with the out-of-domain model , so that , if the number of observations within the domain is small , the outof-domain model is relied upon , whereas if the number of observations in the domain is high , the model will move toward a maximum likelihood ( ml ) estimate on the in- domain data alone .
+the case of a parsing model trained via relative frequency estimation is identical : in-domain counts can be combined with the out-of-domain model in just such a way .
+we will show below that weighted count merging is a special case of map adaptation ; hence the approach of gildea ( 2001 ) cited above is also a special case of map adaptation , with a particular parameterization of the prior .
+this parameterization is not necessarily the one that optimizes performance .
+in the next section , map estimation for pcfgs is presented .
+this is followed by a brief presentation of the pcfg model that is being learned , and the parser that is used for the empirical trials .
+we will present empirical results for multiple map adaptation schema , both starting from the penn wall st. journal treebank and adapting to the brown corpus , and vice versa .
+we will compare our supervised adaptation performance with the results presented in gildea ( 2001 ) .
+in addition to supervised adaptation , i.e. with a manually annotated treebank , we will present results for unsupervised adaptation , i.e. with an automatically annotated treebank .
+we investigate a number of unsupervised approaches , including multiple iterations , increased sample sizes , and self-adaptation .
+map estimation .
+in the case of n-gram model adaptation , as discussed in bacchiani and roark ( 2003 ) , the objective is to estimate probabilities for a discrete distribution across words , entirely analogous to the distribution across mixture components within a mixture density , which is a common use for map estimation in asr .
+we can use this formulation to estimate the posterior , but we must still choose the parameters of the dirichlet .
+first , let us introduce some notation .
+a context-free grammar ( cfg ) g = ( v , t , p , st ) , consists of a set of non-terminal symbols v , a set of terminal symbols t , a start symbol st e v , and a set of rule productions p of the form : a > y , where a e v and y e ( v u t ) * .
+a probabilistic context-free grammar ( pcfg ) is a cfg with a probability assigned to each rule , such that the probabilities of all rules expanding a given non-terminal sum to one ; specifically , each right-hand side has a probability given the left-hand side of the rule ' .
+let a denote the left-hand side of a production , and yi the i-th possible expansion of a. let the probability estimate for the production a > yi according to the out-of-domain model be denoted as p ( yi i a ) and let the expected adaptation counts be denoted as c ( a > yi ) .
+note that the map estimates with this parameterization reduce to the out-of-domain model parameters in the absence of adaptation data .
+each left-hand side a has its own prior distribution , parameterized with ta .
+this presents an over-parameterization problem .
+we follow gauvain and lee ( 1994 ) in adopting a parameter tying approach .
+as pointed out in bacchiani and roark ( 2003 ) , two methods of parameter tying , in fact , correspond to two well known model mixing approaches , namely count merging and model interpolation .
+let p and c denote the probabilities and counts from the out-of-domain model , and let p and c denote the probabilities and counts from the adaptation model ( i.e. in-domain ) .
+model interpolation .
+other tying candidates .
+while we will not be presenting empirical results for other parameter tying approaches in this paper , we should point out that the map framework is general enough to allow for other schema , which could potentially improve performance over simple count merging and model interpolation approaches .
+such a schema may do a better job of managing how quickly the model moves away from the prior , particularly if there is a large difference in the respective sizes of the in-domain and out-of domain corpora .
+we leave the investigation of such approaches to future research .
+before providing empirical results on the count merging and model interpolation approaches , we will introduce the parser and parsing models that were used .
+grammar and parser .
+for the empirical trials , we used a top-down , left-to-right ( incremental ) statistical beam-search parser ( roark , 2001 a ; roark , 2003 ) .
+we refer readers to the cited papers for details on this parsing algorithm .
+briefly , the parser maintains a set of candidate analyses , each of which is extended to attempt to incorporate the next word into a fully connected partial parse .
+as soon as enough candidate parses have been extended to the next word , all parses that have not yet attached the word are discarded , and the parser moves on to the next word .
+this beam search is parameterized with a base beam parameter y , which controls how many or how few parses constitute enough .
+candidate parses are ranked by a figure-of-merit , which promotes better candidates , so that they are worked on earlier .
+the figure-ofmerit consists of the probability of the parse to that point times a look-ahead statistic , which is an estimate of how much probability mass it will take to connect the parse with the next word .
+it is a generative parser that does not require any pre-processing , such as pos tagging or chunking .
+it has been demonstrated in the above papers to perform competitively on standard statistical parsing tasks with full coverage .
+baseline results below will provide a comparison with other well known statistical parsers .
+the pcfg is a markov grammar ( collins , 1997 ; charniak , 2000 ) , i.e. the production probabilities are estimated by decomposing the joint probability of the categories on the right-hand side into a product of conditionals via the chain rule , and making a markov assumption .
+thus , for example , a first order markov grammar conditions the probability of the category of the i-th child of the left-hand side on the category of the left-hand side and the category of the ( i-1 ) -th child of the left-hand side .
+the benefits of markov grammars for a top-down parser of the sort we are using is detailed in roark ( 2003 ) .
+further , as in roark ( 2001a ; 2003 ) , the production probabilities are conditioned on the label of the left-hand side of the production , as well as on features from the left-context .
+the model is smoothed using standard deleted interpolation , wherein a mixing parameter ^ is estimated using em on a held out corpus , such that probability of a production a > y , conditioned on j features from the left context , x-11 = x1 ...
+x-1 , is defined recursively as .
+these conditional probabilities decompose via the chain rule as mentioned above , and a markov assumption limits the number of previous children already emitted from the left-hand side that are conditioned upon .
+these previous children are treated exactly as other conditioning features from the left context .
+table 1 gives the conditioning features that were used for all empirical trials in this paper .
+there are different conditioning features for parts-of-speech ( pos ) and non-pos non-terminals .
+deleted interpolation leaves out one feature at a time , in the reverse order as they are presented in the table 1 .
+the grammar that is used for these trials is a pcfg that is induced using relative frequency estimation from a transformed treebank .
+the trees are transformed with a selective left-corner transformation ( johnson and roark , 2000 ) that has been flattened as presented in roark ( 2001b ) .
+this transform is only applied to left-recursive productions , i.e. productions of the form a > ay .
+the transformed trees look as in figure 1 .
+the transform has the benefit for a top-down incremental parser of this sort of delaying many of the parsing decisions until later in the string , without unduly disrupting the immediate dominance relationships that provide conditioning features for the probabilistic model .
+the parse trees that are returned by the parser are then de- transformed to the original form of the grammar for evaluation2 .
+for the trials reported in the next section , the base beam parameter is set at y = 10 .
+in order to avoid being pruned , a parse must be within a probability range of the best scoring parse that has incorporated the next word .
+let k be the number of parses that have incorporated the next word , and let p be the best probability from among that set .
+then the probability of a parse must be above .
+empirical trials .
+the parsing models were trained and tested on treebanks from the penn treebank ii .
+for the wall st. journal portion , we used the standard breakdown : sections 2-21 were kept training data ; section 24 was held-out development data ; and section 23 was for evaluation .
+for the brown corpus portion , we obtained the training and evaluation sections used in gildea ( 2001 ) .
+in that paper , no held-out section was used for parameter tuning3 , so we further partitioned the training data into kept and held-out data .
+the sizes of the corpora are given in table 2 , as well as labels that are used to refer to the corpora in subsequent tables .
+baseline performance .
+the first results are for parsing the brown corpus .
+table 3 presents our baseline performance , compared with the gildea ( 2001 ) results .
+our system is labeled as map .
+all parsing results are presented as labeled precision and recall .
+whereas gildea ( 2001 ) reported parsing results just for sentences of length less than or equal to 40 , our results are for all sentences .
+the goal is not to improve upon gildea s parsing performance , but rather to try to get more benefit from the out-of-domain data .
+while our performance is 0.5- 1.5 percent better than gildea s , the same trends hold low eighties in accuracy when using the wall st. journal ( out-ofdomain ) training ; mid eighties when using the brown corpus training .
+notice that using the brown held out data with the wall st. journal training improved precision substantially .
+tuning the parameters on in-domain data can make a big difference in parser performance .
+choosing the smoothing parameters as gildea did , based on the distribution within the corpus itself , may be effective when parsing within the same distribution , but appears less so when using the tree- bank for parsing outside of the domain .
+table 4 gives the baseline performance on section 23 of the wsj treebank .
+note , again , that the gildea results are for sentences < 40 words in length , while all others are for all sentences in the test set .
+also , gildea did not report performance of a brown corpus trained parser on the wsj .
+our performance under that condition is not particularly good , but again using an in-domain held out set for parameter tuning provided a substantial increase in accuracy , somewhat more in terms of precision than recall .
+our baseline results for a wsj section 2-21 trained parser are slightly better than the gildea parser , at more-or-less the same level of performance as charniak ( 1997 ) and ratnaparkhi ( 1999 ) , but several points below the best reported results on this task .
+supervised adaptation .
+table 5 presents parsing results on the brown ; e test set for models using both in-domain and out-of-domain training data .
+the table gives the adaptation ( in-domain ) treebank that was used , and the ta that was used to combine the adaptation counts with the model built from the out-of-domain treebank .
+recall that a ~ c ( a ) times the out-of-domain model yields count merging , with a the ratio of out-of-domain to in-domain counts ; and ac ( a ) times the out-of-domain model yields model interpolation , with a the ratio of out-ofdomain to in-domain probabilities .
+gildea ( 2001 ) merged the two corpora , which just adds the counts from the out-ofdomain treebank to the in-domain treebank , i.e. a = 1 .
+this resulted in a 0.25 improvement in the f-measure .
+in our case , combining the counts in this way yielded a half a point , perhaps because of the in-domain tuning of the smoothing parameters .
+however , when we optimize a empirically on the held-out corpus , we can get nearly a full point improvement .
+model interpolation in this case performs nearly identically to count merging .
+adaptation to the brown corpus , however , does not adequately represent what is likely to be the most common adaptation scenario , i.e. adaptation to a consistent domain with limited in-domain training data .
+the brown corpus is not really a domain ; it was built as a balanced corpus , and hence is the aggregation of multiple domains .
+the reverse scenario brown corpus as out-of-domain parsing model and wall st. journal as novel domain is perhaps a more natural one .
+in this direction , gildea ( 2001 ) also reported very small improvements when adding in the out-of-domain treebank .
+this may be because of the same issue as with the brown corpus , namely that the optimal ratio of in-domain to out-of-domain is not 1 and the smoothing parameters need to be tuned to the new domain ; or it may be because the new domain has a million words of training data , and hence has less use for out-of-domain data .
+to tease these apart , we partitioned the wsj training data ( sections 2-21 ) into smaller treebanks , and looked at the gain provided by adaptation as the in-domain observations grow .
+these smaller treebanks provide a more realistic scenario : rapid adaptation to a novel domain will likely occur with far less manual annotation of trees within the new domain than can be had in the full penn treebank .
+table 6 gives the baseline performance on wsj ; 23 , with models trained on fractions of the entire 2-21 test set .
+sections 2-21 contain approximately 40,000 sentences , and we partitioned them by percentage of total sentences .
+from table 6 we can see that parser performance degrades quite dramatically when there is less than 20,000 sentences in the training set , but that even with just 2000 sentences , the system outperforms one trained on the brown corpus .
+table 7 presents parsing accuracy when a model trained on the brown corpus is adapted with part or all of the wsj training corpus .
+from this point forward , we only present results for count merging , since model interpolation consistently performed 0.2-0.5 points below the count merging approach .
+the ta mixing parameter was empirically optimized on the held out set when the in-domain training was just 10 % of the total ; this optimization makes over a point difference in accuracy .
+like gildea , with large amounts of in-domain data , adaptation improved our performance by half a point or less .
+when the amount of in-domain data is small , however , the impact of adaptation is much greater .
+unsupervised adaptation .
+bacchiani and roark ( 2003 ) presented unsupervised map adaptation results for n-gram models , which use the same methods outlined above , but rather than using a manually annotated corpus as input to adaptation , instead use an automatically annotated corpus .
+their automatically annotated corpus was the output of a speech recognizer which used the out-of-domain n-gram model .
+in our case , we use the parsing model trained on out-of-domain data , and output a set of candidate parse trees for the strings in the in-domain corpus , with their normalized scores .
+these normalized scores ( posterior probabilities ) are then used to give weights to the features extracted from each candidate parse , in just the way that they provide expected counts for an expectation maximization algorithm .
+for the unsupervised trials that we report , we collected up to 20 candidate parses per string5 .
+we were interested in investigating the effects of adaptation , not in optimizing performance , hence we did not empirically optimize the mixing parameter ta for the new trials , so as to avoid obscuring the effects due to adaptation alone .
+rather , we used the best performing parameter from the supervised trials .
+since we are no longer limited to manually anno tated data , the amount of in-domain wsj data that we can include is essentially unlimited .
+hence the trials reported go beyond the 40,000 sentences in the penn wsj treebank , to include up to 5 times that number of sentences from other years of the wsj .
+table 8 shows the results of unsupervised adaptation as we have described it .
+note that these improvements are had without seeing any manually annotated wall st. journal treebank data .
+using the approximately 40,000 sentences in f2-21 , we derived a 3.8 percent f-measure improvement over using just the out of domain data .
+going beyond the size of the penn treebank , we continued to gain in accuracy , reaching a total f-measure improvement of 4.2 percent with 200 thousand sentences , approximately 5 million words .
+a second iteration with this best model , i.e. re-parsing the 200 thousand sentences with the adapted model and re-training , yielded an additional 0.65 percent f-measure improvement , for a total f-measure improvement of 4.85 percent over the baseline model .
+a final unsupervised adaptation scenario that we investigated is self-adaptation , i.e. adaptation on the test set itself .
+because this adaptation is completely unsupervised , thus does not involve looking at the manual annotations at all , it can be equally well applied using the test set as the unsupervised adaptation set .
+using the same adaptation procedure presented above on the test set itself , i.e. producing the top 20 candidates from wsj ; 23 with normalized posterior probabilities and re-estimating , we produced a self-adapted parsing model .
+this yielded an f-measure accuracy of 76.8 , which is a 1.1 percent improvement over the baseline .
+conclusion .
+what we have demonstrated in this paper is that maximum a posteriori ( map ) estimation can make out-of-domain training data beneficial for statistical parsing .
+in the most likely scenario porting a parser to a novel domain for which there is little or no annotated data the improvements can be quite large .
+like active learning , model adaptation can reduce the amount of annotation required to converge to a best level of performance .
+in fact , map coupled with active learning may reduce the required amount of annotation further .
+there are a couple of interesting future directions for this research .
+first , a question that is not addressed in this paper is how to best combine both supervised and unsupervised adaptation data .
+since each in-domain resource is likely to have a different optimal mixing parameter , since the supervised data is more reliable than the unsupervised data , this becomes a more difficult , multi-dimensional parameter optimization problem .
+hence , we would like to investigate automatic methods for choosing mixing parameters , such as em .
+also , an interesting question has to do with choosing which treebank to use for out-of-domain data .
+for a new domain , is it better to choose as prior the balanced brown corpus , or rather the more robust wall st. journal treebank ?
+perhaps one could use several out-of-domain treebanks as priors .
+most generally , one can imagine using k treebanks , some in-domain , some out-of-domain , and trying to find the best mixture to suit the particular task .
+the conclusion in gildea ( 2001 ) , that out-of-domain tree- banks are not particularly useful in novel domains , was premature .
+instead , we can conclude that , just as in other statistical estimation problems , there are generalizations to be had from these out-of-domain trees , providing more robust estimates , especially in the face of sparse training data .

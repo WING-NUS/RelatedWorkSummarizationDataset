@@ -1,0 +1,1028 @@
+compressed full-text indexes .
+abstract .
+full-text indexes provide fast substring search over large text collections .
+a serious problem of these indexes has traditionally been their space consumption .
+a recent trend is to develop indexes that exploit the compressibility of the text , so that their size is a function of the compressed text length .
+this concept has evolved into self-indexes , which in addition contain enough information to reproduce any text portion , so they replace the text .
+the exciting possibility of an index that takes space close to that of the compressed text , replaces it , and in addition provides fast search over it , has triggered a wealth of activity and produced surprising results in a very short time , which radically changed the status of this area in less than five years .
+the most successful indexes nowadays are able to obtain almost optimal space and search time simultaneously .
+in this paper we present the main concepts underlying ( compressed ) self-indexes .
+we explain the relationship between text entropy and regularities that show up in index structures and permit compressing them .
+then we cover the most relevant self-indexes , focusing on how they exploit text compressibility to achieve compact structures that can efficiently solve various search problems .
+our aim is to give the background to understand and follow the developments in this area .
+introduction .
+the amount of digitally available information is growing at an exponential rate .
+a large part of these data consists of text , that is , sequences of symbols representing not only natural language , but also music , program code , signals , multimedia streams , biological sequences , time series , and so on .
+the amount of ( just html ) online text material in the web was estimated , in 2002 , to exceed by 30c ( 9 , ~ t ) 40 times what had been printed during the whole history of mankind ' .
+if we exclude strongly structured data such as relational tables , text is the medium to convey information where retrieval by content is best understood .
+the recent boom on xml advocates the use of text as the medium to express structured and semistructured data as well , making text the favorite format for information storage , exchange , and retrieval .
+each scenario where text is used to express information requires a different form of retrieving such information from the text .
+there is a basic search task , however , that underlies all those applications .
+string matching is the process of finding the occurrences of a short string ( called the pattern ) inside a ( usually much longer ) string called the text .
+virtually every text-managing application builds on basic string matching to implement more sophisticated functionalities such as finding frequent words ( in natural language texts for information retrieval tasks ) or retrieving sequences similar to a sample ( in a gene or protein database for computational biology applications ) .
+significant developments in basic string matching have a wide impact on most applications .
+this is our focus .
+string matching can be carried out in two forms .
+sequential string matching requires no preprocessing of the text , but rather traverses it sequentially to point out every occurrence of the pattern .
+indexed string matching builds a data structure ( index ) on the text beforehand , which permits finding all the occurrences of any pattern without traversing the whole text .
+indexing is the choice when ( i ) the text is so large that a sequential scanning is prohibitively costly , ( ii ) the text does not change so frequently that the cost of building and maintaining the index outweighs the savings on searches , and ( iii ) there is sufficient storage space to maintain the index and provide efficient access to it .
+while the first two considerations refer to the convenience of indexing compared to sequentially scanning the text , the last one is a necessary condition to consider indexing at all .
+at first sight , the storage issue might not seem significant given the common availability of massive storage .
+the real problem , however , is efficient access .
+in the last two decades , cpu speeds have been doubling every 18 months , while disk access times have stayed basically unchanged .
+cpu caches are many times faster than standard main memories .
+on the other hand , the classical indexes for string matching require from 4 to 20 times the text size [ mccreight 1976 ; manber and myers 1993 ; kurtz 1998 ] .
+this means that , even when we may have enough main memory to hold a text , we may need to use the disk to store the index .
+' in the uc berkeley report how much information ? , http : / / www.sims.berkeley.edu / research / proj ects / how-much- info-2003 / internet. htm , they estimate the size of the deep web ( i.e. , including public static and dynamic pages ) to be between 66,800 and 91,850 terabytes , and that 17.8 % of that is in text ( html ) form .
+in the jep white paper the deep web : surfacing hidden value by m. bergman ( u. of michigan press ) , http : / / www.press.umich.edu / jep / 07-01 / bergman.html , they estimate the whole printed material along written history is 390 terabytes .
+compressed full-text indexes .
+moreover , most existing indexes are not designed to work in secondary memory , so using them from disk is extremely inefficient [ ferragina and grossi 1999 ] .
+as a result , indexes are usually confined to the case where the text is so small that even the index fits in main memory , and those cases are less interesting for indexing given consideration ( i ) : for such a small text , a sequential scanning can be preferable for its simplicity and better cache usage compared to an indexed search .
+text compression is a technique to represent a text using less space .
+given the relation between main and secondary memory access times , it is advantageous to store a large text that does not fit in main memory in compressed form , so as to reduce disk transfer time , and then decompress it by chunks in main memory prior to sequential searching .
+moreover , a text may fit in main memory once compressed , so compression may completely remove the need to access the disk .
+some developments in recent years have focused on improving this even more by directly searching the compressed text instead of decompressing it .
+several attempts to reduce the space requirements of text indexes were made in the past with moderate success , and some of them even considered the relation with text compression .
+three important concepts have emerged .
+definition 1 a succinct index is an index that provides fast search functionality using a space proportional to that of the text itself ( say , two times the text size ) .
+a stronger concept is that of a compressed index , which takes advantage of the regularities of the text to operate in space proportional to that of the compressed text .
+an even more powerful concept is that of a self-index , which is a compressed index that , in addition to providing search functionality , contains enough information to efficiently reproduce any text substring .
+a self-index can therefore replace the text .
+classical indexes such as suffix trees and arrays are not succinct .
+on a text of n characters over an alphabet of size ^ , those indexes require ^ ( n log n ) bits of space , whereas the text requires n log ^ bits .
+the first succinct index we know of is by kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and ukkonen [ 1996a ] .
+it uses lempel-ziv compression concepts to achieve o ( n log ^ ) bits of space .
+indeed , this is a compressed index achieving space proportional to the k-th order entropy of the text ( a lower-bound estimate for the compression achievable by many compressor families ) .
+however , it was not until this decade that the first self-index appeared [ ferragina and manzini 2000 ] and the potential of the relationship between text compression and text indexing was fully realized , in particular regarding the correspondence between the entropy of a text and the regularities arising in some widely used indexing data structures .
+several other succinct and self-indexes appeared almost simultaneously [ mc ( 9 , ~ t ) akinen 2000 ; grossi and vitter 2000 ; sadakane 2000 ] .
+the fascinating concept of a self-index that requires space close to that of the compressed text , provides fast searching on it , and moreover replaces the text , has triggered much interest on this issue and produced surprising results in very few years .
+at this point , there exist indexes that require space close to that of the best existing compression techniques , and provide search and text recovering functionality with almost optimal time complexity [ ferragina and manzini 2005 ; grossi et al. 2003 ; ferragina et al. 2006 ] .
+more sophisticated problems are also starting to receive attention .
+for example , there are studies on efficient construction in little space [ hon et al. 2003 ] , management of secondary storage [ m ^ akinen et al. 2004 ] , searching for more complex patterns [ huynh et al. 2006 ] , updating upon text changes [ hon et al. 2004 ] , and so on .
+furthermore , the implementation and practical aspects of the indexes is becoming a focus of attention .
+in particular , we point out the existence of pizzachili , a repository of standardized implementations of succinct full-text indexes and testbeds , freely available at mirrors http : / / pizzachili.dcc.uchile.cl and http : / / pizzachili.di.unipi.it.
+overall , this is an extremely exciting research area , with encouraging results of theoretical and practical interest , and a long way ahead .
+the aim of this survey is to give the theoretical background needed to understand and follow the developments in this area .
+we first give the reader a superficial overview of the main intuitive ideas behind the main results .
+this is sufficient to have a rough image of the area , but not to master it .
+then we begin the more technical exposition .
+we explain the relationship between the compressibility of a text and the regularities that show up in its indexing structures .
+next , we cover the most relevant existing self-indexes , focusing on how they exploit the regularities of the indexes to compress them and still efficiently handle them .
+we do not give experimental results in this paper .
+doing this seriously and thoroughly is a separate project .
+some comparisons can be found , for example , by m ^ akinen and navarro [ 2005a ] .
+a complete series of experiments is planned on the pizzachili site , and the results should appear in there soon .
+finally , we aim at indexes that work for general texts .
+thus we do not cover the very well-known inverted indexes , which only permit word and phrase queries on natural language texts .
+natural language not only excludes symbol sequences of interest in many applications , such as dna , gene or protein sequences in computational biology ; midi , audio , and other multimedia signals ; source and binary program code ; numeric sequences of diverse kinds ; etc .
+it also excludes many important human languages !
+in this context , natural language refers only to languages where words can be syntactically separated and follow some statistical laws [ baezayates and ribeiro 1999 ] .
+this encompasses english and several other european languages , but it excludes , for example , chinese and korean , where words are hard to separate without understanding the meaning of the text .
+it also excludes agglutinating languages such as finnish and german , where c ( 9 , ~ t ) wordsc ( 9 , ~ t ) are actually concatenations of the particles one wishes to search .
+when applicable , inverted indexes require only 20 % c ( 9 , ~ t ) 100 % of extra space on top of the text [ baeza-yates and ribeiro 1999 ] .
+moreover , there exist compression techniques that can represent inverted index and text in about 35 % of the space required by the original text [ witten et al. 1999 ; navarro et al. 2000 ; ziviani et al. 2000 ] , yet those indexes only point to the documents where the query words appear .
+notation and basic concepts .
+compressed full-text indexes .
+definition 2 given a ( long ) text string t1 , n and a ( comparatively short ) pattern string p1 , m , both over alphabet e , the occurrence positions ( or just occurrences ) of p in t are the set o = 11 + jxj , ely , t = xpy } .
+two search problems are of interest : ( 1 ) count the number of occurrences , that is , return occ = joj ; ( 2 ) locate the occurrences , that is , return set o in some order .
+when the text t is not explicitly available , a third task of interest is ( 3 ) display text substrings , that is , return tl , r given l and r .
+in this paper we adopt for technical convenience the assumption that t is terminated by tn = $ , which is a character from e that lexicographically precedes all the others and appears nowhere else in t nor in p. logarithms in this paper are in base 2 unless otherwise stated .
+in our study of compression algorithms , we will need routines to access individual bit positions inside bit vectors .
+this raises the question of which machine model to assume .
+we assume the standard word random access model ( ram ) ; the computer word size w is assumed to be such that logn = o ( w ) , where n is the maximum size of the problem instance .
+standard operations ( like bit-shifts , additions , etc . ) on an o ( w ) = o ( logn ) -bit integer are assumed to take constant time in this model .
+however , all the results considered in this paper only assume that an o ( w ) -bit block at any given position in a bit vector can be read , written , and converted into an integer , in constant time .
+this means that on a weaker model , where for example such operations would take time linear in the length of the bit block , all the time complexities for the basic operations should be multiplied by o ( logn ) .
+a table of the main symbols , with short explanations and pointers to their definitions , is given in appendix a. basic text indexes .
+given the focus of this paper , we are not covering the various text indexes that have been designed with constant-factor space reductions in mind , with no relation to text compression nor self-indexing .
+in general these indexes have had some , but not spectacular , success in lowering the large space requirements of text indexes [ blumer et al. 1987 ; andersson and nilsson 1995 ; k ^ arkk ^ ainen 1995 ; irving 1995 ; colussi and de col 1996 ; k ^ arkk ^ ainen and ukkonen 1996b ; crochemore and v ~ erin 1997 ; kurtz 1998 ; giegerich et al. 20031 .
+in this section , in particular , we introduce the most classical full-text indexes , which are those that are turned into compressed indexes later in this paper . 3.1 tries or digital trees .
+a digital tree or trie [ fredkin 1960 ; knuth 1973 ] is a data structure that stores a set of strings .
+it can support the search for a string in the set in time proportional to the length of the string sought , independently of the set size .
+definition 3 a trie for a set s of distinct strings s1 , s2 ... , sn is a tree where each node represents a distinct prefix in the set .
+the root node represents the empty prefix ^ .
+node v representing prefix y is a child of node u representing prefix x iff y = xc for some character c , which will label the tree edge from u to v. we assume that all strings are terminated by ic ( 9 , ~ t ) .
+under this assumption , no string si is a prefix of another , and thus the trie has exactly n leaves , each corresponding to a distinct string .
+fig . 1 illustrates .
+fig . 1 .
+a trie for the set { " alabar " , " a " , " la " , " alabarda " } . in general the arity of trie nodes may be as large as the alphabet size .
+a trie for s = { s1 , s2 , ..
+. , sn } is easily built in time o ( | s1 | + | s2 | + ... + | sn | ) by successive insertions .
+any string s can be searched for in the trie in time o ( | s | ) by following from the trie root the path labeled with the characters of s. two outcomes are possible : ( i ) at some point i there is no edge labeled si to follow , which means that s is not in the set s , ( ii ) we reach a leaf corresponding to s ( assume that s is also terminated with character ic ( 9 , ~ t ) ) .
+actually , the above complexities assume that the alphabet size ^ is a constant .
+for general ^ , we must multiply the above complexities by o ( log ^ ) , which accounts for the overhead of searching the correct character to follow inside each node .
+this can be made o ( 1 ) by using at each node a direct addressing table of size ^ , but in this case the size and construction cost must be multiplied by o ( ^ ) to allocate the tables at each node .
+alternatively , perfect hashing of the children of each node permits o ( 1 ) search time and o ( 1 ) space factor , yet the construction cost is multiplied by o ( ^ 2 ) [ raman 1996 ] .
+note that a trie can be used for prefix searching , that is , to find every string prefixed by s in the set ( in this case , s is not terminated with ic ( 9 , ~ t ) ) .
+if we can follow the trie path corresponding to s , then the internal node reached corresponds to all the strings si prefixed by s in the set .
+we can then traverse all the leaves of the subtree to find the answers .
+suffix tries and suffix trees .
+definition 4 the suffix trie of a text t is a trie data structure built over all the suffixes of t. the suffix trie of t makes up an index for fast string matching .
+given a pattern p1 , m ( not terminated with \ $ c ( 9 , ~ t ) ) , every occurrence of p in t is a substring of t , that is , the prefix of a suffix of t. entering the suffix trie with the characters of p leads us to a node that corresponds to all the suffixes of t prefixed by p ( or , if we do not arrive at any trie node , then p does not occur in t ) .
+this permits counting the occurrences of p in t in o ( m ) time , by simply recording the number of leaves that descend from each suffix tree node .
+it also permits finding all the occ occurrences of p in t in o ( m + occ ) time by traversing the whole subtree ( some additional pointers threading the leaves and connecting each internal node to its first leaf are necessary to ensure this complexity ) .
+as described , the suffix trie usually has o ( n2 ) nodes .
+in practice , the trie is pruned at a node as soon as there is only a unary path from the node to a leaf .
+instead , a pointer to the text position where the corresponding suffix starts is stored .
+on average , the pruned suffix trie has only o ( n ) nodes [ sedgewick and flajolet 1996 ] .
+yet , albeit unlikely , it might have o ( n2 ) nodes in the worst case .
+fortunately , there exist equally powerful structures that guarantee linear space and construction time in the worst case [ morrison 1968 ; apostolico 1985 ] .
+definition 5 the suffix tree of a text t is a suffix trie where each unary path is converted into a single edge .
+those edges are labeled by strings obtained by concatenating the characters of the replaced path .
+the leaves of the suffix tree indicate the text position where the corresponding suffixes start .
+since there are n leaves and no unary nodes , it is easy to see that suffix trees require o ( n ) space ( the strings at the edges are represented with pointers to the text ) .
+moreover , they can be built in o ( n ) time [ weiner 1973 ; mccreight 1976 ; ukkonen 1995 ; farach 1997 ] .
+fig . 2 shows an example .
+the search for p in the suffix tree of t is similar to a trie search .
+now we may use more than one character of p to traverse an edge , but all edges leaving from a node have different first characters .
+the search can finish in three possible ways : ( i ) at some point there is no edge leaving from the current node that matches the characters that follow in p , which means that p does not occur in t ; ( ii ) we read all the characters of p and end up at a tree node ( or in the middle of an edge ) , in which case all the answers are in the subtree of the reached node ( or edge ) ; or ( iii ) we reach a leaf of the suffix tree without having read the whole p , in which case there is at most one occurrence of p in t , which must be checked by going to the suffix pointed to by the leaf and comparing the rest of p with the rest of the suffix .
+in any case the process takes o ( m ) time ( assuming one uses perfect hashing to find the children in constant time ) and suffices for counting queries .
+suffix trees permit o ( m + occ ) locating time without need of further pointers to thread the leaves , since the subtree with occ leaves has o ( occ ) nodes .
+the real problem of suffix trees is their high space consumption , which is o ( n log n ) bits and at the very least 10 times the text size in practice [ kurtz 1998 ] .
+suffix arrays .
+a suffix array [ manber and myers 1993 ; gonnet et al. 1992 ] is simply a permutation of all the suffixes of t so that the suffixes are lexicographically sorted .
+the suffix array can be obtained by collecting the leaves of the suffix tree in leftto-right order ( assuming that the children of the suffix tree nodes are lexicographically ordered left-to-right by the edge labels ) .
+however , it is much more practical to build them directly .
+in principle , any comparison-based sorting algorithm can be used , as it is a matter of sorting the n suffixes of the text , but this could be costly especially if there are long repeated substrings within the text .
+there are several more sophisticated algorithms , from the original o ( n log n ) time [ manber and myers 1993 ] to the latest o ( n ) time algorithms [ kim et al. 2005 ; ko and aluru 2005 ; kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and sanders 2003 ] .
+in practice , the best current algorithms are not linear-time ones [ larsson and sadakane 1999 ; itoh and tanaka 1999 ; manzini and ferragina 2004 ; schc ( 9 , ~ t ) urmann and stoye 2005 ] .
+see a comprehensive survey in [ puglisi et al. 2006 ] .
+the suffix array plus the text contain enough information to search for patterns .
+since the result of a suffix tree search is a subtree , the result of a suffix array search must be an interval .
+this is also obvious if one considers that all the suffixes prefixed by p are lexicographically contiguous in the sorted array a. thus , it is possible to search for the interval of a containing the suffixes prefixed by p via two binary searches on a. the first binary search determines the starting position sp for the suffixes lexicographically larger than or equal to p. the second binary search determines the ending position ep for suffixes that start with p. note that each step of the binary searches requires a lexicographical comparison between p and some suffix ta [ i ] , n, which requires o ( m ) time in the worst case .
+hence the search takes worst case time o ( m log n ) ( this can be lowered to o ( m + log n ) by using more space to store the length of the longest common prefixes between consecutive suffixes [ manber and myers 1993 ; abouelhoda et al. 2004 ] ) .
+a locating query requires additional o ( occ ) time to report the occ occurrences .
+alg . 1 gives the pseudocode .
+all the space / time tradeoffs offered by the different compressed full-text indexes in this paper will be expressed in tabular form , as theorems where the meaning of n , m , ^ , and hk , is implicit ( see section 5 for the definition of hk ) .
+for illustration and comparison , and because suffix arrays are the main focus of compressed indexes , we give now the corresponding theorem for suffix arrays .
+as the suffix array is not a self-index , the space in bits includes a final term n log ^ for the text itself .
+the time to count refers to counting the occurrences of p1 , m in t1 , n .
+the time to locate refers to giving the text position of a single occurrence after counting has completed .
+the time to display refers to displaying one contiguous text substring of ^ characters .
+in this case ( not a self-index ) , this is trivial as the text is readily available .
+we show two tradeoffs , the second referring to storing longest common prefix information .
+throughout the survey , many tradeoffs will be possible for the structures we review , and we will choose to show only those that we judge most interesting .
+theorem 1 [ manber and myers 1993 ] the suffix array ( sa ) offers the following space / time tradeoffs .
+prelude to compressed full-text indexing .
+before we start the formal and systematic exposition of the techniques that lead to compressed indexing , we want to point out some key ideas at an informal level .
+this is to permit the reader to understand the essential concepts without thoroughly absorbing the formal treatment that follows .
+the section also includes a c ( 9 , ~ t ) roadmapc ( 9 , ~ t ) guide for the reader to gather from the forthcoming sections the details required to fully grasp what is behind the simplified presentation of this section .
+we explain two basic concepts that play a significant role in compressed full-text indexing .
+interestingly , these two concepts can be plugged as such to traditional full-text indexes to achieve immediate results .
+no knowledge of compression techniques is required to understand the power of these methods .
+these are backward search [ ferragina and manzini 2000 ] and wavelet trees [ grossi et al. 2003 ] .
+after introducing these concepts , we will give a brief motivation to compressed data structures by showing how a variant of the familiar inverted index can be easily turned into a compressed index for natural language texts .
+then we explain how this same compression technique can be used to implement an approach that is the reverse of backward searching .
+backward search .
+recall the binary search algorithm in alg . 1 .
+ferragina and manzini [ 2000 ] propose a completely different way of guiding the search : the pattern is searched for from its last to its first character .
+fig . 4 illustrates how this backward search proceeds .
+fig . 4 .
+backward search for pattern " ala " on the suffix array of the text " alabar a la alabarda $ " .
+here a is drawn vertically and the suffixes are shown explicitly , compare to fig . 3 .
+fig . 4 shows the steps a backward search algorithm takes when searching for the occurrences of " ala " in " alabar a la alabarda $ " .
+let us reverse engineer how the algorithm works .
+the first step is finding the range a [ 5,13 ] where the suffixes start with " a " . this is easy : all one needs is an array c indexed by the characters , such that c [ " a " ] tells how many characters in t are smaller than " a " ( that is , the c [ " a " ] + 1 points to the first index in a where the suffixes start with " a " ) . then , knowing that " b " is the successor of " a " in the alphabet , the last index in a where the suffixes start with " a " is c [ " b " ] .
+we have now discovered that backward search can be implemented by means of a small table c and some queries on the column ta [ i ] ^ 1 .
+let us denote this column by string l1 , n ( for reasons to be made clear in section 5.3 ) .
+one notices that the single query needed on l is counting how many times a given character c appears up to some given position i .
+to finish the description of backward search , we still have to discuss how the function occ ( c , i ) can be computed .
+the most naive way to solve the occ ( c , i ) query is to do the counting on each query .
+however , this means o ( n ) scanning at each step ( overall o ( mn ) time ! ) .
+another extreme is to store all the answers in an array occ [ c , i ] .
+this requires ^ nlog n bits of space , but gives o ( m ) counting time , which improves the original suffx array search complexity .
+a practical implementation of backward search is somewhere in between the extremes : consider indicator bit vectors bc [ i ] = 1 iff li = c for each character c .
+let us define operation rankb ( b , i ) as the number of occurrences of bit b in b [ 1 , i ] .
+it is easy to see that rank1 ( bc , i ) = occ ( c , i ) .
+that is , we have reduced the problem of counting characters up to a given position in string l to counting bits set up to a given position in bit vectors .
+function rank will be studied in section 6 , where it will be shown that some simple dictionaries taking o ( n ) extra bits for a bit vector b of length n enable answering rankb ( b , i ) in constant time for any i .
+by building these dictionaries for the indicator bit-vectors bc , we can conclude that ^ n + o ( ^ n ) bits of space suffces for o ( m ) time backward search .
+these structures , together with the basic suffx array , give the following result .
+theorem 2 the suffx array with rank-dictionaries ( sa-r ) supports backward search with the following space and time complexities .
+wavelet trees .
+a tool to reduce the alphabet dependence from ^ n to n log ^ in the space to solve occ ( c , i ) is the wavelet tree of grossi , gupta , and vitter [ 2003 ] .
+the idea is to simulate each occ ( c , i ) query by log ^ rank-queries on binary sequences .
+see fig . 5 .
+fig . 5 .
+a binary wavelet tree for the string l = " araadl ll $ bbaar aaaa " , illustrating the solution of query occ ( " a " , 15 ) .
+only the bit vectors are stored , the texts are shown for clarity .
+the wavelet tree is a balanced search tree where each symbol from the alphabet corresponds to a leaf .
+the root holds a bit vector marking with 1 those positions whose corresponding characters descend to the right .
+those characters are concatenated to form the sequence corresponding to the right child of the root .
+the characters at positions marked 0 in the root bit vector make up the sequence corresponding to the left child .
+the process is repeated recursively until the leaves .
+only the bit vectors marking the positions are stored , and they are preprocessed for rank-queries .
+fig . 5 shows how occ ( " a " , 16 ) is computed in our example .
+as we know that " a " belongs to the first half of the sorted alphabet2 , it receives mark 0 in the root bit vector b , and consequently its occurrences go to the left child .
+thus , we compute rank0 ( b , 16 ) = 10 to find out which is its corresponding character position in the sequence of the left child of the root .
+as " a " belongs to the second quarter of the sorted alphabet ( that is , to the second half within the first half ) , its occurrences are marked 1 in the bit vector b ' of the left child of the root .
+thus we compute rank ( b ^ , 10 ) = 7 to find out the corresponding position in the right child of the current node .
+the third step computes rank0 ( b ^ , 7 ) = 5 in that node , so we arrive at a leaf with position 5 .
+that leaf would contain a sequence formed by just " a " s , thus we already have our answer occ ( " a " , 16 ) = 5 . ( the process is similar to fractional cascading in computational geometry [ de berg et al. 2000 , chapter 5 ] . )
+with some care ( see section 6.3 ) the wavelet tree can be represented in n log ^ + o ( n log ^ ) bits , supporting the internal rank computations in constant time .
+as we have seen , each occ ( c , i ) query can be simulated by log ^ binary rank computations .
+that is , wavelet trees enable improving the space complexity significantly with a small sacrifice in time complexity .
+theorem 3 the suffix array with wavelet trees ( sa-wt ) supports backward search with the following space and time complexities .
+turning suffix arrays into self-indexes .
+we have seen that , using wavelet trees , counting queries can actually be supported without using suffix arrays at all .
+for locating the occurrence positions or displaying text context , the suffix array and original text are still necessary .
+the main technique to cope without them is to sample the suffix array at regular text position intervals ( that is , given a sampling step b , collect all entries a [ i ] = b c ( 9 , ~ t ) j for every j ) .
+then , to locate the occurrence positions we proceed as follows : the counting query gives an interval in the suffix array to be reported .
+now , given each position i within this interval , we wish to find the corresponding text position a [ i ] .
+if suffix position i is not sampled , one performs a backward step lf ( i ) to find the suffix array entry pointing to text position a [ i ] ^ 1 , a [ i ] ^ 2 , ... , until a sampled position x = a [ i ] ^ k is found .
+then , x + k is the answer .
+displaying arbitrary text substrings tl , r is also easy by first finding the nearest sampled position after r , a [ i ] = r ' > r , and then using lf repeatedly over i until traversing all the positions backward until l .
+the same wavelet tree can be used to reveal the text characters to display between positions r and l , each in log ^ steps .
+more complete descriptions are given in the next sections ( small details vary among indexes ) .
+it should be clear that the choice of the sampling step involves a tradeoff between extra space for the index and time to locate occurrences and display text substrings .
+this completes the description of a simple self-index : we do not need the text nor the suffix array , just the wavelet tree and a few additional arrays .
+this index is not yet compressed .
+compression can be obtained , for example , by using more compact representations of wavelet trees ( see sections 6.3 and 9 ) .
+forward searching : compressed suffix arrays .
+another line of research on self-indexes [ grossi and vitter 2000 ; sadakane 2000 ] builds on the inverse of function lf ( i ) .
+this inverse function , denoted ip , maps suffix ta [ i ] , n to suffix ta [ i ] + 1 , n , and thus it enables scanning the text in forward direction , from left to right .
+while the occ ( c , i ) function demonstrated the backward search paradigm , the inverse function ip is useful in demonstrating the connection to compression : when its values are listed from 1 to n , they form ^ increasing integer sequences with each value in { 1 , 2 , ... , n } .
+fig . 6 works as a proof by example .
+such increasing integer sequences can be compressed using so-called gap encoding methods , as will be was used in backward searching are almost all we need .
+consider the standard binary search algorithm of alg . 1 .
+each step requires comparing a prefix of some text suffix ta [ i ] , n with the pattern .
+we can extract such a prefix by following the ^ values recursively : i , ^ [ i ] , ^ [ ^ [ i ] ] , ... , as they point to ta [ i ] , ta [ i ] + , , ta [ i ] + 2 , ...
+after at most m steps , we have revealed enough characters from the suffix the pattern is being compared to .
+to discover each such character ta [ j ] , for j = i , ^ [ i ] , ^ [ ^ [ i ] ] , ... , we can use the same table c : because the first characters ta [ j ] of the suffixes ta [ j ] , n, are in alphabetic order in a , ta [ j ] must be the character c such that c [ c ] < j < c [ c + 1 ] .
+thus each ta [ j ] can be found by an o ( log ^ ) - time binary search on c. by spending n + o ( n ) extra bits , this binary search on c can be replaced by a constant-time rank ( details in section 6.1 ) .
+the same technique used for compressing function ^ is widely used in the more familiar inverted indexes for natural language texts .
+we analyze the space usage of inverted indexes as an introduction to compression of function ^ .
+an efficient way to compress the occurrence lists uses differential encoding plus a variable-length coding , such as elias- ^ coding [ elias 1975 ; witten et al. 1999 ] .
+take the list for " be " : 4,17 .
+first , we get smaller numbers by representing the differences ( called gaps ) between adjacent elements : ( 4 ^ 0 ) , ( 17 ^ 4 ) = 4 , 13 .
+the binary representations of the numbers 4 and 13 are 100 and 1101 , respectively .
+however , sequence 1001101 does not reveal the original content as the boundaries are not marked .
+hence , one must somehow encode the lengths of the separate binary numbers .
+such coding is for example ^ ( 4 ) ^ ( 13 ) = 1101110011101001101 , where the first bits set until the first zero ( 11 ) encode a number y ( = 2 ) in unary .
+the next y-bit field ( 11 ) , as an integer ( 3 ) , tells the length of the bit field ( 100 ) that codes the actual number ( 4 ) .
+the process is repeated for each gap .
+asymptotically the code for integer x takes log x + 2 log log x + o ( 1 ) bits , where o ( 1 ) comes from the zero-bit separating the unary code from the rest , and from rounding the logarithms .
+random access to if .
+as mentioned , the compression of function if is identical to the above scheme for lists of occurrences .
+the major difference is that we need access to arbitrary if values , not only from the beginning .
+a reasonably neat solution ( not the most efficient possible ) is to sample , say , each log n-th absolute if value , together with a pointer to its position in the compressed sequence of if values .
+access to if [ i ] is then accomplished by finding the closest absolute value , following the pointer to the compressed sequence , and uncompressing the differential values until reaching the desired entry .
+value if [ i ] is then the sampled absolute value plus the sum of the differences .
+it is reasonably easy to uncompress each encoded difference value in constant time .
+there will be at most log n values to decompress , and hence any if [ i ] value can be computed in o ( log n ) time .
+the absolute samples take o ( n ) additional bits .
+with a more careful design the extraction of if values can be carried out in constant time .
+indexes based on function if will be studied in sections 7 and 8 . 4.6 roadmap at this point the reader can leave with a reasonably complete and accurate intuition of the main general ideas behind compressed full-text indexing .
+the rest of the paper is devoted to readers seeking for a more in-depth technical understanding of the area , and thus it revisits the concepts presented in this section ( as well as other omitted ones ) in a more formal and systematic way .
+we start in section 5 by exposing the fundamental relationships between text compressibility and index regularities .
+this also reveals the ties that exist among the different approaches , proving facts that are used both in forward and backward search paradigms .
+the section will also introduce the fundamental concepts behind the indexing schemes that achieve higher-order compression , something we have not touched on in this section .
+readers wishing to understand the algorithmic details behind compressed indexes without understanding why they achieve the promised compression bounds , can safely skip section 5 and just accept the space complexity claims in the rest of the paper .
+they will have to return to this section only occasionally for some definitions .
+section 6 describes some basic compact data structures and their properties , which can also be taken for granted when reading the other sections .
+thus this section can be skipped by readers wanting to understand the main algorithmic concepts of self-indexes , but not by those wishing , for example , to implement them .
+sections 7 and 8 describe the self-indexes based on forward searching using the if function , and they can be read independently of section 9 , which describes the backward searching paradigm , and of section 10 , which describes lempel-ziv-based self-indexes ( the only ones not based on suffix arrays ) .
+the last sections finish the survey with an overview of the area and are recommended to every reader , though not essential .
+suffix array regularities and text compressibility .
+suffix arrays are not random permutations .
+when the text alphabet size ^ is smaller than n , not every permutation of [ 1 , n ] is the suffix array of some text ( as there are more permutations than texts of length n ) .
+moreover , the entropy of t is reflected in regularities that appear in its suffix array a. in this section we show how some subtle kinds of suffix array regularities are related to measures of text compressibility .
+those relationships are relevant later to compress suffix arrays .
+the analytical results in this section are justified with intuitive arguments or informal proofs .
+we refer the reader to the original sources for the formal technical proofs .
+we sometimes deviate slightly from the original definitions , changing inessential technical details to allow for a simpler exposition. k-th order empirical entropy .
+opposed to the classical notion of k-th order entropy [ bell et al. 1990 ] , which can only be defined for infinite sources , the k-th order empirical entropy defined by manzini [ 2001 ] applies to finite texts .
+it coincides with the statistical estimation of the entropy of a source taking the text as a finite sample of the infinite source3 .
+the definition is especially useful because it can be applied to any text without resorting to assumptions on its distribution .
+it has become popular in the algorithmic community , for example in analyzing the size of data structures , because it is a worst-case measure but yet relates the space usage to compressibility .
+definition 7 let t1 , n be a text over an alphabet e. in the text compression literature , it is customary to define ts regarding the characters preceded by s , rather than followed by s .
+we use the reverse definition for technical convenience .
+although the empirical entropy of t and its reverse do not necessarily match , the difference is relatively small [ ferragina and manzini 2005 ] , and if this is still an issue , one can always work on the reverse text .
+the empirical entropy of a text t provides a lower bound to the number of bits needed to compress t using any compressor that encodes each character considering only the context of k characters that follow it in t. many self-indexes state their space requirement as a function of the empirical entropy of the indexed text .
+this is useful because it gives a measure of the index size with respect to the size the 3actually , the same formula of manzini [ 2001 ] is used by grossi et al. [ 2003 ] , yet it is interpreted in this latter sense .
+self-repetitions in suffix arrays .
+those repetitions show up in the suffix array a of t , depicted in fig . 3 .
+for example , consider a [ 18,19 ] with respect to a [ 10,11 ] : a [ 18 ] = 2 = a [ 10 ] + 1 and a [ 19 ] = 14 = a [ 11 ] + 1 .
+we denote such relationship by a [ 18,19 ] = a [ 10,11 ] + 1 .
+there are also longer regularities that do not correspond to a single subtree of the suffix tree , for example a [ 18,21 ] = a [ 10,13 ] + 1 .
+still , the text property responsible for the regularity is the same : all the text suffixes in a [ 10,13 ] start with " a " , while those in a [ 18,21 ] are the same suffixes with the initial " a " excluded .
+the regularity appears because , for each pair of consecutive suffixes ax and ay in a [ 10,13 ] , the suffixes x and y are contiguous in a [ 18,21 ] , that is , there is no other suffix w such that x < w < y elsewhere in the text .
+this motivates the definition of self-repetition initially devised by mc ( 9 , ~ t ) akinen [ 2000 , 2003 ] .
+a measure of the amount of regularity in a suffix array is how many self-repetitions we need to cover the whole array .
+this is captured by the following definition [ mc ( 9 , ~ t ) akinen and navarro 2004a , 2005a , 2005b ] .
+the suffix array a in fig . 7 illustrates , where the covering is drawn below a. the 8th interval , for example , is [ is , is + ^ s ] = [ 10,13 ] , corresponding to js = 18 .
+self-repetitions are best highlighted through the definition of function if ( recall section 4.4 ) , which tells where in the suffix array lies the pointer following the current one [ grossi and vitter 2000 ] .
+function if is heavily used in most compressed suffix arrays , as seen later .
+there are several properties of if that make it appealing to compression .
+a first one establishes that if is monotonically increasing in the areas of a that point to suffixes starting with the same character [ grossi and vitter 2000 ] .
+the burrows-wheeler transform [ burrows and wheeler 1994 ] is a reversible transformation from strings to strings 4 .
+this transformed text is easier to compress by local optimization methods [ manzini 2001 ] .
+that is , tbwt is formed by sequentially traversing the suffix array a and concatenating the characters that precede each suffix .
+fig . 7 illustrates .
+definition 14 given strings f and l resulting from the bwt of text t , the lfmapping is a function lf : [ 1 , n ] - > [ 1 , n ] , such that lf ( i ) is the position in f where character li occurs .
+the following lemma gives the formula for the lf-mapping [ burrows and wheeler 1994 ; ferragina and manzini 2000 ] .
+lemma 3 let t1 , n be a text and f and l be the result of its bwt .
+let c : e - > [ 1 , n ] and occ : e x [ 1 , n ] - > [ 1 , n ] , such that c ( c ) is the number of occurrences in t of characters alphabetically smaller than c , and occ ( c , i ) is the number of occurrences of character c in l1 , i .
+relation between regularities and compressibility .
+we start by pointing out a simple but essential relation between tbwt , the burrows- wheeler transform of t , and hk ( t ) , the k-th order empirical entropy of t. note that , for each text context s of length k , all the suffixes starting with that context appear consecutively in a. therefore , the characters that precede each context ( which form ts ) appear consecutively in tbwt .
+the following lemma [ ferragina et al. 2005 ; ferragina et al. 2004 ] shows that it suffices to compress the characters of each context to their zero-order entropy to achieve k-th order entropy overall .
+thus , tbwt is the concatenation of all the ts .
+it is enough to encode each such portion of tbwt with a zero-order compressor to obtain a k-th order compressor for t , for any k .
+the price of using a longer context ( larger k ) is paid in the extra ^ k f ( n / ^ k ) term .
+this can be thought of as the price to manage the model information , and it can easily dominate the overall space if k is not small enough .
+let us now consider the number of equal-letter runs in tbwt .
+this will be related both to self-repetitions in suffix arrays and to the empirical entropy of t [ mc ( 9 , ~ t ) akinen and navarro 2004a , 2005a , 2005b ] .
+we finally relate the k-th order empirical entropy of t with nbw [ mc ( 9 , ~ t ) akinen and navarro 2004a , 2005a , 2005b ] .
+theorem 5 given a text t , ,n over an alphabet of size ^ , and given its bwt tbwt , with nbw equal-letter runs , it holds nbw < nhk ( t ) + ^ k for any k > 0 .
+in particular , it holds nbw < nhk ( t ) + o ( n ) for any k < log ^ n c ( 9 , ~ t ) ^ ( 1 ) .
+the bounds are obviously valid for nsr < nbw as well .
+we only attempt to give a flavor of why the theorem holds .
+the idea is to partition tbwt according to the contexts of length k .
+following eq . ( 1 ) , nhk ( t ) is the sum of zero-order entropies over all the ts strings .
+it can then be shown that , within a single tbt t = ts , the number of equal-letter runs in ts can be upper bounded in terms of the zero-order entropy of the string ts .
+a constant f ( isi ) = 1 in the upper bound is responsible for the ^ k overhead , which is the number of possible contexts of length k .
+thus the rest is a consequence of theorem 4 .
+basic compact data structures .
+we will learn later that nearly all approaches to represent suffix arrays in compressed form take advantage of compressed representations of binary sequences .
+that is , we are given a bit vector ( or bit string ) b , ,n , and we want to compress it while still supporting several operations on it .
+typical operations are : bi : accesses the i-th element. rankb ( b , i ) : returns the number of times bit b appears in the prefix b , ,i. selectb ( b , j ) : returns the position i of the j-th appearance of bit b in b , ,n .
+other useful operations are prevb ( b , i ) and nextb ( b , i ) , which give the position of the previous / next bit b from position i .
+however , these operations can be expressed via rank and select , and hence are usually not considered separately .
+notice also that rank0 ( b , i ) = i c ( 9 , ~ t ) rank , ( b , i ) , so considering rank , ( b , i ) is enough .
+however , the same duality does not hold for select , and we have to consider both select0 ( b , j ) and select , ( b , j ) .
+we call a representation of b complete if it supports all the listed operations in constant time , and partial if it supports them only for 1-bits , that is , if it supports rankb ( b , i ) only if bi = 1 and it only supports select , ( b , j ) .
+the study of succinct representations of various structures , including bit vectors , was initiated by jacobson [ 1989 ] .
+the main motivation to study these operations came from the possibility to simulate tree traversals in small space : it is possible to represent the shape of a tree as a bit vector , and then the traversal from a node to a child and vice versa can be expressed via constant number of rank and select operations .
+jacobson showed that attaching a dictionary of size o ( n ) to the bit vector b , ,n is sufficient to support rank operation in constant time on the ram model .
+he also studied select operation , but for the ram model the solution was not yet optimal .
+later , munro [ 1996 ] and clark [ 1996 ] obtained constant-time complexity for select on the ram model , using also o ( n ) extra space .
+although n + o ( n ) bits are asymptotically optimal for incompressible binary sequences , one can obtain more space-efficient representations for compressible ones .
+consider , for example , select , ( b , i ) operation on a bit vector containing ^ = o ( n / log n ) 1-bits .
+one can directly store all answers in o ( ^ log n ) = o ( n ) bits .
+compressed full-text indexes .
+pagh [ 1999 ] was the first to study compressed representations of bit vectors supporting more than just access to bi .
+he gave a representation of bit vector b , ,n that uses [ log ( n ) 1 + o ( ^ ) + o ( log log n ) bits .
+in principle this representation supported only bi queries , yet it also supported rank queries for sufficiently dense bit vectors , n = o ( ^ polylog ( ^ ) ) .
+recall that log ( n ) = nh0 ( b ) + o ( log n ) .
+this result was later enhanced by raman , raman , and rao [ 2002 ] , who developed a representation with similar space complexity , nh0 ( b ) + o ( ^ ) + o ( log log n ) bits , supporting rank and select .
+however , this representation is partial .
+they also provide a new complete representation requiring nh0 ( b ) + o ( n log log n / log n ) bits .
+recent lower bounds [ golynski 2006 ] show that these results can hardly be improved , as q ( n log log n / log n ) is a lower bound on the extra space of any rank / select index achieving o ( log n ) time if the index stores b explicitly .
+for compressed representations of b , one needs q ( ( ^ / ^ ) log ^ ) bits of space ( overall ) to answer queries in time o ( ^ ) .
+this latter bound still leaves some space for improvements .
+in the rest of this section we explain the most intuitive of these results , to give a flavor of how some of the solutions work .
+we also show how the results are extended to non-binary sequences and two-dimensional searching .
+most implementations of these solutions sacrifice some theoretical guarantees but work well in practice [ geary et al. 2004 ; kim et al. 2005 ; gonzc ( 9 , ~ t ) alez et al. 2005 ; sadakane and okanohara 2006 ] .
+we start by explaining the n + o ( n ) bits solution supporting rank , ( b , i ) and select , ( b , j ) in constant time [ jacobson 1989 ; munro 1996 ; clark 1996 ] .
+then we also have rank0 ( b , i ) = i c ( 9 , ~ t ) rank , ( b , i ) , and select0 ( b , j ) is symmetric .
+let us start with rank .
+the structure is composed of a two-level dictionary with partial solutions ( directly storing the answers at regularly sampled positions i ) , plus a global table storing answers for every possible short binary sequence .
+the answer to a rank query is formed by summing values from these dictionaries and tables .
+we partition the space [ 1 , n ] of possible arguments of select ( that is , values j of select , ( b , j ) ) into blocks of loge n arguments .
+a dictionary superblockselect [ j ] , requiring o ( n / log n ) bits , answers select , ( b , j loge n ) in constant time .
+some of those blocks may span a large extent in b ( with many 0-bits and just loge n 1-bits ) .
+a fundamental problem for using blocks and superblocks for select is that there is no guarantee that relative answers inside blocks do not require log n bits anyway .
+a block is called long if it spans more than log4 n positions in b , and short otherwise .
+note that there cannot be more than n / log4 n long blocks .
+as long blocks are problematic , we simply store all their loge n answers explicitly .
+as each answer requires log n bits , this accounts for other n / log n bits overall .
+the class identifiers amount to o ( n log ( t ) / t ) = o ( n log log n / log n ) bits overall .
+the interesting part is the sequence of indexes .
+let smallblocki , be the i-th block , with ^ i bits set .
+the number of bits required by all the blocks is [ pagh 1999 ] where the second inequality holds because the ways to choose ^ i bits from each block of t bits are included in the ways to choose ^ = ^ , + ... + ^ rn / tl bits out of n .
+thus , we have represented b with nh0 ( b ) + o ( n ) bits .
+we need more structures to answer queries on b. the same superblockrank and blockrank directories used in section 6.1 , with block size t , are used .
+as the descriptions ( ^ , r ) have varying length , we need position directories superblockpos and blockpos , which work like superblockrankand blockrankto give the position in the compressed b where the description of each block starts .
+in order to complete the solution with table smallrank , we must index this table using the representations ( ^ , r ) , as bitmap smallblock is not directly available .
+for each class ^ we store a table smallrank ^ [ r , i ] , giving rank , ( smallrank , i ) for the block smallrank identified by pair ( ^ , r ) .
+in our example , smallrank2 [ 4 , 2 ] = 1 as pair ( 2 , 4 ) identifies bitmap 1001 and rank ( 1001 , 2 ) = 1 .
+those smallrank ^ tables need together o ( ^ n log n log log n ) bits , just as the original smallrank .
+thus all the extra structures still require o ( n ) bits .
+fig . 10 illustrates .
+handling general sequences and wavelet trees .
+the o ( n ) extra term can be removed with a more careful design [ ferragina et al. 2006 ] .
+essentially , one can follow the development leading to theorem 7 on a general sequence .
+now binomials become multinomials and the scheme is somewhat more complicated , but the main idea does not change .
+lemma 6 sequence s1 , n over an alphabet of size ^ can be represented using nh0 ( s ) + o ( ^ nloglogn / log ^ n ) bits of space so that bi , rankc ( s , i ) , and selectc ( s , j ) , can be answered in constant time .
+note that the extra space on top of nh0 ( s ) is o ( n log ^ ) only if the alphabet is very small , namely ^ = o ( log n / log log n ) .
+a completely different technique is the wavelet tree [ grossi et al. 2003 ] .
+fig . 5 , on page 13 , illustrates this structure .
+the wavelet tree is a perfect binary tree of height flog ^ ^ , built on the alphabet symbols , such that the root represents the whole alphabet and each leaf represents a distinct alphabet symbol .
+if a node v represents alphabet symbols in the range ev = [ i , j ] , then its left child vl represents evl = [ i , i2j ] and its right child vr represents ev , = [ i2j + 1 , j ] .
+we associate to each node v the subsequence sv of s formed by the symbols in ev .
+yet , sv is not really stored at the node .
+we just store a bit sequence bv telling whether symbols in sv go left or right : bv i = 1 iff svi e ev , ( i.e. , svi goes right ) .
+all queries on s are easily answered in o ( log ^ ) time with the wavelet tree , provided we have complete representations of the bit vectors bv .
+to determine si , we check broot ito decide whether to go left or right .
+if we go left , we now seek the character at position rank0 ( broot , i ) in the left child of the root , otherwise we seek the character at position rank , ( broot , i ) in its right child .
+we continue recursively until reaching a leaf corresponding to a single character , which is the original si .
+similarly , to answer rankc ( s , i ) , we go left or right , adapting i accordingly .
+this time we choose left or right depending on whether character c belongs to ev ' or ev , .
+once we arrive at a leaf , the current i value is the answer .
+fig . 5 gives an example for ranka ( s , 16 ) = 5 .
+finally , to answer selectc ( s , j ) , we start at the leaf corresponding to c and move upwards in the tree .
+if the leaf is a left child , then the position corresponding to j in its parent v is select0 ( bv , j ) , otherwise it is select , ( bv , j ) .
+when we reach the root , the current j value is the answer .
+for example , in fig . 5 , selecta ( s , 5 ) starts with the leaf for " a " . it is a left child , so in its parent the position is select0 ( 00011000000 , 5 ) = 7 .
+this in turn is a right child , so in its parent the position is select , ( 111000111101111 , 7 ) = 10 .
+we finish with answer 15 at the root .
+if we use the complete representation of theorem 6 for the bit vectors bv , the overall space is nlog ^ ( 1 + o ( 1 ) ) , that is , essentially the same space to store s ( and we do not need to also store s ) .
+yet , by using the representation of theorem 7 , the sum of entropies of all bit vectors simplifies to nh0 ( s ) and the extra terms add up o ( n log log n / log ^ n ) = o ( n log ^ ) [ grossi et al. 2003 ] .
+theorem 8 sequence s , ,n over an alphabet of size ^ can be represented using the wavelet tree in nh0 ( s ) + o ( n log log n / log ^ n ) bits of space , so that si , rankc ( s , i ) , and selectc ( s , j ) , can be answered in o ( log ^ ) time .
+it is possible to combine the representations of lemma 6 and theorem 8 .
+the former gives a complete representation ( constant query time ) with sublinear extra space , for ^ = o ( log n / log log n ) .
+the latter works for any alphabet ^ but it pays o ( log ^ ) query time .
+the idea is to use r-ary wavelet trees .
+instead of storing bitmaps at each node , we now store sequences over an alphabet of size r to represent the tree branch chosen by each character .
+those sequences are handled with lemma 6 [ ferragina et al. 2006 ] .
+by carefully choosing r , one gets constant access time for ^ = o ( polylog ( n ) ) , and improved access time for larger alphabets .
+theorem 9 sequence s , ,n over an alphabet of size ^ = o ( n ) , can be represented using a multi-ary wavelet tree in nh0 ( s ) + o ( n log ^ ) bits of space , so that si , rankc ( s , i ) , and selectc ( s , j ) , are answered in o ( 1 + log ^ / log log n ) time .
+finally , some very recent work [ golynski et al. 2006 ] obtains o ( log log ^ ) time for queries si and rank , and constant time for select , using n log ^ ( 1 + o ( 1 ) ) bits .
+two-dimensional range searching .
+as we will see later , some compressed indexes reduce some search subproblems to two-dimensional range searching .
+we present here one classical data structure by chazelle [ chazelle 1988 ] .
+for simplicity we focus on the problem variant that arises in our application : one has a set of n points over an n x n grid , such that there is exactly one point for each row i and one for each column j .
+let us regard the set of n points as a sequence s = i ( 1 ) i ( 2 ) ... i ( n ) , so that i ( j ) is the row of the only point at column j .
+as all the rows are also different , s is actually a permutation of the interval [ 1 , n ] .
+more complex scenarios can be reduced to this simplified setting .
+the most succinct way of describing chazellec ( 9 , ~ t ) s data structure is to say that it is the wavelet tree of s , so the tree partitions the point set into two halves according to their row value i .
+thus the structure can be represented using nlog n ( 1 + o ( 1 ) ) bits of space .
+yet , the query algorithms are rather different .
+let us focus on retrieving all the points that lie within a two-dimensional range [ i , i ^ ] x [ j , j ^ ] .
+let b , ,n be the bitmap at the tree root .
+we can project the range [ j , j ^ ] onto the left child as [ jl , j ^ l ] = [ rank0 ( b , j ^ 1 ) + 1 , rank0 ( b , j ^ ) ] , and similarly onto the right child with rank , .
+we backtrack over the tree , abandoning a path at node v either when the local interval [ jv , j ^ v ] is empty , or when the local interval [ iv , i ^ v ] does not intersect anymore the original [ i , i ^ ] .
+if we arrive at a leaf [ i , i ] without discarding it , then the point with row value i is part of the answer .
+in the worst case every answer is reported in o ( log n ) time , and we need o ( log n ) time if we want just to count the number of occurrences .
+there exist other data structures [ alstrup et al. 2000 ] that require o ( n log , + ^ n ) bits of space , for any constant ^ > 0 , and can , after spending o ( log log n ) time for the query , retrieve each occurrence in constant time .
+another structure in the same paper takes o ( n log n log log n ) bits of space and requires o ( ( log log n ) 2 ) time for the query , after which it can retrieve each answer in o ( log log n ) time .
+compressed suffix arrays .
+the first type of compressed indexes we are going to review can be considered as the result of abstract optimization of the suffix array data structure .
+that is , the search algorithm remains essentially as in alg . 1 , but suffix array a is taken as an abstract data type that gives access to the array in some way .
+this abstract data type is implemented using as little space as possible .
+this is the case of the compact suffix array of m ^ akinen [ 2000 , 2003 ] ( max-csa ) and the compressed suffix array of grossi and vitter [ 2000 , 2006 ] ( gv-csa ) .
+both ideas appeared simultaneously and independently during the year 2000 , and they are based on different ways of exploiting the regularities that appear on the suffix arrays of compressible texts .
+those structures are still not self-indexes , as they need the text t to operate .
+the max-csa is mainly interesting by its property of using only structural compression , where one seeks the minimum size representation under a given family .
+for example , minimization of automata is structural compression .
+the max-csa is basically a minimized array , where self-repetitions a [ i , i + ^ ] are replaced by a link to the corresponding area a [ j , j + ^ ] ( recall definition 9 ) .
+from theorem 5 it is easy to see that the size of the index is o ( nhk ( t ) log n ) bits , which makes it the first compressed full-text index that existed .
+we will not detail it here , as the forthcoming results build on non-structural compression and supersede this one .
+compressed suffix array .
+the compressed suffix array of grossi and vitter [ 2000 , 2006 ] ( gv-csa ) is a succinct index based on the idea of providing access to a [ i ] without storing a , so that the search algorithm is exactly as in alg . 1 .
+the text t is maintained explicitly .
+the gv-csa uses a hierarchical decomposition of a based on function if ( definition 11 ) .
+let us focus on the first level of that hierarchical decomposition .
+let a0 = a be the original suffix array .
+a bit vector b0 [ 1 , n ] is defined so that b0 [ i ] = 1 iff a [ i ] is even .
+let also 0 [ 1 , rn / 2 ] ] contain the sequence of values xf ( i ) for arguments i where b0 [ i ] = 0 .
+finally , let a , [ 1 , ln / 2 ~ ] be the subsequence of a0 [ 1 , n ] formed by the even a0 [ i ] values , divided by 2 .
+the idea can be used recursively : instead of representing a , , we replace it with b2 , 2 , and a2 .
+this is continued until ah is small enough to be represented explicitly .
+alg . 2 gives the pseudocode to extract an entry a [ i ] from the recursive structure .
+the complexity is o ( h ) assuming constant-time rank ( section 6.1 ) .
+it is convenient to use h = flog log n ] , so that the n / 2h entries of ah , each of which requires o ( logn ) bits , take overall o ( n ) bits .
+all the b ^ arrays add up at most 2n bits ( as their length is halved from each level to the next ) , and their additional rank structures add o ( n ) extra bits ( section 6.1 ) .
+the only remaining problem is how to represent the if ^ arrays .
+for a compact representation of if0 , we recall that if is increasing within the area of a that points to suffixes starting with the same character ( lemma 1 ) .
+although grossi and vitter [ 2000 ] do not detail how to use this property to represent if in little space , an elegant solution is given in later work by sadakane [ 2000 , 2003 ] .
+essentially , sadakane shows that if can be encoded differentially ( if ( i + 1 ) c ( 9 , ~ t ) if ( i ) ) within the areas where it is increasing , using elias- ^ coding [ elias 1975 ; witten et al. 1999 ] ( recall section 4.5 ) .
+the number of bits this representation requires is nh0 + o ( n log log ^ ) .
+for if0 , since only odd text positions are considered , the result is the same as if we had a text t ^ , ,n / 2 formed by bigrams of t , ti ^ = t2i ^ , , 2i .
+since the zero-order entropy of t taken as a sequence of 2 ^ -grams is h02 ^ ) < 2 ^ h0 [ sadakane 2003 ] , if0 requires 1t ^ 1ho2 ) + o ( 1t ^ 1 log log ( ^ 2 ) ) < ( n / 2 ) ( 2h0 ) + o ( ( n / 2 ) ( 1 + loglog ^ ) ) .
+in general , if ^ requires at most ( n / 2 ^ ) ( 2 ^ h0 ) + o ( ( n / 2 ^ ) ( ^ + loglog ^ ) ) = nh0 + o ( n ^ / 2 ^ ) + o ( ( nloglog ^ ) / 2 ^ ) bits .
+overall , the h levels require hnh0 + o ( n log log ^ ) bits .
+in order to access the entries of these compressed if ^ arrays in constant time [ sadakane 2003 ] , absolute if ^ values are inserted at entry boundaries every e ) ( log n ) bits ( not e ) ( logn ) entries , as in the simplified solution of section 4.5 ) , so this adds o ( n ) bits .
+to extract an arbitrary positionif ^ [ i ] , we go to the nearest absolute sample before i and sequentially advance summing up differences until reaching position i .
+to know which is the nearest sample position preceding i one can have bit arrays possamp , ,n telling which entries are sampled , and startsamp , , ^ ^ | marking the positions in the bit stream representing if ^ where absolute samples start .
+then the last sampled position before i is i ^ = select , ( possamp , rank , ( possamp , i ) ) .
+the absolute value ofif ^ [ i ^ ] starts at bit position select , ( start samp , rank , ( possamp , i ) ) in if ^ .
+by using the techniques of section 6.2 , these two arrays require o ( ( n + 1if ^ 1 ) log log n / log n ) extra bits of space , which is negligible .
+we must also be able to process all the bits between two samples in constant time .
+by maintaining a precomputed table with the total number of differences encoded inside every possible chunk of lo2 n bits , we can process each such chunk in constant time , so the e ) ( log n ) bits of differences can also be processed in constant time .
+the size of that table is only o ( . / n log2 n ) = o ( n ) bits .
+note the similarity with the other four-russians technique for constant time rank ( section 6.1 ) .
+what we have , overall , is a structure using nh0 log log n + o ( n log log ^ ) bits of space , which encodes a and permits retrieving a [ i ] in o ( log log n ) time .
+a tradeoff with 1 ^ nh0 + o ( n log log ^ ) bits of space and o ( log ^ n ) retrieval time , for any constant ^ > 0 , can be obtained as follows .
+given the h = flog log n ] levels , we only keep three levels : 0 , lh / 2 ] , and h .
+bit vectors b0 and blh / 21 indicate which entries are represented in levels lh / 2 ] and h , respectively .
+the space for if0 , if ^ h / 2 ^ , and ah , is at most 2nh0 + o ( n log log ^ ) bits .
+however , we cannot move from one level to the next in constant time .
+we must use if ^ several times until reaching an entry that is sampled at the next level .
+the number of times we must use if ^ is at most 2h / 2 = o ( . / log n ) .
+if , instead of 3 levels , we use a constant number 1 + 1 / ^ of levels 0 , h ^ , 2h ^ , ... , h , the time is o ( log ^ n ) .
+by applying the usual algorithms over this representation of a we get the following results .
+theorem 10 [ grossi and vitter 2000 ; sadakane 2000 ] the compressed suffix array of grossi and vitter ( gv-csa ) offers the following space / time tradeoffs .
+we have described the solution of sadakane [ 2000 , 2003 ] to represent if in little space and constant access time .
+the solution of the original authors has just appeared [ grossi and vitter 2006 ] and it is slightly different .
+they also use the fact that if is piecewise increasing in a different way , achieving 12n log ^ bits at each level instead of nh0 .
+furthermore , they take t as a binary string of n log ^ bits , which yields essentially n log ^ log log ^ n bits for the first version of theorem 10 and e n log ^ bits for the second version .
+they actually use h = flog log ^ n ] , which adds up n log ^ extra space for ah and slightly reduces the time to access a [ i ] in the first variant of the above theorem to o ( h ) = o ( log log ^ n ) .
+grossi and vitter [ 2000 , 2006 ] show how the occ occurrences can be located more efficiently in batch when m is large enough .
+they also show how to modify a compressed suffix tree [ munro et al. 2001 ] so as to obtain o ( m / log ^ n + log ^ n ) search time , for any constant 0 < ^ < 1 , using o ( n log ^ ) bits of space .
+this is obtained by modifying the compressed suffix tree [ munro et al. 2001 ] in two ways : first , using perfect hashing to allow traversing o ( log ^ n ) tree nodes downwards in one step , and second , replacing the suffix array required by the compressed suffix tree with the gv-csa .
+we do not provide details because in this paper we focus on indexes taking o ( nlog ^ ) bits .
+in this sense , we are not interested in the gv-csa by itself , but as a predecessor of other self-indexes that appeared later .
+a generalization of this structure ( but still not a self-index ) is presented by rao [ 2002 ] , where they index a binary text using o ( nh log1 / h n ) bits and retrieve a [ i ] in o ( h ) time , for any 1 < h < log log n .
+turning compressed suffix arrays into self-indexes .
+further development of the techniques of section 7 lead to self-indexes , which can operate without the text .
+the first index in this line was the compressed suffix array of sadakane [ 2000 , 2002 , 2003 ] ( sad-csa ) .
+this was followed by the compressed suffix array of grossi , gupta , and vitter [ 2003 , 2004 ] ( ggv-csa ) , and by the compressed compact suffix array of mc ( 9 , ~ t ) akinen and navarro [ 2004a ] ( mnccsa ) .
+the latter , which builds on the max-csa and achieves o ( nhk ( t ) log ^ ) bits of space , is not covered here .
+sadakane [ 2000 , 2003 ] showed how the gv-csa can be converted into a self-index , and at the same time optimized it in several ways .
+the resulting index was also called compressed suffix array and will be referred to as sad-csa in this paper .
+the sad-csa does not give , as the gv-csa , direct access to a [ i ] , but rather to any prefix of ta [ i ] , n .
+this still suffices to use the search algorithm of alg . 1 .
+the sad-csa represents both a and t using the full function if ( definition 11 ) , and a few extra structures ( recall section 4.4 ) .
+imagine we wish to compare p against ta [ i ] , n .
+for the binary search , we need to extract enough characters from ta [ i ] , n so that its lexicographical relation to p is clear .
+since ta [ i ] is the first character of the suffix pointed to by a [ i ] , we have ta [ i ] = fi in fig . 8 .
+once we determine ta [ i ] = c in this way , we need to obtain the next character , ta [ i ] + 1 .
+but ta [ i ] + 1 = ta [ gy ( i ) ] , so we simply move to i ^ = if ( i ) and keep extracting characters with the same method , as long as necessary .
+note that at most jpj = m characters suffice to decide a comparison with p. in order to quickly find c = ta [ i ] , we store a bit vector newf1 , n , so that newfi = 1 iff i = 1 or fi = ~ fi ^ 1 , and a string chart where the ( at most ^ ) distinct characters of t are concatenated in alphabetical order .
+then we have c = chart [ rank1 ( newf , i ) ] , which can be computed in constant time using only n + o ( n ) bits for newf ( section 6.1 ) and ^ log ^ bits for chart .
+fig . 12 illustrates .
+to obtain ta [ 11 ] , n we see that chart [ rank1 ( newf , 11 ) ] = chart [ 3 ] = " a " . then we move to 19 = if ( 11 ) , so that the second character is chart [ rank1 ( newf , 19 ) ] = chart [ 6 ] = " l " . we now move to 9 = if ( 19 ) and get the third character chart [ rank1 ( newf , 9 ) ] = chart [ 3 ] = " a " , and so on .
+note that we are , implicitly , walking the text in forward direction .
+note also that we do not know where we are in the text : we never know a [ i ] , just ta [ i ] , n .
+thus the sad-csa implements the binary search in o ( mlogn ) worst-case time , which is better than in the gv-csa structure .
+alg . 3 gives the pseudocode to compare p against a suffix of t. up to now we have used n + o ( n ) + ^ log ^ bits of space for newf and chart , plus the representation for if described in section 7 . 1 , nh0 + o ( n log log ^ ) bits .
+note that , since the sad-csa does not give direct access to a [ i ] , it needs more structures to solve a locating query .
+that is , although the index knows that the answers are in a [ sp , ep ] and thus that there are occ = epc ( 9 , ~ t ) sp + 1 answers , it does not have enough information to know the text positions pointed to by a [ i ] , sp < i < ep .
+for this sake , the sad-csa includes the hierarchical gv-csa structure ( without the text and with if instead of if0 , as we already have the more complete if ) .
+let us choose , from theorem 10 , the version requiring 1 ^ nh0 + o ( n log log ^ ) bits of space and computing a [ i ] in o ( log ^ n ) time , for any constant 0 < ^ < 1 .
+we note that the combination absolute samples and the four-russian technique to access if works with many other compression methods .
+in particular , if we compress runs in if ( definition 12 ) with run-length compression ( see section 9.5 ) , we can achieve nhk ( t ) ( log ^ + log log n ) + o ( n ) bits of space , for k < log ^ n c ( 9 , ~ t ) ^ ( 1 ) ( recall theorem 5 ) , while retaining the same search times [ mc ( 9 , ~ t ) akinen and navarro 2004b ] .
+this tradeoff is the same of the mn-ccsa [ mc ( 9 , ~ t ) akinen and navarro 2004a ] .
+we show an even better tradeoff , unnoticed up to now , at the end of the section 8.2 .
+in practice .
+the implementation of sad-csa differs in several aspects from its theoretical description .
+first , it does not implement the inverse suffix array to locate occurrences .
+rather , it samples a at regular intervals of length d , explicitly storing a [ i c ( 9 , ~ t ) d ] for all i .
+in order to obtain a [ j ] , we compute if repeatedly over j until obtaining a value j ^ = ifr ( j ) that is a multiple of d. then a [ j ] = a [ j ^ ] c ( 9 , ~ t ) r .
+similarly , constant access to if is not provided .
+rather , absolute if values are sampled every d ^ positions .
+to obtain if ( i ) , we start from its closest previous absolute sample and decompress the differential encoding until position i .
+finally , instead of the classical suffix array searching , backward searching is used [ ferragina and manzini 2000 ; sadakane 2002 ] .
+this avoids any need to obtain text substrings , and it is described in section 9.2 .
+thus , d and d ^ give practical tradeoffs between index space and search time . 8.2 ggv-csa : grossi , gupta , and vitterc ( 9 , ~ t ) s compressed suffix array the compressed suffix array of grossi , gupta , and vitter [ 2003 , 2004 ] ( ggvcsa ) is a self-index whose space usage depends on the k-th order entropy of t. it is an evolution over the gv-csa and the sad-csa , based on a new representation of if that requires essentially nhk bits rather than nh0 , mainly using theorem 4 .
+consider figs . 3 ( page 9 ) and 12 , and the text context s = " la " . its occurrences are pointed from a [ 17,19 ] = 110 , 2,141 .
+the if values that point to that interval are if ( 4 ) = 17 , if ( 10 ) = 18 , and if ( 11 ) = 19 .
+the first corresponds to character ta [ 4 ] = " " preceding " la " , while the other two correspond to " a " preceding " la " . now regard the numbers as indexes j ( = if ( i ) ) of a. the row where each j value lies corresponds to the context its pointed suffix starts with , s = ta [ j ] , a [ j ] + k ^ , = ta [ q1 ( i ) ] , a [ q1 ( i ) ] + k ^ , .
+thus , the j values found in a row form a contiguous subinterval of [ 1 , n ] ( indexes of a ) .
+each cell in the row corresponds to a different character preceding the context ( that is , to a different column ) .
+if we identify each j value in the row with the character of the column it belongs to ( ta [ j ] ^ , ) , then the set of all characters form precisely ts ( definition 8 ) , of length ns = jtsj .
+thus , if we manage to encode each row in ns h0 ( ts ) bits , we will have nhk ( t ) bits overall ( recall eq . ( 1 ) and theorem 4 ) .
+in our previous example , considering context s = " la " , we have to represent all the j values that lie inside that context ( [ 17,19 ] ) in space proportional to the zero-order entropy of the characters ta [ j ] ^ , , j e [ 17,19 ] , that is , ts = tb7 i9 = " aa " .
+to obtain if ( i ) from this table we first need to determine the row and column i belongs to , and then the position inside that cell .
+to know the column c , bitmap newf of fig . 12 ( gk in [ grossi et al. 2003 ] ) suffices , as c = rank , ( newf , i ) ( for simplicity we are identifying characters and column numbers ) .
+using the techniques of section 6.2 , newf can be represented in nh0 ( newf ) + o ( n ) < ^ logn + o ( n ) bits ( as it has at most ^ bits set , recall the end of section 5.1 ) , so that it answers rank , queries in constant time .
+the relative position of i inside column c is i ^ = i c ( 9 , ~ t ) select , ( newf , c ) + 1 .
+in the example , to retrieve if ( 10 ) = 18 ( thus i = 10 ) , we find c = rank , ( newf , 10 ) = 3 ( third column in the table , symbol " a " ) . inside the column , we want the 6th value , because i ^ = 10 c ( 9 , ~ t ) select , ( newf , 3 ) + 1 = 6 .
+a similar technique gives the right cell within the column .
+two bit arrays newrowc and isrowc ( lyk and by k in [ grossi et al. 2003 ] ) are maintained for each column c. newrowc is aligned to the area of if that belongs to column c .
+it has a 1-bit every time we enter a new row as we read the values in column c .
+using again section 6.2 , each newrow , can be stored in n , h0 ( newrow ~ ) + o ( n , ) bits ( note that n , is the number of elements in column c ) , and answer those queries in constant time .
+as there are at most ^ k bits set in newrow , , the space is at most ^ k log ( n , ) + o ( n , ) bits .
+added over all columns , this is at most ^ k + , log n + o ( n ) ( grossi et al. [ 2003 ] concatenate all newrow , vectors for technical reasons we omit ) .
+in turn , isrow , vectors add up ^ k + , ( 1 + o ( 1 ) ) bits using section 6.1 .
+we also need to know which is the range of suffix array indexes j handled by the row .
+for example , for s = " la " , row 11 , we must know that this context corresponds to the suffix array interval [ 17,19 ] .
+we store a bitmap newctx ( fk in [ grossi et al. 2003 ] ) whose positions are aligned to a , storing a 1 each time a context change occurs while traversing a. this is the global version of newrow , bit vectors ( which record context changes within column c ) .
+in our example , newctx = 110111010011010110011 .
+if we know we are in global row r , then select , ( newctx , r ) tells the first element in the interval handled by row r .
+in our example , r = 11 and select , ( newctx , 11 ) = 17 .
+we will add this value to the result we obtain inside our cell .
+using section 6.2 once more , newctx requires ^ k log n + o ( n ) bits .
+the final piece is to obtain the p-th element of cell ( r , c ) .
+at this point there are different choices .
+one , leading to theorem 12 , is to store a bitmap br , ' ( z in [ grossi et al. 2003 ] ) for each cell ( r , c ) , indicating which elements of the row interval belong to the cell .
+this is necessary because any permutation of the row interval can arise among the cells ( e.g. , see row " ab " ) . in our example , for row 11 , the interval is [ 17,19 ] , and we have b , ,,c ( 9 , ~ t ) c ( 9 , ~ t ) = 100 and b , ,, , , = 011 ( zeros and ones can be interleaved in general ) .
+with select , ( br , ' ,p ) we obtain the offset of our element in the row interval .
+compressed full-text indexes .
+we observe that there is still an o ( n ) term in the space complexity , which is a consequence of representing each br , c individually .
+an alternative is to represent the whole row using a wavelet tree ( section 6.3 , invented by grossi et al. [ 2003 ] for this purpose ) .
+the idea is that , for each row of context s , we encode sequence ts with the binary wavelet tree of theorem 8 .
+in our example , for row s = " la " , we encode ts = " aa " .
+in order to retrieve element p from cell ( r , c ) , we just compute selectc ( ts , p ) , adding it to select , ( newctx , r ) c ( 9 , ~ t ) 1 to return the value in the final line of alg . 4 .
+in our example , select , , ( " aa " , 1 ) = 2 replaces select , ( 011 , 1 ) = 2 .
+the binary wavelet tree requires ns h0 ( ts ) + o ( nslog ^ ) bits of space and answers the queries in o ( log ^ ) time .
+adding over all the contexts s we get nhk ( t ) + o ( n log ^ ) bits , for k < ^ log ^ n .
+in exchange , the time increases by an o ( log ^ ) factor .
+in level ^ , the log ^ terms become log ( ^ 2 ^ ) = 2 ^ log ^ .
+to ensure the extra space stays o ( n log ^ ) we must ensure 2h ' = o ( log n / log log n ) , for example , h ^ < ( ^ c ( 9 , ~ t ) ^ ^ ) log log ^ n c ( 9 , ~ t ) 2 log log log n .
+yet , we still have another space problem , namely the extra o ( n ) bits due to storing ah and ah , .
+these are converted into o ( n log ^ ) by setting , for example , h = log log ^ n + log log log n .
+the search time added over 1 + 1 / ^ levels in 0 < ^ < h ^ is o ( log , + ^ n / ( log log n ) 2 ) , while the time to move from level h ^ to h is o ( 2h ^ h ^ c ( 9 , ~ t ) 2h ' log ^ ) = o ( log n log log n ) .
+theorem 13 [ grossi et al. 2003 ] the compressed suffix array of grossi , gupta and vitter ( ggv-csa ) offers the following space / time tradeoffs .
+more complicated tradeoffs are given by grossi et al. [ 2003 ] .
+the most relevant ones obtain , roughly , o ( m / log ^ n + log 1 % n ) counting time with e nhk + o ( n log ^ ) bits of space , for any 0 < ^ < 1 / 3 ; or o ( m log ^ + log4 n ) counting time with almost optimal nhk + o ( n log ^ ) space .
+in practice .
+some experiments and practical considerations are given by grossi et al. [ 2004 ] .
+they show that bit vectors b can be represented using run-length encoding and then elias- ^ [ elias 1975 ; witten et al. 1999 ] , so that they take at most 2ibih0 ( b ) bits ( and they may take less if the bits are not uniformly distributed ) .
+note that this result was partially foreseen by sadakane [ 2000 , 2003 ] to achieve zero-order encoding of ip in the sad-csa ( section 7.1 ) .
+they do not explain how to do rank and select in constant time on this representation , but in [ grossi and vitter 2006 ] they explore binary-searchable gap encodings as a practical alternative .
+an interesting result of grossi et al. [ 2004 ] is that , since the sum of all the ^ -encodings across all the cells adds up 2nhk ( t ) bits , we could use the same encoding to code each column in fig . 13 as a whole .
+the values within a column are increasing .
+the total space for this representation is that of the ^ -encoding inside the cells ( which overall amounts to 2nhk bits ) plus that of the ^ -encoding of the jumps between cells .
+the latter is o ( n ) as long as k < ^ log ^ n for some constant 0 < ^ < 1 .
+thus , we obtain 2nhk + o ( n ) bits .
+note , and this is the key part , that the sequence of differences we have to represent is the same no matter how the values are split along the rows .
+that is , the sequence ( and its space ) is the same if independently of how long the contexts are .
+therefore , this encoding achieves 2nhk + o ( n ) implicitly and simultaneously for any k < ^ log ^ n .
+this is in contrast with their original work [ grossi et al. 2003 ] , where k had to be chosen at indexing time .
+interestingly , this also shows that the elias- ^ representation of the sad-csa ( where in fact a column-wise differential representation is used for if ) actually requires nhk + o ( n log log ^ ) bits of space , improving the analysis by sadakane [ 2000 , 2003 ] ( contrast with the other nhk-like solution at the end of section 8.1 ) .
+backward searching and the fm-index family .
+backward searching is a completely different approach to searching using suffix arrays .
+it matches particularly well with the bwt ( section 5.3 ) , but it can also be applied with compressed suffix arrays based on the if function , using the fact that if and lf are the inverse of each other ( lemma 4 ) .
+the first exponent of this idea was the fm-index of ferragina and manzini [ 2000 ] , and many others followed .
+we first present the idea and then describe its different realizations ( see also section 4.1 ) .
+the backward search concept .
+consider searching for p in a as follows .
+we first determine the range [ spm , epm ] in a of suffixes starting with pm .
+since pm is a single character , function c of lemma 3 can be used to determine [ spm , epm ] = [ c ( pm ) + 1 , c ( pm + 1 ) ] ( we use c + 1 to denote the character that follows c in ^ ) .
+now , given [ spm , epm ] , we want to compute [ spm ^ 1 , epm ^ 1 ] , the interval of a corresponding to suffixes starting with pm ^ 1 , m .
+this is of course a subinterval of [ c ( pm ^ 1 ) + 1 , c ( pm ^ 1 + 1 ) ] .
+in the general case , we know the interval [ spi + 1 , epi + 1 ] of a corresponding to suffixes that start with pi + 1 , m and want [ spi , epi ] , which is a subinterval of [ c ( pi ) + 1 , c ( pi + 1 ) ] .
+at the end , [ sp1 , ep1 ] is the answer for p. the lf-mapping ( definition 14 ) is the key to obtain [ spi , epi ] from [ spi + 1 , epi + 1 ] .
+we know that all the occurrences of pi in l [ spi + 1 , epi + 1 ] appear contiguously in f , and they preserve their relative order .
+let b and e be the first and last position in [ spi + 1 , epi + 1 ] where lb = le = pi .
+then , lf ( b ) and lf ( e ) are the first and last rows of m that start with pi , m .
+recall from lemma 3 that lf ( b ) = c ( lb ) + occ ( lb , b ) and lf ( e ) = c ( le ) + occ ( le , e ) .
+the problem is that we do not know b and e .
+yet , this is not necessary .
+since b is the position of the first occurrence of pi in l [ spi + 1 , epi + 1 ] , it follows that occ ( lb , b ) = occ ( pi , b ) = occ ( pi , spi + 1 c ( 9 , ~ t ) 1 ) + 1 .
+likewise , occ ( le , e ) = occ ( pi , e ) = occ ( pi , epi + 1 ) because e is the last occurrence of pi in l [ spi + 1 , epi + 1 ] .
+the final algorithm is rather simple and is shown in alg . 5 .
+function c is implemented as an array , using just ^ log n bits .
+all the different variants of backward searching aim basically at implementing occ in little time and space .
+if we achieve constant time for occ , then the backward search needs just o ( m ) time , which is better than any compressed suffix array from section 8 .
+since if and lf are inverse functions , we might binary search values lf ( b ) and lf ( e ) using if .
+imagine we already know [ spi + 1 , epi + 1 ] and [ c ( pi ) + 1 , c ( pi + 1 ) ] .
+function if is increasing in the latter interval ( lemma 1 ) .
+moreover , [ spi , epi ] is the subinterval of [ c ( pi ) + 1 , c ( pi + 1 ) ] such that if ( j ) e [ spi + 1 , epi + 1 ] if j e [ spi , epi ] .
+hence , two binary searches permit obtaining [ spi , epi ] in o ( log n ) time .
+backward search then completes in o ( m log n ) time using the sad-csa , just as classical searching .
+an advantage of backward searching is that it is not necessary at all to obtain text substrings at search time .
+sadakane [ 2002 ] also shows how the backward search can be implemented in o ( m ) time if ^ = o ( polylog ( n ) ) , essentially using the same idea we present in section 9.4 .
+as mentioned at the end of section 8.1 , this is how the sad-csa is actually implemented .
+also , recall that if is implemented via sampling .
+the binary searching is performed first over the samples and then completed with a sequential decompression between two samples .
+if the sampling step is d = o ( log n ) ( to maintain the space cost of the samples within o ( n ) bits ) , then the binary search complexity remains o ( log n ) time and the overall search time o ( m log n ) , even if we do not use four-russian techniques for fast decompression .
+if we used normal suffix array searching , we would access o ( m log n ) arbitrary positions of if , so the use of four- russian techniques would be mandatory to avoid a total search cost of o ( m log2 n ) .
+ferragina and manzini [ 2000 ] show that occ can be implemented in constant time , using o ( nhk ) bits of space ( the fmi was the first structure achieving this space ) .
+essentially , occ is implemented as the compressed bwt transformed text tbwt plus some directory information .
+they compress tbwt by applying move-to-front transform , then run-length compression , and finally a variable-length prefix code .
+move-to-front [ bentley et al. 1986 ] consists of keeping a list of characters ranked by recency , that is , the last character seen is first in the list , then the next-to-last , and so on .
+every time we see a new character c , which is at position p in the list , we output p and move c to the beginning of the list .
+this transform produces small numbers over text zones with few different characters .
+this is precisely what happens in tbwt .
+in particular , there tend to appear runs of equal characters in tbwt ( precisely , nbw runs , recalling definition 15 ) , which become runs of 1c ( 9 , ~ t ) s after move-to-front .
+these runs are then captured by the run-length compression .
+finally , the prefix code applied is a version of elias- ^ with some provisions for the run lengths .
+overall , they show that this representation compresses tbwt to at most 5nhk ( t ) + o ( ^ k log n ) bits .
+this is 5nhk ( t ) + o ( n log ^ ) for k < log ^ ( n / log n ) c ( 9 , ~ t ) ^ ( 1 ) .
+the directories to answer occ ( c , i ) resemble the solutions for rank in sections 6.1 and 6.2 .
+we cut the range [ 1 , n ] into blocks of length t , grouped in superblocks of length t2 .
+let us define bit vectors bc [ i ] = 1 iff tbwt i = c so that occ ( c , i ) = rank , ( bc , i ) ( these vectors will not be stored ) .
+we use the same superblockrankc and blockrankc directories of section 6.1 : if i = qt + r = q ^ t2 + r ^ , 0 < r < t , 0 < r ^ < t2 , then occ ( c , i ) = superblockrankc [ q ^ ] + blockrankc [ q ] + rank , ( bc [ qt + 1 , qt + t ] , r ) .
+this final rank query is solved by fetching the compressed tbwt stream and processing it using four-russians techniques .
+to find the proper block in the compressed tbwt we use directories superblockpos and blockpos , as in section 6.2 .
+all these tables add up o ( ( n ^ log n ) / t2 + ( n ^ log t ) / t ) bits .
+to process the bits of a compressed block in constant time , we must store the state of the move-to-front transformation ( that is , the recency rank of characters ) at the beginning of each block .
+this table , mtf [ q ] , requires o ( ( n ^ log ^ ) / t ) additional bits .
+the four-russians table is then smallocc [ c , o , b , v ] , indexed by a character c e e , an offset o e [ 1 , t ] inside a block , the compressed content b of a block ( a bit stream ) whose length is in the worst case t ^ = ( 1 + 2log ^ ) t , and the state v of the moveto-front transformation ( an entry of mtf , which is a permutation of [ 1 , ^ ] ) .
+the content of smallocc [ c , o , b , v ] is occ ( c , o ) for the text obtained by decompressing b starting with a move-to-front transform initialized as v. thus , rank , ( bc [ qt + 1 , qt + t ] , r ) = smallocc [ c , r , b , mtf [ q ] ] is computed in constant time , where b is the piece of the compressed tbwt starting at position superblockpos [ q ^ ] + blockpos [ q ] .
+note , however , that the table entries can be manipulated in constant time on a ram machine only if i b i = t ^ = o ( log n ) and iv i = o ( log n ) .
+the first restriction yields t = o ( log ^ n ) , whereas the second becomes ^ = o ( log n / log log n ) .
+the space requirement of smallocc is o ( ^ t2t ^ ^ ! log t ) bits .
+if we choose t = x log ^ n for constant 0 < x < 1 / 3 , then 2t ' < n3x = o ( n ) .
+under this setting the overall extra space is o ( n log ^ ) for ^ = o ( log n / log log n ) .
+in order to locate occurrences , ferragina and manzini [ 2000 ] sample text positions at regular intervals .
+they mark one text position out of log , + ^ n , for some ^ > 0 , and collect the a values pointing to those marked positions in an array a ^ .
+to know a [ i ] , they find the smallest r > 0 such that lfr ( i ) is a marked position ( and thus a [ lfr ( i ) ] is known ) , and then a [ i ] = a [ lfr ( i ) ] + r .
+this way , they pay o ( n / log ^ n ) extra space for a ^ and can locate the occurrences in o ( occ log , + ^ n ) steps .
+to determine in constant time whether some a [ j ] value is marked or not , a bit vector mark , ,n tells which entries are marked .
+if markj = 1 , then a [ j ] is sampled and stored at a ^ [ rank , ( mark , i ) ] .
+by using the techniques of section 6.2 , mark can be stored in o ( ( n / log , + ^ n ) log n ) = o ( n / log ^ n ) bits as well ( as it has n / log , + ^ n bits set ) .
+a similar approach permits displaying tl , r in o ( r c ( 9 , ~ t ) l + log , + ^ n ) steps .
+the remaining problem is that there is no easy way to know tbwt iin order to compute lf ( i ) = c ( tbwt ) + occ ( tbwt , i ) .
+ferragina and manzini [ 2000 ] give an o ( ^ ) time solution ( they assume constant ^ ) , but a truly constant-time solution is easily obtained with a table similar to smallocc : getchar [ o , b , v ] returns the o-th character of the corresponding block .
+so each step above takes constant time .
+theorem 14 [ ferragina and manzini 2000 ] the fm-index ( fmi ) offers the following space / time tradeoff .
+we note that 5nhk is actually a rather pessimistic upper bound , and that the technique works with essentially any compressor for tbwt .
+thus the fmi obtains unbeaten counting complexity and attractive space complexity .
+its real problem is the alphabet dependence , as in fact the original proposal [ ferragina and manzini 2000 ] was for a constant-size alphabet .
+further work on the fmi have focused on alleviating its dependence on ^ .
+some more complicated techniques [ ferragina and manzini 2000 ] , based on using alphabet eq instead of e , permit reducing the o ( log ' + ^ n ) time factor in the locating and displaying complexities to o ( log ^ n ) , yet this makes the alphabet dependence of the index even sharper .
+in practice .
+a practical implementation of the fmi could not follow the idea of table smallocc ( s in their notation ) .
+ferragina and manzini [ 2001 ] replace smallocc with a plain decompression and scanning of block b , which ( according to the theoretical value of t ) takes o ( log n ) time and raises the counting complexity to o ( mlogn ) .
+some heuristics have also been used to reduce the size of the directories in practice .
+also , instead of sampling the text at regular intervals , all the occurrences of some given character are sampled .
+this removes the need to store mark , as it can be deduced from the current character in tbwt .
+finally , they consider alternative ways of compressing the text .
+the most successful one is to compress each block with a huffman variant derived from bzip2 , using a distinct huffman tree per block .
+if we recall theorem 4 , this does not guarantee o ( nhk ) bits of space , but it should be close ( actually , the practical implementations are pretty close to the best implementations of bzip2 ) .
+the o ( nhk ) space is not guaranteed because tbwt is partitioned into equal-size blocks , not according to contexts of length k .
+such a partitioning will be considered in section 9.6 .
+we present now an alternative implementation of the backward search idea that is unable to reach the o ( nhk ) size bound , yet it is an interesting way to remove the alphabet dependence .
+it is called wavelet tree fm-index ( wt-fmi ) .
+the essential idea was introduced by sadakane [ 2002 ] , when wavelet trees [ grossi et al. 2003 ] did not yet exist .
+sadakane used individual indicator arrays instead ( as those proposed in the beginning of section 6.3 ) .
+the use of wavelet trees was proposed later [ ferragina et al. 2004 ] as a particular case of the af-fmi ( section 9.6 ) , and even later [ mc ( 9 , ~ t ) akinen and navarro 2005a , 2005b ] as a particular case of the rl-fmi ( section 9.5 ) .
+the same idea , in the form of indicator vectors , also reappeared for the case of binary alphabets [ he et al. 2005 ] .
+the idea of the wt-fmi is extremely simple , once in context ( recall theorem 3 in page 14 ) .
+just use the wavelet tree of section 6.3 over the sequence tbwt .
+hence , occ ( c , i ) = rankc ( tbwt , i ) can be answered in o ( log ^ ) time using the basic wavelet tree ( theorem 8 ) , and in o ( 1 ) time for ^ = o ( polylog ( n ) ) using the multi-ary one ( theorem 9 ) .
+the method for locating the occurrences and displaying the text is the same as for the fmi , yet this time we also find tbwt iin o ( log ^ ) or o ( 1 ) time using the same wavelet tree .
+alg . 6 gives the pseudocode .
+depending on which wavelet tree we use , different tradeoffs are obtained .
+we give a simplified general form that is valid for all cases .
+despite its simplicity , the wt-fmi is the precursor of further research that lead to the best implementations of the backward search concept ( sections 9.5 and 9.6 ) .
+theorem 15 the wavelet tree fm-index ( wt-fmi ) offers the following space / time tradeoffs .
+note that log ^ / loglogn = o ( 1 ) if ^ = o ( polylog ( n ) ) , in which case all the times are as for the fmi .
+in practice : the implementation of the wt-fmi uses the binary wavelet tree , preprocessed for rank using the simple techniques of section 6.1 , and gives the wavelet tree the shape of the huffman tree of the text .
+this way , instead of the theoretical nh0 + o ( n log ^ ) bits , we obtain n ( h0 + 1 ) + o ( n log ^ ) bits with much simpler means [ grossi et al. 2003 , 2004 ] .
+in addition , the huffman shape gives the index o ( mh0 ) average counting time .
+the worst case time is o ( m log n ) , but this can be reduced to o ( m log ^ ) without losing the o ( mh0 ) average time .
+the idea space in bits is to force the huffman tree to balance after depth ( 1 + x ) log ^ , for some constant x > 0 [ m ^ akinen and navarro 2004b ] .
+the huffman fm-index by grabowski et al. [ 2004 , 2006 ] ( huff-fmi ) obtains comparable performance and removes the alphabet dependence in another way : sequence tbwt is huffman-compressed , and occ is implemented using rank over the binary output of huffman .
+another related approach [ ferragina 2006 ] uses a word- based huffman compression ( where words , not characters , are the text symbols ) with byte-aligned codewords .
+the sequence of codewords is then indexed with an fm-index , which is able to efficiently search for word-based queries .
+the space is much lower than inverted lists , which nonetheless need to store the text .
+the run-length fm-index of m ^ akinen and navarro [ 2004b , 2004c , 2005a , 2005c ] ( rl-fmi ) is an improvement over the wt-fmi , which exploits the equal-letter runs of the bwt ( theorem 5 ) to achieve o ( nhk ( t ) log ^ ) bits of space .
+it retains the good search complexities of the fmi , but it is much more resistant to the alphabet size .
+actually this was the first index achieving o ( m ) search time for ^ = o ( polylog ( n ) ) and taking simultaneously space proportional to the k-th order entropy of the text .
+the idea is to compute occ ( c , i ) = rankc ( tbwt , i ) using a wavelet tree built over the run-length compressed version of tbwt .
+in fig . 5 we built the wavelet tree of tbwt = " araadl ll $ bbaar aaaa " .
+assume that we run-length compress tbwt to obtain the run heads r = " aradl l $ bar a " .
+by theorem 5 , we have the limit 1r1 < nhk ( t ) + ^ k for any k .
+therefore , a wavelet tree built over r would require ( nhk ( t ) + ^ k ) h0 ( r ) + o ( nlog ^ ) bits ( section 6.3 ) .
+the only useful bound we have for the zero-order entropy of r is h0 ( r ) < log ^ , thus the space bound is nhk ( t ) log ^ + o ( n log ^ ) for any k < log ^ n c ( 9 , ~ t ) ^ ( 1 ) .
+the problem is that rank over r does not give the answers we need over tbwt .
+for example , assume we want to compute ranka ( tbwt , 19 ) = 7 .
+we need to know that beginnings of the runs in l = tbwt .
+in our case newl = 111011110111010111000 .
+we know that the position of t , b9 t in r is rank , ( newl , 19 ) = 14 .
+yet , this is not sufficient , as ranka ( r , 14 ) = 4 just tells us that there are 4 runs of " a " s before and including that of t , b9 t .
+what we need is to know the total length of those runs , and in which position of its run is t , b9 t ( in our case , 2nd ) .
+for this sake , we reorder the runs in newl alphabetically , accordingly to the characters that form the run .
+runs of the same character stay in the same relative order .
+we form bit array snewl [ 1 , n ] with the reordered newl .
+in our case snewl = 111111010100010111011 .
+we also compute array cr indexed by e , so that cr [ c ] tells the number of occurrences in r ( runs in tbwt ) of characters smaller than c ( thus cr plays for r the same role c plays for l in the fmi ) .
+in our example cr [ " a " ] = 4 .
+this means that , in snewl , the first cr [ " a " ] = 4 runs correspond to characters smaller than " a " , and then come those of " a " , of which t , b9 t is in the 4th because ranka ( r , 14 ) = 4 .
+fig . 14 illustrates .
+in practice .
+the implementation of the rl-fmi , just as that of the wt-fmi ( end of section 9.4 ) , uses binary wavelet trees with huffman shape , with the bitmaps using the techniques of section 6.1 .
+this gives at most nhk ( t ) ( h0 ( r ) + 1 ) ( 1 + o ( 1 ) ) space , which in the worst case is nhk ( t ) ( log ^ + 1 ) + o ( n log ^ ) bits , close to the theoretical version but much simpler to implement .
+in practice , h0 ( r ) is much closer to h0 ( t ) than to log ^ .
+the alphabet-friendly fm-index of ferragina et al. ( af-fmi ) .
+the alphabet-friendly fm-index of ferragina , manzini , mc ( 9 , ~ t ) akinen , and navarro [ 2004 , 2006 ] ( af-fmi ) is another improvement over the wt-fmi of section 9.4 .
+the af-fmi combines the wt-fmi technique with theorem 4 to achieve nhk ( t ) + o ( n log ^ ) bits of space and the same search time of the wt-fmi .
+theorem 4 tells that , if we split tbwt into substrings ts according to its contexts s of length k , and manage to represent each resulting block ts , of length ns = jtsj , in nsh0 ( ts ) + f ( ns ) bits , for any convex function f , then the sum of all bits used is nhk ( t ) + ^ k f ( n / ^ k ) .
+in particular , we can use the binary wavelet tree of section 9.4 for each block .
+it requires nsh0 ( ts ) + o ( ns loglogns / log ^ ns ) bits ( theorem 6.3 ) , so we need overall nhk ( t ) + o ( nlog log ( n / ^ k ) / log ^ ( n / ^ k ) ) bits , for any k .
+if k < ^ log ^ n , for any constant 0 < ^ < 1 , this space is nhk ( t ) + o ( n log log n / log ^ n ) .
+the locating of occurrences and displaying of text is handled just as in section 9.4 .
+theorem 17 [ ferragina et al. 2006 ] the alphabet-friendly fm-index ( affmi ) offers the following space / time tradeoffs .
+lempel-ziv based indexes .
+up to now we have considered different ways of compressing suffix arrays .
+while this is clearly the most popular trend on compressed indexing , it is worthwhile to know that there exist alternative approaches to self-indexing , based on lempel-ziv compression .
+in particular , one of those requires o ( m + occ ) time to locate the occ occurrences of p in t. this has not been achieved with other indexes .
+lempel-ziv compression .
+in the seventies , lempel and ziv [ 1976 ] presented a new approach to data compression .
+it was not based on text statistics , but rather on identifying repeated text substrings and replacing repetitions by pointers to their former occurrences in t. lempel-ziv methods produce a parsing ( or partitioning ) of the text into phrases .
+definition 16 the lz76 parsing [ lempel and ziv 1976 ] of text t1 , n is a sequence z [ 1 , n ^ ] of phrases such that t = z [ 1 ] z [ 2 ] ...
+z [ n ^ ] , built as follows .
+definition 17 the lz78 parsing ziv and lempel 1978 ] of text t1 , n is a sequence z [ 1 , n ^ ] of phrases such that t = z [ 1 ] z [ 2 ] ...
+z [ n ^ ] , built as follows .
+the first phrase is z [ 1 ] = ^ .
+assume we have already processed t1 , i _ 1 producing a sequence z [ 1 , p-1 ] of p-1 phrases .
+then , we find the longest prefix of ti , n which is equal to some z [ p ^ ] , 1 < p ^ < p .
+thus ti , n = z [ p ^ ] cti ^ , n, c e e. we define z [ p ] = z [ p ^ ] c and continue with ti ^ , n .
+the process finishes when we get c = \ $ c ( 9 , ~ t ) .
+the output of an lz78 compressor is essentially the sequence of pairs ( p ^ , c ) found at each step p of the algorithm .
+note two facts : ( 1 ) all the phrases in an lz78 parsing are different from each other ; ( 2 ) the prefixes of a phrase are phrases .
+fig . 16 shows the lz78 parsing of our example text ( among other structures we review soon ) .
+for example , z [ 9 ] = " lab " . see also fig . 17 , which illustrates a structure that is conceptually important for lz78 : the lempel-ziv trie is the trie storing the set of strings z. this trie has exactly n ^ nodes ( one per string in z ) .
+if z [ p ] = z [ p ^ ] c , then node p is a child of p ^ by edge labeled c .
+an important property of both lempel-ziv parsings is the following .
+lemma 7 let n ^ be the number of phrases produced by lz76 or lz78 parsing of text t1 , n over an alphabet of size ^ .
+then n ^ = o ( n / log ^ n ) .
+to show that the lemma holds for lz78 it suffices to notice that all the phrases are different , and therefore we can have only ^ ^ phrases of length ^ .
+if we try to maximize n ^ by using first the phrases of length 1 , then length 2 , and so on , we use o ( n / log ^ n ) phrases to cover n characters .
+in lz76 we can have repeated phrases , but no phrase z [ p ] can repeat more than ^ times before all the longer phrases z [ p ] c are already known .
+from then on , z [ p ] cannot appear alone again . 6the original definition [ lempel and ziv 1976 ] actually permits the former occurrence of ti , i ^ ^ 1 to extend beyond position i c ( 9 , ~ t ) 1 , but we ignore this feature here .
+furthermore , the size of the lempel-ziv compressed text ( slowly ) converges to the entropy of the source [ cover and thomas 1991 ] .
+of more direct relevance to us is that n ^ is related to the empirical entropy hk ( t ) [ kosaraju and manzini 1999 ; ferragina and manzini 2005 ] .
+lemma 8 let n ^ be the number of phrases produced by lz76 or lz78 parsing of text t1 , n .
+then n ^ logn = nhk ( t ) + o ( ( k + 1 ) n ^ log ^ ) .
+as n ^ < n / log ^ n , this is nhk ( t ) + o ( nlog ^ ) for k = o ( log ^ n ) .
+lemma 8 implies that a tree with n ^ nodes can be stored , even using pointers , in o ( nhk ) bits of space .
+we can even store a constant number of integers per node .
+the pioneer work in lempel-ziv based indexes , and also the first compressed index we know of ( albeit not a self-index ) , is due to kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and ukkonen [ 1996a ] .
+it derives from their earlier work on sparse suffix trees [ kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and ukkonen 1996b ] , which we briefly review before entering into lempel-ziv based methods .
+the sparse suffix tree , which is in turn the first succinct index we know of , is a suffix tree indexing every h-th text position .
+it easily finds the aligned occurrences in o ( m ) time .
+the others can start up to h c ( 9 , ~ t ) 1 positions after a sampled position .
+thus we search for all the patterns of the form eip , 0 < i < h .
+overall this requires o ( ^ h ^ 1 ( h + m ) + occ ) time .
+by choosing h = 1 + ^ log ^ n we get o ( n ^ ( m + log ^ n ) + occ ) search time and o ( ( nlogn ) / h ) = o ( nlog ^ ) bits . 10.2 the lz-index of kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and ukkonen ( ku-lzi ) the lz-index of kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and ukkonen [ 1996a ] ( ku-lzi ) uses a suffix tree that indexes only the beginnings of phrases in a lz76-like parsing of t. although they only prove ( using lemma 7 ) that their index is succinct , taking o ( n log ^ ) bits of space , lemma 8 shows that it actually requires o ( nhk ) bits of space ( plus text ) .
+we present the results in their definitive form [ kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen 1999 ] .
+as the exact parsing is not essential in their method , we use the lz78 parsing to exemplify it .
+the lz76 parsing has the property that each new phrase has already appeared in t , or it is a new character in e. thus , the first occurrence of any pattern p cannot be completely inside a phrase , otherwise it would have appeared before ( the exception is m = 1 , which is easy to handle and we disregard here ) .
+this is also true in lz78 parsing .
+they divide occurrences among primary ( spanning two or more phrases ) and secondary ( completely inside a phrase ) .
+secondary occurrences are repetitions of other primary or secondary occurrences .
+assume there are occp primary and occs secondary occurrences , so that occ = occp + occs .
+fig . 16 illustrates two main structures of the ku-lzi .
+the suffix tree indexing only phrase beginnings is sparsest ; and revtrie is a trie storing the reverse phrases ( unary paths are compressed in revtrie , recall definition 5 in page 5 ) .
+primary occurrences are found as follows .
+for some 1 < i < m , p1 , i is the suffix of a phrase and pi + 1 , m starts at the next phrase .
+to ensure that each occurrence is reported only once , we require that p1 , i is completely included in a phrase , so that the partitioning ( p1 , i , pi + 1 , m ) is unique .
+the ( phrase-aligned ) occurrences of pi + 1 , m are found using sparsest .
+the occurrences of p1 , i within ( and at the end of ) a phrase are found by searching revtrie for pipi _ 1 ...
+p1 .
+for example , p = " labar " appears in phrase 2 split as ( " l " , " abar " ) and in phrase 9 as ( " lab " , " ar " ) .
+each of those two searches yields a lexicographical range in [ 1 , n ^ ] .
+tree sparsest yields the range [ l2 , r2 ] of the phrase-aligned suffixes that start with pi + 1 , m , whereas revtrie gives the range [ l1 , r1 ] of phrases that finish with p1 , i .
+consider now the p-th phrase .
+assume z [ p ] reversed is ranked xp-th among all reversed phrases , and that the suffix starting at phrase p + 1 is ranked yp -th among all phrase-aligned suffixes .
+then we wish to report a primary occurrence ( with pi aligned at the end of z [ p ] ) iff ( xp , yp ) e [ l1 , r1 ] x [ l2 , r2 ] .
+we use a two-dimensional range search structure range ( section 6.4 ) to store the n ^ points ( xp , yp ) and search for the range [ l1 , r1 ] x [ l2 , r2 ] .
+for example , for p = " labar " and i = 3 , revtrie finds range [ l1 , r1 ] = [ 8,8 ] for " bal " ( as only the 8th reverse phrase starts with " bal " , see fig . 16 ) and sparsest finds range [ l2 , r2 ] = [ 7,8 ] for " ar " ( as the 7th and 8th suffixes starting phrases start with " ar " ) . then the search for [ 8 , 8 ] x [ 7 , 8 ] in range finds point ( 7,8 ) corresponding to p = 9 .
+secondary occurrences are obtained by tracking the source of each phrase z [ p ] .
+given a primary occurrence tj , j + m _ 1 , we wish to find all phrases p whose source contains [ j , j + m c ( 9 , ~ t ) 1 ] .
+those phrases contain secondary occurrences tj ^ , j ^ + m _ 1 , which are again tracked for new copies .
+with some slight changes to the lz76 parsing , it can be ensured that no source contains another and thus source intervals can be linearly ordered ( by their start or end positions , both orders coincide ) .
+an array source [ i ] of the phrases sorted by their source interval position in t , plus a bit array newsrc1 , n indicating which text positions start phrase sources , permits finding each phrase that copies area [ j , j + m c ( 9 , ~ t ) 1 ] in constant time .
+we want those sources that start not after j and finish not before j + m c ( 9 , ~ t ) 1 : source [ rank1 ( newsrc , j ) ] is the last phrase in source whose source starts not after j .
+we traverse source backwards from there until the source intervals finish before j + m c ( 9 , ~ t ) 1 .
+each step in this traversal yields a new secondary occurrence .
+alg . 8 gives the pseudocode .
+the index space is o ( n ^ logn ) = o ( nhk ( t ) ) for sparsest and revtrie , as both have o ( n ^ ) nodes .
+among the range search data structures considered by kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen [ 1999 ] , we take those requiring o ( 1 ^ n ^ logn ^ ) bits of space ( the one we reviewed in section 6.4 corresponds to ^ = 1 ) .
+array source also needs the same space , and bit array newsrc requires o ( n ^ logn ) bits using the techniques of section 6.2 .
+thus the overall space is o ( 1 ^ nhk ( t ) ) bits , in addition to the text .
+the first term of the counting complexity can be made o ( m2 / log ^ n ) by letting the tries move by o ( log ^ n ) characters in one step , yet this raises the space requirement to o ( nlog ^ ) unless we use much more recent methods [ grossi et al. 2003 ] .
+by using range search data structures that appeared later [ alstrup et al. 2000 ] , the index would require o ( nhk log ^ n ) bits and count in o ( m 2 + m log log n + occ ) time .
+also , a variant of this index [ kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and sutinen 1998 ] achieves o ( m ) counting time and o ( occ ) locating time , but only for short patterns ( m < log ^ n ) .
+the lz-index of navarro [ 2002 , 2004 ] ( nav-lzi ) is an evolution on the ku-lzi .
+it improves the space complexity by converting the index into a self-index .
+the counting time complexity is not competitive , but the locating and displaying times are good .
+the nav-lzi unbeaten in this aspect in terms of empirical performance .
+the lz-index of ferragina and manzini ( fm-lzi ) .
+the lz-index of ferragina and manzini [ 2005 ] ( fm-lzi ) is the only existing self- index taking o ( m ) counting time and constant time to locate each occurrence .
+it is based on the lz78 parsing of t ( definition 17 ) and requires o ( nhk log ^ n ) bits of space for any constant ^ > 0 .
+let us define to as the text t where we have inserted special characters c ( 9 , ~ t ) # c ( 9 , ~ t ) that of the ku-lzi .
+the first three structures require o ( nhk ( t ) ) bits of space , yet this time range will dominate the space complexity .
+as the fmi of t is enough for counting in o ( m ) time , we will focus in locating the occ occurrences in o ( m + occ ) time .
+occurrences of p are divided into primary and secondary as in section 10.2 ( they are called c ( 9 , ~ t ) externalc ( 9 , ~ t ) and c ( 9 , ~ t ) internalc ( 9 , ~ t ) by ferragina and manzini [ 2005 ] ) .
+let us first consider secondary occurrences .
+since every prefix of a phrase is also a phrase , every secondary occurrence which is not at the end of its phrase p occurs also in the phrase p ' referenced by p ( that is , the parent of p in lztrie ) .
+fig . 17 depicts the lztrie .
+for example , pattern p = " a " occurs in phrase 10 .
+since it does not occur at the end of z [ 10 ] = " ard " , it must also occur in its parent 4 , z [ 4 ] = " ar " and in turn in its parent 1 , z [ 1 ] = " a " .
+let us call a trie node p a pioneer for p if p is a suffix of z [ p ] .
+in fig . 17 the pioneer nodes for p = " a " are 1 , 7 , and 8 .
+then , all secondary occurrences correspond to lztrie subtrees rooted at pioneer nodes .
+thus , to find those occurrences , we obtain the pioneer nodes and traverse all their subtrees reporting all the text positions found ( with the appropriate offsets ) .
+the pioneer nodes are found with the fmi of tr .
+we search for pr , which corresponds to occurrences of p # in t # , that is , occurrences of p that are phrase suffixes .
+for example , if we search for pr = " # a " in tr we will find occurrences at positions 12 , 15 , and 31 of tr ( see fig . 17 ) .
+this corresponds to the occurrences of " a # " in t # , at positions 20 , 17 , and 1 , respectively .
+aligned to the ( contiguous ) area of ar corresponding to suffixes that start with c ( 9 , ~ t ) # c ( 9 , ~ t ) , we store a vector lznode of pointers to the corresponding lztrie nodes .
+as the range for pr is always contained in the area covered by lznode , this permits finding the pioneer nodes of the results of the search .
+thus the occs secondary occurrences are reported in o ( m + occs ) time .
+as lznode has n ' entries , it occupies nhk ( t ) + o ( nlog ^ ) bits .
+let us now consider the primary occurrences .
+the same idea of section 10.2 , of searching for p1 , i at the end of a phrase and pi + 1 , n from the next phrase , is applied .
+yet , the search proceeds differently , and the fmi is shown to be a very fortunate choice for this problem .
+we first search for p using the fmi of t. this single fig . 17 .
+parts of the fm-lzi .
+we show t * , tr , and ar ( none of which is explicitly represented ) , as well as vector lznode and lztrie .
+only the part of ar pointing to suffixes starting with c ( 9 , ~ t ) # c ( 9 , ~ t ) is shown in detail .
+this is the part lznode is aligned to .
+for legibility , lznode shows phrase numbers instead of pointers to lztrie .
+the result of the search for " # a " is illustrated with the actual pointers from ar to tr and from lznode to lztrie .
+ferragina and manzini [ 2005 ] use for range the structure of alstrup et al. [ 2000 ] ( see section 6.4 ) that can store n ^ points in [ 1 , n ^ ] x [ 1 , n ^ ] using o ( n ^ log1 + ^ n ^ ) bits for any ^ > 0 , so that they answer a query with res results in time o ( log log n ^ + res ) .
+in our case , we must query the structure once per each partition 1 < i < m , so we pay overall o ( m log log n + occp ) .
+note that our points are actually in [ 1 , n ] x [ 1 , n ] .
+those can be mapped to [ 1 , n ^ ] x [ 1 , n ^ ] using rank and select on bitmaps of length n with n ^ bits set .
+using the techniques of section 6.2 , those bitmaps require o ( n ^ log n ) = o ( nhk ( t ) ) bits .
+note that the space of the structure , o ( n ^ log1 + ^ n ^ ) bits , is o ( nhk ( t ) log ^ n ) + o ( n log ^ log ^ n ) if k = o ( log ^ n ) .
+the o ( m log log n ) time can be improved as follows .
+basically , instead of storing only the positions r that start a phrase in range , we add all positions [ r c ( 9 , ~ t ) log log n + 1 , r ] .
+now each cut ( p1 , i , pi + 1 , m ) would be found log log n times , not once .
+thus we can search only for those i that are multiples of log log n .
+as we perform only m / log log n queries , the overall time is o ( m + occp ) .
+although now we store n ^ log log n points in range , the space complexity stays the same .
+we omit some technical details to handle borders between phrases .
+for patterns shorter than log log n we must use a different approach .
+those patterns are so short that we can precompute all their primary occurrences with a four-russians technique .
+there are at most ^ log log n = ( log n ) log ^ different short patterns , each requiring a pointer of logn bits to its occurrence list , and the total number of primary occurrences for all short patterns is at most n ' ( loglogn ) 2 ( as they must start at most log log n positions before a phrase border , and finish at most log log n positions after it ) , each requiring log n bits as well .
+the overall space for short patterns is o ( n log ^ log ^ n ) if ^ = o ( n 1 / log log n ) .
+for example , this is valid whenever ^ = o ( n ^ ) for any 0 < ^ < 1 .
+text contexts are displayed using the same fmi .
+by using the af-fmi rather than the original fmi , we obtain the following result , where counting time is o ( m ) for ^ = o ( polylog ( n ) ) .
+theorem 19 [ ferragina and manzini 2005 ] the lz-index of ferragina and manzini ( fm-lzi ) offers the following space / time tradeoffs .
+the second version uses other results by alstrup et al. [ 2000 ] , which search in time o ( ( log log n ) 2 + res log log n ) using o ( n ^ log n ' log log n ' ) bits .
+we retain our counting time by indexing ( log log n ) 2 positions per phrase instead of log log n .
+the two-dimensional range search idea has inspired other solutions to achieve constant time per occurrence on compressed suffix arrays [ he et al. 2005 ] , yet those work only for sufficiently large m .
+discussion .
+we have presented the main ideas of several compressed indexes as intuitively as possible , yet with an accuracy enough to understand the space / time tradeoffs they achieve .
+in many cases , these depend on several parameters in a complex way , which makes a fair comparison difficult .
+table 1 provides a rough summary .
+it is interesting at this point to discuss the most important common points in these approaches .
+common points within the csa family and within the fmi family are pretty obvious , namely they are basically different implementations of functions if and occ , respectively .
+there is also an obvious relation among these two families , as if and lf are the inverse of each other ( lemma 4 ) .
+what is more subtle is the relation between the different ways to achieve o ( nhk ) space .
+let us exclude the lempel-ziv based methods , as they are totally different .
+for this discussion , the table of fig . 13 is particularly enlightening .
+this order is of course i = 1 , 2 , and so on , thus we are in fact reading array ^ .
+numbers j are increasing inside each column because they are ordered by ta [ j ] , n .
+the sad-csa structure stores ^ in order , that is , it stores the table in column- wise order , and then row-wise inside each column .
+being ^ increasing lists , this leads to o ( nh0 ) space .
+the ggv-csa , instead , stores ^ in row-wise order .
+for this sake , it needs to record how the values inside each row distribute across columns .
+according to theorem 4 , it is sufficient to store that distribution information in space close to its zero-order entropy , to achieve nhk overall space .
+the ggv-csa uses one wavelet tree per row to represent the column each element belongs to .
+in a widely different view , the af-fmi structure stores tbwt context-wise ( that is , row-wise in the table ) .
+for each context , it stores the characters of tbwt , which are precisely tbwt j = ta [ j ] -1 , that is , the column identifiers of the positions j lying within each context ( row ) .
+the af-fmi uses the same wavelet tree to represent basically the same data within the same zero-order entropy space .
+thus both structures are using essentially the same concept to achieve nhk space .
+the differences are due to other factors .
+while the ggv-csa structure still adheres to the idea of abstract optimization of a , so that it must provide access to a [ j ] and use the normal binary search on a , the fmi family uses a completely different form of searching , which directly builds on tbwt .
+the other indexes use a widely different mechanism to achieve o ( nhk ) space .
+they rely on compressing the runs that appear in if , or similarly those in tbwt .
+the former ( max-csa and mn-ccsa , not covered in this survey ) achieve o ( nhk log n ) space by emulating the binary search on a through if , whereas the latter achieve o ( nhk log ^ ) space by emulating backward search strategy .
+table 2 classifies the approaches that reach hk-related space according to their approach .
+in one dimension , we have those based on local entropy ( theorem 4 ) versus those based on run lengths ( theorem 5 ) .
+in the other dimension , we have those based on if or on occ .
+we have included sad-csa as having size nhk according to our findings in this paper ( yet , remind it needs o ( n log log ^ ) extra space ) .
+we classify the fmi as using run lengths because this is the key property ensuring its o ( nhk ) size , although it also uses some local entropy optimization .
+recall that we left aside lempel-ziv methods in this discussion and in the table .
+table 2 .
+classifying the suffix array indexes with size related to hk .
+names are followed by a pair indicating ( main space term , simplified counting time ) complexities .
+conclusions .
+we have given a unified look at the state of the art in compressed full-text indexing .
+we focused on the essential ideas relating text compressibility and regularities on indexes built on it , and uncovered fundamental relations between seemingly disparate approaches .
+those efforts have led to a rich family of results , whose most important consequence is a surprising fact of text compressibility : fact .
+instead of compressing a text into a representation that does not reveal anything from the original text unless decompressed , one can obtain an almost equally space-efficient representation that in addition provides fast searching on the text .
+in other words , the indexes we have reviewed take space close to what can be obtained by the best possible compressors , both in theory and in practice .
+in theory , the leading term in the space complexities of the best indexes is nhk ( t ) , which is a lower-bound estimate for many text compression techniques .
+for substring searches , the same best indexes are practically optimal , obtaining o ( m ) counting query time .
+this remarkable discovery is without any doubt one of the most important achievements ever obtained in text compression and text indexing .
+however , there are some open questions to be answered .
+a first one is whether one can obtain nhk ( t ) space and o ( m ) query time on any alphabet size , and in general which is the lower bound relating these parameters .
+recently , gagie [ 2006 ] shows that , as soon as ^ k + 1 / c ^ 3 ^ = q ( n ) , it is not possible to represent t using cnhk ( t ) + ^ n log ^ bits of space .
+this implies , for example , that in theorem 17 ( and others alike ) one could not loosen the condition on k to k < log ^ n c ( 9 , ~ t ) o ( 1 ) .
+other bounds apply to the sublinear space complexities , which might be bigger than the entropy-related part .
+recent lower bounds [ miltersen 2005 ; golynski 2006 ] on rank and select dictionaries show that only limited progress can be expected in this direction .
+on the other hand , k-th order entropy might not be the best compressibility measure , as for example it can be beaten with run-length compression .
+another open challenge is to obtain better output sensitivity in reporting queries within little space .
+for this goal , there are some results achieving o ( occ + o ( n ) ) time for large enough m [ grossi and vitter 2000 , 2006 ] , o ( occ ) time for large enough m [ he et al. 2005 ] , and even o ( occ ) time without any restriction on m , for not very large alphabets , using o ( nhk ( t ) log ^ n ) bits of space [ ferragina and manzini 2005 ] .
+the technique by he et al. [ 2005 ] is general and can be plugged into any of the indexes discussed before , by adding some sublinear-size dictionaries .
+in this survey we have focused on the most basic problem , namely exact search in main memory .
+there are many further challenges , with regard to more complex searching , index construction and updating , secondary memory , and so on .
+a brief list of other relevant problems beyond the scope of this survey follows .
+secondary memory .
+although their small space requirements might permit compressed indexes to fit in main memory , there will always be cases where they have to operate on disk .
+there is not much work yet on this important issue .
+one of the most attractive full-text indexes for secondary memory is the string b-tree [ ferragina and grossi 1999 ] , among others [ ko and aluru 2006 ] .
+these are not , however , succinct structures .
+some proposals for succinct and compressed structures in this scenario exist [ clark and munro 1996 ; mc ( 9 , ~ t ) akinen et al. 2004 ] .
+a good survey on full-text indexes in secondary memory is due to kc ( 9 , ~ t ) arkkc ( 9 , ~ t ) ainen and rao [ 2003 ] .
+see also [ aluru 2005 , chapter 35 ] .
+construction .
+compressed indexes are usually derived from an uncompressed one .
+although it is usually simple to build a classical index and then derive its compressed version , there might not be enough space to build the uncompressed index first .
+secondary memory might be available , but many classical indexes are costly to build in secondary memory .
+therefore , an important problem is how to build compressed indexes without building their uncompressed versions first .
+several papers have recently appeared on the problem of building the sad-csa in little space [ lam et al. 2002 ; hon et al. 2003 ; hon et al. 2003 ; na 2005 ] , as well as the nav-lzi [ arroyuelo and navarro 2005 ] and the wt-fmi [ mc ( 9 , ~ t ) akinen and navarro 2006 ] .
+there is also some recent work on efficient construction of ( plain ) suffix arrays ( see [ puglisi et al. 2006 ] for a good survey ) .
+with respect to construction of ( plain ) indexes in secondary memory , there is a good experimental comparison for suffix arrays [ crauser and ferragina 2002 ] , as well as some work on suffix trees [ farach et al. 2000 ; clifford 2005 ] .
+for further details on the topic , see [ aluru 2005 , chapters 5 and 35 ] .
+dynamism .
+most indexes considered are static , in the sense that they have to be rebuilt from scratch upon text changes .
+this is currently a problem even on uncompressed full-text indexes , and not much has been done .
+yet , there is some recent work on compressed indexes [ ferragina and manzini 2000 ; hon et al. 2004 ; chan et al. 2004 ; mc ( 9 , ~ t ) akinen and navarro 2006 ] .
+extended functionality .
+we have considered only exact string matching in this survey , yet classical full-text indexes permit much more sophisticated search tasks , such as approximate pattern matching , regular expression matching , pattern matching with gaps , motif discovery , and so on [ apostolico 1985 ; gusfield 1997 ] .
+there has been a considerable amount of work on extending compressed suffix arrays functionalities to those of suffix trees [ grossi and vitter 2000 ; munro et al. 2001 ; sadakane 2002 ; sadakane 2003 ; grossi et al. 2004 ; kim and park 2005 ; grossi and vitter 2006 ] .
+the idea in general is to permit the simulation of suffix tree traversals using a compressed representation of them , such as a compressed suffix array plus a parentheses representation of the suffix tree shape [ munro and raman 1997 ] .
+in addition , there has been some work on approximate string matching over compressed suffix arrays [ huynh et al. 2006 ; lam et al. 2005 ; chan et al. 2006 ] .
+finally , it is also interesting to mention that the idea of backward searching has been used to search plain suffix arrays in 0 ( m , log time [ sim et al. 2003 ] .
+technology transfer .
+an extremely important aspect is to make the transfer from theory to technology .
+already several implementations exist for most indexes surveyed in this article , showing the proof-of-concept and the practicality of the ideas .
+it is matter of more people becoming aware of the intriguing opportunities provided by these new techniques , for a successful technology transfer to take place .
+to facilitate the chance for smooth transfer from prototype implementations to real use , a repository of standardized library implementations has been made available at the pizzachili site ( see page 4 ) .
+articles about the fm-index have appeared in popular journals such as drdobbs journal ( december 2003 ) and in ct magazine ( january 2005 ) .
+also , the bioinformatics community is becoming aware of the techniques [ healy et al. 2003 ] .
+finally , several recent papers on the topic can be found in practical venues , such as efficient and experimental algorithms ( wea ) .
+overall , we believe that self-indexing is among the most exciting research areas in text compression and text indexing , which in a few years has obtained striking results and has a long way ahead , rich in challenges and possibly new surprises .

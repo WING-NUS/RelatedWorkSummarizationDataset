@@ -1,0 +1,265 @@
+integrating web-based and corpus-based techniques for question answering .
+introduction .
+mit csails entry in this years trec question answering track focused on integrating web-based techniques with more traditional strategies based on document retrieval and named-entity detection .
+we believe that achieving high performance in the question answering task requires a combination of multiple strategies designed to capitalize on different characteristics of various resources .
+the system we deployed for the trec evaluation last year relied exclusively on the world wide web to answer factoid questions ( lin et al. , 2002 ) .
+the advantages that the web offers are well known and have been exploited by previous systems ( brill et al. , 2001 ; clarke et al. , 2001 ; dumais et al. , 2002 ) .
+the immense amount of freely available unstructured text provides data redundancy , which can be leveraged with simple pattern matching techniques involving the expected answer formulations .
+in many ways , we can utilize huge quantities of data to overcome many thorny problems in natural language processing such as lexical ambiguity and paraphrases .
+furthermore , web search engines such as google provide a convenient front-end for accessing and filtering enormous amounts of web data .
+we have identified this class of techniques as the knowledge mining approach to question answering ( lin and katz , 2003 ) .
+in addition to viewing the web as a repository of unstructured documents , we can also take advantage of structured and semistructured sources available on the web using knowledge annotation techniques ( katz , 1997 ; lin and katz , 2003 ) .
+through empirical analysis of real world natural language questions , we have noticed that large classes of commonly occurring queries can be parameterized and captured using a simple objectpropertyvalue data model ( katz et al. , 2002 ) .
+furthermore , such a data model is easy to impose on web resources through a framework of wrapper scripts .
+these techniques allow our system to view the web as if it were a virtual database and use knowledge contained therein to answer user questions .
+while the web is undeniably a useful resource for question answering , it is not without drawbacks .
+useful knowledge on the web is often drowned out by the sheer amount of irrelevant material , and statistical techniques are often insufficient to separate right answers from wrong ones .
+overcoming these obstacles will require addressing many outstanding issues in computational linguistics : anaphora resolution , paraphrase normalization , temporal reference calculation , and lexical disambiguation , just to name a few .
+furthermore , the setup of the trec evaluations necessitates an extra step in the question answering process for systems that extract answers from external sources , typically known as answer projection .
+for every web-derived answer , a system must find a supporting document from the aquaint corpus , even if the corpus was not used in the answer extraction process .
+this years main task included definition and list questions in addition to factoid questions .
+although web-based techniques have proven effective in handling factoid questions , they are less applicable to tackling definition and list questions .
+the data- driven approach implicitly assumes that each natural language question has a unique answer .
+since a single answer instance is sufficient , algorithms were designed to trade recall for precision .
+for list and definition questions , however , a more balanced approach is required , since multiple answers are not only desired , but necessary .
+we believe that the best strategy is to integrate web-based approaches with more traditional question answering techniques driven by document retrieval and named-entity detection .
+corpus- and web-based strategies should play complementary roles in an overall question answering framework .
+list questions .
+for answering list questions , our system employs a traditional pipeline architecture with distinct stages for document retrieval , passage retrieval , answer extraction , and duplicate removal ( see figure 1 ) .
+the general idea is to successively narrow down the aquaint corpus , first to a candidate list of documents , then to manageable-sized passages , and finally employ knowledge of fixed lists to extract relevant answers .
+the following subsections describe this process in greater detail .
+document retrieval .
+in response to a natural language question , our document retriever provides a set of candidate documents that are likely to contain the answer ; these documents serve as the input to additional processing modules .
+as such , the importance of document retrieval cannot be overstated : if no relevant documents are retrieved , any amount of additional processing would be useless .
+for our document retriever , we relied on lucene , a freely available open-source ir engine.1 lucene supports a weighted boolean query language , although the system performs ranked retrieval using a standard tf.idf model .
+we have previously discovered that for the purposes of passage retrieval , lucene performs on par with state-of-the-art probabilistic systems based on the okapi weighting ( tellex et al. , 2003 ) .
+an often effective way to boost document retrieval recall is to employ query expansion techniques .
+in our trec entry this year , we implemented two separate query generators that take advantage of linguistic resources to expand query terms .
+lucene provides a structured query interface that gives us the ability to fine-tune our query expansion algorithms .
+in the following subsections , we describe these two techniques in greater detail .
+method 1 .
+our first query generator improves on a simple bagof-words query by taking inflectional and derivational morphology into account : queries are a conjunction of disjuncts , where each disjunct contains morphological variants of a single term .
+base query terms are extracted from the natural language question by removing all stopwords .
+assuming we have three query terms , a , b , and c , arranged in increasing idf , our first query method would generate the following queries .
+the first query is simply a conjunction of all non-stopwords from the question .
+the second query is a conjunction where each of the conjoined elements is a disjunct of the morphological expansions of a query term .
+inflectional variants are generated with the assistance of wordnet ( to handle irregular forms ) .
+derivational variants are generated by a version of celex that we manually annotated .
+using lucenes query weighting mechanism , inflected forms are given a weight of 0.75 , and derivational forms a weight of 0.5 .
+to generate subsequent queries , the system successively drops disjuncts starting with the disjunct associated with the lowest idf term until all disjuncts have been droppedthis has the effective of query relaxation .
+after that , the highest idf disjunct is dropped , and the generator starts a fresh cycle of successively dropping the lowest idf disjuncts .
+our document retriever is given a target hit list size , and successively executes queries from the query generator until the target number of documents has been found .
+this ensures that downstream modules will always be given a consistently- sized set of documents to process .
+method 2 .
+our second query generation algorithm takes advantage of named-entity recognition technology and other lexical resources to chunk natural language questions so that query terms are not broken across constituent boundaries .
+to identify relevant named entities , we use sepia ( marton , 2003 ) , an information extraction system based on combinatory categorial grammar ( ccg ) .
+in particular , personal names are recognized so that inappropriate queries are never generated ; for example , a name such as john fitzgerald kennedy can produce legitimate queries involving john f. kennedy , john kennedy , and kennedy , but never john fitzgerald or simply john .
+for certain classes of named-entity types , we have encoded a set of heuristic rules that generates the acceptable variants .
+our query generator takes advantage of lucenes ability to execute phrase queries to ensure that the best matching documents are returned .
+our second query generator also leverages word-net to identify multi-word expressions that should not be separated in the query process .
+multi-token collocations such as hot dog should never be broken down into hot and dog , since the meaning of hot dog cannot be compositionally derived from the individual words .
+because these multi-word expressions cannot be predicted syntactically ( e.g. , compare hot dog with fast car ) , one practical solution is to employ a fixed list of such lexical items .
+if a query term is neither a recognized entity nor a multi-word expression , our second query generator expands the term with inflectional and derivational variants using the same technique as the first method .
+we found that our first query generation method traded off precision for recall with its elaborate term dropping strategyoften , the first few queries are too restrictive , and because of this , most of the documents are retrieved by overly general queries .
+the result is often a hit list that has been padded with irrelevant documents ; it appears that loose queries with few terms arent precise enough to retrieve good candidate documents .
+as an alternative , we implemented a slightly different strategy for our second query generator .
+it drops query disjuncts in order of increasing idf until no terms remain , and then stops .
+as a simple example , if the query has three ( nonstopword ) terms , a , b , and c , arranged in increasing idf , our second query generator would produce the following queries : passage retrieval .
+the next stage in the processing pipeline for answering list questions is passage retrieval , which attempts to narrow down the set of candidate documents to a set of candidate passages , which are sentences in our architecture .
+in a separate study of passage retrieval algorithms ( tellex et al. , 2003 ) , we determined that ibms passage scoring method ( ittycheriah et al. , 2000 ; ittycheriah et al. , 2001 ) produced the most accurate results .
+to determine the best passage ( sentence in our case ) , our system breaks each candidate document into sentences and scores each one based on the ibm algorithm .
+the ibm passage retrieval algorithm computes a series of distance measures for each passage .
+the matching words measure sums the idf values of words that appear in both the query and the passage .
+the thesaurus match measure sums the idf values of words in the query whose wordnet synonyms appear in the passage .
+the mis-match words measure sums the idf values of words that appear in the query and not in the passage .
+the dispersion measure counts the number of words in the passage between matching query terms , and the cluster words measure counts the number of words that occur adjacently in both the question and the passage .
+these various measures are linearly combined to give the final score for a passage .
+we modified the ibm passage scoring algorithm to take into account linguistic knowledge provided by our query generator .
+the modified algorithm includes scores for matching hyponyms , inflectional variants , derivational variants , and antonyms ( negative weight ) .
+in addition , our modified algorithm takes advantage of multi-word expressions tokenized from the question , that is , occurrences of hot and dog within a passage will not match hot dog .
+one of our goals is to determine the effects of additional linguistic knowledge on performance , and for our trec submissions , we set up a matrix experiment with two query generators and two passage retrievers ( the original ibm method and our modified algorithm ) .
+the results will be discussed later in section 5 .
+answer extraction .
+the first step of the answer extraction process is to determine the question focusthe word or phrase in the question that is used to identify the ontological type of the entity we are looking for ( i.e. , the target type ) .
+for this , we enlisted the parser of the start question answering system ( katz , 1997 ) .
+in addition , we have also constructed a mapping from question focus to target type .
+consider a question such as list journalists that have won the pulitzer prize more than once ? : start would recognize journalist as the question focus , and person as the target type ( since we dont have a specific category for journalists in our ontology ) .
+separately , we have compiled offline a large knowledge base of entities , mostly in the form of fixed lists , that correspond to the various target types .
+for example , we have gathered lists of u.s. states , major u.s. cities , major world cities , countries , person names , etc .
+if the target type is among one of these categories for which we have a fixed list , our answer extractor simply extracts instances of the target type from the top ranking passages collected by the previous stage .
+our system correctly identifies the question focus as u.s. state ( corresponding to the target type us state ) and extracts all instances of u.s. states from top ranking passages .
+since the passage retrieval algorithm returns passages that already have occurrences of terms from the question , instances of the target type are likely to be the correct answer .
+if the target type is not in our knowledge base , we employ two backoff procedures .
+occasionally , answers to list questions have the question focus directly embedded in them ( e.g. , littleneck clam is a type of clam ) , and in the absence of any additional knowledge , noun phrases containing the question focus are extracted as answer instances .
+finally , if no noun phrases containing the question focus can be found , our answer extraction module simply picks the noun phrase closest to the question focus in each of the passages and returns that as the answer .
+after collecting all the answer candidates , we discard ones with query terms in them .
+noun phrases containing keywords from the query typically repeat some aspect of the original user question and make little sense as answers .
+this heuristic has worked well in our previous question answering system ( lin and katz , 2003 ) .
+duplicate removal .
+answer instances extracted from the previous stage typically contain duplicates , which our system removes using a thresholded edit-distance measure .
+finally , the system computes the number of answer instances to return based on a relative thresholding scheme .
+each answer candidate is given a score equal to the score of the passage from which it was extracted , and all candidate answers below 10 % of the maximum score are discarded .
+the remaining instances are returned as the final answers .
+definition questions .
+our architecture for answering definition questions is shown in figure 2 .
+the target extraction module first analyzes the natural language question to determine the unknown term .
+once the target term has been found , three parallel techniques are employed to retrieve relevant nuggets that define the term : lookup in a database of relational information created from the aquaint corpus , lookup in a web dictionary followed by answer projection , and lookup directly in the aquaint corpus with information retrieval techniques .
+answers from the three different sources are merged to produce the final system output .
+the following subsections briefly describe each of these techniques ; please refer to our forthcoming paper ( hildebrandt et al. , 2004 ) for more details .
+target extraction .
+we have developed a pattern-based parser to analyze definition questions and extract the target term using simple regular expressions .
+if the natural language question does not fit any of our patterns , the parser heuristically extracts the last sequence of capitalized words in the question as the target .
+our simple definition target extractor was tested on definition-style questions from the previous trec evaluations and performed quite well on those training questions .
+database lookup .
+the use of surface patterns for answer extraction has proven to be an effective strategy for question answering .
+typically , surface patterns are applied to a candidate set of documents that have been returned by traditional document retrieval systems .
+while this strategy may be effective for factoid questions , it generally suffers from low recall .
+in the case of factoid questions , where only one instance of an answer is necessary , recall is not a primary concern .
+however , definition questions require a system to find as many relevant nuggets as possible , making recall very important .
+instead of using surface patterns post-retrieval , we copular pattern : a fractal is a pattern that is irregular , but self-similar at all size scales employ an alternative strategy : by applying a set of surface patterns offline , we are able to precompile from the aquaint corpus knowledge nuggets about every entity mentioned within it .
+in essence , we have automatically constructed an immense relational knowledge base , which , for each entity , contains all the nuggets distilled from every article within the corpus .
+once this database has been constructed , the task of answering definition questions becomes a simple database lookup .
+our surface patterns operate both at the word level and the part-of-speech level .
+we utilize patterns over part-of-speech tags to perform rudimentary chunking , such as marking the boundaries of noun phrases .
+our system uses a total of thirteen patterns , some of which are described below ( figure 3 shows several examples ) : copular pattern .
+copular constructions often provide a definition of the target term .
+however , the pattern is a bit more complex than finding the verb be and its inflectional variants ; in order to filter out spurious nuggets ( e.g. , the progressive tense ) , our system throws out all definitional nuggets that do not begin with a determiner ; this ensures that we only get np , be np2 patterns , where either np , or np2 can be the nugget .
+appositive pattern .
+commas typically provide strong evidence for the presence of an appositive .
+with the assistance of part-of-speech tags , identifying np , , np2 patterns is relatively straightforward .
+most often , np , is the target term and np2 is the nugget , but occasionally the positions are swapped .
+thus , we index both nps as the target term .
+occupation pattern .
+common nouns preceding proper nouns typically provide some relevant information such as occupation , affiliation , etc .
+in order to boost the precision of this pattern , our system discards all common noun phrases that do not contain an occupation such as actor , spokesman , leader , etc .
+we mined this list of occupations from wordnet and web resources .
+verb pattern .
+by statistically analyzing a corpus of biographies of famous people , we were able to compile a list of verbs that are commonly used to describe people and their accomplishments , including became , founded , invented , etc .
+this list of verbs is employed to extract np , verb np2 patterns , where np , is the target term , and np2 is the nugget .
+parenthesis pattern .
+parenthetical expressions following noun phrases typically provide some interesting nuggets about the preceding noun phrase ; for persons , it often contains birth / death years or occupation / affiliation .
+typically , our patterns identify short nuggets on the order of a few dozen characters .
+in answering definition questions , we decided to return responses that include additional context .
+to accomplish this , we simply expand all nuggets around their center point to encompass one hundred characters .
+we found that this technique enhances the readability of our responses : many nuggets seem odd and out of place without context and surrounding text is often necessary for disambiguation .
+furthermore , returning a longer answer means that our responses sometimes contain additional relevant nuggets that are not part of the nugget matched by the original pattern .
+in definition questions , these fortuitous nuggets serve as an additional source of answers .
+one drawback to our knowledge base of nuggets is the tremendous amount of redundancy contained within it .
+because we compiled all patterns from all entities within the entire aquaint corpus , common nuggets are often repeated .
+in order to deal with this , we employed a simple heuristic to remove duplicate information : if any two responses share more than sixty percent of their keywords , one of them is randomly thrown out .
+dictionary lookup .
+another component of our system for answering definition questions utilizes an existing web-based dictionary for nuggets .
+obviously , such an approach cannot be applied directly , because all nuggets must originate from the aquaint corpus .
+to address this issue , we developed answer projection techniques to map dictionary definitions back onto aquaint documents .
+the mapping component is based on the idea that if you already know the answer , it is much easier to find relevant nuggets in the corpus .
+given the target term , our dictionary wrapper goes online to the merriam-webster website and fetches the terms definition .
+keywords from the definition are used as the query to the lucene document retriever .
+once a set of candidate documents has been returned , we break each document into sentences and score each sentence based on its keyword overlap with the dictionary definition .
+the sentences with the highest scores are retained and , if necessary , shortened to one hundred characters centered around the target term .
+document lookup .
+as a last resort ( i.e. , if no answers are found with the first two techniques ) , our system employs standard document retrieval to extract relevant nuggets .
+the target term is used as a lucene query to gather a set of candidate documents .
+these documents are chunked into separate sentences and those sentences containing the target term are retained as responses .
+as before , these sentences are shortened appropriately if needed .
+answer merging .
+the input to the answer merging stage is a series of one hundred character responses from each of the sources : database , dictionary , and corpus .
+the responses are arranged according to an ad-hoc priority scale we developed based on the accuracy of each approach .
+for example , we found that verb patterns generally return very good nuggets , and copular constructions are often less accurate .
+the priority of dictionary answers lies somewhere between the best and worst patterns , ordered such that some dictionary responses ( if any ) would always be returned in the final answer .
+responses extracted directly from document lookup are used only if the two other methods return no answers : document lookup is considered a strict back-off method used only as a last resort .
+see ( hildebrandt et al. , 2004 ) for a more detailed description of our ordering algorithm .
+finally , the answer merging stage of our system also decides the number of one hundred character responses to return .
+since the length penalty for returning long answers is not very steep , we decided to return longer answers in hopes of including more relevant nuggets .
+given n responses , we calculated the final number of responses to return as : this strategy ensures that our system will always return a generous number of nuggets , and has proven to work well empirically .
+factoid questions .
+our system for answering factoid questions was largely unchanged from last year .
+we employed the aranea question answering system ( lin et al. , 2002 ; lin and katz , 2003 ) , which embraces two different views of the world wide web : as a heterogeneous collection of unstructured documents and as a source of carefully crafted and organized knowledge about specific topics .
+araneas approach is primarily motivated by an observation that the distribution of user queries qualitatively obeys zipfs lawa small fraction of question types accounts for a significant fraction of all question instances .
+large classes of commonly-occurring questions translate naturally into database queries and are handled by aranea using a technique we call knowledge annotation , which allows our system to access semistructured and heterogeneous data as if it were a uniform database .
+in addition , we have discovered that a simple object property-value data model captures the content of both web resources and natural language questions ( katz et al. , 2002 ) .
+to take advantage of these observations , we have built a framework of site-specific wrappers that provide uniform access to knowledge contained in a variety of web resources .
+these wrappers are connected to natural language questions through parameterized schemata .
+as with all zipf curves , there is a broad tail where individual instances are either unique or account for an insignificant fraction of total questions .
+to answer questions that cannot be easily classified into common categories or grouped by simple patterns , aranea employs what we call redundancy-based knowledge mining techniques .
+knowledge mining leverages the massive amounts of information available on the web to overcome many thorny problems associated with natural language processing .
+the insight is simple : the more data available , the greater the chance that the answer to a natural language question is stated as a reformulation of that question .
+in such cases , simple pattern matching techniques suffice to accurately extract answers .
+the setup of the trec evaluation requires each answer to be supported with a document from the aquaint corpus .
+since aranea does not use the aquaint corpus in the question answering process , web-based answers must then be projected back onto aquaint documents .
+answer projection is accomplished in a two-step process : first , a set of candidate documents is gathered ; then , a modified passage retrieval algorithm scans the documents to pick the best document .
+for obtaining the set of candidate documents , we tried three different approaches : using the nist-supplied prise documents , using documents generated by our first query generation algorithm ( section 2.1.1 ) , and using documents generated by our second query generation algorithm ( section 2.1.2 ) .
+after a set of candidate documents has been gathered , the answer projection module applies a modified window-based passage retrieval algorithm to score the documents .
+each 140-byte window is given a score equal to the number of times keywords from both the question and candidate answer appear , with the restriction that at least one keyword from the question must appear in the passage .
+the score of a document is simply the score of the highest scoring passage .
+the highest scoring document is paired with the web-derived candidate answer as the final response unit .
+results .
+a summary of our results at this years trec evaluation is shown in table 1 .
+out of twenty-five groups , we ranked sixth in factoid questions , third in list questions , and eighth in definition questions .
+our final weighted score ranked us sixth out of all the participating groups .
+for factoid questions , the query generation algorithms used for answer projection in each of the runs are shown in table 2 .
+for list questions , the query generator and passage scoring algorithms used for each of the runs are also shown in table 2 .
+for definition questions , all three submissions were exactly the same .
+list results .
+in this section , we discuss our results for answering list questions with respect to query generation , passage retrieval , and the question focus / target type .
+query generation .
+our second query generation method performed slightly better than our first query generation method .
+in particular , tokenization of multi-token expressions had the biggest positive impact on performance .
+the second query generation algorithm correctly identified school bus as a collocation and thus never broke up the expression into school and bus .
+passage retrieval .
+in general , the modified ibm passage scoring algorithm performed slightly worse than the original ibm algorithm .
+however , since they returned exactly the same responses most of the time , it is difficult to determine if the score differences are above the margin of error inherent in human judgments .
+in retrospect , we believe that our modified ibm algorithm was too lax in matching various forms of expansions ( too high a score was given to variants ) .
+it is a well-known result that uncontrolled expansion of lexical-semantic relations ( e.g. , synonyms and hyponyms ) results in lower performance ( voorhees , 1994 ) .
+it has likewise been shown that inflectional and derivational expansion does not significantly increase performance .
+however , these previous experiments were focused solely on document retrieval , using queries that were typically much longer than trec-style natural language questions .
+for the question answering task , we believe that linguistically-motivated query expansions will have a positive impact on performance .
+while our experiments have not yet shown a significant overall positive effect , we attribute this to implementational deficiencies in our overall system , rather than conceptual shortcomings .
+the original ibm passage retrieval algorithm did not return any correct answers , whereas the modified version returned four correct answers .
+the performance increase can be directly attributed to looser query matching of expanded terms .
+the original algorithm found passages related to the economic sense of royalty , whereas the modified algorithm retrieved passages with the correct sense related to monarchy .
+question focus and target type .
+our strategy for answering list questions crucially depends on correctly identifying the question focus and the associated target type ( the ontological type of entity sought after ) .
+for a few questions , our system was unable to correctly determine the question focus , resulting in a score of zero for those questions .
+to address this shortcoming , we will improve starts ability to recognize question focus .
+although identifying the question focus helps in answering a question , care is needed to map the focus word into a corresponding target type ( the specific ontological category ) .
+consider the following questions : our system correctly identified manufacturer as the question focus in the first question , but chose the wrong sense for the target type .
+the term was on our list of professions , so the system incorrectly looked for personal names .
+the second question demonstrates that not all focus terms , even when correctly identified , are useful .
+recipients are so general that they can be anything : people , companies , organizations , and even countries .
+not surprisingly , our system performed well for questions whose target type had corresponding fixed lists in our knowledge base .
+since we had exhaustive lists for entities like cities , countries , and u.s. presidents , all our answers were at least of the correct type .
+however , since our system ignored syntactic relations within the passage , it often overgenerated wrong answers .
+consider the following question : what countries have won the mens world cup for soccer ? ( q2346 ) since our system returned all countries found near the relevant keywords , most of the answers were countries that played in the world cup , not winners of it .
+as a result , we obtained high recall , but poor precision , on this question .
+this is certainly a case where the use of syntactic relations can dramatically improve question answering performance ( katz and lin , 2003 ) .
+our backoff method of looking for the question focus in candidate answers worked for the following question : the system extracted correct answers like chardonnay grapes .
+however , the same technique didnt work when the question focus was team or food because journalists typically do not write x team or y food .
+definition results .
+although the responses were identical in each of our three submitted runs for definition questions , the scores were not ; that is , given the same exact answer string , assessors came up with different judgments some of the time .
+out of the 317 responses we submitted for the 50 definition questions , there were 19 responses which were not judged the same over all three runs .
+however , 7 of these were cases where assessors found the same nugget in different responses for a question .
+in addition , there are clear instances where an answer nugget is in one of our responses and the assessors missed it , even when the nugget was present word for word .
+voorhees analysis ( 2003 ) of the definition results indicates that the margin of judging error was 0.043 , i.e. , scores for pairs of identical runs differed by as much as 0.043 ( f-measure ) .
+furthermore , due to the small testset size , a score difference of at least 0.1 in f-measure is required in order for two evaluation results to be considered statistically different ( at 95 % confidence ) .
+target term extraction was the single biggest source of error in answering definition questions .
+if the target term is not correctly identified , then all subsequent modules have little chance of providing relevant nuggets .
+we did not anticipate the presence of stopwords in names .
+consider the following questions : our naive pattern-based target extractor identified lomb , impaler , and great as the target terms for the above questions , respectively .
+fortunately , impaler is such a rare word that we actually returned nuggets concerning vlad the impaler .
+similarly , lomb so frequently co-occurs with bausch & lomb that our system was able to provide relevant nuggets .
+however , since great is a very common word , our definitions for akbar the great were meaningless .
+the systems inability to parse certain forms of names is related to our simple assumption that the final consecutive sequence of capitalized words in a question is the target .
+however , this turned out to be an incorrect assumption : our pattern-based target extractor marked old testament , spain , and earth as the targets for those questions , respectively .
+the inability to correctly identify the target term resulted in the systems failure to return relevant nuggets .
+another problem our target extractor encountered is apposition .
+the target extractor incorrectly identified medical condition shingles as the target term .
+as a result , our system did not identify a single relevant nugget .
+to better extract target terms for definition questions , we will employ start and sepia in the future , which we were unable to utilize for definition questions this year for technical reasons .
+factoid results .
+table 3 shows a detailed analysis of factoid questions .
+as in previous years , answer projection appears to be the achilles heel in our web-based question answering strategy , as shown by the relatively large fraction of unsupported and inexact answers ( in comparison to typical results of other teams ) .
+furthermore , it does not appear that any of our more advanced query generation algorithms had any significant impact of the final score of factoid questions .
+conclusion .
+the focus of our research this year was to integrate web- and corpus-based question answering techniques under a unified framework .
+this falls under our general research agenda of employing linguistic techniques , at the lexical , morphological , syntactic , and semantic levels , in conjunction with statistical techniques when appropriate .
+although our trec experiments have yet to show significant benefits from linguistically-informed processing techniques , we believe that high performance in the question answering task can only be achieved through fusion of multiple strategies and multiple resources .

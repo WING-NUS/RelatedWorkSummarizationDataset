@@ -1,0 +1,462 @@
+corpus-based learning of analogies and semantic relations .
+abstract .
+we present an algorithm for learning from unlabeled text , based on the vector space model ( vsm ) of information retrieval , that can solve verbal analogy questions of the kind found in the sat college entrance exam .
+a verbal analogy has the form a : b : : c : d , meaning a is to b as c is to d ; for example , mason : stone : : carpenter : wood .
+sat analogy questions provide a word pair , a : b , and the problem is to select the most analogous word pair , c : d , from a set of five choices .
+the vsm algorithm correctly answers 47 % of a collection of 374 college- level analogy questions ( random guessing would yield 20 % correct ; the average college-bound senior high school student answers about 57 % correctly ) .
+we motivate this research by applying it to a difficult problem in natural language processing , determining semantic relations in noun-modifier pairs .
+the problem is to classify a noun-modifier pair , such as laser printer , according to the semantic relation between the noun ( printer ) and the modifier ( laser ) .
+we use a supervised nearest- neighbour algorithm that assigns a class to a given noun-modifier pair by finding the most analogous noun-modifier pair in the training data .
+with 30 classes of semantic relations , on a collection of 600 labeled noun-modifier pairs , the learning algorithm attains an f value of 26.5 % ( random guessing : 3.3 % ) .
+with 5 classes of semantic relations , the f value is 43.2 % ( random : 20 % ) .
+the performance is state-of-the-art for both verbal analogies and noun-modifier relations .
+introduction .
+computational approaches to analogy-making typically involve hand- coded knowledge bases ( french , 2002 ) .
+in this paper , we take a different approach , based on the idea that analogical reasoning can be approximated to some extent by a cosine measure of vector similarity , where the vectors are derived from statistical analysis of a large corpus of text .
+we demonstrate this approach with two real-world problems , answering multiple-choice verbal analogy questions and classifying noun-modifier semantic relations .
+this work is only a first step , and analogical reasoning is still very far from being a solved problem , but we believe that our results are encouraging .
+a vector-based approach to analogies and semantic relations may be able to overcome some of the limitations ( such as the knowledge-engineering bottleneck ) that have impeded progress with the knowledge-based approach .
+a verbal analogy has the form a : b : : c : d , meaning a is to b as c is to d ; for example , mason is to stone as carpenter is to wood . ( a mason is an artisan who works with stone ; a carpenter is an artisan who works with wood . )
+analogies of this kind are sometimes called proportional analogies , and they have been studied at least since 350 bc ( aristotle , 2001 ) .
+in spite of their long history , they are still not well understood ; their subjective character resists quantitative analysis .
+in our research , we have used multiple-choice questions , developed for educational testing , as a tool for objective analysis of verbal analogies .
+the sat college entrance exam contains multiple-choice verbal analogy questions , in which there is a word pair , a : b , and five choices.1 the task is to select the most analogous word pair , c : d , from the set of five word pairs .
+table i gives an example .
+in the terminology of educational testing , the first pair , a : b , is called the stem of the analogy .
+for multiple-choice analogy questions , the best choice is the word pair with the semantic relation that is most similar to the relation of the stem pair .
+although there has been much research on measuring the similarity of individual concepts ( lesk , 1969 ; church and hanks , 1989 ; dunning , 1993 ; smadja , 1993 ; resnik , 1995 ; landauer and dumais , 1997 ; turney , 2001 ; pantel and lin , 2002 ) , there has been relatively little work on measuring the similarity of semantic relationships between concepts ( vanderwende , 1994 ; rosario and hearst , 2001 ; rosario et al. , 2002 ; nastase and szpakowicz , 2003 ) .
+our approach to verbal analogies is inspired by the vector space model ( vsm ) of information retrieval ( salton and mcgill , 1983 ; salton , 1989 ) .
+we use a vector of numbers to represent the semantic relation between a pair of words .
+the similarity between two word pairs , a : b and c : d , is measured by the cosine of the angle between the vector that represents a : b and the vector that represents c : d.
+as we discuss in section 2.2 , the vsm was originally developed for use in information retrieval .
+given a query , a set of documents can be ranked by the cosines of the angles between the query vector and each document vector .
+the vsm is the basis for most modern search engines ( baeza-yates and ribeiro-neto , 1999 ) .
+section 2 also covers related work on analogy , metaphor , and classifying semantic relations .
+most of the related work has used manually constructed lexicons and knowledge bases .
+our approach uses learning from unlabeled text , with a very large corpus of web pages ( about one hundred billion words ) ; we do not use a lexicon or knowledge base .
+we present the details of our learning algorithm in section 3 , including an experimental evaluation of the algorithm on 374 college-level sat-style verbal analogy questions .
+the algorithm correctly answers 47 % of the questions .
+since there are five choices per analogy question , random guessing would be expected to result in 20 % correctly answered .
+we also discuss how the algorithm might be extended from recognizing analogies to generating analogies .
+to motivate research on verbal analogies , we give an example of a practical application , the task of classifying the semantic relations of noun-modifier pairs .
+given a noun-modifier pair such as laser printer , the problem is to classify the semantic relation between the noun ( printer ) and the modifier ( laser ) .
+in section 4.1 , we argue that an algorithm for classification of noun-modifier relations would be useful in machine translation , information extraction , and word sense disambiguation .
+an algorithm for solving sat-style verbal analogies can be applied to classification of noun-modifier semantic relations , as we demonstrate in section 4 .
+given an unclassified noun-modifier pair , we can search through a set of labeled training data for the most analogous noun- modifier pair .
+the idea is that the class of the nearest neighbour in the training data will predict the class of the given noun-modifier pair .
+we apply a supervised nearest-neighbour learning algorithm , where the measure of distance ( similarity ) is the cosine of the vector angles .
+the data set for the experiments in section 4 consists of 600 labeled noun-modifier pairs , from nastase and szpakowicz ( 2003 ) .
+the learning algorithm attains an f value of 26.5 % when given 30 different classes of semantic relations .
+random guessing would be expected to result in an f value of 3.3 % .
+we also consider a simpler form of the data , in which the 30 classes have been collapsed to 5 classes .
+the algorithm achieves an f value of 43.2 % with the 5-class version of the data , where random guessing would be expected to yield 20 % .
+limitations and future work are covered in section 5 .
+the conclusion follows in section 6 .
+related work .
+in this section , we consider related work on metaphorical and analogical reasoning ( section 2.1 ) , applications of the vector space model ( section 2.2 ) , and research on classifying noun-modifier pairs according to their semantic relations ( section 2.3 ) .
+we also discuss related work on web mining for natural language processing applications ( section 2.4 ) .
+metaphor and analogy .
+turney et al. ( 2003 ) presented an ensemble approach to solving verbal analogies .
+thirteen independent modules were combined using three different merging rules .
+one of the thirteen modules was the vsm module , exactly as presented here in section 3.2 .
+however , the focus of turney et al. ( 2003 ) was on the merging rules ; the individual modules were only briefly outlined .
+therefore it is worthwhile to focus here on the vsm module alone , especially since it is the most accurate of the thirteen modules .
+table ii shows the impact of the vsm module on the accuracy of the ensemble .
+these figures suggest that the vsm module made the largest contribution to the accuracy of the ensemble .
+the present paper goes beyond turney et al. ( 2003 ) by giving a more detailed description of the vsm module , by showing how to adjust the balance of precision and recall , and by examining the application of the vsm to the classification of noun-modifier relations .
+french ( 2002 ) surveyed the literature on computational modeling of analogy-making .
+the earliest work was a system called argus , which could solve a few simple verbal analogy problems ( reitman , 1965 ) .
+argus used a small hand-built semantic network and could only solve the limited set of analogy questions that its programmer had anticipated .
+all of the systems surveyed by french used hand-coded knowledge- bases ; none of them can learn from data , such as a corpus of text .
+french ( 2002 ) cited structure mapping theory ( smt ) ( gentner , 1983 ) and its implementation in the structure mapping engine ( sme ) ( falkenhainer et al. , 1989 ) as the most influential work on modeling of analogy-making .
+sme takes representations of a source domain and a target domain , and produces an analogical mapping between the source and target .
+the domains are given structured propositional representations , using predicate logic .
+these descriptions include attributes ( unary predicates indicating features ) , relations ( expressing connnections between entities ) , and higher-order relations ( expressing connections between relations ) .
+the analogical mapping connects source domain relations to target domain relations .
+originally , only identical relations were mapped , but later versions of sme allowed similar , non-identical relations to match ( falkenhainer , 1990 ) .
+with proportional analogies of the form a : b : : c : d , the target and source domains are reduced to a minimum .
+each domain consists of two features ( explicitly given ) and one relation ( implicit ) , r1 ( a , b ) and r2 ( c , d ) .
+the focus in our work is on the similarity measure that is used to compare the relations , rather than the analogical mapping process .
+we believe it is a good research strategy to focus on one aspect of the problem at a time , mapping between complex predicate logic structures ( falkenhainer et al. , 1989 ) or measuring similarity of relations ( as we do here ) , but eventually researchers will need to address both problems together .
+real-world analogies involve domains with complex internal structures and complicated relational similarities .
+dolan ( 1995 ) described a system for extracting semantic information from machine-readable dictionaries .
+parsing and semantic analysis were used to convert the longman dictionary of contemporary english ( ldoce ) into a large lexical knowledge base ( lkb ) .
+the semantic analysis recognized twenty-five different classes of semantic relations , such as hypernym ( is a ) , part of , typical object , means of , and location of .
+dolan ( 1995 ) outlined an algorithm for identifying conventional metaphors in the lkb .
+a conventional metaphor is a metaphor that is familiar to a native speaker and has become part of the standard meaning of the words involved ( lakoff and johnson , 1980 ) .
+for example , english speakers are familiar with the metaphorical links between ( sporting ) games and ( verbal ) arguments .
+dolans algorithm can identify this metaphorical connection between game and argument by observing the similarity in the lkb of the graph structure in the neighbourhood of game to the graph structure in the neighbourhood of argument .
+the examples of metaphors identified by the algorithm look promising , but the performance of the algorithm has not been objectively measured in any way ( e.g. , by sat questions ) .
+unfortunately , the lkb and the algorithms for parsing and semantic analysis are proprietary , and are therefore not evaluated in the present paper .
+the vsm algorithm is not limited to conventional metaphors .
+for example , the analogy tourniquet : bleeding : : antidote : poisoning was discovered by the vsm approach ( see section 3.3.2 ) .
+veale ( 2003 ) presented an algorithm for automatically enhancing wordnet ( fellbaum , 1998 ) to facilitate analogical reasoning .
+the algorithm adds new links to the wordnet graph structure by analyzing the glosses ( definitions ) .
+veale ( 2003 ) reported a recall of 61 % and a precision of 93.5 % for the task of creating analogical mappings between the gods of five different cultures ( greek , roman , hindu , norse , and celtic ) .
+it would be interesting to see whether this approach can be extended to handle sat questions , which are not limited to adjective : noun pairs.2 marx et al. ( 2002 ) developed an unsupervised algorithm for discovering analogies by clustering words from two different corpora .
+each cluster of words in one corpus is coupled one-to-one with a cluster in the other corpus .
+with conventional clustering , the quality of the clustering of a set of words is typically measured by considering all possible pairs of words .
+the clustering is good when pairwise similarity is high for words that are in the same cluster and low for words that are in different clusters .
+with coupled clustering , the quality of the clustering is measured by considering all pairs of words in which one member of the pair is from the first corpus and the other member of the pair is from the second corpus .
+the clustering is good when pair- wise similarity is high for words that are in the same coupled clusters and low for words that are in different coupled clusters .
+for example , one experiment used a corpus of buddhist documents and a corpus of christian documents .
+a cluster of words such as { hindu , mahayana , zen , ... } from the buddhist corpus was coupled with a cluster of words such as { catholic , protestant , ... } from the christian corpus .
+thus the algorithm appears to have discovered an analogical mapping between buddhist schools and traditions and christian schools and traditions .
+dagan et al. ( 2002 ) extend this approach from two different corpora to any number of different corpora .
+this is interesting work , but it is not directly applicable to sat analogies , because it discovers analogies between clusters of words , rather than individual words .
+lapata and lascarides ( 2003 ) described a corpus-based algorithm for logical metonymy .
+metonymy and metaphor are distinct but closely related ( lakoff and johnson , 1980 ) .
+metonymy is referring to something by mentioning an attribute or feature of the thing .
+in logical metonymy , an event is referred to by mentioning a noun that is involved in the event .
+for example , in the sentence mary finished the cigarette , the implicit event is smoking the cigarette , which is metonymically referred to by explicitly mentioning only the cigarette , omitting reference to smoking .
+given a logical metonymy as input , the algorithm of lapata and lascarides ( 2003 ) can produce a list of non-metonymical paraphrases of the input sentence , sorted in order of decreasing probability .
+given john began the cigarette , the system would produce john began smoking the cigarette , john began rolling the cigarette , john began lighting the cigarette , and so on .
+this work is related to our work in the use of a corpus-based approach , but the details of the algorithms and the tasks are quite different .
+vector space model .
+in information retrieval , it is common to measure the similarity between a query and a document using the cosine of the angle between their vectors ( salton and mcgill , 1983 ; salton , 1989 ) .
+almost all modern search engines use the vsm to rank documents by relevance for a given query .
+the vsm approach has also been used to measure the semantic similarity of words ( lesk , 1969 ; ruge , 1992 ; pantel and lin , 2002 ) .
+pantel and lin ( 2002 ) clustered words according to their similarity , as measured by a vsm .
+their algorithm is able to discover the different senses of a word using unsupervised learning .
+they achieved impressive results on this ambitious task .
+the novelty in our work is the application of the vsm approach to measuring the similarity of semantic relationships .
+the vectors characterize the semantic relationship between a pair of words , rather than the meaning of a single word ( lesk , 1969 ) or the topic of a document ( salton and mcgill , 1983 ) .
+noun-modifier semantic relations .
+nastase and szpakowicz ( 2003 ) used supervised learning to classify noun-modifier relations .
+to evaluate their approach , they created a set of 600 noun-modifier pairs , which they hand-labeled with 30 different classes of semantic relations . ( we use this data set in our own experiments , in section 4 . )
+each noun-modifier word pair was represented by a feature vector , where the features were derived from the ontological hierarchy in a lexicon ( wordnet or rogets thesaurus ) .
+standard machine learning tools ( mbl , c5.0 , ripper , and foil ) were used to induce a classification model from the labeled feature vectors .
+nastase and szpakowicz ( 2003 ) described their work as exploratory ; the results they presented were qualitative , rather than quantitative .
+their approach seems promising , but it is not yet ready for a full quantitative evaluation .
+rosario and hearst ( 2001 ) used supervised learning to classify noun- modifier relations in the medical domain , using mesh ( medical subject headings ) and umls ( unified medical language system ) as lexical resources for representing each noun-modifier relation with a feature vector .
+they achieved good results using a neural network model to distinguish 13 classes of semantic relations .
+in an extension of this work , rosario et al. ( 2002 ) used hand-crafted rules and features derived from mesh to classify noun-modifier pairs that were extracted from biomedical journal articles .
+our work differs from rosario and hearst ( 2001 ) and rosario et al. ( 2002 ) , in that we do not use a lexicon and we do not restrict the domain of the noun-modifier pairs .
+in work that is related to dolan ( 1995 ) ( see section 2.1 ) , vanderwende ( 1994 ) used hand-built rules , together with the lkb derived from ldoce , to classify noun-modifier pairs .
+tested with 97 pairs extracted from the brown corpus , the rules had an accuracy of 52 % .
+barker and szpakowicz ( 1998 ) used memory based learning ( mbl ) for classifying semantic relations .
+the memory base stored triples , consisting of a noun , its modifier , and ( if available ) a marker .
+the marker was either a preposition or an appositive marker when the noun-modifier pair was found in text next to a preposition or an apposition .
+a new noun-modifier pair was classified by looking for the nearest neighbours in the memory base .
+the distance ( similarity ) measure was based on literal matches between the elements in the triples , which constrained the algorithms ability to generalize from past examples .
+some research has concentrated on learning particular semantic relations , such as part of ( berland and charniak , 1999 ) or type of ( hearst , 1992 ) .
+these are specific instances of the more general problem considered here ( see table xi ) .
+the algorithm of lapata and lascarides ( 2003 ) for paraphrasing logical metonymy can be viewed as a method for making semantic relations explicit .
+some of the logical metonymies they consider take the form of noun-modifier pairs , such as difficult language , which can be non-metonymically paraphrased as language that is difficult to learn .
+however , most noun-modifier pairs are not logical metonymies , and the two tasks seem different , since it is difficult to cast logical metonymy as a classification problem .
+in this paper , we apply a measure of analogical similarity to classifying noun-modifier relations , but , in principle , this could work the other way around ; an algorithm for classifying noun-modifier relations could be used to solve sat-style verbal analogy problems .
+the stem pair and each of the choice pairs could be classified according to their semantic relations .
+ideally , the stem and the correct choice would be classified as having the same semantic relation , whereas the incorrect choices would have different semantic relations .
+we have done some preliminary experiments with this approach , but have not yet had any success .
+web mining .
+our learning algorithm relies on a very large corpus of web pages .
+we obtain information about the frequency of various patterns of words by querying a web search engine ( altavista ) .
+other researchers have used web search engines to acquire data for natural language processing applications .
+for example , resnik ( 1999a ) used altavista to find bilingual text .
+our approach is different in that it only needs frequency information and not the text itself ; the only information we use from altavista is the hit count ( the number of web pages that match the given query ) .
+the use of hit counts from web search engines to obtain lexical statistical information was introduced by turney ( 2001 ) , who used hit counts from altavista to estimate pointwise mutual information ( pmi ) .
+this approach to estimating pmi resulted in a good measure of semantic similarity between pairs of words .
+when evaluated with multiple-choice synonym questions , taken from the test of english as a foreign language ( toefl ) , the pmi estimate achieved a score of 73.75 % ( turney , 2001 ) .
+in comparison , the average human toefl score was 64.5 % .
+turney and littman ( 2003 ) used altavista hit counts to determine the semantic orientation of words .
+a word has a positive semantic orientation when it conveys praise ( honest , cute ) and a negative orientation when it indicates criticism ( horrible , cruel ) .
+semantic orientation varies in both direction ( positive or negative ) and degree ( mild to strong ) .
+the algorithm was experimentally tested with 3,596 words ( including adjectives , adverbs , nouns , and verbs ) that were manually labeled positive ( 1,614 words ) and negative ( 1,982 words ) .
+it attained an accuracy of 82.8 % on the full test set , but the accuracy was greater than 95 % when the algorithm was allowed to abstain from classifying mild words .
+in this paper , we use hit counts to measure the similarity between semantic relations , rather than the similarity between individual concepts ( turney , 2001 ) .
+the above papers share the idea of using web search engines to exploit a huge corpus for natural language processing applications , but the details of the applications are quite different .
+solving verbal analogy problems .
+in section 3.1 , we examine the task of solving verbal analogies .
+section 3.2 outlines the application of the vector space model to this task .
+the experimental results are presented in section 3.3 and discussed in section 3.4 .
+analogy problems .
+the semantic relation between a pair of words may have no direct , obvious connection to the individual words themselves .
+in an analogy a : b : : c : d , there is not necessarily much in common between a and c or between b and d. consider the analogy traffic : street : : water : riverbed ( one of our sat questions ) .
+traffic flows down a street ; water flows down a riverbed .
+a street carries traffic ; a riverbed carries water .
+this analogy is not superficial ; there is a relatively large body of work on the mathematics of hydrodynamics applied to modeling automobile traffic flow ( daganzo , 1994 ; zhang , 2003 ; yi et al. , 2003 ) .
+yet , if we look at the positions of these four words in the wordnet hierarchy ( fellbaum , 1998 ) , it appears that they have little in common ( see table iii ) .
+traffic and water belong to different hierarchies ( the former is a group and the latter is a physical thing ) .
+street and riverbed are both physical objects , but it takes several steps up the hierarchy to find the abstract class to which they both belong .
+this example illustrates that the similarity of semantic relations between words is not directly reducible to the semantic similarity of individual words .
+algorithms that have been successful for individual words ( lesk , 1969 ; church and hanks , 1989 ; dunning , 1993 ; smadja , 1993 ; resnik , 1995 ; landauer and dumais , 1997 ; turney , 2001 ; pantel and lin , 2002 ) will not work for semantic relations without significant modification .
+vsm approach .
+given candidate analogies of the form a : b : : c : d , we wish to assign scores to the candidates and select the highest scoring candidate .
+the quality of a candidate analogy depends on the similarity of the semantic relation r1 between a and b to the semantic relation r2 between c and d. the relations r1 and r2 are not given to us ; the task is to infer these relations automatically .
+we create a vector , r , to characterize the relationship between two words , x and y , by counting the frequencies of various short phrases containing x and y. we use a list of 64 joining terms ( see table iv ) , such as of , for , and to , to form 128 phrases that contain x and y , such as x of y , y of x , x for y , y for x , x to y , and y to x. we then use these phrases as queries for a search engine and record the number of hits ( matching documents ) for each query .
+this process yields a vector of 128 numbers .
+we have found that the accuracy of this approach to scoring analogies improves when we use the logarithm of the frequency .
+that is , if x is the number of hits for a query , then the corresponding element in the vector r is log ( x + 1 ) .3 ruge ( 1992 ) found that using the logarithm of the frequency also yields better results when measuring the semantic similarity of individual words , and log-based measures for similarity are used in lin ( 1998 ) and resnik ( 1999b ) .
+logarithms are also commonly used in the vsm for information retrieval ( salton and buckley , 1988 ) .
+we used the altavista search engine ( http : / / www.altavista.com / ) in the following experiments .
+at the time our experiments were done , we estimate that altavistas index contained about 350 million english web pages ( about 1011 words ) .
+we chose altavista for its * operator , which serves two functions : whole word matching : in a quoted phrase , an asterisk can match any whole word .
+the asterisk must not be the first or last character in the quoted phrase .
+the asterisk must have a blank space immediately before and after it .
+for example , the query immaculate * very clean will match immaculate and very clean , immaculate is very clean , immaculate but very clean , and so on .
+substring matching : embedded in a word , an asterisk can match zero to five characters .
+the asterisk must be preceded by at least three regular alphabetic characters .
+some of the joining terms in table iv contain an asterisk , and we also use the asterisk for stemming , as specified in table v. for instance , consider the pair restrained : limit and the joining term * very .
+since restrained is ten characters long , it is stemmed to restrai * .
+since limit is five characters long , it is stemmed to limit * .
+joining these stemmed words , we have the two queries restrai * * very limit * and limit * * very restrai * .
+the first query would match restrained and very limited , restraints are very limiting , and so on .
+the second query would match limit is very restraining , limiting and very restraining , and so on .
+the vector r is a kind of signature of the semantic relationship between x and y. consider the analogy traffic : street : : water : riverbed .
+the words traffic and street tend to appear together in phrases such as traffic in the street ( 544 hits on altavista ) and street with traffic ( 460 hits ) , but not in phrases such as street on traffic ( 7 hits ) or street is traffic ( 15 hits ) .
+similarly , water and riverbed may appear together as water in the riverbed ( 77 hits ) , but riverbed on water ( 0 hits ) would be unlikely .
+therefore the angle ^ between the vector r1 for traffic : street and the vector r2 for water : riverbed tends to be relatively small , and hence cosine ( ^ ) is relatively large .
+to answer an sat analogy question , we calculate the cosines of the angles between the vector for the stem pair and each of the vectors for the choice pairs .
+the algorithm guesses that the answer is the choice pair with the highest cosine .
+this learning algorithm makes no use of labeled training data .
+the joining terms in table iv are similar to the patterns used by hearst ( 1992 ) and berland and charniak ( 1999 ) .
+hearst ( 1992 ) used various patterns to discover hyponyms in a large corpus .
+berland and charniak ( 1999 ) used patterns to discover meronyms in a large corpus .
+the pattern np0 of the np1 suggests that np0 may be a part of ( meronym of ) np1 ( the basement of the building ) ( berland and charniak , 1999 ) .
+the joining term of the is item 39 in table iv .
+our work is different from hearst ( 1992 ) and berland and charniak ( 1999 ) in that they only consider a single semantic relation , rather than multiple classes of semantic relations .
+also , we are using these patterns to generate features in a high-dimensional vector , rather than using them to search for particular instances of a specific semantic relationship .
+experiments .
+in the following experiments , we evaluate the vsm approach to solving analogies using a set of 374 sat-style verbal analogy problems .
+this is the same set of questions as was used in turney et al. ( 2003 ) , but the experimental setup is different .
+the ensemble merging rules of turney et al. ( 2003 ) use supervised learning , so the 374 questions were separated there into 274 training questions and 100 testing questions .
+however , the vsm approach by itself needs no labeled training data , so we are able to test it here on the full set of 374 questions .
+section 3.3.1 considers the task of recognizing analogies and section 3.3.2 takes a step towards generating analogies .
+recognizing analogies .
+table vi shows the experimental results for our set of 374 analogy questions .
+five questions were skipped because the vector for the stem pair was entirely zeros .
+since there are five choices for each question , random guessing would yield a recall of 20 % .
+the algorithm is clearly performing much better than random guessing ( p < 0.0001 according to fishers exact test ) .
+our analogy question set ( turney et al. , 2003 ) was constructed from books and web sites intended for students preparing for the sat college entrance exam , including 90 questions from unofficial sat preparation web sites , 14 questions from the educational testing service ( ets ) web site ( http : / / www.ets.org / ) , 190 questions scanned in from a book with actual sat exams ( claman , 2000 ) , and 80 questions typed from sat guidebooks .
+the sat i test consists of 78 verbal questions and 60 math questions ( there is also an sat ii test , covering specific subjects , such as chemistry ) .
+the questions are multiple choice , with five choices per question .
+the verbal and math scores are reported separately .
+the raw sat i score is calculated by giving one point for each correct answer , zero points for skipped questions , and subtracting one quarter point for each incorrect answer .
+the quarter point penalty for incorrect answers is chosen so that the expected raw score for random guessing is zero points .
+the raw score is then converted to a scaled score that ranges from 200 to 800.4 the college board publishes information about the percentile rank of college-bound senior high school students for the sat i verbal and math questions.5 on the verbal sat test , the mean scaled score for 2002 was 504 .
+we used information from the college board to make table vii .
+analogy questions are only a subset of the 78 verbal sat questions .
+if we assume that the difficulty of our 374 analogy questions is comparable to the difficulty of other verbal sat questions , then we can estimate that the average college-bound senior would correctly answer about 57 % of the 374 analogy questions .
+we can also estimate that the performance of the vsm approach corresponds to a percentile rank of 293 .
+claman ( 2000 ) suggests that the analogy questions may be somewhat harder than other verbal sat questions , so we may be slightly overestimating the mean human score on the analogy questions .
+there is a well-known trade-off between precision and recall : by skipping hard questions , we can increase precision at the cost of decreased recall .
+by making multiple guesses for each question , we can increase recall at the cost of decreased precision .
+the f measure is the harmonic mean of precision and recall .
+it tends to be largest when precision and recall are balanced .
+for some applications , precision may be more important than recall , or vice versa .
+thus it is useful to have a way of adjusting the balance between precision and recall .
+we observed that the difference between the cosine of the best choice and the cosine of the second best choice ( the largest cosine minus the second largest ) seems to be a good indicator of whether the guess is correct .
+we call this difference the margin .
+by setting a threshold on the margin , we can trade off precision and recall .
+when the threshold on the margin is a positive number , we skip every question for which the margin is less than the threshold .
+this tends to increase precision and decrease recall .
+on the other hand , when the threshold on the margin is negative , we make two guesses ( both the best and the second best choices ) for every question for which the margin is less than the absolute value of the threshold .
+ties are unlikely , but if they happen , we break them randomly .
+consider the example in table viii .
+the best choice is ( e ) and the second best choice is ( c ) . ( in this case , the best choice is correct . )
+the margin is 0.00508 ( 0.69265 minus 0.68757 ) .
+if the threshold is between 0.00508 and + 0.00508 , then the output is choice ( e ) alone .
+if the threshold is greater than + 0.00508 , then the question is skipped .
+if the threshold is less than 0.00508 , then the output is both ( e ) and ( c ) .
+figure 1 shows precision , recall , and f as the threshold on the margin varies from 0.11 to + 0.11 .
+the vertical line at the threshold zero corresponds to the situation in table vi .
+with a threshold of + 0.11 , precision reaches 59.2 % and recall drops to 11.2 % .
+with a threshold of 0.11 , recall reaches 61.5 % and precision drops to 34.5 % .
+these precision-recall results compare favourably with typical results in information retrieval ( voorhees and harman , 1997 ) .
+in figure 1 , we see that the f value reaches its maximum when the threshold on the margin is near zero .
+this is expected , since f is intended to favour a balance between precision and recall .
+the experiments presented here required 287,232 queries to altavista ( 374 analogy questions x 6 word pairs per question x 128 queries per word pair ) .
+although altavista is willing to support automated queries of the kind described here , as a courtesy , we inserted a five second delay between each query .
+thus processing the 287,232 queries took about seventeen days .
+generating analogies .
+the results so far suggest that our algorithm is capable of recognizing analogies with some degree of success , but an interesting question is whether it might be capable of generating analogies .
+that is , given a stem pair , the algorithm can often pick out the correct choice pair from a set of five choices , but generating a verbal analogy from scratch is a more difficult problem .
+one approach to the generation problem is to try to reduce it to the recognition problem , by randomly generating candidate analogies and then trying to recognize good analogies among the candidates .
+as a first step towards generating analogies , we expanded the number of choices for each stem pair .
+we dropped the five questions for which the stem vector was all zeros , leaving 369 questions .
+for each of the remaining questions , we combined the 369 correct choice pairs .
+for each of the 369 stem pairs , the algorithm had to choose the correct word pair from among the 369 possible answers .
+for each of the 369 stem pairs , the 369 choice pairs were sorted in order of decreasing cosine .
+we then examined the top ten most highly ranked choices to see whether the correct choice was among them .
+table ix shows the result of this experiment .
+the first row in the table shows that the first choice was correct for 31 of the 369 stems ( 8.4 % ) .
+the last row shows that the correct choice appears somewhere among the top ten choices 29.5 % of the time .
+with random guessing , the correct choice would appear among the top ten 2.7 % of the time ( 10 / 369 = 0.027 ) .
+this experiment actually underestimates the quality of the output .
+table x shows the top ten choices for two stem pairs .
+for the first stem pair , barley : grain , the correct choice , according to the original formulation of the test , is pine : tree , which is the third choice here .
+the semantic relation between barley and grain is type of ( hyponym ) , so the first two choices , aluminum : metal and beagle : dog , are perfectly acceptable alternatives .
+in fact , it could be argued that aluminum : metal is a better choice , because aluminum and barley are mass nouns ( i.e. , they do not form plurals ) , but pine is a count noun ( e.g. , i have two pines in my yard . ) .
+discussion .
+as mentioned in section 2.1 , the vsm algorithm performs as well as an ensemble of twelve other modules ( turney et al. , 2003 ) .
+all of the other modules employed various lexical resources ( wordnet , dictionary.com , and wordsmyth.net ) , whereas the vsm module learns from a large corpus of unlabeled text , without a lexicon .
+the vsm performance of 47.1 % correct is well above the 20 % correct that would be expected for random guessing , but it is also less than the 57 % correct that would be expected for the average college-bound senior high school student .
+when the number of choices for each stem is expanded from five to 369 , the correct choice is among the top ten choices 29.5 % of the time , where random guessing would give 2.7 % .
+there is certainly much room for improvement , but there is also good evidence that verbal analogies can be solved algorithmically .
+the list of joining terms in table iv is somewhat arbitrary .
+this list was based on preliminary experiments with a development set of analogy questions .
+the terms in the list were selected by intuition and there is no reason to believe they are optimal .
+it might be possible to automatically learn joining terms , perhaps by extending the algorithm of ravichandran and hovy ( 2002 ) .
+we attempted to take a more principled approach to the joining terms , by creating a larger list of 142 joining terms , and then using feature selection algorithms ( forward selection , backward elimination , genetic algorithm selection ) to select an optimal subset of the features .
+none of the selected subsets were able to achieve statistically significantly better performance in cross-validation testing compared to the original set in table iv .
+the subsets seemed to overfit the training questions .
+we believe that this problem can be fixed with a larger set of questions .
+the idea of using the margin to trade off precision and recall was inspired by support vector machines , which use a somewhat related concept of margin ( cristianini and shawe-taylor , 2000 ) .
+this suggests the possibility of using a supervised learning approach , in which a training set would be used to tune parameters to maximize the margin .
+we believe that this is a good approach , but so far we have not been successful with it .
+the execution time ( seventeen days ) would be much less if we had a local copy of the altavista database .
+progress in hardware will soon make it practical for a standard desktop computer to search in a local copy of a corpus of this size ( about 1011 words ) .
+noun-modifier relations .
+in section 4.1 , we discuss applications for an algorithm for classifying noun-modifier relations .
+section 4.2 presents the classes of noun- modifier relations that are used in our experiments ( nastase and szpakowicz , 2003 ) .
+the classification algorithm is described in section 4.3 .
+the experiments are in section 4.4 , followed by discussion of the results in section 4.5 .
+applications .
+noun-modifier word pairs are common in english and other languages .
+an algorithm for classification of noun-modifier relations would be useful in machine translation , information extraction , and word sense disambiguation .
+we illustrate this with examples taken from the collection of 600 labeled noun-modifier pairs used in our experiments ( see table xi ) .
+machine translation : a noun-modifier pair such as electron microscope might not have a direct translation into an equivalent noun- modifier pair in another language .
+in the translation process , it may be necessary to expand the noun-modifier pair into a longer phrase , explicitly stating the implicit semantic relation .
+is the semantic relation purpose ( a microscope for electrons ; e.g. , for viewing electrons ) , instrument ( a microscope that uses electrons ) , or material ( a microscope made out of electrons ) ?
+the answer to this question may be used in translation . ( the terms purpose , instrument , and material are explained in table xi . )
+information extraction : a typical information extraction task would be to process news stories for information about wars .
+the task may require finding information about the parties involved in the conflict .
+it would be important to know that the semantic relation in the noun- modifier pair cigarette war is topic ( a war about cigarettes ) , not agent ( a war by cigarettes ; i.e. , cigarettes are fighting the war ) .
+word sense disambiguation : the word plant might refer to an industrial plant or a living organism .
+if a document contains the noun- modifier pair plant food , a word sense disambiguation algorithm can take advantage of the information that the semantic relation involved is beneficiary ( the plant benefits from the food ) , rather than source ( the plant is the source of the food ) .
+classes of relations .
+the following experiments use the 600 labeled noun-modifier pairs of nastase and szpakowicz ( 2003 ) .
+this data set includes information about the part of speech and wordnet synset ( synonym set ; i.e. , word sense tag ) of each word , but our algorithm does not use this information .
+table xi lists the 30 classes of semantic relations .
+the table is based on appendix a of nastase and szpakowicz ( 2003 ) , with some simplifications .
+the original table listed several semantic relations for which there were no instances in the data set .
+these were relations that are typically expressed with longer phrases ( three or more words ) , rather than noun-modifier word pairs .
+for clarity , we decided not to include these relations in table xi .
+in this table , h represents the head noun and m represents the modifier .
+for example , in flu virus , the head noun ( h ) is virus and the modifier ( m ) is flu ( * ) .
+in english , the modifier ( typically a noun or adjective ) usually precedes the head noun .
+in the description of purpose , v represents an arbitrary verb .
+in concert hall , the hall is for presenting concerts ( v is present ) or holding concerts ( v is hold ) ( t ) .
+nastase and szpakowicz ( 2003 ) organized the relations into groups .
+the five capitalized terms in the relation column of table xi are the names of five groups of semantic relations . ( the original table had a sixth group , but there are no examples of this group in the data set . )
+we make use of this grouping in section 4.4.2 .
+turney and littman .
+nearest-neighbour approach .
+the following experiments use single nearest-neighbour classification with leave-one-out cross-validation .
+a vector of 128 numbers is calculated for each noun-modifier pair , as described in section 3.2 .
+the similarity of two vectors is measured by the cosine of their angle .
+for leave-one-out cross-validation , the testing set consists of a single vector and the training set consists of the 599 remaining vectors .
+the data set is split 600 times , so that each vector gets a turn as the testing vector .
+the predicted class of the testing vector is the class of the single nearest neighbour ( the vector with the largest cosine ) in the training set .
+experiments .
+section 4.4.1 looks at the problem of assigning the 600 noun-modifier pairs to thirty different classes .
+section 4.4.2 considers the easier problem of assigning them to five different classes .
+thirty classes .
+table xii gives the precision , recall , and f values for each of the 30 classes .
+the column labeled class percent corresponds to the expected precision , recall , and f for the simple strategy of guessing each class randomly , with a probability proportional to the class size .
+the actual average f of 26.5 % is much larger than the average f of 3.3 % that would be expected for random guessing .
+the difference ( 23.2 % ) is significant with 99 % confidence ( p < 0.0001 , according to the paired t-test ) .
+the accuracy is 27.8 % ( 167 / 600 ) .
+the average precision , recall , and f values in table xii are calculated using macroaveraging , rather than microaveraging ( lewis , 1991 ) .
+microaveraging combines the true positive , false positive , and false negative counts for all of the classes , and then calculates precision , recall , and f from the combined counts .
+macroaveraging calculates the precision , recall , and f for each class separately , and then calculates the averages across all classes .
+macroaveraging gives equal weight to all classes , but microaveraging gives more weight to larger classes .
+we use macroaveraging ( giving equal weight to all classes ) , because we have no reason to believe that the class sizes in the data set reflect the actual distribution of the classes in a real corpus . ( microaveraging would give a slight boost to our results . )
+we can adjust the balance between precision and recall , using a method similar to the approach in section 3.3.1 .
+for each noun-modifier pair that is to be classified , we find the two nearest neighbours .
+if the two nearest neighbours belong to the same class , then we output that class as our guess for the noun-modifier pair that is to be classified .
+otherwise , we calculate the margin ( the cosine of the first nearest neighbour minus the cosine of the second nearest neighbour ) .
+let m be the margin and let t be the threshold .
+if -m < t < + m , then we output the class of the first nearest neighbour as our guess for the given noun-modifier pair .
+if t > m , then we abstain from classifying the given noun-modifier pair ( we output no guess ) .
+if t < -m , then we output two guesses for the given noun-modifier pair , the classes of both the first and second nearest neighbours .
+figure 2 shows the trade-off between precision and recall as the threshold on the margin varies from 0.03 to + 0.03 .
+the precision , recall , and f values that are plotted here are the averages across the 30 classes .
+the vertical line at zero corresponds to the bottom row in table xii .
+with a threshold of + 0.03 , precision rises to 35.5 % and recall falls to 11.7 % .
+with a threshold of 0.03 , recall rises to 36.2 % and precision falls to 23.4 % .
+in figure 2 , f is higher for negative thresholds on the margin .
+we do not have an explanation for this .
+we believe it is due to noise .
+five classes .
+classification with 30 distinct classes is a hard problem .
+to make the task easier , we can collapse the 30 classes to 5 classes , using the grouping that is given in table xi .
+for example , agent and beneficiary both collapse to participant .
+table xiii gives the results for the 5 class problem .
+random guessing would yield an average f value of 20.0 % , but the actual average f value is 43.2 % .
+the difference ( 23.2 % ) is significant with 95 % confidence ( p < 0.05 , according to the paired t-test ) .
+the accuracy is 45.7 % ( 274 / 600 ) .
+as before , we can adjust the balance between precision and recall by varying a threshold on the margin .
+figure 3 shows precision and recall as the threshold varies from -0.03 to + 0.03 .
+the precision , recall , and f values are averages across the 5 classes ( macroaverages ) .
+the vertical line at zero corresponds to the bottom row in table xiii .
+with a threshold of + 0.03 , precision rises to 51.6 % and recall falls to 23.9 % .
+with a threshold of -0.03 , recall rises to 56.9 % and precision falls to 37.2 % .
+these experiments required 76,800 queries to altavista ( 600 word pairs x 128 queries per word pair ) .
+with a five second delay between each query , processing the queries took about five days .
+discussion .
+the performance of the nearest-neighbour vsm algorithm is well above random chance .
+with 30 classes , the average f is 26.5 % , where random guessing would give an expected average f of 3.3 % .
+with 5 classes , the average f is 43.2 % , where random guessing would give an expected average f of 20.0 % .
+as far as we know , this is the first attempt to classify semantic relations without a lexicon .
+research with the same data ( nastase and szpakowicz , 2003 ) , but using a lexicon , is still in the exploratory phase .
+however , there is clearly much opportunity for improvement .
+most practical tasks would likely require higher accuracy than we have obtained here .
+one place to look for improvement is in the joining terms .
+for the experiments in this section , we used the same joining terms as with the analogy questions ( table iv ) .
+it seems possible that the joining terms that work best for analogy questions are not necessarily the same as the terms that work best for classifying semantic relations .
+the kinds of semantic relations that are typically tested in sat questions are not necessarily the kinds of semantic relations that typically appear in noun-modifier pairs .
+we also expect better results with more data .
+although 600 noun- modifier pairs may seem like a lot , there are 30 classes , so the average class has only 20 examples .
+we would like to have at least 100 examples of each class , but manually labeling 3000 examples would require a substantial amount of painstaking effort .
+the classification scheme given in table xi is only one of many possible ways of classifying semantic relations .
+each of the papers discussed in section 2.3 has a different classification of semantic relations ( vanderwende , 1994 ; barker and szpakowicz , 1998 ; rosario and hearst , 2001 ; rosario et al. , 2002 ; nastase and szpakowicz , 2003 ) .
+madsen et al. ( 2001 ) give a carefully constructed hierarchy of semantic relations , but this classification scheme has not yet been applied to labeling noun- modifier pairs .
+none of these classification schemes have been validated by determining the level of inter-annotator agreement .
+another limitation is the assumption that each noun-modifier pair can only belong to one class .
+for example , concert hall might be classified as purpose ( table xi ) , but it could equally well be classified as location .
+a more flexible approach would allow multiple labels for each noun-modifier pair .
+it is reasonable to doubt that any classification scheme for semantic relations can be complete .
+each domain has its own special types of semantic relations .
+for example , stephens et al. ( 2001 ) provide a classification scheme for relationships between genes , including classes such as np0 phosphorylates np1 .
+however , it is plausible that a general- purpose scheme like table xi can capture the majority of semantic relations in general text at a reasonable level of granularity .
+limitations and future work .
+perhaps the biggest limitation of this work is the accuracy that we have achieved so far .
+although it is state-of-the-art for sat analogy questions and unrestricted-domain noun-modifier semantic relations , it is lower than we would like .
+however , both of these tasks are ambitious and research on them is relatively new .
+we believe that the results are promising and we expect significant improvements in the near future .
+the vsm has been extensively explored in information retrieval .
+there are many ideas in the ir literature that might be used to enhance the performance of vsm applied to analogies and semantic relations .
+we have begun some preliminary exploration of various term weighting schemes ( salton and buckley , 1988 ) and extensions of the vsm such as the gvsm ( wong et al. , 1985 ) and lsa ( landauer and dumais , 1997 ) .
+an area for future work is exploring the sensitivity of the vsm to the size of the corpus .
+it seems plausible that our ( limited ) success with the vsm is due ( to a large extent ) to the huge corpus indexed by altavista .
+it is possible that the data we need , regarding relations between words , is highly sparse .
+our approach might fail with a typical corpus , such as the british national corpus ( bnc ) .
+we estimate that altavista indexes about 1011 words , but bnc only contains about 108 words .
+however , more sophisticated algorithms , such as lsa , may be able to extract the necessary information from a much smaller corpus .
+for the task of measuring similarity between individual words , landauer and dumais ( 1997 ) compared the cosine measure using vectors generated directly from a corpus versus vectors generated by applying lsa to the corpus .
+on the toefl multiple-choice synonym questions , the cosine measure with directly-generated vectors achieved a score of only 36.8 % , but the cosine measure with lsa-generated vectors achieved a score of 64.4 % .7 we believe that our set of joining terms ( table iv ) is far from ideal .
+it seems likely that much larger vectors , with thousands of elements instead of 128 , would improve the performance of the vsm algorithm .
+with the current state of technology , experiments with alternative sets of joining terms are very time consuming .
+the joining terms raise some interesting questions , which we have not yet addressed .
+which terms are most important ?
+many of them are prepositions .
+does this work have any significant implications for research in the semantics of prepositions ( regier , 1996 ) ?
+many of them are verbs .
+what are the implications for research in the semantics of verbs ( gildea and jurafsky , 2002 ) ?
+can we use any ideas from research on prepositions and verbs to guide the search for an improved set of joining terms ?
+these are questions for future work .
+in this paper , we have focused on the vsm algorithm , but we believe that ensemble methods will ultimately prove to yield the highest accuracy ( turney et al. , 2003 ) .
+language is a complex , heterogeneous phenomenon , and it seems unlikely that any single , pure approach will be best .
+the best approach to analogies and semantic relations will likely combine statistical and lexical resources .
+however , as a research strategy , it seems wise to attempt to push the performance of each individual module as far as possible before combining the modules .
+conclusion .
+we believe that analogy and metaphor play a central role in human cognition and language ( lakoff and johnson , 1980 ; hofstadter et al. , 1995 ; french , 2002 ) .
+sat-style analogy questions are a simple but powerful and objective tool for investigating these phenomena .
+much of our everyday language is metaphorical , so progress in this area is important for computer processing of natural language .
+a more direct application of sat question answering technology is classifying noun-modifier relations , which has potential applications in machine translation , information extraction , and word sense disambiguation .
+contrariwise , a good algorithm for classifying semantic relations should also help to solve verbal analogies , which argues for a strong connection between recognizing analogies and classifying semantic relations .
+in this paper , we have shown how the cosine metric in the vector space model can be used to solve analogy questions and to classify semantic relations .
+the vsm performs much better than random chance , but below human levels .
+however , the results indicate that these challenging tasks are tractable and we expect further improvements .
+we believe that the vsm can play a useful role in an ensemble of algorithms for learning analogies and semantic relations .

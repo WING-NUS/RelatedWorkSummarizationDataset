@@ -1,0 +1,182 @@
+on the unification of syntactic annotations under the stanford dependency scheme : a case study on bioinfer and genia .
+abstract .
+several incompatible syntactic annotation schemes are currently used by parsers and corpora in biomedical information extraction .
+the recently introduced stanford dependency scheme has been suggested to be a suitable unifying syntax formalism .
+in this paper , we present a step towards such unification by creating a conversion from the link grammar to the stanford scheme .
+further , we create a version of the bioinfer corpus with syntactic annotation in this scheme .
+we present an application-oriented evaluation of the transformation and assess the suitability of the scheme and our conversion to the unification of the syntactic annotations of bioinfer and the genia treebank .
+we find that a highly reliable conversion is both feasible to create and practical , increasing the applicability of both the parser and the corpus to information extraction .
+introduction .
+one of the main challenges in biomedical information extraction ( ie ) targeting entity relationships such as protein-protein interactions arises from the complexity and variability of the natural language statements used to express such relationships .
+to address this complexity , many biomedical ie systems ( alphonse et al. , 2004 ; rinaldi et al. , 2004 ; fundel et al. , 2007 ) and annotated corpora ( kim et al. , 2003 ; aubin , 2005 ; pyysalo et al. , 2007 ) incorporate full syntactic analysis .
+however , there are significant differences between the syntactic annotation schemes employed .
+this leads to difficulties in sharing data between corpora and establishing the relative performance of parsers as well as to a lack of interchangeability of one parser for another in ie systems , among other issues .
+syntax formalisms are broadly divided into constituency and dependency .
+constituency schemes are dominant in many fields and are unified under the established penn treebank ( ptb ) scheme ( bies et al. , 1995 ) .
+however , dependency schemes have been suggested to be preferable in ie , as they represent the semantic structure of the sentences more directly ( see , e.g. , de marneffe et al. ( 2006 ) ) .
+further , lin ( 1998 ) argues for dependency-based evaluation of both dependency and constituency parsers since it allows evaluation metrics that are more relevant to semantic interpretation as well as intuitively more meaningful .
+even though there is clearly a need for a unifying scheme for dependency comparable to that of ptb for constituency , no widely adopted standard currently exists .
+in this paper , we present a step towards unifying the diverse syntax schemes in use in ie systems and corpora such as the genia treebank1 and the recently introduced bioinfer corpus ( pyysalo et al. , 2007 ) .
+clegg and shepherd ( 2007 ) have recently proposed to use the stanford dependency scheme ( de marneffe et al. , 2006 ) as a common , application-oriented syntax representation .
+to assess this choice , we develop a set of conversion rules for transforming the link grammar ( lg ) dependency scheme the stanford scheme and then create a version of the bioinfer corpus in the stanford scheme by applying the conversion rules and manually correcting the errors .
+by making the bioinfer corpus available in the stanford scheme , we also increase the value of the corpus for biomedical ie .
+the transformation has the further benefit of allowing link grammar output to be normalized into a more application-oriented form .
+finally , to assess the practical value of the conversion method and of the bioinfer syntactic annotation in the stanford scheme , we compare the charniak-lease constituency parser2 ( charniak and lease , 2005 ) and biolg , 3 an adaptation of lg ( pyysalo et al. , 2006 ) , on the newly unified dataset combining the constituency-annotated genia tree- bank with the dependency-annotated bioinfer corpus .
+the transformation rules and software as well as the stanford annotation of the bioinfer corpus , the main practical results of this work , are freely available at http : / / www.it.utu.fi / bioinfer .
+motivation .
+to support the development of ie systems , it is important for a corpus to provide three key types of annotation capturing the named entities , their relationships and the syntax .
+to our knowledge , there are only two corpora in the biomedical domain that currently provide these three annotation types simultaneously , bioinfer and lll ( aubin , 2005 ) .
+in addition , genia , the de facto standard domain corpus for named entity recognition and syntactic analysis , is in the process of adding a relationship annotation .
+the corpora have different strengths ; bioinfer provides a detailed relationship annotation , while genia has a broader coverage of named entities and a larger treebank .
+unifying the syntactic annotations of these two corpora allows these strengths to be combined .
+the bioinfer syntactic annotation follows the lg dependency scheme , addressing the recent interest in lg in the biomedical nlp community ( ding et al. , 2003 ; alphonse et al. , 2004 ; aubin et al. , 2005 ) .
+however , the lg scheme has been criticized for being oriented more towards structural than semantic questionable ( schneider , 1998 ; de marneffe et al. , 2006 ) .
+our experience with lg leads us to largely agree with these criticisms .
+de marneffe et al. ( 2006 ) have recently introduced a transformation from ptb to the stanford scheme .
+clegg and shepherd ( 2007 ) have applied this transformation to perform a dependency- based comparison of several statistical constituency parsers on the genia treebank and have argued for the adoption of the stanford scheme in biomedical ie .
+moreover , the ie system of fundel et al. ( 2007 ) , which employs the stanford scheme , was shown to notably outperform previously applied systems on the lll challenge dataset , finding an f-score of 72 % against a previous best of 54 % .
+this further demonstrates the suitability of the stanford scheme to ie applications .
+dependency schemes .
+in this section , we present the stanford and lg dependency schemes and discuss their relative strengths .
+stanford dependency scheme .
+a parse in the stanford scheme ( sf ) is a directed graph where the nodes correspond to the words and the edges correspond to pairwise syntactic dependencies between the words .
+the scheme defines a hierarchy of 48 grammatical relations , or dependency types .
+the most generic relation , dependent , can be specialized as auxiliary , argument , or modifier , which again have several subtypes ( de marneffe et al. , 2006 ) .
+the stanford conversion transforms phrase structure parses into the stanford scheme .
+first , the semantic head of each constituent is identified using head rules similar to those of collins ( 1999 ) and untyped dependencies are then extracted and labeled with the most specific grammatical relations possible using tregex rules ( levy and andrew , 2006 ) .
+the system additionally provides a set of collapsing rules , suggested to be beneficial for ie applications ( de marneffe et al. , 2006 ; clegg and shepherd , 2007 ) .
+these rules collapse some dependencies by incorporating certain parts of speech ( mostly conjunctions and prepositions ) in grammatical relations .
+this is realized by combining two relations and denominating the resulting dependency with a type based on the word to which the original two relations were linked ( see figure 1 ) .
+in the lg-sf conversion , we target the uncollapsed stanford scheme , as the collapsing rules have already been developed and reported by de marneffe et al. ; reimplementing the collapsing would be an unnecessary duplication of efforts .
+also , the collapsed relations can be easily created based on the uncollapsed ones , whereas reversing the conversion would be more complicated .
+lg dependency scheme .
+link grammar ( sleator and temperley , 1993 ) is closely related to dependency formalisms .
+it is based on the notion of typed links connecting words .
+while links are not explicitly directional , the roles of the words can be inferred from their left-to-right order and the link type .
+an lg parse , termed linkage , consists of a set of links that connect the words so that no two links cross or connect the same two words .
+when discussing lg , we will use the terms dependency and link interchangeably .
+compared to the 48 dependency types of the stanford scheme , the lg english grammar defines over 100 main link types which are further divided into 400 subtypes .
+the unusually high number of distinct types is one of the properties of the lg english grammar that complicate the application of lg in information extraction .
+consider , for instance , the case of prepositional phrase attachment illustrated in figure 2 , where all the alternative attachment structures receive different types .
+arguably , this distinction is unimportant to current ie systems and therefore should be normalized .
+this normalization is inherent in the stanford scheme , where the preposition always attaches using a prep dependency .
+in contrast to such unnecessarily detailed distinctions , in certain cases lg types fail to make semantically important distinctions .
+for instance , the co link type is used to mark almost all clause openers , not distinguishing between , for example , adverbial and prepositional openers .
+our contributions .
+in this section , we describe the lg-sf conversion as well as sf bioinfer , the bioinfer corpus syntactic annotation in the stanford scheme .
+these are the two primary contributions of this study .
+lg-sf conversion .
+the lg-sf conversion transforms the undirected lg links into directed dependencies that follow the stanford scheme .
+the transformation is based on handwritten rules , each rule consisting of a pattern that is matched in the lg linkage and generating a single dependency in the stanford parse .
+since the conversion rules only refer to the lg linkage , they do not influence each other and are applied independently in an arbitrary order .
+the pattern of each rule is expressed as a set of positive or negative constraints on the presence of lg links .
+the constraints typically restrict the link types and may also refer to the lexical level , restricting only to links connecting certain word forms .
+since lg does not define link directionality , the patterns refer to the left-to-right order of tokens and the rules must explicitly specify the directionality of the generated sf dependencies .
+as an example , let us consider the rule [ x � pv y ] -y au ^ ssx .
+the pattern matches two tokens connected with an lg link of type pv and generates the corresponding directed auxpass dependency .
+this rule applies twice in the linkage in figure 1 .
+it is an example of a rare case of a one-to-one correspondence between an lg and an sf type .
+many-to-many correspondences are much more common : in these cases , rules specify multiple restrictions and multiple rules are needed to generate all instances of a particular dependency type .
+as a further example , we present the three rules below , which together generate all left-to-right prep dependencies .
+an exclamation mark in front of a restriction denotes a negative restriction , i.e. , the link must not exist in order for the rule to apply .
+the link types are specified as regular expressions .
+the first of the above three rules generates the prep dependency in the parse in figure 1 , with a = isoform and b = of .
+the variables c and d are not bound to any tokens in this sentence , as they only occur in negative restrictions .
+to resolve coordination structures , it is crucial to recognize the leftmost coordinated element , i.e. the head of the coordination structure in the sf scheme .
+however , the conversion rule patterns are unable to capture general constraints on the relative order of the tokens .
+for instance , in the linkage in figure 3 , it is not possible to devise a pattern only matching one of the tokens actin and profilin , while not matching the other .
+therefore , we perform a pre-processing step to resolve the coordination structures prior to the application of the conversion rules .
+after the pre-processing , the conversion is performed with the lp2lp software ( alphonse et al. , 2004 ) , previously used to transform lg into the lll competition format ( aubin , 2005 ) .
+in the development of the lg-sf conversion and sf bioinfer , we make the following minor modifications to the stanford scheme .
+the scheme distinguishes nominal and adjectival pre-modifiers of nouns , a distinction that is not preserved in the bioinfer corpus .
+therefore , we merge the nominal and adjectival pre-modifier grammatical relations into a single relation , nmod .
+for the same reason , we do not distinguish between apposition and abbreviation , and only use the appos dependency type .
+finally , we do not annotate punctuation .
+schneider ( 1998 ) has previously proposed a strategy for identifying the head word for each lg link , imposing directionality and thus obtaining a dependency graph .
+given the idiosyncrasies of the lg linkage structures , this type of transformation into dependency would clearly not have many of the normalizing benefits of the lg-sf transformation .
+sf bioinfer .
+for creating the bioinfer corpus syntactic annotation in the stanford scheme , the starting point of the annotation process was the existing manual annotation of the corpus in the lg scheme to which we applied the lg-sf conversion described in section 4.1 .
+the resulting sf parses were then manually corrected by four annotators .
+in the manual correction phase , each sentence was double-annotated , that is , two annotators corrected the converted output independently .
+all disagreements were resolved jointly by all annotators .
+to estimate the annotation quality and the stability of the sf scheme , we determined annotator agreement as precision and recall measured against the final annotation .
+the average annotation precision and recall were 97.5 % and 97.4 % , respectively .
+this high agreement rate suggests that the task was well-defined and the annotation scheme is stable .
+the bioinfer corpus consists of 1100 sentences and , on average , the annotation consumed approximately 10 minutes per sentence in total .
+evaluation .
+in this section , we first evaluate the lg-sf conversion .
+we then present an evaluation of the charniaklease constituency parser and the biolg dependency parser on bioinfer and genia .
+evaluation of the conversion rules .
+in the evaluation of the conversion rules against the gold standard sf bioinfer annotation , we find a precision of 98.0 % and a recall of 96.2 % .
+currently , the lg-sf conversion consists of 114 rules , each of which specifies , on average , 4.4 restrictions .
+altogether the rules currently generate 32 sf dependency types , thus averaging 3.5 rules per sf type .
+only 9 of the sf types are generated by a single rule , while the remaining require several rules .
+we estimate that the current ruleset required about 100 hours to develop .
+in figure 4 , we show the cumulative precision and recall of the rules when added in the descending order of their recall .
+remarkably , we find that a recall of 80 % is reached with just 13 conversion rules , 90 % with 28 rules , and 95 % with 56 rules .
+these figures demonstrate that while the sf and lg schemes are substantially different , a high-recall conversion can be obtained with approximately fifty carefully crafted rules .
+additionally , while precision is consistently high , the highest-recall rules also have the highest precision .
+this may be related to the fact that the most common sf dependency types have a straightforward correspondence in lg types .
+a common source of errors in the lg-sf conversion are the link grammar idiomatic expressions , which are analyzed as a chain of id links ( 0.7 % of all links in the bioinfer corpus ) and connected to the linkage always through their last word .
+some examples of lg idiomatic expressions include each other , no one , come of age , gotten rid of , for good , and the like .
+these expressions are often problematic in the sf conversion as well .
+we did not attempt any wide-coverage systematic resolution of the idiomatic expressions and , apart from the most common cases such as in vitro , we preserve the lg structure of connecting these expressions through their last word .
+we note , however , that the list of idiomatic lg expressions is closed and therefore a case-by-case resolution leading to a full coverage is possible , although not necessarily practical .
+similar to the lg idiomatic expressions are the sf dep dependencies , generated when none of the sf rules assigns a more specific type .
+in most cases , dep is a result of a lack of coverage of the sf conversion rules typically occurring in rare or idiomatic expressions .
+we assume that many of the dep dependencies will be resolved in the future , given that the sf conversion and the sf dependency scheme itself are presented by the authors as a work in progress .
+therefore , we do not attempt to replicate most of the sf dep dependencies with the lg-sf conversion rules ; much of the effort would be obsoleted by the progress of the sf conversion .
+the dep dependencies account for 23 % of the total 3.8 % of dependencies not recovered by the lg-sf conversion .
+evaluated parsers and corpora .
+the charniak-lease parser is a statistical constituency parser developed by charniak and lease ( 2005 ) .
+it is an adaptation of the charniak parser ( charniak , 1999 ) to the biomedical domain .
+for example , it uses a pos-tagger trained on the genia corpus , although the parser itself has been trained on the penn treebank .
+the charniaklease parser is of particular interest , because in a recent comparison performed by clegg and shepherd ( 2007 ) on the genia treebank , it was the best performing of several state-of-the-art statistical constituency parsers .
+the lg parser is a rule-based dependency parser with a broad coverage grammar of newspaper-type english .
+it has no probabilistic component and does not perform pruning of ambiguous alternatives during parsing .
+instead , the parser generates all parses accepted by the grammar .
+simple heuristics are applied to rank the alternative parses .
+here , we evaluate a recently introduced adaptation of lg to the biomedical domain , biolg ( pyysalo et al. , 2006 ) , incorporating the genia pos tagger ( tsuruoka et al. , 2005 ) as well as a number of modifications to lexical processing and the grammar .
+to facilitate the comparison of results with those of clegg and shepherd , we use their modified subset of genia treebank.4 as 600 of the 1100 bioinfer sentences have previously been used in the development of the biolg parser , we only use the remaining 500 blind sentences of bioinfer in the evaluation .
+parser performance .
+to evaluate the performance of the parsers , we determined the precision , recall and f-measure by comparing the parser output against the corpus gold standard dependencies .
+the matching criterion required that the correct words are connected and that the direction and type of the dependency are correct .
+the dependency-based evaluation results for the charniak-lease and biolg parsers on the genia and bioinfer corpora are shown in table 1 .
+we note that clegg and shepherd ( 2007 ) report 77 % f-score performance of charniak-lease on the genia corpus , using the collapsed variant of the sf scheme .
+we replicated their experiment using the uncollapsed variant and found an f-score of 80 % .
+therefore , most of the approximately 4 % difference compared to our finding reported in table 1 is due to this difference in the use of collapsing , with our modifications to the sf scheme having a lesser effect .
+the decrease in measured performance caused by the collapsing is , however , mostly an artifact caused by merging several dependencies into one ; a single mistake of the parser can have a larger effect on the performance measurement .
+we find that while the performance of the charniak-lease parser is approximately 2 percentage units better on genia than on bioinfer , for biolg we find the opposite effect , with performance approximately 3 percentage units better on bioinfer .
+thus , both parsers perform better on the corpora closer to their native scheme .
+we estimate that this total 5 percentage unit divergence represents an upper limit to the evaluation bias introduced by the two sets of conversion rules .
+we discuss the possible causes for this divergence in section 5.4 .
+to determine whether the differences between the two parsers on the two corpora were statistically significant , we used the wilcoxon signed-ranks test for f-score performance using the bonferroni correction for multiple comparisons ( n = 2 ) , following the recent recommendation of dem ^ sar ( 2006 ) .
+we find that the charniak-lease parser outperforms biolg statistically significantly on both the genia corpus ( p � 0.01 ) and on the bioinfer corpus ( p < 0.01 ) .
+thus , the relative performance of the parsers can , in this case , be established even in the presence of opposing conversion biases on the two corpora .
+in table 2 , we present an evaluation of the biolg parser with and without the lg-sf conversion , specifically evaluating the effect of the conversion presented in this study .
+here we find a substantially more stable performance , including even an increase in precision .
+this further validates the quality of the conversion rules .
+finally , we note that the processing time required to perform the conversions is insignificant compared to the time consumed by the parsers .
+discussion .
+evaluating biolg on genia and the charniaklease parser on bioinfer includes multiple sources of divergence .
+in addition to parser errors , differences can be created by the lg-sf conversion and the stanford conversion .
+moreover , in examining the outputs we identified that a further source of divergence is due to differing interpretations of the stanford scheme .
+one such difference is illustrated in figure 5 .
+here the biolg parser with the lgsf conversion produces an analysis that differs from the result of converting the genia treebank analysis by the stanford conversion .
+this is due to the stanford conversion producing an apparently flawed analysis that is not replicated by the lg-sf conversion .
+in certain cases of this type , the lack of a detailed definition of the sf scheme prevents from distinguishing between conversion errors and intentional analyses .
+this will necessarily lead to differing interpretations , complicating precise evaluation .
+conclusions .
+we have presented a step towards unifying syntactic annotations under the stanford dependency scheme and assessed the feasibility of this unification by developing and evaluating a conversion from link grammar to the stanford scheme .
+we find that a highly reliable transformation can be created , giving a precision and recall of 98.0 % and 96.2 % , respectively , when compared against our manually annotated gold standard version of the bioinfer corpus .
+we also find that the performance of the biolg parser is not adversely affected by the conversion .
+given the clear benefits that the stanford scheme has for domain analysis , the conversion increases the overall suitability of the parser to ie applications .
+based on these results , we conclude that converting to the stanford scheme is both feasible and practical .
+further , we have developed a version of the bioinfer corpus annotated with the stanford scheme , thereby increasing the usability of the corpus .
+we applied the lg-sf conversion to the original lg bioinfer annotation and manually corrected the errors .
+the high annotator agreement of above 97 % precision and recall confirms the stability of the sf scheme .
+we have also demonstrated that the unification permits direct parser comparison that was previously impossible .
+however , we found that there is a certain accumulation of errors caused by the conversion , particularly in a case when two distinct rule sets are applied .
+in our case , we estimate this error to be on the order of several percentage units , nevertheless , we were able to establish the relative performance of the parses with a strong statistical significance .
+these results demonstrate the utility of the stanford scheme as a unifying representation of syntax .
+we note that an authoritative definition of the stanford scheme would further increase its value .

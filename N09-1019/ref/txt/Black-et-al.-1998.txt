@@ -1,0 +1,192 @@
+facile : description of the ne system used for muc-7 .
+introduction .
+in this paper , we describe the system used by the umist team as members of the facile consortium , to undertake the ne task in muc-7 .
+the main characteristics of this system employed are as follows : it is rule-based , its rule formalism supports context-sensitive partial parsing , rules may use pattern-matching-style iteration operators , the notation is much more readable than classic pattern-matching languages , rules can be assigned an explicit weight which is used in choosing between competing analyses , there is a method for identifying name-strings as coreferential with longer variants in the same text , the system does not employ learning techniques .
+the development of the system began only about 20 months ago , so it has not been used in any previous comparable trials .
+we looked forward to slightly higher scores than we obtained in the formal run , because at the dry run stage , we had obtained almost identical scores to our best results with training data .
+in the rest of this paper , we first give some background on the context in which the system used in the muc-7 ne task was developed .
+we then outline its internal structure , concentrating on the rule notation which is its most salient feature .
+an evaluation of its performance in the task then follows , before concluding with some speculation on the extent to which the approach adopted is susceptible to further improvement .
+background .
+umist 's participation in the muc-7 ne task was conducted with a recently constructed module of a larger system whose main purpose is text categorization .
+the facile project , ( black et al 1997 ) co-funded by the european communitys language engineering programme , is a precompetitive industry-academic collaborative project .
+its main task is the filtering of news by fine-grained knowledge-based categorization .
+a version of the facile system has been deployed for several months in a news filtering service offered by an italian news agency , radiocor .
+it was clear from earlier experience in the cobalt project ( gilardoni et al , 1995 ) that other modules would benefit from a component which could identify the often complex proper names which occur frequently in financial news texts .
+taking an externally sourced name-finder for english was not an ideal solution because the facile system categorizes texts in four languages : english , german , italian and spanish .
+we required name-finding to be done in all four languages , using a standard interface with a morphological analyser and tagger for those languages .
+a rule-based component was constructed which reflected the approach of coates-stevens ( 1992 ) , but within the software framework adopted for facile .
+it is this component which has been tested against the muc-7 ne task . '
+in addition to the categorization task , the facile systems functionality includes information extraction as understood in the muc context , using a linguistically-motivated system developed by our partners , ( ciravegna , 1995 ; ciravegna , lavelli and satta , 1997 ) and which has been very successfully applied to the analysis of italian texts .
+at umist we had to put our effort into completing and indeed revising the ne analyser , at the expense so far of the english resources for the information extraction component .
+this has meant that it has not been possible to participate in muc-7 to the extent originally envisaged , since the ie components adaptation to english is not yet available .
+system architecture .
+the facile preprocessor accepts input to the system , normalizes the text , recognizes special formatting , tokenizers , tags , looks up single and multi-word tokens in a database , and carries out proper name recognition and classification .
+the output forms the input to other facile modules ( the shallow analyzer and the deep analyzer , neither of which was used in the muc-7 ne task ) .
+basic preprocessor and database lookup .
+the same component was subjected to a highly experimental trial in the te task , in which the results obtained reflect the ne analysers ability unaided to extract no more than the name and category of some of the entities mentioned in the text .
+the preprocessor utilizes the inxight linguistix tools as a third-party component .
+through a functional interface , the preprocessor is able to utilize these tools for tagging and morphological analysis .
+the proven finite-state technology that the tools employ ensures the necessary speed , reliability , coverage and portability .
+modules developed within the project carry out text zoning , tokenisation , database lookup and named entity rule application .
+facile treats tokens as feature vectors .
+the follow-up modules derive all information about a token exclusively from its corresponding feature vector .
+the feature vector stores the following information about a token : where it begins and ends as character offsets , what separates it from its predecessor ( white space , hyphen etc . ) , what text zone it comes from , its orthographic pattern ( capitalised , all capitalised , mixed , lower case etc . ) , the token and its normalised forms , its syntax ( category and features ) , semantic class ( as obtained either from the database or morphological analyser ) , morphological analyses , partitioned into those consistent with the taggers choice and others ( for possible use by other modules ) . ( 1 ) is an example , in lisp notation .
+in this example , the separator is octal 10 , the text comes from the main body , the token is capitalised , literally mrs. , normalised to mrs . , syntactically a prop and title , and semantically according to the database a prefix ( ) for a female civilian person .
+on the second line are the results of the morphological analysis .
+the preprocessor fills out the feature vector from various sources .
+the first six fields shown above are obtained from the text using the text zoner and tokenisation modules .
+the normalised form field comes either from the morphological analysis ( see below ) or from algorithmic procedures for the handling of numeric tokens .
+the syntax field comes from the morphosyntactic tagger , and the morphological analysis from the morphological analyser .
+the latter typically offers several alternative analyses and the full list of results is partitioned into those that are consistent with the taggers decision and those that are not .
+the semantics field comes from lookup in a database which has information on words and phrases belonging to the categories of named entities themselves as well as to categories that occur as prefixes or suffixes of names .
+where there exist database entries for multi-word tokens , the single words are replaced by a single token vector for the compound .
+the structure of this table differs from the data structure used in chart parsing in that there is only one initial edge per token .
+alternative analyses are packed into the sem and other-morph fields .
+rule-based named entity recognition .
+as mentioned earlier , we had found the approach to named entity recognition described in coates-stevens ( 1992 ) interesting , but that system was coded in prolog , which was not one of the agreed languages for implementation in the facile project .
+our first thoughts were to use a pattern-matching language like flex or perl , starting from the tagger output as word / tag pairs .
+however , first attempts to use perl led to unreadable patterns of many full lines in extent because of the number of features to take account of .
+the need to handle coreferences and scores , and the slowness of perl pointed to a more complex interpreter , and so we came to specify a more congenial notation .
+because in any one pattern constituent we would need to refer to only one or two of the properties , we chose to use a attribute-value notation for readability , but not one as powerful as we might want to use for a full syntactic and semantic analysis .
+the rule notation .
+two versions of the rule language and its interpreter have been defined , the current version having been proposed and implemented following an evaluation of our performance in the dry run .
+this description refers only to the current version .
+rules have the general form a = = > b \ c / d.
+a is a set of attribute operator value expressions , where the values are atomic expressions , disjunctions ( using the operator 1 ) or negated atomic expressions or disjunctions , i.e. a one-level attribute-value matrix ( avm ) .
+in an individual attribute operator value expression , the left hand side may be any of ten specified columns in the input token vector , or an additional attribute ifthe matching token has been found by rule .
+b , c and d are sequences of such one-level avms ( b and d possibly empty , since they constitute the left and right context of c ) .
+each avm is optionally followed by an iteration specification , * , + , ? , or { ( integer ) , ( integer ) } .
+avms may be grouped by parentheses to allow for the iteration of a sequence of constituents , although in the current implementation , recursive grouping by parentheses is not permitted .
+the left-hand side of a rule may also have a score in the range -1 ... + 1 , which defaults to 1 . # is the comment character .
+the comparison operators include = , ! = ( not equal ) , < , < = , > and > = .
+if the value in the chart edge is a disjunction ( i.e. list ) the = operator is satisfied if any of the members of the list is identical to the value in the expression ( or any one of the values if that is a disjunction ) .
+the negation operator ! = is satisfied if there is a null intersection between the values in the edge and those in the expression .
+substring comparisons are permitted by the inclusion of wildcards in the value expression .
+any variable ( a symbol whose print-name begins with ) which occurs on the right-hand side of an expression is unified with all other occurrences of the same variable in the rule .
+this can be used to transfer specific information to the left-hand side as well as to enforce constraints .
+an example of a rule is ( 2 ) , which is satisfied by a token whose normalised form ( i.e. modulo capitalization ) is university , the literal of and a location or city name .
+a string matching this description is assigned the syntactic tag pn and the semantic tag org .
+example ( 3 ) shows how the right context may be suggestive of the tag to assign , with a relatively low certainty factor to take account of this .
+the target pattern is a single upper-case token which the tagger guesses to be a pn , and not a pn that has been found by applying a rule .
+in this example , the right context is expressed literally instead of using sem or syn values .
+if the whole pattern is matched , the arbitrary additional attribute orgn receives the value of the token in the first constituent through unification of the instances of the variable o. coreferent names .
+the purpose of the variable in rule ( 3 ) may not be immediately apparent .
+variables were first introduced because of the need to treat coreferences between instances of the same name .
+whilst an extended form of a name may be used on its first mention in a text , it is typically not used again in the same text .
+the referent of the phrase foreign secretary robin cook will normally be mentioned subsequently as mr cook , for example .
+mr robin would not be possible ( except in the households of aristocrats or in an old family firm ) .
+the variable allows the repeatable part of the name to be identified for matching with any subsequent mentions , as made clear by rule ( 4 ) .
+rule ( 5 ) illustrates the coreference operator > > , which stipulates that there be an antecedent constituent matching the avm following the operator , which can satisfy the variable bindings established in the rest of the rule .
+in this case , both surname and title must be identical with their antecedents .
+when a coreference of this type is found , in addition to the explicit assignment of the syn and sem fields and the title and surname attributes , an ante field of the newly found constituent is assigned the unique identifier of the matching antecedent .
+by using variables in this way , we could in principle deal with coreference relationships that are made explicit syntactically , such as that between a name and a description in apposition .
+however , we have only explored this possibility to a limited extent in our experimental application of the system to the te task .
+comparison with other pattern-matching languages .
+standard pattern-matching languages like perl , flex , snobol etc . , are designed to process surface patterns in text .
+where tagged text is to be pattern-matched , it is possible to pair tags with words as in the / at cat / nn sat / vbd etc. and to define patterns over these sequences .
+however , as we have pointed out , more than just the literal token and its syntactic tag are relevant to the ne recognition problem .
+to make all of these properties into facets of a token structure makes the statement of the rules in raw perl hopelessly long-winded and error prone .
+one important effort at producing a higher level language that perl is mother of perl ( mop ) - see doran et al ( 1997 ) .
+it enables the pattern writer to focus on a single or a few attributes at a time , but does this by the use of several separate layers of rules .
+our language by contrast , allows conditions to refer to attributes arising from multiple levels of analysis in a single rule- set .
+however , in our view , a more significant advantage of our own rule language is its readability and accessibility to the rule-writer .
+we have in comparison far fewer symbolic operators and instead use a variant attribute-value matrix notation to make the individual rules more self-documenting .
+the rule interpreter .
+the current implementation of the rule interpreter is adapted from a left-corner chart parser , although we have considered compiling to finite state machinery if it proved too inefficient .
+although the basic rule-invocation strategy is bottom-up , partial parsing in this way could lead to runaway recursion with some rules with a single constituent ( except for left and right context ) .
+this can arise when a rule has the pattern indicated in ( 6 ) , or wherever the rhs is underspecified enough to accept a constituent with sem = cat .
+for this reason , the rule interpreter is depth-limited .
+with the right-hand side of rules including context as well as the phrase to be matched , rule-invocation is more complex than in the left-corner algorithm , since the scanner can have moved on by the time a needed inactive edge is added .
+data structures .
+the working data structures of the interpreter include an active chart , comprising sets of active and inactive edges and a vertex index .
+in addition , there is a property-value table which stores the values of any attributes not in the standard chart columns .
+this table is a simple hash table , and can be illustrated as follows : table 1 shows a simplified chart with initial edges 13 and added ( inactive ) edge 4 produced by application of rule 4 .
+the values of the title and surname fields are stored in the property-value table table 2 .
+this is indexed both by edge number and property , avoiding the need to search for antecedents .
+the main algorithm .
+the active chart mechanism has been extended to deal with iterable and optional constituents .
+an iterable or optional constituent that can match the current token gives rise to two new edges , one an active one in which there can be more iterations , and another in which the cursor advances to the next constituent or concludes the rule .
+to make this process more efficient , active edges do not contain copies of the right hand side of the rule , but merely pointers to rules , a state vector referencing the current constituent group and constituent within the group , and bindings for any variables in the rule .
+advanced rule-invocation strategy .
+a working set of ne recognition rules may easily be over one hundred in number .
+if every rule within a rule set were to be tested against every edge of a document then the document would both take far longer to process than if some form of selection algorithm takes place .
+this is the role of the advanced rule invocation strategy - computing , for each edge of the document , which rules will definitely not fire and which rules have a chance of firing .
+the algorithm works by assigning properties to both rules and document edges when the rules and document are read in .
+consider rule ( 7 ) which cannot be completed if there are no cardinal numbers in the edges it will subsume .
+similarly , rule ( 8 ) cannot be completed if there are no interesting properties in the semantic field of the next few edges .
+when a rule is read in , it is assigned a requirement value which indicates whether , in the next 3 edges , the rule will require ( a ) a cardinal number ( b ) a capitalised or an all capitals token , or ( c ) an interesting semantic property - i.e.
+org , loc , per civ , dateunit but not null , sgml , punct etc .
+when the edges of a document are read in , they , similary , are assigned aproperty value according to the properties of the edge .
+if an edge contains a capitalised word and is tagged as an organisation ( sem = org ) then then property value will indicate this .
+both requirement and property values are stored in binary arrays .
+when the main loop is initiated , the properties of the current edge and the following two edges are added together .
+before any rule is fired , this property value is checked against the requirements of each rule to make sure that the rule has at least a chance of completing .
+in the tests we have done , this preselection of which rules fire reduces the total run time by approximately one half , with no loss of accuracy .
+the preference mechanism .
+as noted above , rules have a default certainty of 1 , or an assigned certainty in the range -1 to 1 .
+if rules give competing descriptions for the same span of the text , the s em value with the highest score is preferred .
+where several rules come to the same conclusion about the sem value , evidence combination comes into play .
+we combine such scores using shortliffe and buchanans ( 1975 ) certainty theory formula .
+cbf represents the initial certainty of a proposition or that based on accumulated evidence so far .
+cx is the certainty value for the same proposition , attributable on the basis of a new rule x , not previously considered .
+c , f represents the cumulative certainty after assimilating cx and cbf . ( 9 ) shows how the formula applies in combining two positive certainties .
+for reasons of space , we omit the other cases here .
+after evaluation of certainties for each given text span , a further preference is applied which prefers longer spans to shorter in cases of overlap .
+the resulting analysis is a single semantic and property description of each identified name expression in the text .
+for our integrated systems categorization and template filling components , these are interspersed with the other expressions in the text with their tags and morphological analyses .
+for the purposes of muc evaluation , reports are generated in the appropriate format .
+walkthrough ne task .
+the walkthrough document is representative of our overall performance in the formal run .
+there are 11 missing entities .
+murdoch is missing three times although we capture it later in the main text .
+the three missing occurences are all the beginning of the article .
+we didnt have this surname in the database , so the only way to have identified this as a person name would be coreference with the instances in the body text .
+unfortunately the current implementation finds only backward references .
+that is adequate in the main text since normally a new name is explained by a descriptive phrase the first time it is mentioned .
+however it is possible to have mentions of the name in the title and the preamble before any explanation is given .
+the way we intended to cope with this problem ( following the example of some of the muc-6 systems ) was to process slug and preamble after the main text .
+however in the version of the ne analyzer that we used for the final run this approach was not properly implemented .
+we miss the four occurrences of grupo televisa and globo .
+this can be explained by the fact that we dont have in our db the suffix sa as a company designator .
+we also have some heuristic rules which can pick up partial descriptions in apposition to a name , but here again the crucial clue-words and phrases broadcaster , publisher and media conglomerate were not in our database .
+there are certainly sufficient clues of this nature in sentence ( 10 ) .
+we miss another person name which could have been easily captured .
+in sentence ( 11 ) , it is possible to identify the pattern ( 12 ) .
+this would require two separate rules .
+while we have the rule that captures the organization ( 13 ) we simply forgot to insert the corresponding rule to capture the person .
+we miss the location xichang which again could have been identified in xichang launch site if domain-specific clue words ( launch site ) had been inserted in the db .
+as for the other two missing entries hughes electronics and within six months the first is explained by the missing clue-word electronics and the second by the fact that we did not consider within as an identifier in rules for time expressions .
+while we get all the occurrences of new york times news service we miss all the occurrences of n.y. times news service .
+this is easily explained by an error in the rule that identifies it ( see example 14 ) .
+possible values ( among others ) for the orth flag are c ( first capital letter ) and a ( all capital letters ) .
+in the specific case of n.y. it assumes the value o ( other , because it contains letters and dots ) .
+simply altering the value of the feature to cao would solve the problem .
+this error also causes the spurious occurrence of n.y. as a single location .
+two occurrences of march in long march ( referring to a chinese rocket ) appear incorrectly tagged as a date .
+while it is corret that they should be initially tagged as a date , we had inserted in the system rules that capture artifacts like this one thus superseeding the initial semantic value .
+in the specific case that did not work , probably for some yet undetected error .
+in 2 p.m. est we identify correctly only 2 p.m. ( the suffix est had not been inserted in the db ) .
+there is an instance of cnn that we ( correctly ? ) tag as an organization but it is not tagged as such in the keys ( an annotator error ? ) .
+hughes is twice tagged as a location istead of an organization .
+we havent yet tracked this one down .
+in time warner we managed to identify only time [ difficult to say how we could have done it without having the whole expression in the db ] and in larae marsik we identified only marsik ( probably becayse we dont have in the db larae as a first name ) .
+they appear in the sentence time warners home box office and turner broadcasting system were among the companies that had leased space and are picked up by a low-score rule meant to capture conjunctions ofpeople names .
+finally there are two occurrences of tele-communications , tagged as persons and this is caused again by a low- score rule that considers said tele-communications in the sentence ( 15 ) as evidence for classifying it as a person , as in right ! said fred .
+we will not discuss in detail the results of the te task for the walkthrough article because as noted in footnote 1 , the scores indicate little more than the contribution made by ne analysis , i.e. finding strings and their categories .
+in respect of locations , the value of recall for the slot country is particularly low because we relied on quite a small table in lieu of a full-scale geographical db of towns and regions in order to find the country to which they belong .
+furthermore , for the entities of type country the locale should have been used as the value for country slot .
+that would have significantly increased the recall for this slot ( but only a couple of percentage points overall ) .
+as for entities , our recall for descriptors is extremely low because we didnt have the information extraction module available , with its extensive linguistic coverage .
+the entity names and categories are also affected by this problem , although we still managed to capture 35 and 15 per cent of them respectively , using assignments to properties via variables .
+we attempted to adapt the approach taken in the ne task , for instance having a more refined set of semantic tags ( per civ / per mil rather than simply per ) in our rules .
+however we could not perform this porting entirely because of lack of time so in many case our responses were as generic as in the ne task .
+for instance we have china great wall industry corp. classified simply as an organization and not as and org co .
+analysis and conclusions .
+our best efforts at the ne task on the training data achieved 92 % recall and 93 % precision just prior to the formal run , and with the same data and rules .
+given that in the dry run , we had equalled our previous best performance with the training data , we were disappointed with a fall-off of 6 percentage points in precision and 14 points in recall .
+in general the category where we perfom worst is organizations and this can be partly explained by too many domain-dependent rules , and an inadequate database of company designators and clue words .
+judging from the results in the walkthrough text , almost all of our errors and omissions are easily traceable to either a lack of entries in the database or a lack of rules or conditions in rules .
+with the software still under development , we probably dedicated no more than a person-month to resource development and testing , and will be able to make considerable further improvements in the coming months .
+we feel on the whole that the approach is vindicated .
+we also look forward to being able to use the facile ie component to carry our proper tests on all the muc-7 data in the near future .

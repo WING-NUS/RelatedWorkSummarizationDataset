@@ -1,0 +1,257 @@
+on the semantics of noun compounds .
+abstract .
+this paper provides new insights on the semantic characteristics of two and three noun compounds .
+an analysis is performed using two sets of semantic classification categories : a list of 8 prepositional paraphrases previously proposed by lauer [ designing statistical language learners : experiments on noun compounds , ph.d.
+thesis , macquarie university , australia ] and a new set of 35 semantic relations introduced by us .
+we show the distribution of these semantic categories on a corpus of noun compounds and present several models for the bracketing and the semantic classification of noun compounds .
+the results are compared against state-of-the-art models reported in the literature .
+introduction .
+the semantic interpretation of noun compounds ( ncs ) deals with the detection and semantic classification of the relations between noun constituents .
+the problem is complex and has been studied intensively in linguistics , psycho-linguistics , philosophy , and computational linguistics for a long time .
+there are several reasons that make this task difficult .
+( a ) ncs have implicit semantic relations ; for example , spoon handle encodes a part-whole relation , ( b ) ncs ' interpretation is knowledge intensive and can be idiosyncratic .
+for example to correctly interpret gm car one has to know that gm is a car-producing company .
+( c ) there can be more than one semantic relation encapsulated in a pair of nouns .
+for example , texas city can be tagged as a part-whole relation as well as a location relation .
+( d ) the interpretation of ncs can be highly context-dependent .
+for example , apple juice seat can be defined as seat with apple juice on the table in front of it ( cf .
+downing , 1977 ) .
+although researchers ( jespersen , 1954 ; downing , 1977 ) argued that noun compounds encode an infinite set of semantic relations , many agree ( levi , 1978 ; finin , 1980 ) there is a limited number of relations that occur with high frequency in noun compounds .
+however , the number and the level of abstraction of these frequently used semantic categories are not agreed upon .
+they can vary from a few prepositional paraphrases ( lauer , 1995 ) to hundreds and even thousands more specific semantic relations ( finin , 1980 ) .
+the more abstract the categories , the more noun compounds are covered , but also the more room for variation as to which category a compound should be assigned .
+lauer ( lauer , 1995 ) , for example , considers eight prepositional paraphrases as semantic classification categories : of , for , with , in , on , at , about , and from .
+according to this classification , the noun compound bird sanctuary , for instance , can be classified both as sanctuary of bird and sanctuary for bird .
+the main problem with these abstract categories is that much of the meaning of individual compounds is lost , and sometimes there is no way to decide whether a form is derived from one category or another .
+on the other hand , lists of very specific semantic relations are difficult to build as they usually contain a very large number of predicates , such as the list of all possible verbs that can link the noun constituents .
+finin ( 1980 ) , for example , uses semantic categories such as dissolved in to build interpretations of compounds like salt water and sugar water .
+although , there were several proposals of possible large sets of semantic relations , there has been no attempt to map one set to another , and more importantly , to define the most appropriate level of abstraction for the interpretation of compounds in general , or for a specific application in particular .
+due to the recursiveness of compounding ( selkirk , 1982 ) , much of the semantics of two-word noun compounds applies to multi-word compounds .
+however , the interpretation problem becomes significantly more complicated for larger noun sequences , such as three noun compounds since both the modifier and the head nouns can form noun compounds generating structural ambiguities .
+this task is called bracketing or attachment and is the first step in interpreting multiword noun compounds .
+choosing the most probable binary bracketing for a given noun sequence represents a difficult task as attachments are not syntactically , but semantically governed .
+consider , for example , the following noun compounds : ( 1 ) ( ( consumer confidence ) survey ) , ( 2 ) ( state ( gasoline tax ) ) , and ( 3 ) ( car ( radio equipment ) ) or ( ( car radio ) equipment ) .
+the noun compound ( 1 ) is left-bracketed , while the noun compound ( 2 ) is right-bracketed .
+there are also situations such as ( 3 ) in which both left-and right-branching solutions are possible .
+sometimes , the disambiguation is provided only by the context .
+the automatic interpretation of noun compounds is a difficult task for both unsupervised and supervised approaches .
+currently , the best-performing nc interpretation methods in computational linguistics focus only on two-word noun compounds and rely either on rather ad-hoc , domain-specific , hand-coded semantic taxonomies , or on statistical models on large collections of unlabeled data .
+recent results have shown that symbolic nc interpretation systems using machine learning techniques coupled with a large lexical hierarchy perform with very good accuracy , but they are most of the time tailored to a specific domain ( rosario and hearst , 2001 ) .
+the majority of corpus statistics approaches to noun compound interpretation collect statistics on the occurrence frequency of the noun constituents and use them in a probabilistic model ( resnik , 1993 ; lauer , 1995 ; lapata and keller , 2004 ) .
+the problem is that most noun compounds are rare and thus , statistics on such infrequent instances lead in general to unreliable estimates of probabilities .
+more recently , lapata and keller ( 2004 ) showed that simple unsupervised models applied to the noun compound interpretation task perform significantly better when the n-gram frequencies are obtained from the web ( accuracy of 55.71 % on altavista ) , rather than from a large standard corpus .
+however , although the web-based solution might overcome the data sparseness problem , the probabilistic models are limited by the lack of linguistic information .
+most of the time the probabilities are computed on lexical items with or without inflected forms .
+this simplistic approach introduces a number of ambiguities ranging from syntactic and structural , to semantic .
+in this paper we describe various domain independent models that use supervised machine learning techniques and a set of linguistic features .
+the main feature of these models is the use of the word sense disambiguation information of the noun constituents extracted based on their surrounding context .
+we focus only on two and three noun compositional compounds , i.e. , those whose meaning can be derived from the meaning of the constituent nouns ( e.g. , door knob ) , and tackle both the bracketing and the interpretation tasks .
+however , we check if the constructions are lexicalized ( non-compositional ) , ie. the meaning is a matter of convention ( e.g. , soap opera ) , but only for statistical purposes .
+we present empirical observations on the distribution of a core set of semantic relations in noun compounds and provide a mapping between two sets of semantic classification categories .
+the noun compound interpretation system has been tested on a list of 8 general prepositional paraphrases ( lauer , 1995 ) and a list of 35 semantic relations ( moldovan and girju , 2003 ) .
+we also compare our results for bracketing and interpretation tasks against two baselines and against two state-of-the-art interpretation systems .
+the paper is organized as follows .
+section 2 presents the general approach for the interpretation of noun compounds and lists the semantic categories used along with observations regarding the distribution of these semantic categories in the corpus .
+sections 3 and 4 present models and results for the interpretation of two , respectively , three noun compounds .
+finally , some conclusions are offered in section 5 .
+approach .
+we approach the problem top-down , namely identify first the characteristics or feature vectors of noun compounds , then develop models for their semantic classification .
+this is in contrast to our prior approach ( girju et al. , 2003 ) where we studied one semantic relation at a time , and learned constraints to identify only that relation .
+the distribution of noun compound semantic relations in a corpus is analyzed shedding some light on the resulting semantic spaces .
+we define a semantic space as the set of relations encoded by noun compounds .
+we aim at uncovering the general aspects that govern the semantics of noun compounds , and thus delineate the semantic space within different sets of semantic classification categories .
+these feature vectors are then employed in various learning models .
+lists of semantic classification relations .
+in this paper we consider two sets of semantic classification categories for the interpretation of noun compounds .
+the first is lauer 's list of 8 prepositional paraphrases presented in section 1 and the second is a list of 35 semantic relations identified by us after many iterations over a period of time ( moldovan and girju , 2003 ) .
+this list , presented in table 3 along with examples , is general enough to cover a large majority of text semantics while keeping the semantic relations to a manageable number .
+we selected these sets as they are of different size and contain semantic classification categories at different levels of abstraction .
+lauer 's list is more abstract and , thus capable of encoding a large number of noun compound instances found in a corpus , while our list contains finer grained semantic categories .
+we show below the coverage of these semantic lists on a fairly large corpus , how well they solve the interpretation problem , and the mapping from one list to another .
+corpus analysis .
+in order to devise an automatic method for the detection of semantic relations in noun compounds , we analyzed the semantic behavior of these constructions on a large , domain independent corpora of examples .
+our intention is to answer questions like : ( 1 ) given a set of semantic classification relations and a corpus of examples , what is the core subset frequently encoded by noun compounds ? otherwise said , is there a subset of preferred meanings ? ( 2 ) what is their distribution on a large corpus ? , ( 3 ) are there semantic relations that are not allowed in noun compounds ? , ( 4 ) how well can noun compounds be paraphrased with prepositional paraphrases , and , respectively , with more specific semantic relations ? , and ( 5 ) how many ncs are lexicalized ?
+the data .
+for each type of noun compounds considered , a training corpus was assembled from two sources : wall street journal ( wsj ) articles from trec-9,1 and extended wordnet glosses ( xwn 2.0 ) ( www.xwn.hlt.utdallas.edu ) .
+we used xwn since all its glosses are syntactically parsed and words are semantically disambiguated which saved us a considerable amount of time .
+table 1 shows the number of randomly selected sentences from each text collection and the corresponding number of instances of annotated pairs after the inter-annotator agreement .
+the annotation of each example consists of specifying its feature vector and the most appropriate interpretation based on : ( 1 ) the list of 35 semantic relations ( 35 srs ) ( table 3 ) and ( 2 ) the lauer 's list of 8 prepositional paraphrases ( 8 pps ) ( cf .
+lauer , 1995 ) .
+since we wanted to compare our approach with two state-of-the-art unsupervised probabilistic models , we selected as test sets those randomly obtained by lauer from grolier encyclopedia for each type of noun compounds : 282 nounnoun pairs for two noun compounds , and 244 three noun instances for three noun compounds .
+however , the training and test sets for each noun compound type have different distributions .
+thus , we further shuffled the training and test corpora and randomly split them again maintaining the same ratio .
+we call these training and test sets unshuffled and , respectively , shuffled .
+corpus annotation and inter-annotator agreement .
+two ph.d. students in computational semantics have annotated separately all the noun compounds in the training corpora .
+sequences of two and three nouns were extracted from syntactically parsed sentences ( charniak 's parser charniak , 2000 ) using lauer 's heuristic ( lauer , 1995 ) ( for xwn we used the gold parse trees ) .
+the heuristic looks for consecutive nouns of size two and , respectively , three , that are neither preceded nor succeeded by a noun .
+in order to eliminate the wrong instances selected by the heuristic , the annotators were provided with the sentence in which the nouns occurred and were asked to manually check the noun compounds .
+the remaining ncs were tagged with their corresponding wordnet senses if found in wordnet ( 360 instances were not found in wordnet or the correct sense was missing ) and semantic classification relations .
+whenever the annotators found an example encoding a semantic relation and a prepositional paraphrase other than those provided or they didn 't know what interpretation to give , they had to tag it as others-sr and , respectively , others-pp .
+besides the type of relation , the annotators were asked to provide information about the order of the modifier and the head nouns in a nounnoun pair if applicable .
+for instance , in honey bee-make / produce the product honey is followed by the producer bee , while in gm car-make / produce / r the order is reversed ( r means reversed ) .
+on average , 34 % of the nounnoun training examples and 24 % of the three noun compound instances had at least a noun noun pair in reverse order .
+most of the time , one instance was tagged with one semantic relation and , respectively , prepositional paraphrase , but there were also situations in which an example could belong to more than one relation in the same context .
+for example , texas city was tagged as a part-whole / place-area relation and as a location relation , and , respectively , as city of texas , city from texas , and city in texas .
+overall , for nounnoun compounds 608 instances were tagged with more than one semantic relation and almost all paraphrasable instances were tagged with more than one prepositional paraphrase .
+moreover , the annotators were asked to indicate if the instance was lexicalized or not .
+they found that 30 % of the two noun compounds were lexicalized , from which 18 % were proper names .
+for three noun compounds , the annotators had the additional task of bracketing them in context and then adding the corresponding semantic classification relations to the bracketed noun noun pairs .
+for example , ( ( consumer confidence ) experiencer survey ) topic is left-branching .
+we obtained a bracketing agreement of 87 % which was computed as the number of pairs bracketed in the same way by both annotators , over the number of instances classified in the bracketing category considered , by at least one of the judges .
+for three noun compounds , 33.7 % of the instances contained at least one wordnet nounnoun concept that led to an automatic bracketing .
+from these , 58 % were right bracketed , while 68 % of the non-wordnet compounds were left bracketed .
+for example , ( ( stock market ) boom ) is automatically left bracketed since stock market is a wordnet concept .
+for the two test corpora , we used lauer 's bracketing and prepositional paraphrase annotations .
+the annotators added the other annotations considered for the training corpora : they disambiguated the noun constituents in isolation ( as lauer provided no context ) and tagged the noun noun pairs with the 35 semantic relations .
+table 2 shows the inter-annotator agreement on the unshuffled training corpora for each semantic interpretation category .
+we computed the k coefficient only for those instances tagged with one of the 35 semantic relations , respectively , 8 prepositional paraphrases .
+we also computed the number of pairs that were tagged with others by both annotators for each semantic interpretation relation , over the number of examples classified in that category by at least one of the judges .
+due to time constraints , we were unable to annotate the set of three noun compounds with prepositional paraphrases .
+in the training corpus , 6.9 % of the instances tagged with prepositional paraphrases were included in others category .
+from these , 4.2 % could be paraphrased with other prepositions than those considered by lauer ( e.g. , bus service service by bus ) , and 2.7 % could not be paraphrased with prepositions ( e.g. , daisy flower ) .
+for the noun compound instances that encoded more than one semantic classification category , the agreement was done on one of the relations only .
+the agreement on the semantic relations for three noun compounds was computed on gold bracketing .
+na means not available ( due to time constraints , we were unable to annotate the set of three noun compounds with prepositional paraphrases ) .
+on the test corpora , the annotation with the set of 35 semantic relations was also done by the two annotators .
+the disagreement instances were solved by a third judge .
+the semantic relations for which there was no example given were not encoded by the noun compounds .
+distribution of semantic relations over the training and test corpora .
+although noun compounds are very productive allowing for a fairly large number of possible interpretations , table 3 shows that a relatively small subset of the 35 semantic relations covers most of the semantic distribution of these constructions on a large open-domain corpus .
+for example , in the unshuffled two noun compound training corpora there were 21 relations found from the total of 35 relations considered .
+the most frequently occurring relations were part-whole , attribute-holder , purpose , location , topic , and theme .
+the semantic relations that did not occur in two noun compounds were kinship , entail , accompaniment , frequency , antonymy , probability , possibility , certainty , stimulus , extent , and predicate .
+for three noun compounds , the most frequently occurring semantic relations were attribute-holder , agent , topic , and theme ( for left branching ) and , respectively , attribute-holder , agent , temporal , part-whole , location , purpose , and theme ( for right branching ) .
+table 4 shows the mapping between the two sets of semantic classification categories for the unshuffled training corpora .
+models for the interpretation of two noun compounds .
+the task of noun compound interpretation consists of determining the semantic relations between the noun constituents .
+in this section we present two main types of learning models : unsupervised and supervised .
+for both types , the interpretation task is defined as a semantic classification problem .
+we use two different lists of semantic target categories : the list of 35 semantic relations and the list of 8 prepositional paraphrases and compare our results with those obtained on the same test set by lauer ( 1995 ) and lapata and keller ( 2004 ) .
+note that lauer and lapata and keller tested their model only on the list of 8 prepositional paraphrases .
+unsupervised probabilistic models .
+lauer ( 1995 ) was the first to devise and test an unsupervised probabilistic model for noun compound interpretation on grolier encyclopedia , an 8 million word corpus , based on a set of 8 prepositional paraphrases .
+his probabilistic model computes the probability of a preposition p given a nounnoun pair n1n2 and finds the most likely prepositional paraphrase p * = argmaxpp ( p | n1 , n2 ) .
+however , as lauer noticed , this model requires a very large training corpus to estimate these probabilities .
+more recently , lapata and keller ( 2004 ) replicated the model using the web as training corpus and showed that the best performance was obtained with the trigram model f ( n1 , p , n2 ) .
+in their approach , they used as count for a given trigram the number of pages returned by altavista on the trigram corresponding queries .
+for example , for the test instance war stories , the query was stories about war .
+supervised models .
+the supervised learning models proposed here are centered around two fundamental notions in automatic text understanding : word sense disambiguation ( wsd ) and lexical specialization on the general-purpose semantic noun hierarchies offered by wordnet .
+each noun in the noun compound is mapped into its corresponding wordnet 2.0 sense determined in context and then classified in its specific wordnet semantic category .
+the idea is that the meaning of compositional compounds can be successfully derived from the meaning of the noun constituents .
+so far , we have identified and experimented with the following two features : semantic class of head noun specifies the wordnet sense ( synset ) of the head noun and implicitly points to all its hypernyms .
+the nc semantics is heavily influenced by the meaning of the noun constituents .
+for example : gm car is a make / produce relation while family car is a possession relation .
+in case the noun has multiple inheritance , the first semantic class is chosen .
+for example , the hypernyms of car # 1 are : { motor vehicle } , { self-propelled vehicle } , { wheeled vehicle } , { vehicle } , { conveyance } , { instrumentality } , { artifact } , { object } , { entity } .
+semantic class of modifier noun specifies the top semantic class of the wordnet synset .
+for example morning meeting temporal , while business meeting a topic relation .
+we present here three supervised models : semantic scattering ( ss ) ( moldovan et al. , 2004 ) , iterative semantic specialization ( iss ) ( girju et al. , 2003 ) , and support vector machines ( svm ) .
+the first two are briefly described below , the third being well known from the machine learning literature .
+semantic scattering .
+the ss model was designed and used by us to semantically classify genitive constructions and is applicable to noun compounds ( moldovan et al. , 2004 ) .
+essentially , it consists of using a training data set to establish a boundary g * on wordnet noun hierarchies such that each feature pair of nounnoun senses fij on this boundary maps uniquely into one of the 35 semantic relations , and any feature pair above the boundary maps into more than one semantic relation .
+due to the specialization property on noun hierarchy , feature pairs below the boundary also map into only one semantic relation .
+for any new pair of nounnoun senses , the model finds the closest boundary pair , in semantic sense , using a procedure called semantic scattering .
+iterative semantic specialization .
+iss is a multi-class extension of a binary classification technique initially devised for the part-whole semantic relation ( girju et al. , 2003 ) .
+the iterative semantic specialization method consists of a set of iterative procedures of specialization of the training examples on the wordnet is-a hierarchy .
+thus , after a set of necessary specialization iterations , the method produces specialized examples which through supervised machine learning are transformed into sets of semantic rules for the noun compound interpretation task .
+initially , the training corpus consists of examples that follow the format noun1 # sense ; noun2 # sense ; target ) , where target belongs to the set of classification categories considered .
+from this initial set of examples an intermediate corpus is created by expanding each example with the corresponding wordnet top semantic classes for each noun constituent .
+at this point , the generalized training corpus contains two types of examples : unambiguous and ambiguous .
+the second situation occurs when the training corpus classifies the same nounnoun pair into more than one semantic category .
+for example , both relationships woman # 1 apartment # 1-possession and woman # 1 hand # 1 part-whole are mapped into the more general type ( entity # 1 , entity # 1 , possession / part-whole .
+we recursively specialize these examples to eliminate the ambiguity .
+by specialization , the semantic class is replaced with the corresponding hyponym for that particular sense , i.e. the concept immediately below in the hierarchy .
+these steps are repeated until there are no more ambiguous examples .
+for the unambiguous examples in the generalized training corpus ( those that are classified with a single semantic relation ) , constraints are determined using cross validation on c4.5.
+support vector machines .
+in order to achieve classification in n semantic classes , n > 2 , we built a binary classifier for each pair of classes ( a total of c2n classifiers ) , and then used a voting procedure to establish the class of a new example .
+for the experiments with semantic relations , the simplest voting scheme has been chosen ; each binary classifier has one vote which is assigned to the class it chooses when it is run .
+then the class with the largest number of votes is considered to be the answer .
+the software used in these experiments is the package libsvm , ( www.csie.ntu.edu.tw / ~ cjlin / libsvm / ) which implements an svm algorithm .
+we tested with the radial-based kernel and experimented with the features generated by the specialization procedure described in the previous supervised models .
+experimental results and observations .
+the supervised models were trained and tested on both lauer 's data ( un-shuffled ) and random data ( shuffled ) using the two different lists of semantic classification categories .
+the results obtained with each model on each test set ( unshuffled , respectively , shuffled ) are presented in table 5 using the standard measure of accuracy ( number of correctly labeled instances over the number of instances in the test set ) .
+two sets of semantic classification categories were considered : 8 pps ( 8 prepositional paraphrases ) , and 35 srs ( 35 semantic relations ) .
+' svm ( + pp ) employs the same feature set as the svm model plus the corresponding prepositional paraphrase .
+we wanted to measure the impact of each basic notion employed in this research , word sense disambiguation and wordnet is-a lexical hierarchy specialization , and defined two baseline measures .
+baseline 1 does not take advantage of wsd ( sense # 1 ) , but it differentiates between unambiguous and ambiguous training examples by specializing the ambiguous ones .
+in baseline 2 , the noun constituents are tagged with the default sense # 1 ( no wsd ) , and the ambiguous examples are not specialized .
+the table shows that the supervised models give better results on the list of 35 semantic relations than on the 8 prepositional paraphrases ( with the exception of the ss model ) on both test sets .
+this observation is consistent with the initial idea that prepositional paraphrases are more abstract , and thus more ambiguous .
+moreover , the comparison with baseline # 1 results shows that word sense disambiguation ( wsd ) does not represent a very important factor for the noun interpretation as prepositional paraphrases .
+however , for the classification with 35 semantic relations , the disablement of wsd ( sense # 1 ) generates an average drop in accuracy of 7.36 % on the unshuffled test set , and , respectively , of 9.64 % on the shuffled test data .
+compared with the wsd feature , the semantic specialization seems to be more important for the noun compound interpretation with prepositional paraphrases , especially for the svm model on the shuffled test data .
+baseline # 2 shows an average drop in accuracy of 13.46 % for lauer 's test set and , respectively , of 17.6 % for the shuffled test set .
+the models most affected by the disablement of both the wsd and specialization features were ss and svm on both test data sets .
+comparison with previous work .
+on the unshuffled test set , lauer obtained an accuracy of 40 % and lapata and keller 55.71 % .
+for the shuffled test set , we replicated lapata and keller 's experiments ( lapata and keller , 2004 ) using google2 and obtained an accuracy of 46.09 % .
+we formed inflected queries with the patterns they proposed and searched the web .
+after experimenting with various trigram instances f ( n1 , p , n2 ) , we had the following observations : the order of the constituent nouns in the prepositional paraphrase is important .
+for example , war story ( cf .
+lapata and keller , 2004 ) can be paraphrased as story about war and story of the war , where the order of the nouns is reversed .
+however , there are situations in which the order of the nouns remains the same as the one in the noun compound ( e.g. , blood vessels as blood in vessels and vessels of blood ) .
+for example , 28.19 % nounnoun paraphrasable pairs preserved the order in the corresponding prepositional paraphrases .
+thus , we tried all plausible alternative queries to cover all possible orderings .
+many of the noun compound instances had two or more correct paraphrases .
+like lapata and keller , in this experiment we considered only the paraphrase with the largest web count provided by the search engine .
+we manually checked the first five entries generated by google for each most frequent prepositional paraphrase and noticed that about 38 % of them were wrong due to syntactic ( e.g. , pos ) and / or semantic ambiguities .
+since we wanted to measure the impact of syntactic and semantic ambiguities of noun compounds on the interpretation performance , we further tested the probabilistic web-based model on four distinct test sets selected from the wall street journal text collection , each containing 200 nounnoun pairs encoding different types of ambiguity : in set # 1 the noun constituents had only one part of speech and one wordnet sense ; in set # 2 the nouns had at least two possible parts of speech and were semantically unambiguous , in set # 3 the nouns were ambiguous only semantically , and in set # 4 they were ambiguous both syntactically and semantically .
+table 6 shows that for unambiguous compounds ( set # 1 ) , the model obtained an accuracy of 34.69 % , while for more semantically ambiguous compounds it obtained an accuracy of about 50 % ( sets # 3 and # 4 ) .
+this shows that for more semantically ambiguous nounnoun pairs , the web-based probabilistic model introduces a significant number of false positives .
+models for the interpretation of three noun compounds .
+the interpretation of three noun compounds consists of two inter-related phases : the bracketing and the automatic annotation with semantic categories .
+as the meaning of these recursive constructions is given by the two semantic relations they encode , first we have to determine the pair of nouns that encodes each relation in the construction .
+in this section we : present experimental results with unsupervised probabilistic and supervised models on bracketing and semantic annotation of three noun compounds .
+the results are drawn from two test sets : lauer 's 244 test data ( unshuffled ) , and a randomly selected set of 244 noun compound instances ( shuffled ) .
+for the semantic annotation we use the list of 35 semantic relations proposed in section 2 .
+unsupervised probabilistic models for the bracketing of three noun compounds .
+most of the unsupervised probabilistic approaches to noun compound bracketing ( resnik , 1993 ; lauer , 1995 ; lapata and keller , 2004 ) are based on two models : adjacency and dependency ( cf .
+lauer , 1995 ) .
+the adjacency model compares frequencies of ( n1 n2 ) to ( n2 n3 ) .
+the dependency model compares the probabilities of occurrence of ( n1 n2 ) to ( n1 n3 ) , ignoring previous occurrences of ( n1 n3 ) .
+lauer estimated the frequencies of each possible bracketing on grolier encyclopedia based on a taxonomy or thesaurus .
+in eqs . ( 1 ) and ( 2 ) , for example , t1 , t2 , and t3 represent thesaurus conceptual categories and wi are noun members of these categories .
+like lapata and keller , we also experimented with both adjacency and dependency web-based models on the shuffled test set using lexical items rather than semantic categories .
+supervised model for the bracketing and semantic annotation of three noun compounds .
+an initial empirical investigation of the three noun compound corpus suggested that the noun constituents mapped most of the time to corresponding verb-argument structures .
+this observation indicated that a more complex feature vector should be considered .
+for the bracketing sub-task , we experimented with a list of 15 linguistic features employed in the c5.0 decision tree model .
+experimental results and observations .
+for the bracketing task , we compared the results obtained with both the supervised and the unsupervised probabilistic models .
+for the semantic annotation task we used only the c5.0 decision tree model .
+all models were tested on each of the two test sets : lauer 's data set ( unshuffled ) and the shuffled set .
+on the unshuffled test set , lauer obtained an accuracy of 80.70 % and lapata and keller ( lapata and keller , 2004 ) an accuracy of 78.68 % with the dependency model ( 77.86 % with the adjacency model , respectively ) .
+for the shuffled test set , we replicated lapata and keller 's bracketing experiments using again inflected queries on google , and obtained an accuracy of 77.36 % with the dependency model , and 73.45 % with the adjacency model , respectively .
+the results obtained with each model on each test set are presented in table 7 and are compared against a baseline ( no wsd ) .
+comparison with previous work .
+according to our knowledge , all solutions proposed before to the automatic interpretation of three noun compounds focused only the bracketing problem .
+as mentioned previously , most of these approaches are probabilistic and are based on the assumption that the probability of occurrence of a pair of nouns is independent of the third noun , which most of the time is unrealistic and leads to errors .
+unlike previous work , we focus on a set of semantic features employed in a supervised machine learning model .
+instead of considering noun compounds in isolation , our model brackets them in context through the use of the wsd feature .
+discussion .
+our approach to noun compound interpretation is novel in several ways .
+the semantic interpretation problem is tackled for both two and three noun compounds .
+we provide empirical observations on the distribution of the meaning of noun compounds on fairly large corpora by performing various experiments with human judgments on two state-of-the-art semantic classification lists .
+a mapping between the two classification sets based on the noun compound distribution on the corpora is also provided .
+for both the bracketing and semantic annotation tasks , the paper presents experimental results with supervised learning models based on linguistic features and compares them against state-of-the-art probabilistic approaches and against the optimal performance obtained by two human annotators .
+our supervised models use an iterative semantic specialization method that allows us to go deeper into the semantic complexity of noun compounds .
+according to our knowledge , the system is the only domain independent noun compound interpretation tool that uses word sense disambiguation and wordnet is-a specializations .
+one other symbolic system , sens ( vanderwende , 1995 ) makes some use of is-a generalizations , but considers only the first sense of the noun constituents in wordnet .
+the current state-of-the-art systems in automatic detection of semantic roles ( gildea and jurafsky , 2002 ) that are probabilistic-based have also tried to use lexico-semantic hierarchies , such as wordnet , to generalize from noun lexical features .
+however , they also rely on the first sense listed for each noun occurring in the training data .
+other approaches , such as resnik 's conceptual association algorithm ( resnik , 1996 ) , attempt to automatically detect semantic roles based on semantic similarity measures applied to large lexical hierarchies , such as word-net .
+however , not many of these attempts make use of lexico-semantic hierarchies for generalization , due to the unavailability of word sense disambiguation tools .
+for example , brill and resnik ( 1994 ) have used the conceptual association algorithm to solve the prepositional phrase attachment problem .
+however , the similarities computed on wordnet for various noun noun or verbnoun pairs linked by a preposition were not sufficient for the attachment task , as the pairs were not linked hierarchically .
+the system presented here makes use of an existing lexical resource , word-net , that contains general purpose information that can be successfully used in domain independent and general purpose applications .
+moreover , the system maps the disambiguated noun constituents into the wordnet noun hierarchies .
+the system is also unique in the sense that it uses a specialization procedure on the wordnet noun hierarchies in order to generate the best semantic constraints for the noun compound interpretation .
+one main drawback of the approach is the use of supervised models that require a large annotated corpus .
+another drawback is the heavy reliance on wordnet which has been criticized by some .
+as we have demonstrated , the impact of the wsd is considerable , however , the current state-of-the-art in wsd is not satisfactory yet .

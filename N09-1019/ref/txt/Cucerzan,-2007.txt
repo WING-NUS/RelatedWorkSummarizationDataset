@@ -1,0 +1,177 @@
+large-scale named entity disambiguation based on wikipedia data .
+abstract .
+this paper presents a large-scale system for the recognition and semantic disambiguation of named entities based on information extracted from a large encyclopedic collection and web search results .
+it describes in detail the disambiguation paradigm employed and the information extraction process from wikipedia .
+through a process of maximizing the agreement between the contextual information extracted from wikipedia and the context of a document , as well as the agreement among the category tags associated with the candidate entities , the implemented system shows high disambiguation accuracy on both news stories and wikipedia articles .
+introduction and related work .
+the ability to identify the named entities ( such as people and locations ) has been established as an important task in several areas , including topic detection and tracking , machine translation , and information retrieval .
+its goal is the identification of mentions of entities in text ( also referred to as surface forms henceforth ) , and their labeling with one of several entity type labels .
+note that an entity ( such as george w. bush , the current president of the u.s. ) can be referred to by multiple surface forms ( e.g. , george bush and bush ) and a surface form ( e.g. , bush ) can refer to multiple entities ( e.g. , two u.s. presidents , the football player reggie bush , and the rock band called bush ) .
+when it was introduced , in the 6th message understanding conference ( grishman and sundheim , 1996 ) , the named entity recognition task comprised three entity identification and labeling subtasks : enamex ( proper names and acronyms designating persons , locations , and organizations ) , timex ( absolute temporal terms ) and numex ( numeric expressions , monetary expressions , and percentages ) .
+since 1995 , other similar named entity recognition tasks have been defined , among which conll ( e.g. , tjong kim sang and de meulder , 2003 ) and ace ( doddington et al. , 2004 ) .
+in addition to structural disambiguation ( e.g. , does the alliance for democracy in mali mention one , two , or three entities ? ) and entity labeling ( e.g. , does washington went ahead mention a person , a place , or an organization ? ) , muc and ace also included a within document coreference task , of grouping all the mentions of an entity in a document together ( hirschman and chinchor , 1997 ) .
+when breaking the document boundary and scaling entity tracking to a large document collection or the web , resolving semantic ambiguity becomes of central importance , as many surface forms turn out to be ambiguous .
+for example , the surface form texas is used to refer to more than twenty different named entities in wikipedia .
+in the context former texas quarterback james street , texas refers to the university of texas at austin ; in the context in 2000 , texas released a greatest hits album , texas refers to the british pop band ; in the context texas borders oklahoma on the north , it refers to the u.s. state ; while in the context the characters in texas include both real and fictional explorers , the same surface form refers to the novel written by james a. michener .
+bagga and baldwin ( 1998 ) tackled the problem of cross-document coreference by comparing , for any pair of entities in two documents , the word vectors built from all the sentences containing mentions of the targeted entities .
+ravin and kazi ( 1999 ) further refined the method of solving co- reference through measuring context similarity and integrated it into nominator ( wacholder et al. , 1997 ) , which was one of the first successful systems for named entity recognition and co-reference resolution .
+however , both studies targeted the clustering of all mentions of an entity across a given document collection rather than the mapping of these mentions to a given reference list of entities .
+a body of work that did employ reference entity lists targeted the resolution of geographic names in text .
+woodruff and plaunt ( 1994 ) used a list of 80k geographic entities and achieved a disambiguation precision of 75 % .
+kanada ( 1999 ) employed a list of 96k entities and reported 96 % precision for geographic name disambiguation in japanese text .
+smith and crane ( 2002 ) used the cruchleys and the getty thesauri , in conjunction with heuristics inspired from the nominator work , and obtained between 74 % and 93 % precision at recall levels of 89-99 % on five different history text corpora .
+overell and rger ( 2006 ) also employed the getty thesaurus as reference and used wikipedia to develop a co-occurrence model and to test their system .
+in many respects , the problem of resolving ambiguous surface forms based on a reference list of entities is similar to the lexical sample task in word sense disambiguation ( wsd ) .
+this task , which has supported large-scale evaluations senseval 1-3 ( kilgarriff and rosenzweig , 2000 ; edmonds and cotton , 2001 ; mihalcea et al. , 2004 ) aims to assign dictionary meanings to all the instances of a predetermined set of polysemous words in a corpus ( for example , choose whether the word church refers to a building or an institution in a given context ) .
+however , these evaluations did not include proper noun disambiguation and omitted named entity meanings from the targeted semantic labels and the development and test contexts ( e.g. , church and gale showed that the frequency [ .. ] ) .
+the problem of resolving ambiguous names also arises naturally in web search .
+for queries such as jim clark or michael jordan , search engines return blended sets of results referring to many different people .
+mann and yarowsky ( 2003 ) addressed the task of clustering the web search results for a set of ambiguous personal names by employing a rich feature space of biographic facts obtained via bootstrapped extraction patterns .
+they reported 88 % precision and 73 % recall in a three-way classification ( most common , secondary , and other uses ) .
+raghavan et al. ( 2004 ) explored the use of entity language models for tasks such as clustering entities by profession and classifying politicians as liberal or conservative .
+to build the models , they recognized the named entities in the trec-8 corpus and computed the probability distributions over words occurring within a certain distance of any instance labeled as person of the canonical surface form of 162 famous people .
+our aim has been to build a named entity recognition and disambiguation system that employs a comprehensive list of entities and a vast amount of world knowledge .
+thus , we turned our attention to the wikipedia collection , the largest organized knowledge repository on the web ( remy , 2002 ) .
+wikipedia was successfully employed previously by strube and ponzetto ( 2006 ) and gabrilovich and markovitch ( 2007 ) to devise methods for computing semantic relatedness of documents , wikirelate ! and explicit semantic analysis ( esa ) , respectively .
+for any pair of words , wikirelate ! attempts to find a pair of articles with titles that contain those words and then computes their relatedness from the word-based similarity of the articles and the distance between the articles categories in the wikipedia category tree .
+esa works by first building an inverted index from words to all wikipedia articles that contain them .
+then , it estimates a relatedness score for any two documents by using the inverted index to build a vector over wikipedia articles for each document and by computing the cosine similarity between the two vectors .
+the most similar work to date was published by bunescu and pa ~ ca ( 2006 ) .
+they employed several of the disambiguation resources discussed in this paper ( wikipedia entity pages , redirection pages , categories , and hyperlinks ) and built a context- article cosine similarity model and an svm based on a taxonomy kernel .
+they evaluated their models for person name disambiguation over 110 , 540 , and 2,847 categories , reporting accuracies between 55.4 % and 84.8 % on ( 55-word context , entity ) pairs extracted from wikipedia , depending on the model and the development / test data employed .
+the system discussed in this paper performs both named entity identification and disambiguation .
+the entity identification and in-document coreference components resemble the nominator system ( wacholder et al. , 1997 ) .
+however , while nominator made heavy use of heuristics and lexical clues to solve the structural ambiguity of entity mentions , we employ statistics extracted from wikipedia and web search results .
+the disambiguation component , which constitutes the main focus of the paper , employs a vast amount of contextual and category information automatically extracted from wikipedia over a space of 1.4 million distinct entities / concepts , making extensive use of the highly interlinked structure of this collection .
+we augment the wikipedia category information with information automatically extracted from wikipedia list pages and use it in conjunction with the context information in a vectorial model that employs a novel disambiguation method .
+the disambiguation paradigm .
+we present in this section an overview of the proposed disambiguation model and the world knowledge data employed in the instantiation of the model discussed in this paper .
+the formal model is discussed in detailed in section 5 .
+the world knowledge used includes the known entities ( most articles in wikipedia are associated to an entity / concept ) , their entity class when available ( person , location , organization , and miscellaneous ) , their known surface forms ( terms that are used to mention the entities in text ) , contextual evidence ( words or other entities that describe or co-occur with an entity ) , and category tags ( which describe topics to which an entity belongs to ) .
+for example , figure 1 shows nine of the over 70 different entities that are referred to as columbia in wikipedia and some of the category and contextual information associated with one of these entities , the space shuttle columbia .
+the disambiguation process uses the data associated with the known surface forms identified in a document and all their possible entity disambiguations to maximize the agreement between the context data stored for the candidate entities and the contextual information in the document , and also , the agreement among the category tags of the candidate entities .
+for example , a document that contains the surface forms columbia and discovery is likely to refer to the space shuttle columbia and the space shuttle discovery because these candidate entities share the category tags list _ astronomical _ topics , cat _ manned _ spacecraft , cat _ space _ shuttles ( the extraction of such tags is presented in section 3.2 ) , while other entity disambiguations , such as columbia pictures and space shuttle discovery , do not share any common category tags .
+the agreement maximization process is discussed in depth in section 5 .
+this process is based on the assumption that typically , all instances of a surface form in a document have the same meaning .
+nonetheless , there are a non-negligible number of cases in which the one sense per discourse assumption ( gale et al. , 1992 ) does not hold .
+to address this problem , we employ an iterative approach , of shrinking the context size used to disambiguate surface forms for which there is no dominating entity disambiguation at document level , performing the disambiguation at the paragraph level and then at the sentence level if necessary .
+information extraction from wikipedia .
+we discuss now the extraction of entities and the three main types of disambiguation clues ( entity surface forms , category tags , and contexts ) used by the implemented system .
+while this information extraction was performed on the english version of the wikipedia collection , versions in other languages or other collections , such as encarta or webmd , could be targeted in a similar manner .
+when processing the wikipedia collection , we distinguish among four types of articles : entity pages , redirecting pages , disambiguation pages , and list pages .
+the characteristics of these articles and the processing applied to each type to extract the three sets of clues employed by the disambiguation model are discussed in the next three subsections .
+surface form to entity mappings .
+there are four sources that we use to extract entity surface forms : the titles of entity pages , the titles of redirecting pages , the disambiguation pages , and the references to entity pages in other wikipedia articles .
+an entity page is an article that contains information focused on one single entity , such as a person , a place , or a work of art .
+for example , wikipedia contains a page titled texas ( tv series ) , which offers information about the soap opera that aired on nbc from 1980 until 1982 .
+a redirecting page typically contains only a reference to an entity page .
+for example , the article titled another world in texas contains a redirection to the article titled texas ( tv series ) .
+from these two articles , we extract the entity texas ( tv series ) and its surface forms texas ( tv series ) , texas and another world in texas .
+as shown in this example , we store not only the exact article titles but also the corresponding forms from which we eliminate appositives ( either within parentheses or following a comma ) .
+we also extract surface form to entity mappings from wikipedia disambiguation pages , which are specially marked articles having as title a surface form , typically followed by the word disambiguation ( e.g. , texas ( disambiguation ) ) , and containing a list of references to pages for entities that are typically mentioned using that surface form .
+additionally , we extract all the surface forms used at least in two articles to refer to a wikipedia entity page .
+illustratively , the article for pam long contains the following wikitext , which uses the surface form texas to refer to texas ( tv series ) : after graduation , she went to [ [ new york city ] ] and played ashley linden on [ [ texas ( tv series ) | texas ] ] from [ [ 1981 ] ] to [ [ 1982 ] ] .
+in wikitext , the references to other wikipedia articles are within pairs of double square brackets .
+if a reference contains a vertical bar then the text at the left of the bar is the name of the referred article ( e.g.
+texas ( tv series ) ) , while the text at the right of the bar ( e.g. , texas ) is the surface form that is displayed ( also referred to as the anchor text of the link ) .
+otherwise , the surface form shown in the text is identical to the title of the wikipedia article referred ( e.g. , new york city ) .
+using these four sources , we extracted more than 1.4 million entities , with an average of 2.4 surface forms per entity .
+we obtained 377k entities with one surface form , 166k entities with two surface forms , and 79k entities with three surface forms .
+at the other extreme , we extracted one entity with no less than 99 surface forms .
+category information .
+all articles that are titled list of [ ... ] or table of [ ... ] are treated separately as list pages .
+they were built by wikipedia contributors to group entities of the same type together ( e.g. , list of anthropologists , list of animated television series , etc . ) and are used by our system to extract category tags for the entities listed in these articles .
+the tags are named after the title of the wikipedia list page .
+for example , from the article list of band name etymologies , the system extracts the category tag list _ band _ name _ etymologies and labels all the entities referenced in the list , including texas ( band ) , with this tag .
+this process resulted in the extraction of more than 1 million ( entity , tag ) pairs .
+after a post-processing phase that discards temporal tags , as well as several types of non-useful tags such as people by name and places by name , we obtained a filtered list of 540 thousand pairs .
+we also exploit the fact that wikipedia enables contributors to assign categories to each article , which are defined as major topics that are likely to be useful to someone reading the article .
+because any wikipedia contributor can add a category to any article and the work of filtering out bogus assignments is tedious , these categories seem to be noisier than the lists , but they can still provide a tremendous amount of information .
+we extracted the categories of each entity page and assigned them as tags to the corresponding entity .
+again , we employed some basic filtering to discard meta-categories ( e.g. , articles with unsourced statements ) and categories not useful for the process of disambiguation through tag agreement ( e.g. , living people , 1929 births ) .
+this extraction process resulted in 2.65 million ( entity , tag ) pairs over a space of 139,029 category tags .
+we also attempted to extract category tags based on lexicosyntactic patterns , more specifically from enumerations of entities .
+for example , the paragraph titled music of scotland ( shown below in wikitext ) in the wikipedia article on scotland contains an enumeration of entities , which can be labeled enum _ scotland _ par _ music _ of _ scotland : modern scottish [ [ pop music ] ] has produced many international bands including the [ [ bay city rollers ] ] , [ [ primal scream ] ] , [ [ simple minds ] ] , [ [ the proclaimers ] ] , [ [ deacon blue ] ] , [ [ texas ( band ) | texas ] ] , [ [ franz ferdinand ] ] , [ [ belle and sebastian ] ] , and [ [ travis ( band ) | travis ] ] , as well as individual artists such as [ [ gerry rafferty ] ] , [ [ lulu ] ] , [ [ annie lennox ] ] and [ [ lloyd cole ] ] , and world-famous gaelic groups such as [ [ runrig ] ] and [ [ capercaillie ( band ) | capercaillie ] ] .
+lexicosyntactic patterns have been employed successfully in the past ( e.g. , hearst , 1992 ; roark and charniak , 1998 ; cederberg and widdows , 2003 ) , and this type of tag extraction is still a promising direction for the future .
+however , the brute force approach we tried of indiscriminately tagging the entities of enumerations of four or more entities was found to introduce a large amount of noise into the system in our development experiments .
+contexts .
+to extract contextual clues for an entity , we use the information present in that entitys page and in the other articles that explicitly refer to that entity .
+first , the appositives in the titles of entity pages , which are eliminated to derive entity surface forms ( as discussed in section 3.1 ) are saved as contextual clues .
+for example , tv series becomes a context for the entity texas ( tv series ) .
+we then extract all the entity references in the entity page .
+for example , from the article on texas ( band ) , for which a snippet in wikitext is shown below , we extract as contexts the references pop music , glasgow , scotland , and so on : reciprocally , we also extract from the same article that the entity texas ( band ) is a good context for pop music , glasgow , scotland , etc .
+the number of contexts extracted in this manner is overwhelming and had to be reduced to a manageable size .
+in our development experiments , we explored various ways of reducing the context information , for example , by extracting only entities with a certain number of mentions in an article , or by discarding mentions with low tf * idf scores ( salton , 1989 ) .
+in the end , we chose a strategy in which we employ as contexts for an entity two category of references : those mentioned in the first paragraph of the targeted entity page , and those for which the corresponding pages refer back to the targeted entity .
+for example , pam long and texas ( tv series ) are extracted as relevant contexts for each other because their corresponding wikipedia articles reference one another a relevant snippet from the pam long article is cited in section 3.1 and a snippet from the article for texas ( tv series ) that references pam long is shown below : in 1982 [ [ gail kobe ] ] became executive producer and [ [ pam long ] ] became headwriter .
+in this manner , we extracted approximately 38 million ( entity , context ) pairs .
+document analysis .
+in this section , we describe concisely the main text processing and entity identification components of the implemented system .
+we will then focus on the novel entity disambiguation component , which we propose and evaluate in this paper , in section 5 .
+figure 2 .
+an overview of the processes employed by the proposed system .
+figure 2 outlines the processes and the resources that are employed by the implemented system in the analysis of text documents .
+first , the system splits a document into sentences and truecases the beginning of each sentence , hypothesizing whether the first word is part of an entity or it is capitalized because of orthographic conventions .
+it also identifies titles and hypothesizes the correct case for all words in the titles .
+this is done based on statistics extracted from a one-billion-word corpus , with back-off to web statistics .
+in a second stage , a hybrid named-entity recognizer based on capitalization rules , web statistics , and statistics extracted from the conll 2003 shared task data ( tjong kim sang and de meulder , 2003 ) identifies the boundaries of the entity mentions in the text and assigns each set of mentions sharing the same surface form a probability distribution over four labels : person , location , organization , and miscellaneous.1 the named entity recognition component resolves the structural ambiguity with regard to conjunctions ( e.g. , barnes and noble , lewis and clark ) , possessives ( e.g. , alice 's adventures in wonderland , britain 's tony blair ) , and prepositional attachment ( e.g. , whitney museum of american art , whitney museum in new york ) by using the surface form information extracted from wikipedia , when available , with back-off to co-occurrence counts on the web , in a similar way to lapata and keller ( 2004 ) .
+recursively , for each ambiguous term t0 of the form t1 particle t2 , where particle is one of a possessive pronoun , a coordinative conjunction , and a preposition , optionally followed by a determiner , and the terms t1 and t2 are sequences of capitalized words and particles , we send to a search engine the query ^ t1 ^ ^ t2 ^ , which forces the engine to return only documents in which the whole terms t1 and t2 appear .
+we then count the number of times the snippets of the top n _ 200 search results returned contain the term t0 and compare it with an empirically obtained threshold to hypothesize whether t0 is the mention of one entity or encompasses the mentions of two entities , t1 and t2 .
+as wacholder et al. ( 1997 ) noted , it is fairly common for one of the mentions of an entity in a document to be a long , typical surface form of that entity ( e.g. , george w. bush ) , while the other mentions are shorter surface forms ( e.g. , bush ) .
+therefore , before attempting to solve the semantic ambiguity , the system hypothesizes in-document coreferences and maps short surface forms to longer surface forms with the same dominant label ( for example , brown / person can be mapped to michael brown / person ) .
+acronyms are also resolved in a similar manner when possible .
+in the third stage , the contextual and category information extracted from wikipedia is used to disambiguate the entities in the text .
+this stage is discussed formally in section 5 and evaluated in section 6 .
+note that the performance of the disambiguation component is meaningful only when most named entity mentions are accurately identified in text .
+thus , we first measured the performance of the named entity recognition component on the conll 2003 test set and obtained a competitive f-measure of 0.835 ( 82.2 % precision and 84.8 % recall ) .
+finally , the implemented system creates hyper-links to the appropriate pages in wikipedia .
+figure 3 shows the output of the implemented system on a sample news story , in which the identified and disambiguated surface forms are hyperlinked to wikipedia articles .
+the disambiguation component .
+the disambiguation process employs a vector space model , in which a vectorial representation of the processed document is compared with the vectorial representations of the wikipedia entities .
+once the named entity surface forms were identified and the in-document coreferences hypothesized , the system retrieves all possible entity disambiguations of each surface form .
+their wikipedia contexts that occur in the document and their category tags are aggregated into a document vector , which is subsequently compared with the wikipedia entity vector ( of categories and contexts ) of each possible entity disambiguation .
+we then choose the assignment of entities to surface forms that maximizes the similarity between the document vector and the entity vectors , as we explain further .
+our goal is to find the assignment of entities to surface forms si h ei , i ^ 1 .. n , that maximizes the agreement between ^ ei | ~ and d , as well as the agreement between the categories of any two entities sei t and sej t .
+note that the quality of an assignment of an entity to a surface form depends on all the other assign- ments made , which makes this a difficult optimization problem .
+an arguably more robust strategy to account for category agreement , which also proves to be computationally efficient , is to maximize the agreement between the categories of the assigned entity to each surface form and all possible disam- biguations of the other surface forms in d. we will show that this is equivalent to computing : our disambiguation process therefore employs two steps : first , it builds the extended document vector and second , it maximizes the scalar products in equation ( 3 ) .
+in practice , it is not necessary to build the document vector over all contexts c , but only over the contexts of the possible entity disambiguations of the surface forms in the document .
+also note that we are not normalizing the scalar products by the norms of the vectors ( which would lead to the computation of cosine similarity ) .
+in this manner , we implicitly account for the frequency with which a surface form is used to mention various entities and for the importance of these entities ( important entities have longer wikipedia articles , are mentioned more frequently in other articles , and also tend to have more category tags ) .
+while rarely , one surface form can be used to mention two or more different entities in a document ( e.g. , supreme court may refer to the federal institution in one paragraph and to a states judicial institution in another paragraph ) .
+to account for such cases , the described disambiguation process is performed iteratively for the instances of the surface forms with multiple disambiguations with similarity scores higher than an empirically determined threshold , by shrinking the context used for the disambiguation of each instance from document level to paragraph level , and if necessary , to sentence level .
+evaluation .
+we used as development data for building the described system the wikipedia collection as of april 2 , 2006 and a set of 100 news stories on a diverse range of topics .
+for the final evaluation , we performed data extraction from the september 11 , 2006 version of the wikipedia collection .
+we evaluated the system in two ways : on a set of wikipedia articles , by comparing the system output with the references created by human contributors , and on a set of news stories , by doing a post- hoc evaluation of the system output .
+the evaluation data can be downloaded from http : / / research .
+in both settings , we computed a disambiguation baseline in the following manner : for each surface form , if there was an entity page or redirect page whose title matches exactly the surface form then we chose the corresponding entity as the baseline disambiguation ; otherwise , we chose the entity most frequently mentioned in wikipedia using that surface form .
+wikipedia articles .
+we selected at random 350 wikipedia entity pages and we discarded their content during the information extraction phase .
+we then performed an automatic evaluation , in which we compared the hyperlinks created by our system with the links created by the wikipedia contributors .
+in an attempt to discard most of the non-named entities , we only kept for evaluation the surface forms that started with an uppercase letter .
+the test articles contained 5,812 such surface forms . 551 of them referenced non-existing articles ( for example , the filmography section of a director contained linked mentions of all his movies although many of them did not have an associated wikipedia page ) .
+also , 130 of the surface forms were not used in other wikipedia articles and therefore both the baseline and the proposed system could not hypothesize a disambiguation for them .
+the accuracy on the remaining 5,131 surface forms was 86.2 % for the baseline system and 88.3 % for the proposed system .
+a mcnemar test showed that the difference is not significant , the main cause being that the majority of the test surface forms were unambiguous .
+when restricting the test set only to the 1,668 ambiguous surface forms , the difference in accuracy between the two systems is significant at p = 0.01 .
+an error analysis showed that the wikipedia set used as gold standard contained relatively many surface forms with erroneous or out-of-date links , many of them being correctly disambiguated by the proposed system ( thus , counted as errors ) .
+for example , the test page the gods ( band ) links to paul newton , the painter , and uriah heep , which is a disambiguation page , probably because the original pages changed over time , while the proposed system correctly hypothesizes links to paul newton ( musician ) and uriah heep ( band ) .
+news stories .
+we downloaded the top two stories in the ten msnbc news categories ( business , u.s. politics , entertainment , health , sports , tech & science , travel , tv news , u.s. news , and world news ) as of january 2 , 2007 and we used them as input to our system .
+we then performed a post-hoc evaluation of the disambiguations hypothesized for the surface forms correctly identified by the system ( i.e. if the boundaries of a surface form were not identified correctly then we disregarded it ) .
+we defined a disambiguation to be correct if it represented the best possible wikipedia article that would satisfy a users need for information and incorrect otherwise .
+for example , the article viking program is judged as correct for viking landers , for which there is no separate article in the wikipedia collection .
+linking a surface form to a wrong wikipedia article was counted as an error regardless whether or not an appropriate wikipedia article existed .
+when the system could not disambiguate a surface form ( e.g.
+n sync , bama , and harris county jail ) , we performed a search in wikipedia for the appropriate entity .
+if an article for that entity existed ( e.g. , n sync and alabama ) then we counted that instance as an error .
+otherwise , we counted it separately as non-recallable ( e.g. there is no wikipedia article for the harris county jail entity and the article for harris county , texas does not discuss the jail system ) .
+the test set contained 756 surface forms , of which 127 were non-recallable .
+the proposed system obtained an accuracy of 91.4 % , versus a 51.7 % baseline ( significant at p = 0.01 ) .
+an analysis of these data showed not only that the most common surface forms used in news are highly ambiguous but also that a large number of wikipedia pages with titles that are popular surface forms in news discuss subjects different from those with common news usage ( e.g. , the page titled china discusses the chinese civilization and is not the correct assignment for the people 's republic of china entity ; similarly , the default page for blackberry talks about the fruit rather than the wireless company with the same name ) .
+conclusions and potential impact .
+we presented a large scale named entity disambiguation system that employs a huge amount of information automatically extracted from wikipedia over a space of more than 1.4 million entities .
+in tests on both real news data and wikipedia text , the system obtained accuracies exceeding 91 % and 88 % .
+because the entity recognition and disambiguation processes employed use very little language-dependent resources additional to wikipedia , the system can be easily adapted to languages other than english .
+the system described in this paper has been fully implemented as a web browser ( figure 3 ) , which can analyze any web page or client text document .
+the application on a large scale of such an entity extraction and disambiguation system could result in a move from the current space of words to a space of concepts , which enables several paradigm shifts and opens new research directions , which we are currently investigating , from entity-based indexing and searching of document collections to personalized views of the web through entity- based user bookmarks .

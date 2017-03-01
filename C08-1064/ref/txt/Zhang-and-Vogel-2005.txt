@@ -1,0 +1,126 @@
+an efficient phrase-to-phrase alignment model for arbitrarily long phrase and large corpora abstract .
+most statistical machine translation ( smt ) systems use phrase-to-phrase translations to capture local context information , leading to better lexical choices and more reliable word reordering .
+long phrases capture more contexts than short phrases and result in better translation qualities .
+on the other hand , the increasing amount of bilingual data poses serious problems for storing all possible phrases .
+in this paper , we describe a novel phraseto-phrase alignment model which allows for arbitrarily long phrases and works for very large bilingual corpora .
+this model is very efficient in both time and space and the resulting translations are better than the state-of-the-art systems .
+introduction .
+in recent years , various phrase-to-phrase translation models ( och 1999 ; marcu & wong 2002 ; koehn 2003 ; zhang 2003 ) have shown great advantages over the word-based systems ( brown 1990 ) .
+we believe that longer phrases encapsulate more contexts of the words and the translation qualities are expected to be higher than that of short phrases .
+unfortunately , given the increasing volume of the parallel bilingual data for some major languages such as arabic and chinese , storing and loading all possible phrase translations from the training corpus becomes more and more expensive by means of space and time in computation .
+to keep the phrasal translation model of a reasonable size , some models ( koehn 2003 ) and ( zhang 2003 ) limit the length of the phrases to be no more than 3 words while others ( vogel 2003 ) sub-samples the training corpus based on the testing data to down-scale the problem .
+in this paper , we introduce a new strategy to cope with this problem .
+instead of aligning the phrases offline , we extract the phrase translations on the fly for each testing sentences .
+we use suffix array ( manber 1990 ) to index the training corpus and a novel fast algorithm to search all the substrings ( phrases ) of the testing sentences in the training data .
+for each sentence pairs that contain the phrases in the testing sentence , a new phrase alignment model , alignment via sentence partition ( asp ) is used to extract the translations for the phrase .
+thus , we do not need to store any phrase translations and we can use arbitrarily long phrases .
+in the following sections , we first show the empirical evidence that long phrases do improve the translation qualities .
+then we will introduce our phrase alignment model asp which finds the alignment for a source phrase of any length .
+the suffix array and the fast search algorithm , the key components that enables this approach to be feasible are discussed in details in section 4 .
+in the end , we will introduce a mixture online / offline alignment strategy which allows for arbitrarily long phrases and works with arbitrarily large bilingual corpora efficiently .
+phrase length vs. translation quality .
+throughout this paper , tides chinese-english bilingual corpora are used as the training data and all experiments are tested on three years tides / nist mt evaluation set .
+yet , the approach described in this paper is language independent and can be applied to other language pairs .
+first , we analyzed the n-gram coverage of the testing data given the training corpus .
+table 2 shows the n-gram coverage of the tides04 data given two training corpora .
+on the word level ( unigram ) , both training corpora cover the testing data well .
+more than 99 % of words in the testing data can be found in either training set .
+on the other hand , the coverage for long phrases decreases rapidly , less than 5 % of 5-grams in the testing data occur in the training data .
+still , it is worth noticing that there is a significant number of long phrases that are covered in the training data and even one 68-gram occurred in the fbis training data .
+we did a series of controlled experiments ( table 3 ) to study how translation qualities are affected by the length of phrases in the translation for training and tested on tides02 model .
+fbis data was used as the training set and the translation model is trained by the alignment via sentence partition ( asp ) algorithm described in the next section .
+we restrained the longest phrase allowed to be one word ( word-to-word translation model ) , two words and so on .
+each translation model was then used by a decoder ( vogel et al. 2003 ) which searches for the best hypothesis that maximizes the translation score .
+the translations are compared against 4 human reference translations using the bleu ( papineni 2002 ) and the nist mteval metrics ( nist ) .
+from this result , we observe that going from the word-to-word translation model to a simple two-word phrasal model improved the translation significantly ( + 9 % on nist and + 37 % on bleu ) .
+longer phrases result in higher bleu / nist scores , i.e. , better translation qualities .
+when using phrases longer than 5 words , the bleu score improved from 0.1701 to 0.1755 for about 3 % .
+the effects of allowing long phrases in the translation model should have been more prominent if the evaluation metrics are more sensitive to long n-gram matchings .
+it has been noted in ( zhang 2004 ) that 80 % of the nist score comes from the matches of the unigrams , most of the matched 5-grams are given no credit in the final nist score .
+bleu scores reported in table 3 were capped to n-gram precisions at 4-grams , thus only gave credits for long n-gram matches indirectly .
+from the above analysis , we conclude that long phrases in the translation model improve the translation quality .
+in the following sections , we will describe an efficient phrase alignment model that allows arbitrarily long phrases in the tm .
+first , we will introduce our phrase-to-phrase alignment model .
+phrase-to-phrase alignment via sentence partition .
+assuming that we are searching for a good translation for one source phrase f = f1f2 ... fm , and we find a sentence in the bilingual corpus , which contains this phrase .
+we are now interested in finding a sequence of words e = e1e2 ... el in the target sentence , which is an optimal translation of the source phrase .
+any sequence of words in the target sentence is a translation candidate , but most of them will not be considered as translations of the source phrase at all , whereas some can be considered as partially correct translations , and a small number of candidates will be considered as acceptable or good translations .
+we want to find these good candidates .
+constrained word alignment .
+the ibm1 word alignment model aligns each source word to all target words with varying probabilities .
+typically , only one or two words will have a high alignment probability , which for the ibm1 model is just the lexicon probability .
+we now modify the ibm1 alignment model by not summing the lexicon probabilities of all target words , but by restricting this summation in the following ways : for words inside the source phrase we sum only over the probabilities for words inside the target phrase candidate , and for words outside of the source phrase we sum only over the probabilities for the words outside the target phrase candidates ; the position alignment probability , which for the standard ibm1 alignment is 1 / i , where i is the number of words in the target sentence , is modified to 1 / l inside the source phrase and to 1 / ( i-l ) outside the source phrase .
+more formally , we calculate the constrained alignment probability as : it should be mentioned that the left segment or the right segment or both segments can be empty .
+the alignment calculation is then accordingly modified .
+this means also that the entire sentence can be used as a phrase , which is then alignment to the entire target sentence .
+looking from both sides .
+it is well known that looking from both sides is better than calculating the alignment only in one direction , as the word alignment models are asymmetric with respect to aligning one to many words .
+similar to pi1 , i2 ( f | e ) we can calculate pi1 i2 ( e | f ) , now summing over the source words and multiplying along the target words .
+it should also be mentioned that single source words are treated in the same way , i.e. just as phrases of length 1 .
+the target translation can then be one or several words .
+locating source phrases in the bilingual corpus using suffix array .
+enumerating all the phrases in the training corpus and find their alignment via asp is almost impossible considering the number of phrases of any length in a corpus .
+table 4 gives the statistics of phrase numbers in the fbis chinese- english corpus .
+in the offline tm training approach , where one enumerates all the source phrases in the bilingual corpus and extracts their possible translations , it is clear that one better not to store translations for phrases longer than 3 words , otherwise the decoder is not able to load the phrase translation model during decoding .
+to benefit from the longer phrase matching , we introduce the online phrase extracting approach using the suffix array .
+suffix array .
+suffix array was introduced as an efficient method to find instances for a string in a large text corpus .
+it has been successfully applied in many natural language processing areas ( yamamoto 2001 ) and ( ando and lee 2003 ) .
+for a monolingual text cf with n words , represent it as a stream of words : a0a , ... an .
+denote by a ; = a ; a ; + , ... an the suffix of cf that starts at position i .
+the suffix array of cf is a sorted array , pos , of all suffixes of cf ; namely , pos [ kj is the starting position of the k-th smallest suffix in the set { a0 , a , , ... , an } , or in other words , apos [ 0j < apos [ , j < ... < apos [ nj , where < denotes the lexicographical order .
+the sorting of set { a0 , a , , ... , an } can be done in log2 ( n + , ) stages and requires o ( nlogn ) time in the worst case ( manber 1993 ) .
+table 5 shows the time needed to sort the suffix array for the training corpora .
+fast algorithm for searching substrings .
+from theorem 1 we know that substring the economy could occur in cf only when the occurs .
+theorem 2 further states that if we know the index range for the in pos array is [ 5 , 6 ] , the index range for the economy has to be a subset of [ 5 , 6 ] .
+in other words , the index range of the in the suffix array narrows down the search range for phrase the economy .
+suppose that we want to search locations for phrase the economy in cf .
+after one binary search , we have found that all the suffixes start with the are in the range of [ 5 , 6 ] .
+this means that all the suffixes in this range have the same prefix the ( lcp = 1 ) .
+following theorem 2 , we will search inside the range [ 5 , 6 ] for the occurrences of the economy .
+theorem 3 states that in doing so , one does not need to compare each suffix in the range with the phrase the economy since we know they have the same prefix the , instead , only the next word needs to be compared with economy to determine the lexicographical relation between the query phrase and the suffix .
+another way to look at this is that the fast algorithm actually executes m naive searches for the exact substring fim ( i = 1 , ... , m ) and along the trace of the binary search , bookkeeping the occurrence ranges for its prefixes .
+each search uses o ( logn ) comparisons and each such comparison requires only one word comparison .
+thus the search fim is of complexity o ( logn ) .
+the time complexity is then o ( mlogn ) for searching all the substrings in sentence f .
+table 6 compares the native algorithm and the fast algorithm over the time needed to search all the substrings of the testing sentences in the training corpora .
+it is obvious to see the speed up of the fast algorithm .
+all the experiments are on a machine with cpu 3.20ghz and 3.7g ram running linux .
+retrieving sentence id and position offset of a phrase in the corpus .
+the primary motivation of the fast substring searching algorithm was to efficiently locate all substrings of a testing sentence in the training corpus , so that the alignment program asp can extract the corresponding translations from the target side of the bilingual corpus based on the sentence number and the position in the sentence .
+mixture online / offline alignment model .
+given a testing sentence f , three steps need to be done before the translation lattice can be built .
+first , we need to construct the search matrices l , r and q to locate the occurrences of all the substrings in f .
+this costs o ( mlogn ) for each testing sentence .
+then we need to locate the sentence id and the position offset for each occurrence .
+the averaged time is m / 2 for each occurrences , where m is the averaged sentence length in cf .
+in the end , we apply the asp algorithm for each sentence pair found .
+table 7 shows the number of n-grams in the tides03 testing data which can be matched in the fbis.gb training data and the total occurrences of the matched n-gram in the training data .
+short n-grams in the testing data are more easily to be found in the training set , and they occur much more frequently too .
+an extreme case is the high-frequency chinese word de which occurs in almost every testing and training sentence .
+it is obvious that we do not need to retrieve the sentence id and find alignment for each of its occurrences in the training data .
+two strategies are applied to reduce the number of sentence id retrieving operations and the asp alignment : asp will only be used for long phrases ( e.g. , n > 3 ) .
+translations for short phrases are trained from the off-line models .
+the mixture alignment model results in equivalent translation qualities as the pure online alignment model .
+instead of applying asp for all the phrase occurrences in the training corpus , only align up to a fixed number ( e.g. , 100 ) of sentence pairs .
+table 8 shows the number of retrieving operations and the time needed for locating all the substrings of tides02 testing data in the fbis.gb training set .
+by restraining the total occurrences to be used by asp , total locating time was reduced from 369 seconds to 1.3 seconds .
+further relying on the off-line translation model for short phrase alignment , and use online methods to align phrases at least 3 words long reduced the time from 1.3 seconds to 0.33 second .
+we have also developed a statistical machine translation system that is able to handle arbitrarily large bilingual corpora using the mixture alignment model .
+in this system , the decoder runs on one machine .
+it loads the language model and the off-line translation model for short phrases .
+several other machines act as the bilingual corpus server , which return the alignments for long phrases in the testing sentences .
+the decoder then combines the alignments from the off-line model for short phrases and the alignments from the bilingual corpus servers for long phrases and generates the translation hypothesis .
+by increasing the number of bilingual corpus servers , we can handle very large bilingual corpora .
+conclusion and future work .
+we presented a successful statistical machine translation system using the mixture online / offline alignment model .
+by allowing translating arbitrarily long phrases , the translation quality is significantly better .
+the fast substring search algorithm makes the asp algorithm feasible in the online alignment scenario and the mixture alignment model makes the system efficient in both time and space complexity .
+there are a number of possible extensions and refinements to the asp alignment approach .
+one would be to calculate a constrained ibm4 alignment model .
+we will experiment with other word co-occurrence statistics , such as the mutual information , chi-square , or dice coefficient .
+so far the phrase alignment information is not used to update the word-to-word alignment probabilities .
+when using the ibm1 word alignment model a significant amount of the probability mass is distributed over word pairs , which are clearly no correct translation pairs .
+by updating the lexicon based on the phrase-to-phrase alignment the probability distribution could be focused more on the correct word pairs .
+this will be explored in the future .

@@ -1,0 +1,374 @@
+adaptive graphical approach to entity resolution .
+abstract .
+entity resolution is a very common information quality ( iq ) problem with many different applications .
+in digital libraries , it is related to problems of citation matching and author name disambiguation ; in natural language processing , it is related to coreference matching and object identity ; in web application , it is related to web page disambiguation .
+the problem of entity resolution arises because objects / entities in real world datasets are often referred to by descriptions , which might not be unique identifiers of these entities , leading to ambiguity .
+the goal is to group all the entity descriptions that refer to the same real world entities .
+in this paper we present a graphical approach for entity resolution .
+it complements the traditional methodology with the analysis of the entity-relationship graph constructed for the dataset being analyzed .
+the paper demonstrates that a technique that measures the degree of interconnectedness between various pairs of nodes in the graph can significantly improve the quality of entity resolution .
+furthermore , the paper presents an algorithm for making that technique self-adaptive to the underlying data , thus minimizing the required participation from the domain-analyst and potentially further improving the disambiguation quality .
+introduction .
+in digital libraries , a big challenge is to automatically group bibliographic references that refer to the same publication .
+this problem is known as citation matching [ 24,33 ] .
+not only publications , but also authors , venues , etc. are often referred to by different representations and need to be disambiguated .
+for example , the dataset might describe publications written by two people , john smith and jane smith , but refer to both of them as j. smith , leading to ambiguity .
+this is a more general disambiguation challenge known as entity resolution .
+it is also known as fuzzy grouping [ 10 ] and object consolidation [ 2 ] .
+in the generic settings of this disambiguation problem , a dataset d describes a set of entities e = { e1 , e2 , ... , em } and the relationships in which they participate .
+entities can be of different types , such as publications , authors , and venues .
+entities in d are represented as a set of instantiated attributes r = { r1 , r2 , ... , rn } referred to as entity representations or references .
+the goal is to correctly group the representations in r that co-refer , that is , refer to the same entity .
+most of the traditional domain-independent entity resolution techniques are feature-based similarity ( fbs ) methods , as they employ similarity functions that compare values of entity features ( or attributes ) in order to determine if two object descriptions co-refer .
+the similarity metrics of features can be learned from the data by adaptive approaches [ 9 , 12 , 30 , 34 , 36 ] .
+more recently , techniques have been developed that in addition to analyzing object features can also analyze the information derived from the object context , which is usually the directly associated entities / records , when computing reference similarities [ 3 , 5 , 15 , 31 ] .
+for example , in a publication database , the authors are usually represented by names ( either full names or first initials and last names ) in the context of papers .
+it is not hard to derive and use the coauthorship information from the papers as additional information for the authors being considered when detecting the author duplication .
+in our past work , we have developed a novel graphical methodology for entity resolution [ 11 , 2123 ] .
+the proposed domain-independent approach views the underlying dataset d as an entity-relationship graph , wherein the nodes represent the entities in d and the edges represent the relationships among the entities .
+for any two entity representations , the co-reference decision is made not only based on the entity features , or information derived from the context , but also based on the inter-entity relationships , including indirect ones , that exist among the two representations .
+while this methodology has been demonstrated to work well in practice , it has several limitations .
+in particular , the solution employs an intuition based mathematical model for computing how strongly two entities are interconnected via relationships in the entity relationship graph .
+this model is the key component of the overall domain-independent approach .
+however , because it is fixed and purely intuition- based , it might not be adequate for a particular application domain or might lead to only minor quality improvements .
+to overcome this problem , in this paper we present an algorithm that makes the overall approach self-adaptive to the data being processed , leading to the improvement of the quality and efficiency of the proposed methodology .
+the rest of this paper is organized as follows .
+section 2 presents an overview of related work .
+section 3 takes up a graphical view of the problem .
+the basic entity resolution algorithm is covered in section 4 .
+section 5 presents an algorithm for making the approach self tuning to dataset being processed .
+the overall algorithm is then extensively empirically evaluated in section 6 and compared to some of the state of the art solutions .
+finally , we conclude in section 7 .
+related work .
+real-world datasets , especially when created by combining many diverse heterogeneous data sources into a unified dataset , are known to have various disambiguation issues : missing , erroneous , duplicate data and so on .
+it has been realized early that the quality of data analysis and decision making is only as good as the quality of the data being analyzed , leading to creation of various techniques and methodologies to deal with various types of errors in data .
+in this section , we will mostly concentrate on methodologies that deal with the disambiguation / entity resolution problem .
+the related problems include deduplication [ 3,34 ] , name disambiguation [ 17 , 25 , 29 ] , citation matching [ 13 , 24 , 33 ] , reference reconciliation [ 15 ] , etc .
+the cause of various types of the disambiguation problem is the fact that in real- world datasets , entities are referred to via descriptions ( a set of instantiated attributes ) instead of unique identifiers , leading to ambiguity .
+there are different kinds of information present in a dataset that an approach can utilize for disambiguation : attributes , context , relationships , etc .
+the traditional approach to solving the disambiguation challenge is to compare the values in attributes of two entity descriptions ( references ) to decide whether they co-refer ( i.e. , refer to the same real-world entity ) , for all pairs of entity references .
+these are called feature-based similarity ( fbs ) methods [ 16 , 18 ] .
+recently , there has been a number of interesting techniques developed that enhance the traditional techniques by being able to utilize certain types of context to improve the quality [ 3,5 , 15 ] .
+all these methods utilize directly linked entities as additional information when computing record similarity .
+we refer to these methods as context-based methods .
+there are also techniques that can analyze another type of information : inter-entity relationships [ 22 , 26 ] .
+in addition to analyzing the information present in the dataset , some of the disambiguation techniques can also analyze meta information about the dataset , specified by the analyst [ 13 ] .
+some disambiguation approaches take into account the dependence among the co-reference decisions and no longer make pair-wise matching decisions independently .
+these are called relational methods [ 6,15 , 27 , 33 , 35 ] .
+the technique proposed in the paper is domain-independent and aims at minimizing analyst participation .
+it is a graphical approach , as it visualizes the dataset as the standard entity-relationship graph .
+there are other graphical disambiguation approaches , which visualize different graphs : web graph .
+to disambiguate appearances of people on the web , it has been proposed to analyze the web graph [ 4 ] , wherein the webpages are represented as nodes , and hyperlinks as edges .
+entity-relationship graph ( er graph ) .
+in the standard entity-relationship graph , the nodes represent the entities in the dataset and the edges represent the relationships among the entities [ 22,26,29,31 ] .
+the method proposed in this paper also analyzes the er graph for the dataset .
+the work on entity resolution is quite extensive .
+the most related work include recent approaches developed by andrew mccallum , william cohen , bradley malin , lise getoor , lee giles , etc . [ 8,13,14 , 17 , 26 , 29 ] .
+the differences of these techniques from our methodology are : er graph .
+our methodology analyzes the whole er graph as is .
+existing most related methods analyze either only portions of the er graph or they analyze a different graph derived by the analyst from the er graph .
+algorithms for analysis .
+existing techniques are frequently based on probabilistic methodologies , whereas we rely primarily on the mathematical apparatus from the area of operation research .
+domain-independence .
+unlike our approach , some of those existing techniques are intended for specific instances of entity resolution ( e.g. , email alias disambiguation , citation matching ) , or applicable to domains with certain properties .
+it should be noted that virtually all of the existing techniques analyze only portions of the er graph , if at all .
+for instance , the approach in [ 7 ] by bhattacharya and getoor analyzes only co-occurrences of names of authors via publications for a publication dataset .
+the approach [ 7 ] , for a fixed domain , understands only one type of relationship ( writes in this case ) and only two types of entities : person ( author ) and container ( publication ) .
+our approach can analyze all of the types of relationships and entities present .
+the approach in [ 7 ] is applicable to only those domains where certain ( co-occurrence ) properties hold .
+another example is [ 20 ] , which analyzes only the shortest path between two nodes in the graph .
+the adaptive approach in [ 29 ] is most related , but it analyzes paths , in the er graph , of length no more than 2 .
+another interesting solution [ 26 ] looks at people and connect them via one single type of are-related relationships .
+however , that approach does not take into account that people can be related for different reasons and there can be different types of relationships ( and entities ) in a given domain .
+we will compare the proposed method with some of the state of the art solutions in section 6 .
+graphical view of the problem .
+the proposed entity resolution algorithm employs an entity- relationship graph as a representation for the dataset .
+to introduce the necessary concepts , let us consider the following simple scenario .
+assume some extraction software is applied to a dataset consisting of research publications .
+for each paper , the software is capable of extracting its title , authors , author affiliations and author email addresses , if present .
+figure 1 ( a ) and 1 ( b ) shows an example of graph representation for a sample dataset with two papers .
+for paper p1 with title multimedia , the software extracts that its authors are alice , bob , and carroll ; alice and carroll are affiliated with mit ; and alices email address is alicemit . edu .
+for paper p2 with title databases , the software extracts its authors alice , bob , don , and erin ; don is affiliated with mit ; and alices email address is alicemit . edu .
+the information extracted from the two papers are initially represented as shown in figure 1 ( a ) .
+for each entity representation , there is a distinct node in the graph .
+for instance , the alice from p1 and alice from p2 get two separate nodes .
+the relationships among entities are represented by edges between corresponding nodes .
+for example , the edge between carroll and p1 represents an author-writes-paper relationship .
+the essence of the problem is to merge those references that in reality refer to the same entity .
+the traditional approaches ( and / or domain knowledge ) often can be effectively employed to determine for each pair of entity representations whether they : ( 1 ) are highly likely to co-refer ( very similar ) and thus should be merged , ( 2 ) are highly unlikely to co-refer ( too dissimilar ) and thus should not be merged , ( 3 ) might co-refer ( uncertain ) .
+for instance , if organization names are known to be unique identifiers of organizations in a given application domain , then handling organizations might not be a challenge for that domain .
+for the scenario illustrated in figure 1 ( a ) , it means that both mit references refer to the same organization and the two nodes of mit should be merged .
+also email addresses often serve as unique identifiers of people , so the traditional approach can conclude with high confidence that the two representations for alice , with the same email address , are likely to co-refer and should be merged .
+the most interesting and challenging cases are the uncertain cases that fall under the third category .
+to capture those cases graphically we introduce a new edge type : a similarity edge .
+a similarity edge is created for a pair of representations which are similar to some degree that they potentially refer to the same entity , but need further analysis .
+the degree of such a similarity can be based on domain knowledge , ad-hoc techniques , or on feature-based similarity , such as the edit distance measure .
+in the latter case , entities are considered to be similar when their similarity exceeds a certain threshold value .
+for instance , for the graph illustrated in figure 1 ( a ) , a similarity edge will be created for the two representations of bob , since they might potentially refer to the same person .
+the rest of the author names are less similar , and thus no similarity edges will be created for them .
+the new graph is demonstrated in figure 1 ( b ) with the similarity edge represented as a dashed line .
+creating the entity-relationship graph .
+the generic algorithm for creating the graphical entity- relationship representation of a dataset is presented in figure 2 .
+the algorithm first creates an initial representation of the dataset .
+it does so by creating a distinct node per each entity representation found in the dataset , and then connecting nodes via an edge when there is a corresponding relationship among the nodes .
+it then applies domain knowledge and other standard techniques to merge high- confidence cases .
+usually the merging of two nodes u and v is decided by comparing the similarity score f ( u , v ) between them with a high-confidence threshold 7 .
+notice that the current standard techniques frequently employ a blocking process [ 32 ] to bring similar representations together so that there is no need to check every single pair of nodes in the dataset , leading to a speedup .
+finally , the algorithm creates similarity edges between each pair of nodes that has similarity scores lower than 7 , but higher than a low-confidence threshold e. this means this pair of nodes can potentially represent the same entity but needs further analysis .
+using higher threshold 7 to merge high-confidence cases and lower threshold e to bring together nodes for further analysis is essentially an adaptation of the canopy method [ 28 ] .
+with regard to the similarity edges , the goal of entity resolution can be rephrased as determining for each two nodes , connected via a similarity edge , whether they co-refer .
+virtual connected subgraph .
+an interesting property of the resulting entity-relationship graph with respect to similarity edges is that it contains several virtual connected subgraphs ( vcs ) .
+each similarity edge is a part of a vcs as illustrated in the example in figure 3 .
+the concept of a vcs is important because the overall task can be conceptually viewed as partitioning each vcs .
+this is because according to the similarity edges , entity representations in different vcss cannot refer to the same entity .
+figure 3 demonstrates an example of three vcss : two for entities of type people and one for entities of type department .
+there are two situations that are possible with respect to splitting vcss into clusters of entity representations : ( 1 ) the number of entities in each vcs is known to the algorithm beforehand ; and ( 2 ) the general case where that number is unknown .
+in the first case , since the number of entities in each vcs is known , the algorithm knows the exact number of clusters to split each vcs into .
+that restricted scenario has been studied in [ 11 ] .
+in a more common case studied in this paper , that number is unknown and the overall problem is thus more complex .
+the idea behind the graphical approach .
+we will build on a well-established technique of analyzing relationships for disambiguation [ 11,2022,26 ] , to apply to the problem of entity resolution .
+while that work has been shown to significantly improve the quality for certain types of the disambiguation problem , applying it to the general case of entity resolution remains a challenge .
+the overall idea behind using relationships is to look at the direct and indirect ( long ) relationships that exist between specific pairs of entity representations in order to make a disambiguation decision .
+in terms of the entity-relationship graph that means analyzing paths that exist between various pairs of nodes .
+for instance , to decide whether the two representations of bob co-refer in figure 1 ( b ) , among other factors the proposed technique will analyze various paths that exist between the two representations for bob in the graph and measure the connection strength that those paths carry .
+if the algorithm decides that the connection strength between the two bob nodes is sufficiently strong , it would then use it as an extra evidence that the two representations might co- refer .
+the hypothesis and the premise of this approach is that each path carries in itself a certain degree of affinity , and if the overall affinity is sufficiently large , then the two representation are likely to co-refer .
+more specifically , the approach relies on the notion of the connection strength c ( u , v ) between two nodes u and v in the graph g. the connection strength between u and v reflects how strongly u and v are connected to each other via paths that exist between them .
+the key idea of the methodology that we propose is to complement existing techniques with analysis of c ( u , v ) to better the quality of entity resolution and , most importantly , make c ( u , v ) adapt to the underlying dataset .
+consolidation algorithm .
+we now have developed all the concepts and notation needed to explain the proposed entity resolution approach .
+the solution exploits both features and relationships for the purpose of consolidation , and outputs the resulting clustering as the outcome .
+the algorithm starts by constructing the entity-relationship ( er ) graph for the dataset and then identifies all the vcss in the er graph .
+it then employs a merging algorithm to consolidate entities in each vcs .
+merging is a bottom-up clustering approach employed by many disambiguation algorithms .
+the basic idea is to identify the two nodes with the highest similarity , and to merge them in case their similarity is above a predefined threshold .
+the merging process continues until there are no nodes left whose similarity is above the threshold .
+if the merging of the nodes affects the similarities of other nodes , then the similarity scores need to be updated and compared with the threshold again .
+the algorithm formalization is presented in figure 4 .
+various disambiguation algorithms that employ merging differ significantly in how exactly the merging is carried out .
+one of the key differences is in the way similarity s ( u , v ) between two representations u and v is computed .
+for example , the traditional techniques compute s ( u , v ) using only entity features , i.e. , s ( u , v ) = f ( u , v ) , where f ( u , v ) is a feature-based similarity function .
+context-based methods , utilize a merging approach that combines feature-based similarity with the similarity of attributes derived from the context .
+this combined strategy leads to significant improvement in quality of the result , compared to that of pure feature-based methods [ 5,15 ] .
+as elaborated in the previous section , a feature-based similarity approach is first employed to construct the er graph for the dataset being processed .
+the merging technique discussed next essentially enhances that feature-based approach , by applying analysis of relationships to the remaining cases that cannot be resolved with fbs techniques with high confidence .
+the proposed merging approach , like the traditional methods , also looks at all pairs of nodes that can be similar : in this case , these are the nodes connected via similarity edges , see figure 4 .
+in section 6 we shall see that considering connection strength c ( u , v ) in the merging process leads to a powerful s ( u , v ) function which is very effective in improving the quality of the final result .
+when c ( u , v ) is computed by a disambiguation algorithm , only l-short simple paths between u and v are considered , where a path is l-short if its length does not exceed l and a path is simple if it does not contain duplicate nodes .
+the set of l-short simple paths is denoted by pl ( u , v ) .
+the intuition is that longer paths are less important and thus can be omitted .
+when computing connection strengths , the proposed algorithm considers only paths that go through regular edges .
+for nodes x and y , the x " y paths connecting x and y with similarity edges are discovered , but not taken into account when computing c ( x , y ) .
+instead they are hashed on those similarity edges in a hash table .
+the merging proceeds iteratively .
+merging of any two nodes u and v , connected via a similarity edge ( u , v ) , can lead to appearance of new paths that do not contain similarity edges .
+this new paths are efficiently discovered via a lookup in the hash table with the key { u , v } .
+after that the corresponding connection strength and the priority queue are updated by the update-score function on line 10 in figure 4 .
+adaptiveness to data .
+since there can be many path types , it can be quite difficult to pick good weights for those path types based on the intuition .
+the number of path types , and hence the number of their weights , depends on the particular graph being analyzed and on the value of the parameter l ( maximum length of paths ) .
+in general , assigning good weights manually is proved to be a non-trivial challenge .
+therefore , we propose a self-tuning algorithm that can learn the path type weights automatically so that it is adaptive to the data being analyzed .
+motivation for adaptiveness .
+before we describe the self-tuning capabilities of our approach , let us analyze which benefits you can expect if you succeed in creating a self-tunable connection strength ( cs ) model in the context of the disambiguation task .
+first , such a cs model would minimize the analyst participation .
+this is important since nowadays various data-integration solutions are incorporated in real database management systems ( dbms ) .
+for example , entity resolution is known as fuzzy grouping operation in the data-integration module of microsoft sql server dbms [ 10 ] .
+having a less analyst- dependent technique makes that operation of wide applicability , so that non-expert users can apply it to their datasets .
+the second advantage of such a cs model is that it expects to increase the quality of the disambiguation technique .
+there are also less obvious advantages .
+for example , the technique is capable of detecting which path types are marginal in their importance .
+thus , the algorithm that discovers paths when computing c ( u , v ) can be sped up , since the path search space can be reduced by searching only for important paths while skipping marginally important ones .
+speeding up the algorithm that discovers paths is important since it is the bottle-neck of the overall approach .
+finally , it is often desirable to be able to ( aggregate and then ) use external data / knowledge sources to disambiguate a dataset , as illustrated in figure 5 .
+this is indeed possible with the approach proposed in [ 21,22 ] and with an adaptive cs model , as illustrated in figure 6 .
+for that , the dataset and external data need to be first represented as the standard entity-relationship ( er ) graph .
+then the nodes that are known to correspond to the same entity in the dataset and the external web of knowledge will need to be merged .
+now the disambiguation technique , when applied to the dataset , will find paths that go through not only this dataset , but also the web of knowledge .
+the importance of various paths will be automatically determined by the adaptive cs model .
+so the web of knowledge can be potentially automatically employed to improve the disambiguation quality , or , it is also possible that the model will detect that all paths going through the web of knowledge are unimportant and thus it should not be used .
+in the rest of this section , we first discuss how to generalize many of the existing connection strength ( cs ) models to create an adaptive cs model in section 5.2 .
+we then present an algorithm for calibrating the adaptive model from data in section 5.3 .
+we illustrate the above algorithms via an example in section 5.5 .
+adaptive cs model .
+the goal of any connection strength model is for any two nodes u and v in the graph g to be able to compute how strongly they are connected to each other via paths in g. to create an adaptive cs model , we observe that many of the non-adaptive cs models can be generalized .
+namely , assume that all paths that can be potentially discovered by the algorithm can be classified into a finite set of path types st = { t1 , t2 , .
+. . , tn } .
+that is , there is a function t ( p , g ) ^ st , that for any given path p maps it to one of those path types .
+if any two paths p1 and p2 are of the same type tj , then they will be treated as identical by the algorithm .
+then , for any two nodes u and v we can characterize the connections among them with a path- type count vector tuv = ( c1 , c2 , ... , cn ) , where each ci is the number of paths of type ti that exist between u and v. the difference among the existing cs models is ( a ) in the way they classify paths into types , and ( b ) in the way they assign weights to path types , where both ( a ) and ( b ) are either already given and fixed or , alternatively , decided by the algorithm designer based on what is intuitively reasonable for a particular domain .
+assigning those weights manually based on intuition might be a suboptimal solution .
+it requires a smart analyst who should know the dataset and the algorithm in detail .
+that often is undesirable , and the goal is to make the analyst work simpler by minimizing her participation .
+so instead the right weights can be learned from data automatically .
+below we present such a learning algorithm that reduces this learning task to solving a linear programming problem .
+learning algorithm .
+as any supervised learning algorithm , the proposed algorithm uses training data for learning .
+in the training data for each pair of object description x and y we know whether or not they co-refer .
+the learning is based on the generic disambiguation principle , that the affinity / similarity between two entity representations that co-refer is likely to be noticeably greater than that of two descriptions that do not co-refer .
+using this principle , we can define the learning formulae for the problem of entity resolution .
+in defining constraints for the corresponding linear programming problem , we look at each vcs at a time .
+the conditions specified as ( * * ) are similar to ( * ) , but for xe instead of xk .
+system ( 4 ) might be overconstrained and as such might not have a solution .
+this system does not yet address the likely part of the principle : the inequalities should hold most of the time , but not always .
+system ( 5 ) always has a solution .
+here , ^ ijk are slack variables that take on any real nonnegative values .
+the objective is to minimize their sum .
+in addition , to make clear decisions , the connections strength between two descriptions that co-refer should clearly outweigh that of two descriptions that do not co-refer .
+this translates into requiring that the difference between s ( xi , xj ) and s ( xi , xk ) be maximized , and the same for xe .
+in ( 6 ) , c ( u , v ) is computed according to ( 3 ) .
+the task is to learn the optimal path type weights wis along with the parameter a by minimizing the objective .
+system ( 6 ) is a linear programming ( lp ) problem which can be solved by any known lp method or using an off-the-shelf lp solver .
+linear programming in general is known to have efficient solutions [ 19 ] .
+classifying paths into types .
+there are many possible ways to classify paths .
+the path type model ( ptm ) classifies a path by looking at the types of edges the path is composed of .
+that is , each path can be viewed as a sequence of edges ~ e1 , e2 , ... , ek ) .
+each edge has a type associated with it .
+for example , in a publication database authors write papers and are affiliated with organizations .
+hence there are two types of edges that correspond to the two types of relationships : e1 for writes and e2 for is affiliated with .
+a sequence of edge types can be viewed as a string , and ptm assigns different weight to each distinct string .
+it is possible to think the number of path types will be huge : tk , where t is the number of edge types and k is the length of paths .
+however , because each node type can only connect to certain types of edges , the number of path types is limited .
+for example , an author node can be associated with edges of types writes ( a paper ) and is affiliated with ( an organization ) , but a paper node can only be incident to a writes edge type .
+therefore the number of path types will be far less than tk and in practice , the size of training data is generally sufficient for the purpose of learning .
+example .
+to illustrate the concepts from the previous sections , consider the small scenario in figure 7 .
+it shows a small er graph with two vcss .
+the first vcs has four references x1 , x2 , x3 , x4 connected by three similarity edges about three real-world entities { { x1 , x2 } , { x3 } , { x4 } } .
+the second vcs has three references y1 , y2 , y3 with two similarity edges about two real-world entities { { y1 , y2 } , { y3 } } .
+for simplicity , let us assume a = 1 in ( 1 ) and thus s ( u , v ) = c ( u , v ) .
+then s ( x1 , x2 ) = w1 + w2 , s ( y1 , y2 ) = 2w1 , and so on , where wis are as illustrated in figure 7 .
+experimental evaluation .
+in this section , we experimentally study the proposed techniques on three datasets taken from the movie and publication domains .
+we first present the experimental setup in section 6.1 , followed by the experiments that test the proposed entity resolution approach in section 6.2 .
+experimental setup .
+datasets .
+we will use three datasets : realpub , realmov and cora to test our algorithms .
+realpub and realmov are derived from real manually cleaned data , so they initially do not contain uncertain references .
+to test our approach , we will use a standard technique employed by data cleaning practitioners : we introduce uncertainty / errors in our datasets manually in a controlled fashion , and then examine the effect of uncertainty on the quality of various entity resolution algorithms .
+realpub .
+realpub is a real dataset derived from two public-domain sources : citeseer and hpsearch .
+it is a publication dataset that describes authors , their publications and their affiliations .
+it contains entities of four types : papers ( 11,682 entities ) , authors ( 14,590 entities ) , departments ( 3084 entities ) and organizations ( 1494 entities ) .
+this dataset contains four types of ( regular ) relationships : paper author , author dept , author org , and org dept , which map papers to their authors , authors to their affiliations , and the departments to the organizations respectively .
+introducing uncertainty .
+in realpub , all author references are in the format of full first name + last name .
+we introduce uncertainty in this dataset by pretending we only know first initial + last name for the author descriptions .
+for example , for two representations r1 = john smith and r2 = jane smith we pretend we only know r1 = j.
+smith and r2 = j.
+smith , so that r1 and r2 will be put in the same vcs .
+we refer to the authors who have the same first initial + last name as uncertain authors and their names as uncertain names .
+the goal is to correctly resolve the uncertain author entities , i.e. , separate the uncertain authors into groups such that each group consists of author references with the same full names .
+realmov .
+realmov is a real dataset constructed from the stanford movies dataset [ 37 ] .
+it contains entities of three types : movies ( 11,453 entities ) , studios ( 992 entities ) , and people ( 22,121 entities ) .
+it also contains five types of ( regular ) relationships : movie actor , movie director , movie producer , producingstudio , and distributingstudio , which map movies to their actors , directors , producers , producing studios and distributing studios respectively .
+introducing uncertainty .
+in our experiments , the type of entity we are dealing with is people , and specifically , director .
+assume that realmov stores information about d1 , d2 , ... , dn director entities .
+the uncertainty will be introduced in a fashion similar to that of the recent kdd cup .
+we choose randomly a fraction p of those directors and make all their references uncertain .
+to achieve that , we group every two directors and simulate the desired uncertainty by changing all the director references in the same group such that each reference can refer to either of the directors in this group .
+for example , if the directors d1 , d2 , ... , d10 were chosen , we group the uncertain directors d1 , d2 , ... , d10 in groups of two , e.g. { d1 , d2 } , { d3 , d4 } , ... , { dg , d10 } .
+we assume all references of d1 can refer to either d1 or d2 , and so on , whereas for the rest of the directors d11 , d12 , ... , dn , all their references will still uniquely identify the right director .
+based on the typical degree of uncertainty in real-world dataset [ 22 ] , we set p to 10 % in our experiments .
+cora cora dataset has been used for disambiguation by many other researchers .
+it was prepared by the riddle project [ 1 ] and then cleaned further .
+it contains 1295 citations for 132 paper entities .
+each record of citations consists of 12 attributes : authors , title , institution , venue , address , publisher , year , month , volume , pages , editors , and notes .
+the goal is to correctly identify the duplicate citations .
+measuring quality .
+traditionally , the quality of record linkage is measured using precision and recall , and their harmonic mean known as f1 measure .
+although precision and recall capture the quality of results well most of the time , it is now often argued that such measures are not fully adequate for the problem of entity resolution , because they are representation-centric measures , whereas entity-centric measures are often preferred for entity resolution .
+let us illustrate this by an example .
+assume a database of ten objects { o1 , ... , o10 } .
+assume o1 has many representations { r11 , . . . , r1n1 } , where n1 = 100 for example .
+suppose the other objects have only a few representations , say two : { ri1 , ri2 } for each oi .
+now let us assume that two different algorithms have been applied to this database and we will compare their outcome : 9 algorithm 1 has correctly consolidate all the representations of o1 by placing them in one cluster { r11 , ... , r1n1 } .
+but it failed on each of the other objects o2 , ... , o10 , by placing their representations into two clusters : { ri1 } and { ri2 } for each oi , instead of one { ri1 , ri2 } cluster . 9 algorithm 2 has correctly consolidated the representations of objects o2 , ... , o10 .
+but it slightly failed on the representations of object o1 , by creating two clusters { r11 } and { r12 , . . . , r1n1 } instead of one { r11 , r12 , . . . , r1n1 } cluster .
+if we use precision / recall as measures , algorithm 1 will be significantly better than algorithm 2 because it has consolidated more pairs correctly .
+for this example , algorithm 1 missed 9 pairs of representations that co-refer ( i.e. , { ri1 , ri2 } , i = 2 , ... , 10 ) , while algorithm 2 missed 99 pairs ( i.e. , { r11 , r12 } , . . . , { r11 , r1,100 } ) .
+however , if we consider the effectiveness of the algorithms as the number of objects that the algorithms can correctly resolve , then algorithm 2 is significantly better since it failed slightly only on one object , while algorithm 1 failed on 9 out of 10 objects .
+thus , we will also use other well-known measures : purity , inverse purity and their harmonic mean fp-measure .
+purity measures the homogeneity of the clusters when evaluated against pre-classification , while inverse purity measures the stability of the classes when split into clusters .
+fp-measure is the harmonic mean of the purity and inverse purity .
+resolution algorithms .
+we test and compare four algorithms that employ features , contexts and relationships .
+fbs technique .
+fbs technique is the traditional approach of using features only for entity resolution .
+context-based techniques .
+to compare our approach with context-based approaches that use directly associated neighborhoods , we have implemented one of the best known context-based methods that could be applied to our datasets , which we will refer to as context [ 5 ] .
+we always set all the parameters of context to their optimal values , thus giving it an advantage over all other tested techniques .
+the purity measure is based on the precision .
+each resulting cluster p from a partitioning p of the overall representation set d is treated as if it were the result of a query .
+each set l of representations of a partitioning l , which is obtained by manually labeling the classes , is treated as if it were the desired set / class of representations for a query .
+relationship-based techniques .
+we will test the basic and adaptive relationship-based techniques presented in sections 4 and 5 .
+we refer to the former as reler ( relationship- based entity resolution ) and the latter as relaa ( relationship- based adaptive algorithm ) .
+for the basic algorithm reler , the connection strengths are computed using wm model [ 22 ] based on random walk since it is the best known non- adaptive model .
+for the adaptive algorithm relaa , we will randomly divide the dataset to two parts : 50 % of the dataset is used for training the model to get proper path weights and the rest 50 % of the dataset is used for testing .
+we choose the parameter l = 6 for all experiments .
+the results reported in this section will be averaged from multiple runs .
+to fairly compare the adaptive algorithm with all others , we report the results of all algorithms on the same part of ( test ) data .
+we will report the results of different approaches on realpub and realmov datasets using both f1 and fp measures .
+for cora dataset , since the number of citations is not enough for training purpose , we will just use the basic algorithm reler and compare the precision / recall / f1 with those reported in other papers .
+experiments on realpub and realmov .
+in this section , we empirically evaluate the quality and efficiency of the overall approach , which are traditionally of interest in the context of entity resolution .
+experiment 1 ( comparing approaches ) .
+in table 1 , we compare the quality of the various entity resolution approaches on realpub and realmov datasets using f1 and fp measures .
+in the table , we can see that for both realpub and realmov datasets , relaa performs the best .
+context- based and relationship-based algorithms always get better results than fbs .
+this is expected since each of the three methodology complement the previous one with the analysis of more information that is available in a dataset : features , then context , and then relationships .
+notice that for realpub , the results of reler and relaa are very close to each other and much better than context and fbs .
+for realmov , the results of basic reler algorithm is the same as context , while adaptive algorithm relaa is much better than all the other algorithms .
+this is because in realmov , there are more types of relationships , and when the paths length is long ( i.e. , parameter l is large ) , using a fixed model ( e.g. , wm model in our experiments ) to compute connection strengths sometimes may confuse the basic resolution algorithm .
+on the other hand , the adaptive algorithm instead learns the weights from data , leading to better quality of entity resolution .
+experiment 2 ( learning threshold ) .
+varying the merging threshold employed by merging algorithms ( see section 4 ) causes those algorithms to produce various results that form a trade-off between the resulting precision / recall and purity / inverse purity .
+figure 8 plots average purity against average inverse purity with the merging threshold varying between 0 and 1 on realpub dataset .
+from this figure , we can see that there is a trade-off between the resulting quality of clusters and entities , and there exists an optimum result for a certain threshold value in terms of fp measure .
+in our experiments we set the the merging threshold by learning it from data .
+first , we load the er graph for the realpub or realmov dataset and partition all the vcss of this er graph into two sets : the training and test sets .
+we determine the optimal threshold value on the training set .
+this value serves as an estimation of the optimal threshold value for the test set .
+we then apply that threshold on the test set .
+figure 9 illustrates the learning results of fp for the two datasets , realpub and realmov , where 10 % of all vcss are utilized for training purposes and the rest 90 % for testing .
+we report the results on the learned threshold as est and the true optimal value on testing data as opt .
+for context method , we always use the optimal threshold value .
+figure 9 demonstrates that the learned threshold serves as a good estimation of the optimal threshold and that the proposed algorithm significantly outperforms the context method .
+experiment 3 ( efficiency ) .
+this experiment tests the efficiency and shows the scalability of the proposed approach .
+the bottleneck of our approach is the algorithm for discovering all l-short simple paths and the figure essentially plots the cost of that phase of the algorithm .
+in [ 21 ] we study several optimizations of that algorithm , which improve the performance by 12 orders of magnitude .
+we employ the same optimizations in this paper as well .
+to simulate the increasing size of the data , we tested on different fraction of dataset we have .
+figure 10 shows the execution time as a function of the fraction of publications loaded from realpub dataset , e.g. , 0.1 corresponds to 10 % of the dataset , 1.0 corresponds to the whole dataset .
+for a graph with 40k nodes , it takes less than 0.03 seconds .
+in our ongoing work , we are trying to improve the scalability of the algorithm .
+experiment 4 ( choosing alpha ) .
+figure 11 studies the effect of parameter a , which controls the contribution of the two objectives in system ( 6 ) from section 5 , on the resolution quality of the algorithm .
+it shows that there is a trade-off between the two objectives , and that the algorithm that learns weights outperforms the baseline , which uses wm model , for any a g ( 0 , 1 ) .
+in our experiment , the optimal result for realpub was achieved when a is equal to 0.7 .
+experiment 5 ( handling random noise ) .
+to further demonstrate the advantage of the adaptive model , we gradually add uniform random noise to the datasets by introducing random relationships / edges that randomly connect two nodes in the graph .
+the random relationships are added to both training and test data .
+these random relationships are meaningless for the purpose of disambiguation , and therefore the paths with random edge ( s ) should ideally have no effect on the connection strengths .
+figure 12 shows the impact of random relationships added to realpub data on the result of the resolution algorithm .
+the more random relationships are added , the worse the baseline algorithm performs since it is not adaptive .
+the learning algorithm , on the other hand , can correctly capture all the meaningless path types .
+thus its curve stays flat as the amount of noise increases . 6.3 experiments on cora we apply our relationship-based algorithm on cora dataset and compare the results of precision / recall / f1 with those reported by other researchers .
+one of the best results published in the past is by [ 15 ] , which used similar methodology as ours .
+the approach they proposed is referred by depgraph and the baseline approach is referred by indepdec in that paper .
+we compare our approach with these two and the results are presented in table 2 .
+although the improvement might look marginal , notice that our approach almost doubled the improvement of depgraph to baseline .
+another observation is that the precision of our approach is worse although the recall is better .
+this is because we employed the adaptation of a canopy method that brings all the references that can potentially co-refer together to the same vcs and therefore guaranteed the matching references will almost always be found .
+in the meantime , this strategy reduces the precision since it will group references that do not co-refer .
+conclusion .
+in this paper , we have developed a novel domain-independent entity resolution approach and have presented its empirical evaluation on datasets taken from two different domains .
+the approach leverages an analysis of the entity-relationship graph of the dataset being processed for improving the quality of the entity resolution .
+in addition , we have developed a method that minimizes the required domain-analyst participation and achieves even higher disambiguation quality by being able to self-tune the overall approach to the dataset being processed .

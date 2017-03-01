@@ -1,0 +1,63 @@
+recognizing textual entailment using lexical similarity .
+abstract .
+we describe our participation in the pascal-2005 recognizing textual entailment challenge .
+our method is based on calculating directed sentence similarity : checking the directed semantic word overlap between the text and the hypothesis .
+we use frequency-based term weighting in combination with two different lexical similarity measures .
+our best run shows 0.55 accuracy on the test data , although the difference between our two runs is not significant .
+we found remarkably different optimal threshold values for the development and test data .
+we argue that , in addition to accuracy , precision and recall are valuable measures to consider for textual entailment .
+introduction .
+recognizing textual entailment challenge , organized within the pascal network , is a task where systems are required to detect semantic entailment between pairs of natural language sentences .
+for example , the sentence the memorandum noted the united nations estimated that 2.5 million to 3.5 million people died of aids last year is considered to logically entail the sentence over 2 million people died ofaids last year .
+the organizers of the entailment challenge provided participants with development and test corpora , with 567 and 800 sentence pairs , respectively , manually annotated for logical entailment .
+in this paper we describe a simple system based on lexical similarity , with two different word similarity measures .
+we also present our official results and a deeper analysis of the systems performance .
+system description .
+for every text / hypothesis pair ( t , h ) , we consider each sentence a bag of words and calculate directed sentence similarity score .
+to check for entailment , we compare the score against a threshold .
+this method is implemented as shown in the pseudo- algorithm below .
+essentially , for every word in the hypothesis we find the most similar word in the text according to the measure wordsim ( w1 , w2 ) .
+if such a similar word exists ( maxsim is non-zero ) , we add the weighted similarity value to the total similarity score .
+otherwise , we subtract the weight of the word , penalizing words in the hypothesis without matching words in the text .
+the threshold for the final entailment checking is selected using the development corpus of text / hypothesis pairs .
+the confidence of a systems decision is determined by looking at the distance between the similarity value and the threshold .
+for example , for positive decisions ( sim ^ threshold ) : the algorithm is parametrized with two functions : weight ( w ) : importance of the word for the similarity identification ; wordsim ( w1 , w2 ) : similarity between two words , with range [ 0 , 1 ] .
+weighting words .
+the weighting of words with respect to importance is based on core intuitions from research in information retrieval , where inverse document frequency ( idf ) is often used as a measure of term importance .
+recently , idf was used for the light-weight entailment checking in ( monz and de rijke , 2001 ) .
+for our experiments we used normalized inverse collection frequency of words , calculated on a big collection of newspaper texts .
+the minimum and maximum of the inverse frequencies ( icfmin and icfmax ) are used to normalize weights between 0 and 1 .
+word similarity measures .
+we experimented with two similarity measures : dekang lins dependency-based word similarity ( lin , 1998 ) and the measure based on lexical chains in wordnet ( hirst and st-onge , 1998 ) .
+for both measures , words were first converted to lemmas .
+results .
+we submitted two runs that differ in the word similarity measures they use : sim-lin and sim-wn .
+the table below summarizes the results on the test and development corpora : accuracy ( a ) , confidence- weighted score ( cws ) , and also precision ( p ) and recall ( r ) for the entailment identification .
+for our two official runs , sim-lin performed significantly better than random at the 0.01 level , and simwn better than random at the 0.05 level .
+discussion .
+the evaluation scores are better on the development corpus than on the test corpus .
+this is expected since the thresholds were selected on the development corpus .
+however , a more detailed analysis shows that the differences between the evaluations on the test and development data are not only due to the choice of thresholds .
+figure 1 shows how the performance of the system changes when the thresholds are changed from 0.1 to 0.9 .
+we give evaluation results for both our methods and also for a simple baseline that only considers lexical overlap , without wordnet and frequency information .
+surprisingly , the performance of the system on the test corpus ( thick lines ) is substantially worse than on the development corpus even if optimal similarity thresholds are taken .
+it is not clear whether this is due to the test corpus being more difficult , or our system overfits the development corpus in ways other than threshold selection .
+another important observation is that the optimal threshold values differ substantially for different corpora : 0.200.4 for the test corpus and 0.60.7 for the development corpus .
+moreover , whereas the difference between the two similarity measures seems substantial on the development corpus , they perform very similarly on the test corpus .
+for these reasons , we find it impossible to tell which of the measures is better for the task , and how to select thresholds in a robust way .
+we also compared the performance of our entailment checking system on different subtasks , corresponding to different sources of the entailment pairs .
+the table below shows the accuracy , precision and recall for the sim-lin run for all subtasks .
+from the table it is clear that the overall accuracy of the system is relatively high only due to the resonable performance on the cd subtask .
+this particular subtask appears to be quite easy for our system , whereas on other tasks the performance is close to ( or worse than ) that of the random guessing .
+manual examination of the entailment candidate pairs from the cd subtask shows that the pairs usually have many words in common : in the second example the similarity is substantially lower since numbers ( which occur relatively rarely in our newspaper collection , and thus get higher weight ) are different .
+we have not checked whether a simple word overlap baseline would give a reasonable performance for the cd subtask .
+note that we give precision ( p ) and recall ( r ) scores as well as accuracy .
+we believe that p and r help us to better understand the behavior of our algorithms in ways that accuracy does not .
+for instance , for all subtasks , except cd , precision is substantially higher than recall .
+this can be explained by the fact that our lexical similarity resources are far from complete and we are not trying to detect various complex types of paraphrasing ( e.g. , syntactic ) .
+our method seems very cautious : it prefers to reject the entailment if it cannot find simple lexical evidence to support it .
+although , in principle , we can tune the precision / recall balance by varying the thresholds , the experimental results on which we report in this note show that the thresholds are very corpus-specific and thus can hardly be used for this tuning .
+conclusions .
+we described our participation in the pascal-2005 recognizing textual entailment challenge , with a simple sentence similarity-based system that uses two different word similarity measures .
+although both our runs show significant improvement over random guessing , the improvement is based only on one subtask ( cd ) .
+we found that the system cannot be further tuned without overfitting , which suggests that other , deeper text features need to be explored .

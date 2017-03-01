@@ -1,0 +1,248 @@
+syntactic clustering of the web .
+abstract .
+we have developed an efficient way to determine the syntactic similarity of files and have applied it to every document on the world wide web .
+using this mechanism , we built a clustering of all the documents that are syntactically similar .
+possible applications include a " lost and found " service , filtering the results of web searches , updating widely distributed web-pages , and identifying violations of intellectual property rights .
+the web has undergone exponential growth since its birth , and this expansion has generated a number of problems ; in this paper we address two of these : the proliferation of documents that are identical or almost identical .
+the instability of urls .
+the basis of our approach is a mechanism for discovering when two documents are " roughly the same " ; that is , for discovering when they have the same content except for modifications such as formatting , minor corrections , webmaster signature , or logo .
+similarly , we can discover when a document is " roughly contained " in another .
+applying this mechanism to the entire collection of documents found by the altavista spider yields a grouping of the documents into clusters of closely related items .
+as explained below , this clustering can help solve the problems of document duplication and url instability .
+the duplication problem arises in two ways : first , there are documents that are found in multiple places in identical form .
+some examples are faq ( frequently asked questions ) or rfc ( request for comments ) documents .
+the online documentation for popular programs .
+documents stored in several mirror sites .
+legal documents .
+second , there are documents that are found in almost identical incarnations because they are : different versions of the same document .
+the same document with different formatting .
+the same document with site specific links , customizations or contact information .
+combined with other source material to form a larger document .
+split into smaller documents .
+the instability problem arises when a particular url becomes undesirable because : the associated document is temporarily unavailable or has moved .
+the url refers to an old version and the user wants the current version .
+the url is slow to access and the the user wants an identical or similar document that will be faster to retrieve .
+in all these cases , the ability to find documents that are syntactically similar to a given document allows the user to find other , acceptable versions of the desired item .
+urns .
+urns ( uniform resource names ) [ 6 ] have often been suggested as a way to provide functionality similar to that outlined above .
+urns are a generalized form of urls ( uniform resource locators ) .
+however , instead of naming a resource directly - as urls do by giving a specific server , port and file name for the resource - urns point to the resource indirectly through a name server .
+the name server is able to translate the urn to the " best " ( based on some criteria ) url of the resource .
+the main advantage of urns is that they are location independent .
+a single , stable urn can track a resource as it is renamed or moves from server to server .
+a urn could direct a user to the instance of a replicated resource that is in the nearest mirror site , or is given in a desired language .
+unfortunately , progress towards urn 's has been slow .
+the mechanism we present here provides an alternative solution .
+related work .
+our approach to determining syntactic similarity is related to the sampling approach developed by heintze [ 2 ] , though there are many differences in detail and in the precise definition of the measures used .
+since our domain of interest is much larger ( his prototype implementation is on a domain 50,000 times smaller ) and we are less concerned with plagiarism , the emphasis is often different .
+related sampling mechanisms for determining similarity were also developed by manber [ 3 ] and within the stanford scam project [ 1 , 4 , 5 ] .
+with respect to clustering , there is a large body of literature related to semantic clustering , a rather different concept .
+again , clustering based on syntactic similarity ( on a much smaller scale ) is discussed in the context of the scam project .
+defining similarity of documents .
+to capture the informal notions of " roughly the same " and " roughly contained " in a rigorous way , we use the mathematical concepts of resemblance and containment as defined below .
+the resemblance of two documents a and b is a number between 0 and 1 , such that when the resemblance is close to 1 it is likely that the documents are " roughly the same " .
+similarly , the containment of a in b is a number between 0 and 1 that , when close to 1 , indicates that a is " roughly contained " within b. to compute the resemblance and / or the containment of two documents it suffices to keep for each document a sketch of a few hundred bytes .
+the sketches can be efficiently computed ( in time linear in the size of the documents ) and , given two sketches , the resemblance or the containment of the corresponding documents can be computed in time linear in the size of the sketches .
+we view each document as a sequence of words , and start by lexically analyzing it into a canonical sequence of tokens .
+this canonical form ignores minor details such as formatting , html commands , and capitalization .
+we then associate with every document d a set of subsequences of tokens s ( d , w ) .
+a contiguous subsequence contained in d is called a shingle .
+given a document d we define its w-shingling s ( d , w ) as the set of all unique shingles of size w contained in d. experiments show that these mathematical definitions effectively capture our informal notions of " roughly the same " and " roughly contained . "
+notice that resemblance is not transitive ( a well-known fact bemoaned by grandparents all over ) , but neither is our informal idea of " roughly the same ; " for instance consecutive versions of a paper might well be " roughly the same , " but version 100 is probably quite different from version 1 .
+nevertheless , the resemblance distance defined as is a metric and obeys the triangle inequality . ( the proof of this , as well as most of the mathematical analysis of the algorithms discussed here are the subject of a separate paper , in preparation . )
+estimating the resemblance and the containment .
+fix a shingle size w , and let u be the set of all shingles of size w .
+without loss of generality we can view u as a set of numbers .
+now fix a parameter s .
+in view of the above , we can choose a random permutation and afterwards keep for each document d a sketch consisting only of the set f ( d ) and / or v ( d ) .
+the sketches suffice to estimate the resemblance or the containment of any pair of documents without any need for the original files .
+the set f ( d ) has the advantage that it has a fixed size , but it allows only the estimation of resemblance .
+the size of v ( d ) grows as d grows , but allows the estimation of both resemblance and containment .
+the disadvantage of this approach is that the estimation of the containment of very short documents into substantially larger ones is rather error prone due to the paucity of samples .
+in our system , we implement the sketches as follows : we canonicalize documents by removing html formatting and converting all words to lowercase .
+the shingle size w is 10 .
+we use a 40 bit fingerprint function , based on rabin fingerprints [ 7j , enhanced to behave as a random permutation . ( when we refer to a shingle or shingle value in the rest of this paper , we will mean this fingerprint value . )
+we use the " modulus " method for selecting shingles with an m of 25 .
+algorithms .
+conceptually , applying this resemblance algorithm to the entire web is quite simple .
+we retrieve every document on the web ( this data was available to us from an altavista spider run ) , calculate the sketch for each document , compare the sketches for each pair of documents to see if they exceed a threshold of resemblance , combine the pairs of similar documents to make clusters of similar documents .
+while this algorithm is quite simple , a naive implementation is impractical .
+our test case is a set 30,000,000 html and text documents retrieved from the web .
+a pairwise comparison would involve o ( 1015 ) ( a quadrillion ) comparisons .
+this is clearly infeasible .
+the magnitude of the input data imposed severe restrictions on the design of our data structures and algorithms .
+just one bit per document in a data structure requires 4 mbytes .
+a sketch size of 800 bytes per document requires 24 gbytes .
+one millisecond of computation per document translates into 8 hours of computation .
+any algorithm involving random disk accesses or that causes paging activity is completely infeasible .
+in the design of our algorithms , we use a single , simple approach for dealing with so much data - divide , compute , merge .
+we take the data , divide it into pieces , compute on each piece separately and then merge the results .
+we choose the piece size m so that the computation can be done entirely in memory .
+merging the results is a simple , but time consuming process due to the required i / o.
+each merge pass is linear , but log ( n / m ) passes are required , so the overall performance of the process is dominated by a o ( n log ( n / m ) ) term .
+the clustering algorithm .
+we perform the clustering algorithm in four phases .
+in the first phase , we calculate a sketch for every document .
+this step is linear in the total length of the documents .
+in the second phase , we produce a list of all the shingles and the documents they appear in , sorted by shingle value .
+to do this , the sketch for each document is expanded into a list of < shingle value , document id > pairs .
+we sort this list using the divide , sort , merge approach outlined above .
+in the third phase , we generate a list of all the pairs of documents that share any shingles , along with the number of shingles they have in common .
+to do this , we take the file of sorted < shingle , id > pairs and expand it into a list of < id , id , count of common shingles > triplets by taking each shingle that appears in multiple documents and generating the complete set of < id , id , 1 > triplets for that shingle .
+we then apply the divide , sort , merge procedure ( adding the counts for matching id - id pairs ) to produce a single file of all < id , id , count > triplets sorted by the first document id .
+this phase requires the greatest amount of disk space because the initial expansion of the document id triplets is quadratic in the number of documents sharing a shingle , and initially produces many triplets with a count of 1 .
+in the final phase , we produce the complete clustering .
+we examine each < id , id , count > triplet and decide if the document pair exceeds our threshold for resemblance .
+if it does , we add a link between the two documents in a union-find algorithm .
+the connected components output by the union-find algorithm form the final clusters .
+this phase has the greatest memory requirements because we need to hold the entire union-find data structure in memory .
+query support .
+after we have completed the clustering , we need several auxiliary data structures to make queries more convenient .
+we produce : the mapping of a url to its document id : when given a url , we fingerprint it , find it in the sorted list and output the document id. the mapping of document id to the cluster containing it this is a inversion of the cluster to document id mapping , ordered by document id the mapping of a cluster to the documents it contains .
+very common shingles ( for us , this means shingles shared by more than 1000 documents ) are a performance problem during the third phase of our algorithm .
+as we have discussed , the number of document id pairs is quadratic in the number of documents sharing a shingle .
+overly common shingles can greatly expand the number of the document id pairs we have to deal with .
+these common shingles either have no effect on the overall resemblance of the documents or they have the effect of creating a false resemblance between two basically dissimilar documents .
+therefore , we ignore all very common shingles .
+identical documents .
+identical documents do not need to be handled specially in our algorithm , but they add to the computational workload and can be eliminated quite easily .
+identical documents obviously share the same set of shingles and so , for the clustering algorithm , we only need to keep one representative from each group of identical documents .
+therefore , for each document we generate a fingerprint that covers its entire contents .
+when we find documents with identical fingerprints , we eliminate all but one from the clustering algorithm .
+after the clustering has been completed , the other identical documents are added into the cluster containing the one kept version .
+we can expand the collection of identical documents with the " lexically-equivalent " documents and the " shingle-equivalent " documents .
+the lexically-equivalent documents are identical after they have been converted to canonical form .
+the shingle-equivalent documents are documents that have identical shingle values after the set of shingles has been selected .
+obviously , all identical documents are lexically-equivalent , and all lexically equivalent documents are shingle equivalent .
+we can find each set of documents with a single fingerprint .
+identical documents are found with the fingerprint of the entire original contents .
+lexically-equivalent documents are found with the fingerprint of the entire canonicalized contents .
+shingle equivalent documents are found with the fingerprint of the set of selected shingles .
+super shingles .
+the second and third phases of our algorithm require a great deal of disk space for the < shingle , id > pairs and the < id , id , count > triplets .
+we have investigated a method for more directly determining document resemblance from the document sketches .
+sketches are an effective method for estimating the resemblance of two documents because they are easily compared , canonical representations of the documents .
+hence , we can estimate the resemblance of two documents with the ratio of the number of shingles they have in common to total number of shingles between them .
+similarly , we can estimate the resemblance of two sketches by computing the meta-sketch ( sketch of a sketch ) .
+we compute super shingles by sorting the sketch 's shingles and then shingling the shingles .
+the document 's meta-sketch is then determined by its set of super shingles .
+if two documents have even one super shingle in common , then that means their sketches have a sequence of shingles in common .
+if the number of shingles in a super shingle is chosen correctly , then it is highly probably that two similar documents will have at least one common super shingle .
+in addition , the existence of a single common super shingle means it is likely that two documents resemble each other .
+to compute resemblance with regular shingles , we need to collect and count the common shingles .
+to detect resemblance with super shingles , we only need to find a single common super shingle .
+so , super shingles are a simpler and more efficient method of computing resemblance .
+a clustering algorithm based on super shingles is : compute the list of super shingles for each document .
+expand the list of super shingles into a sorted list of < super shingle , id > pairs .
+any documents that share a super shingle resemble each other are added into the cluster . ( if we want a higher threshold we can compute their actual resemblance . )
+so , the entire third phase of the basic algorithm where we generate and merge the document id pairs is not needed .
+unfortunately , super shingles are not as flexible or as accurate as computing resemblance with regular sketches .
+first , super shingles do not work well for short documents .
+short documents do not contain many shingles and so , even with regular shingles , the error in estimating document resemblance is greater .
+super shingles make this problem worse .
+a super shingle represents a sequence of shingles , and so , shorter documents , with fewer super shingles , have a lower probability of producing a common super shingle .
+second , super shingles cannot detect containment .
+suppose we have two documents and the larger one completely contains the smaller one .
+then , the sketch of the larger document includes all of the shingles of the smaller document along with additional shingles from its extra material .
+when we sort the shingles for the larger document and calculate its super shingles , the extra shingles will be interspersed with the common shingles .
+therefore , the sequences of shingles - and thus the super shingles - for the larger document will be different than those of the smaller document .
+applications .
+while we will soon discuss some specific applications related to clustering the web , we also want to point out that our resemblance and clustering techniques are not limited to text documents .
+our general technique only depends on the ability to extract a set of features from objects .
+once we are given the set of features for each object , we can then apply the algorithms described above to compute the resemblance of the objects and to cluster groups of similar objects .
+for documents and objects other than text , there are many potential features for computing resemblance .
+an audio message of human speech could have features based on sequences of phonemes .
+for documents in foreign language , the features could be labels from a multi-lingual concordance .
+musical features could be based on sequences of notes or chords .
+as techniques are developed for identifying features in other data types , there are no limits on the objects that can be compared for resemblance : images , video sequences , or databases .
+web-based applications .
+now , we will consider some of the web-related applications of our methods .
+once we have the sketches , clusters and auxiliary data structures , we can use them for several interesting applications .
+as we discuss the different applications , we will consider their storage and performance characteristics .
+there are two approaches : basic clustering .
+the most straightforward application is a service to locate highly similar alternatives to a given url .
+in this case , the user has the url of a document and for some reason wants to find another document that resembles it .
+this relationship is exactly what clustering gives us .
+given a complete clustering and the auxiliary files for mapping urls to document ids and mapping document ids back to urls , we can very efficiently compute all of the urls for the documents in the cluster .
+unfortunately , clustering must be done with a single fixed threshold for resemblance and we must decide in advance if we want contained and containing documents included in the clusters .
+we can get around this and produce clusters based on a variety of policies by repeating the final phase of the clustering algorithm for each different policy .
+this phase is relatively inexpensive and the output clusters are relatively compact .
+another issue is that basic clustering can only support queries about urls that are part of the input , and the clusters are based on the contents of the urls at the time they were retrieved .
+we can solve this problem by computing sketches for new or modified documents on demand .
+on the fly resemblance .
+if we are able to keep the full sketches of every document and the file of sorted < shingle , id > pairs , then we can perform on the fly resemblance .
+in this case , the input can be any document ; either from a url or stored locally ; whether is was part of the initial clustering or not ; whether it has changed or not .
+look up each shingle from the input document in the sorted < shingle , id > file .
+for each document that shares a shingle , maintain the count of common shingles .
+based on the number of shingles in each document , compute the resemblance and contained / containment value .
+sort , threshold and present the result .
+this method requires more space and time , but it offers greater flexibility than precomputed clusters .
+it also allows any document , even a document that was not part of the original input , to be compared for resemblance .
+we have found that the performance of this method is quite good ( a few seconds ) unless the input document is quite big or resembles a large number of documents .
+lost and found .
+everyone is aware that urls are not good forever .
+pages get renamed , pages move , web sites get rearranged , servers get renamed , and users change internet service providers .
+every good url eventually becomes yet another dead link .
+our clustering method can create a world wide web lost and found , where we automatically notice that the url for a page has changed and find its new url .
+instead of just clustering the current contents of the web , we cluster the contents of the web from multiple sweeps over the web done at different times .
+as long as any one sweep has found a particular url , we can find its current location by taking the most recent url from its cluster .
+the clustering algorithm remains the same , except that the urls of the document are also tagged with a date .
+clustering the documents found in a series of sweeps can be made relatively efficient as it is not necessary to perform the entire clustering from scratch each time .
+instead , we need only sketch the documents from the last sweep and merge them into the existing clusters .
+in addition , there will be a large number of identical documents between sweeps and these can be extracted early in the algorithm .
+clustering of search results .
+current search engines like altavista try to return the most relevant answers to a query first .
+often this means several similar versions of a document are returned as separate entries .
+clustering allows us to display this similarity to the user and present the search results more compactly .
+the user selects the preferred version to retrieve and avoids examining nearly identical copies .
+updating widely distributed information .
+some important information is widely disseminated and quoted throughout the web , with slight local changes .
+for instance there are many slightly reformatted , full or partial copies of an ftc ( federal trade commission ) ruling regarding consumer credit .
+if this ruling were to change , one would hope that ftc would try to notify all the sites with any version of this document .
+the cluster containing the original ruling would assist in producing the list of contacts .
+in contrast , with a search engine a query wide enough to cover all the variations would result in a large number of irrelevant hits that would have to be filtered out .
+characterizing how pages change over time .
+in addition to updating urls , we can use the technique of comparing sketches over time to characterize the behavior of pages on the web .
+for instance , we can observe a page at different times and see how similar each version is to the preceding version .
+when we have this information for many web pages , we can answer some basic questions about the web : how often do pages change ?
+how much do they change per time interval ?
+how often do pages move ?
+within a server ?
+between servers ?
+how long do pages live ?
+how many are created ?
+how many die ?
+a better understanding of these issues will make it possible to build better proxies , search engines , directories and browsers .
+intellectual property and plagiarism .
+one final application is the detection of illegal copies or modifications of intellectual property .
+given a source document we can detect if all or parts of it have been substantially copied or if small changes were made to documents that were supposed to be left unchanged ( eg license agreements ) .
+however , the security of our approach is rather limited , since we have a single , static sketching policy .
+the approach taken by heintze [ 2 ] whereby a new set of samples is selected from a larger stored set , is more secure at the cost of a substantial storage penalty .
+status .
+we have implemented the sketching , clustering and clustering on the fly algorithms and produced a working demonstration system .
+we tested our algorithms on a collection of 30,000,000 html and text documents from a walk of the web performed by altavista in april of 1996 .
+the total input data was 150 gbytes ( an average of about 5k per document ) .
+the file containing just the urls of the documents took up 1.8 gbytes ( an average of 60 bytes per url ) .
+we sketched all of the documents with 10 word long shingles to produce 40 bit ( 5 byte ) shingle fingerprints .
+we kept 1 in 25 of the shingles found .
+there were about 600m shingles so the raw sketch files took up 3 gbytes ( 5 bytes per shingle ) .
+during the first phase of the clustering algorithm , this expanded to about 5.5 gbytes ( 9 bytes per entry - 5 bytes for the shingle and 4 bytes for the document id ) .
+at the maximum , we required 10 gbytes of storage because we need two copies of the data during the merge operation .
+in the third phase - the creation of < id , id , count > triples - the storage requirements grew to about 20 gbytes . ( we save some space because there are shingles that only appear in one document , but we lose on the quadratic expansion of document id lists to document id pairs .
+the maximum storage reflects the fact that the document id pairs are initially duplicated in each separate file .
+however , they are gradually combined together as the files are merged . )
+at the end of the third phase , the sorted file of < id , id , count > triples took up 6 gbytes .
+the final clustering phase is the most memory intensive phase since we want the entire union-find data structure to be in memory .
+the final file containing the list of the documents in each cluster took up less than 100 mbytes .
+we calculated our clusters based on a 50 % resemblance .
+we found 3.6 million clusters containing a total of 12.3 million documents .
+of these , 2.1 million clusters contained only identical documents ( 5.3 million documents ) .
+the remaining 1.5 million clusters contained 7 million documents ( a mixture of exact duplicates and similar ) .
+conclusions .
+we believe that our system provides new functionality for dealing with the sea of information on the web .
+it allows users to find syntactically related documents anywhere on the world wide web .
+it allows search engines to better present results to their clients .
+and , it allows for new services to track urls over time , and detect and fix links to moved urls .
+we also believe that our techniques can generalize to other problem domains .
+given any technique that extracts a set of features from an object , we can measure the similarity of any two objects or cluster the sets of similar objects from a large number of objects .

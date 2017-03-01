@@ -1,0 +1,220 @@
+multiple bernoulli relevance models for image and video annotation .
+abstract .
+retrieving images in response to textual queries requires some knowledge of the semantics of the picture .
+here , we show how we can do both automatic image annotation and retrieval ( using one word queries ) from images and videos using a multiple bernoulli relevance model .
+the model assumes that a training set of images or videos along with keyword annotations is provided .
+multiple keywords are provided for an image and the specific correspondence between a keyword and an image is not provided .
+each image is partitioned into a set of rectangular regions and a real-valued feature vector is computed over these regions .
+the relevance model is a joint probability distribution of the word annotations and the image feature vectors and is computed using the training set .
+the word probabilities are estimated using a multiple bernoulli model and the image feature probabilities using a non -parametric kernel density estimate .
+the model is then used to annotate images in a test set .
+we show experiments on both images from a standard corel data set and a set of video key frames from nist s video trec .
+comparative experiments show that the model performs better than a model based on estimating word probabilities using the popular multinomial distribution .
+the results also show that our model significantly outperforms previously reported results on the task of image and video annotation .
+introduction .
+searching and finding large numbers of images and videos from a database is a challenging problem .
+the conventional approach to this problem is to search on image attributes like color and texture .
+such approaches suffer from a number of problems .
+they do not really capture the semantics automatically annotating images / videos would solve this problem while still retaining the advantages of a semantic search .
+here , we propose approaches to automatically annotating and retrieving images / videos by learning a statistical generative model called a relevance model using a set of annotated training images .
+the images are partitioned into rectangles and features are computed over these rectangles .
+we then learn a joint probability model for ( continuous ) image features and words called a relevance model and use this model to annotate test images which we have not seen .
+words are modeled using a multiple bernoulli process and images modeled using a kernel density estimate .
+we test this model using a corel dataset provided by [ 5 ] and show that it outperforms previously reported results on other models .
+it performs 4 times better than a model based on machine translation [ 5 ] and better than one which models word probabilities using a multinomial to represent words .
+existing annotation models [ 5 , 3 , 7 , 8 ] by analogy with the text retrieval world have used the multinomial distribution to model annotation words .
+we believe that annotation text has very different characteristics than full text in documents and hence a bernoulli distribution is more appropriate .
+in image / video annotation , a multinomial would split the probability mass between multiple words .
+for example , if an image was annotated with person , grass , with perfect annotation the probability for each word would be equal to 0.5 .
+on the other hand another image which has just one annotation person would have a probability of 1.0 with perfect annotation .
+if we want to find images of people , when rank ordering these images by probability the second image would be preferred to the first although there is no reason for preferring one image over another .
+the problem can be made much worse when the annotation lengths for different images differ substantially .
+a similar effect occurs when annotations are hierarchical .
+for example , let one image be annotated face , male face , bill clinton and a second image be annotated with just face .
+the probability mass would be split three ways ( 0.33 each ) in the first case while in the second image face would have a probability of 1 .
+again the second image would be preferred for the query face , although there is no reason for preferring one over the other .
+the bernoulli model avoids this problem by making decisions about each annotation independent of the other words .
+thus , in all the above examples , each of the words would have a probability of 1 ( assuming perfect annotation ) .
+it has been argued [ 14 ] that the corel dataset is much easier to annotate and retrieve and does not really capture the difficulties inherent in more challenging ( real ) datasets like the news videos in trec video [ 12 ] we therefore , experimented with a subset of news videos ( abc , cnn ) from the trec video dataset .
+we show that in fact we obtain comparable or even better performance ( depending on the task ) on this dataset and that again the bernoulli model outperforms a multinomial model .
+the specific contributions of this work include : a probabilistic generative model which uses a bernoulli process to generate words and kernel density estimate to generate image features .
+this model simultaneously learns the joint probabilities of associating words with image features using a training set of images with keywords and then generates multiple probabilistic annotations for each image .
+significant improvements in annotation performance over a number of other models on both a standard corel dataset and a real word news video dataset .
+large improvements in annotation performance by using a rectangular grid instead of regions obtained using a segmentation algorithm ( see [ 4 ] for a related result ) .
+substantial improvements in retrieval performance on one word queries over a multinomial model .
+the focus of this paper is on models and not on features .
+we use features similar to those used in [ 5 , 3 ] the rest of this paper is organized as follows .
+we first discuss the multiple bernoulli relevance model and its relation to the multinomial relevance model .
+this is followed by a discussion of related work in this area .
+the next section describes the datasets and the results obtained .
+finally , we conclude the paper .
+multiple-bernoulli relevance model .
+in this section we describe a statistical model for automatic annotation of images and video frames .
+our model is called multiple-bernoulli relevance model ( mbrm ) and is based on the continuous-space relevance model ( crm ) proposed by [ 8 ] .
+crm has proved to be very successful on the tasks of automatic image annotation and retrieval .
+in the rest of this section we discuss two shortcomings of the crm in the video domain and propose a possible way of addressing these shortcomings .
+we then provide a formal description of our model as a generative process and complete the section with a brief discussion of estimation details .
+relation of mbrm and crm .
+crm [ 8 ] is a probabilistic model for image annotation and retrieval .
+the basic idea behind crm is to reduce an image to a set of real-valued feature vectors , and then model the joint probability of observing feature vectors with possible annotation words .
+the feature vectors in [ 8 ] are based on automatic segmentation [ 10 ] of the target image into regions and are modeled using a kernel-based probability density function .
+the annotation words are modeled with a multinomial distribution .
+the joint distribution in [ 8 ] of words and feature vectors relies on a doubly non-parametric approach , where expectations are computed over each annotated image in the training set .
+we believe the crm model makes two assumptions that make it ill-suited for annotations in the image / video domain .
+segmentation : the crm relies on automatic segmentation of the image into semantically-coherent regions .
+while the crm does not make any assumptions about correspondence of annotation words to image regions , the overall annotation performance is strongly affected by the quality of segmentation .
+in addition , automatic segmentation is a rather expensive process that is poorly suited for large-scale video datasets .
+multinomial : crm assumes that annotation words for any given image follow a multinomial distribution .
+this is a reasonable assumption in the corel [ 5 ] dataset , where all annotations are approximately equal in length and words reflect prominence of objects in the image .
+however , in our video dataset [ 12 ] individual frames have hierarchical annotations which do not follow the multinomial distribution .
+the length of the annotations also varies widely for different video frames .
+furthermore , video annotations focus on presence of an object in a frame , rather than its prominence .
+in the next two subsections we show how we can improve results by modifying these assumptions .
+rectangular image regions .
+in the current model , rather than attempting segmentation , we impose a fixed-size rectangular grid on each image .
+the image is then represented as a set of tiles .
+using a grid provides a number of advantages .
+first , there is a very significant reduction in the computational time required for the model .
+second , each image now contains a fixed number of regions , which simplifies parameter estimation .
+finally , using a grid makes it somewhat easier to incorporate context into the model .
+for example , relative position could greatly aid in distinguishing adjacent tiles ofwater and sky .
+to evaluate the effect of using rectangular regions versus segmentation , we ran experiments with the crm model but with rectangular regions as input - we call this crm-rectangles .
+the experiments in section 4 show that this alone improves the mean per-word precision by about 38 % - a substantial improvement in performance .
+we believe this is because segmentation is done on a per image basis .
+the crm model cannot undo any problems that occur with segmentation .
+however , using a rectangular grid ( with more regions than produced by the segmentation ) allows the model to learn using a much larger set of training images what the correct association of words and image regions should be .
+multiple-bernoulli word model .
+another major contribution of the current model over the crm is in our use of the multiple-bernoulli distribution for modeling image annotations .
+in this section we highlight the differences between the multiple-bernoulli and the multinomial model , and articulate why we believe that multiple-bernoulli is a better alternative .
+the multinomial model is meant to reflect the prominence of words in a given annotation .
+the event space of the model is the set of all strings over a given vocabulary , and consequently words can appear multiple times in the annotation .
+in addition , the probability mass is shared by all words in the vocabulary , and during the estimation process the words compete for this probability mass .
+as a result , an image i1 annotated with a single word face will assign all probability mass to that word , so p ( faceii1 ) = 1 .
+at the same time , an image i2 annotated with two words face and person will split the probability mass , so p ( faceii2 ) = 12 .
+thus the multinomial distribution models prominence of a word in the annotation , favoring single words , or words that occur multiple times in an annotation .
+arguably , both images i1 and i2 contain a face , so the probability of face should be equal .
+this can be modeled by a multiple-bernoulli model , which explicitly focuses on presence or absence of words in the annotation , rather than on their prominence .
+the event space of the multiple-bernoulli model is the set of all subsets of a given vocabulary .
+each subset can be represented as a binary occurrence vector in { 0,1 } v.
+individual components of the vector are assumed to be independent and identically ( bernoulli- ) distributed given the particular image .
+in our dataset , image annotations are hierarchical and have greatly varying length .
+no word is ever used more than once in any given annotation , so modeling word frequency is pointless .
+finally , words are assigned to the annotation based on merely the presence of an object in a frame , not on its prominence .
+we believe that a bernoulli model provides a much closer match for this environment .
+our hypothesis is supported by experimental results which will be discussed in section 4 .
+mbrm as a generative model .
+let v denote the annotation vocabulary , t denote the training set of annotated images , and let j be an element of t. according to the previous section j is represented as a set of image regions rj = { r1 ... rn } along with the corresponding annotation wj e { 0,1 } v.
+we assume that the process that generated j is based on two distinct probability distributions .
+first , we assume that the set of annotation words wj is a result of ivi independent samples from every component of some underlying multiple-bernoulli distribution pv ( i j ) .
+second , for each image region r we sample a real- valued feature vector g of dimension k .
+the feature vector is sampled from some underlying multi-variate density function pg ( i j ) .
+finally , the rectangular region r is produced according to some unknown distribution conditioned on 9 .
+we make no attempt to model the process of generating r from 9 .
+the resulting regions r1 ... rn are tiled to form the image .
+now let ra = 191 ... 9na } denote the feature vectors of some image a , which is not in the training set t. similarly , let wb be some arbitrary subset of v. we would like to model p ( ra , wb ) , the joint probability of observing an image defined by ra together with annotation words wb .
+we hypothesize that the observation 1ra , wb } came from the same process that generated one of the images j * in the training set t. however , we don t know which process that was , and so we compute an expectation over all images jet .
+the overall process for jointly generating wb and ra is as follows : estimating parameters of the model .
+in this section we will discuss simple but effective estimation techniques for the three components of the model : pt , pv and pg .
+pt ( j ) is the probability of selecting the underlying model of image j to generate some new observation r , w .
+in the absence of any task knowledge we use a uniform prior pt ( j ) = 1 / nt , where nt is the size of the training set .
+equation ( 1 ) makes it evident how we can use mbrm for annotating new images or video frames .
+given a new ( un-annotated ) image we can split it into regions ra , compute feature vectors 91 ... 9n for each region and then use equation 1 to determine what subset of vocabulary w * is most likely to co-occur with the set of feature vectors : equation ( 3 ) arises out of placing a gaussian kernel over the feature vector 9i of every region of image j. each kernel is parametrized by the feature covariance matrix e. as a matter of convenience we assumed e = 0 i , where i is the identity matrix . 0 plays the role of kernel bandwidth : it determines the smoothness of pg around the support point 9i .
+the value of 0 is selected empirically on a held-out portion of the training set t. in practice we only consider subsets of a fixed size ( 5 words ) .
+one can show that the maximization in equation ( 2 ) can be done very efficiently because of the factored nature of the bernoulli component .
+essentially it can be shown that our model differs from traditional object recognition approaches in a number of ways ( for example [ 9 , 13 , 1 , 6 , 4 , 11 ] .
+such approaches require a separate model to be trained for each object to be recognized that is , even though the form of the statistical model may be the same , learning two different objects like a car and a person requires two separate training runs ( one for each object ) .
+each training run requires positive and negative examples for that particular object .
+on the other hand , in the relevance model approach described here all the annotation words are learned at the same time - each training image usually has many annotations .
+while some of the newer object recognition techniques [ 6 ] do not require training examples of the objects to be cut out of the background , they still seem to require one object in each image .
+our model on the other hand can handle multiple objects in the same training image and can also ascribe annotations to the backgrounds like sky and grass .
+unlike the more traditional object recognition techniques we label the entire picture and not specific image regions in a picture .
+this is as a librarian s manual annotation shows more than sufficient for tasks like retrieving images from a large database .
+the joint probability model that we propose takes context into account i.e. from training images it learns that an elephant is more likely to be associated with grass and sky and less likely to be associated with buildings and hence if there are image regions associated with grass , this increases the probability of recognizing the object as an elephant .
+traditional object recognition models do not do this .
+the model described here is closest in spirit to the annotation models proposed by [ 5 , 3 , 7 , 8 , 2 ] .
+duygulu et al [ 5 ] proposed to describe images using a vocabulary of blobs .
+first , regions are created using a segmentation algorithm like normalized cuts .
+for each region , features are computed and then blobs are generated by clustering the image features for these regions across images .
+each image is generated by using a certain number of these blobs .
+their translation model applies one of the classical statistical machine translation models to translate from the set of keywords of an image to the set of blobs forming the image .
+on the surface , mbrm appears to be similar to one of the intermediate models considered by blei and jordan [ 3 ] .
+specifically , their gm-mixture model employs a similar dependence structure among the random variables involved .
+however , the topological structure of mbrm is quite different from the one employed by [ 3 ] .
+gm-mixture assumes a low-dimensional topology , leading to a fully-parametric model where 200 or so latent aspects are estimated using the em algorithm .
+to contrast that , mbrm makes no assumptions about the topological structure , and leads to a doubly non-parametric approach , where expectations are computed over every individual point in the training set .
+in addition they model words using a multinomial process .
+blei and jordan used a different subset of the corel dataset and hence it is difficult to make a direct quantitative comparison with their models .
+mbrm is also related to the cross-media relevance. model ( cmrm ) [ 7 ] , which is also doubly non-parametric .
+there are three significant differences between mbrm and cmrm .
+first , cmrm is a discrete model and cannot take advantage of continuous features .
+in order to use cmrm for image annotation we have to quantize continuous feature vectors into a discrete vocabulary ( similarly to the translation [ 5 ] models ) .
+mbrm , on the other hand , directly models continuous features .
+the second difference is that cmrm relies on clustering of the feature vectors into blobs .
+annotation quality of the cmrm is very sensitive to clustering errors , and depends on being able to a-priori select the right cluster granularity : too many clusters will result in extreme sparseness of the space , while too few will lead us to confuse different objects in the images .
+mbrm does not rely on clustering and consequently does not suffer from the granularity issues .
+finally , cmrm also models words using a multinomial process .
+we would like to stress that the difference between mbrm and previously discussed models is not merely conceptual .
+in section 4 we will show that mbrm performs significantly better than all previously proposed models on the tasks of image annotation and retrieval .
+to ensure a fair comparison , we show results on exactly the same data set and similar feature representations as used in [ 5 , 7 , 8 ] .
+experimental results .
+we tested the algorithms using two different datasets , the corel data set from duygulu et al [ 5 ] and a set of video key frames from nist s video trec [ 12 ] .
+to provide a meaningful comparison between mbrm and crm-rectangles , we do comparative experiments using the same set of features extracted from the same set of rectangular grids .
+for the corel dataset we also compare the results with those of duygulu et al and the crm model .
+datasets and feature sets .
+the corel data set consists of 5000 images from 50 corel stock photo cds . 1 each cd includes 100 images on the same topic , and each image is also associated with 1-5 keywords .
+overall there are 371 keywords in the dataset .
+in experiments , we divided this dataset into 3 parts : a training set of 4000 images , a validation set of 500 images and a test set of 500 images .
+the validation set is used to find model parameters .
+after finding the parameters , we merged the 4000 training set and 500 validation set to form a new training set .
+this corresponds to the training set of 4500 images and the test set of 500 images used by duygulu et al [ 5 ] .
+we used a subset of nist s video trec dataset ( for computational reasons we did not use the entire data set ) .
+the data set consists of 12 mpeg files , each of which is a 30- minutes video section of cnn or abc news and advertisements . 5200 key frames were extracted and provided by nist for this dataset .
+the participants in trec annotated a portion of the videos .
+the word vocabulary for human annotation is represented as a hierarchical tree with each annotation word as a node , which means many key frames are annotated hierarchically , e.g. a key frame can be assigned a set of words like face , male face , male news subject .
+this means that the annotation length for key frames can vary widely .
+there are 137 keywords in the whole dataset after we ignore all the audio annotations .
+we randomly divide the dataset into a training set ( 1735 key frames ) , a validation set ( 1735 key frames ) and a test set ( 1730 key frames ) .
+as for the corel set , the validation set is used to find system parameters , and then merged into the training set after we find the parameters .
+every image in these two sets is partitioned into rectangular grids , and a feature vector is then calculated for every grid region .
+the number of rectangles is empirically selected ( using the training and validation sets ) and is 24 for the corel set , and 35 for the video dataset set .
+there are 30 features : 18 color features ( including region color average , standard deviation and skewness ) and 12 texture features ( gabor energy computed over 3 scales and 4 orientations ) .
+results of automatic image annotation .
+in this section we evaluate the performance of our mbrm on automatic image annotation .
+given an un-annotated image or key frame , we can calculate the generative probability of every candidate word in the vocabulary conditioned on it .
+for the corel set , we take the top 5 words ( according to probability ) as automatic annotation of that image .
+for the video set , we take the top 6 ( the average length of human annotations over all key frames ) words .
+figure 2 shows examples of the automatic annotations obtained using the crm-rectangles and mbrm models on the trec video .
+these results are obtained on the same dataset with identical preprocessing , features and training sets .
+the first evaluation on annotation is done as in [ 5 , 7 , 8 ] using recall and precision calculated for every word in the test set .
+for this part of the process we do not use the actual rankings .
+let a be the number of images automatically annotated with a given word , b the number of images correctly annotated with that word .
+c is the number of images having that word in ground-truth annotation .
+then recall = c , and precision = a. to evaluate the system performance , recall and precision values are averaged over the testing words .
+the first set of results are shown for the corel dataset in table 1 .
+results are reported for all ( 260 ) words in the test set .
+they are also reported for the top 49 annotations to make a direct comparison with [ 5 ] .
+the three relevance model approaches are clearly much better than the translation model approach in [ 5 ] with mbrm outperforming all other models ( 4 times better than the translation model ) .
+crm-rectangles and crm are identical except for the fact that crm-rectangles uses regions partitioned into rectangles while the regions in the crm model are obtained using normalized cuts segmentation .
+as the results show this improves the performance significantly ( almost 38 % improvement in precision ) .
+segmentation is a difficult error prone process in computer vision .
+the segmentation is done on a per image basis and hence there is some chance of combining semantically distinct regions together .
+since the probabilistic model deals with regions as entities , it cannot undo segmentation errors ( if for example two distinct image regions are combined together in the segmentation ) .
+however , if we start from a rectangular partition , the probabilistic model which learns from multiple training images has a better chance of associating the rectangular regions with the correct words .
+we believe that this accounts for the better performance using a rectangular partition .
+ranked retrieval with single word queries .
+the annotation results reported above ignore rank order .
+that is , imagine that one wanted to find all car images .
+one would ideally like to rank these according to the probability of annotation and hope that the top ranked ones are all cars .
+in fact , in large databases most users are not likely to even want to see more than 10 or 20 images in response to a query .
+rank order is , therefore , very important for such applications .
+figures 3-6 show the performance of crm-rectangles and mbrm in response to one word text queries .
+although the annotation performance of the two models does not seem to be that different , the results show that the retrieval performance can be very different .
+to evaluate rank order , one can look at the performance on ranked retrieval in response to one word queries .
+given a query word , the system will return all the images which are automatically annotated with that word , ranked according to the probabilities of that word generated by these images .
+we use a metric called mean average precision to evaluate the retrieval performances .
+average precision is the average of precision values at the ranks where relevant ( here relevant means that the ground-truth annotation of this image contains the query word ) items occurs , which is further averaged over all queries to give mean average precision .
+summary and conclusions .
+we have proposed a multiple-bernoulli relevance model for image annotation , to formulate the process of a human annotating images .
+the results show that it outperforms , especially on the ranked retrieval task , the ( multinomial ) continuous relevance model and other models on both the corel dataset and a more realistic trec video dataset .
+future work will include a more extensive retrieval task with this model , which allows for longer text strings .
+other extensions may include larger datasets , better features and more sophisticated models .

@@ -1,0 +1,166 @@
+the impact of parse quality on syntactically-informed statistical machine translation .
+abstract .
+we investigate the impact of parse quality on a syntactically-informed statistical machine translation system applied to technical text .
+we vary parse quality by varying the amount of data used to train the parser .
+as the amount of data increases , parse quality improves , leading to improvements in machine translation output and results that significantly outperform a state-of-the-art phrasal baseline .
+introduction .
+the current study is a response to a question that proponents of syntactically-informed machine translation frequently encounter : how sensitive is a syntactically-informed machine translation system to the quality of the input syntactic analysis ?
+it has been shown that phrasal machine translation systems are not affected by the quality of the input word alignments ( koehn et al. , 2003 ) .
+this finding has generally been cast in favorable terms : such systems are robust to poor quality word alignment .
+a less favorable interpretation of these results might be to conclude that phrasal statistical machine translation ( smt ) systems do not stand to benefit from improvements in word alignment .
+in a similar vein , one might ask whether contemporary syntactically-informed machine translation systems would benefit from improvements in parse accuracy .
+one possibility is that current syntactically-informed smt systems are deriving only limited value from the syntactic analyses , and would therefore not benefit from improved analyses .
+another possibility is that syntactic analysis does indeed contain valuable information that could be exploited by machine learn- ing techniques , but that current parsers are not of sufficient quality to be of use in smt .
+with these questions and concerns , let us begin .
+following some background discussion we describe a set of experiments intended to elucidate the impact of parse quality on smt .
+background .
+we trained statistical machine translation systems on technical text .
+in the following sections we provide background on the data used for training , the dependency parsing framework used to produce treelets , the treelet translation framework and salient characteristics of the target languages .
+dependency parsing .
+dependency analysis is an alternative to constituency analysis ( tesni 'ere , 1959 ; mel ^ cuk , 1988 ) .
+in a dependency analysis of syntax , words directly modify other words , with no intervening non-lexical nodes .
+we use the terms child node and parent node to denote the tokens in a dependency relation .
+each child has a single parent , with the lexical root of the sentence dependent on a synthetic root node .
+we use the parsing approach described in ( corston-oliver et al. , 2006 ) .
+the parser is trained on dependencies extracted from the english penn treebank version 3.0 ( marcus et al. , 1993 ) by using the head-percolation rules of ( yamada and matsumoto , 2003 ) .
+the feature vector f ( i , j ) computed for each possible parent-child dependency includes the part-of-speech ( pos ) , lexeme and stem of the parent and child tokens , the pos of tokens adjacent to the child and parent , and the pos of each token that intervenes between the parent and child .
+various combinations of these features are used , for example a new feature is created that combines the pos of the parent , lexeme of the parent , pos of the child and lexeme of the child .
+each feature is also conjoined with the direction and distance of the parent , e.g. does the child precede or follow the parent , and how many tokens intervene ?
+to set the weight vector w , we train twenty averaged perceptrons ( collins , 2002 ) on different shuffles of data drawn from sections 0221 of the penn treebank .
+the averaged perceptrons are then combined to form a bayes point machine ( herbrich et al. , 2001 ; harrington et al. , 2003 ) , resulting in a linear classifier that is competitive with wide margin techniques .
+to find the optimal parse given the weight vector w and feature vector f ( i , j ) we use the decoder described in ( eisner , 1996 ) .
+treelet translation .
+for syntactically-informed translation , we follow the treelet translation approach described in ( quirk et al. , 2005 ) .
+in this approach , translation is guided by treelet translation pairs .
+here , a treelet is a connected subgraph of a dependency tree .
+a treelet translation pair consists of a source treelet s , a target treelet t , and a word alignment a c s x t such that for all s e s , there exists a unique t e t such that ( s , t ) e a , and if t is the root of t , there is a unique s e s such that ( s , t ) e a. translation of a sentence begins by parsing that sentence into a dependency representation .
+this dependency graph is partitioned into treelets ; like ( koehn et al. , 2003 ) , we assume a uniform probability distribution over all partitions .
+each source treelet is matched to a treelet translation pair ; together , the target language treelets in those treelet translation pairs will form the target translation .
+next the target language treelets are joined to form a single tree : the parent of the root of each treelet is dictated by the source .
+let tr be the root of the target language treelet , and sr be the source node aligned to it .
+if sr is the root of the source sentence , then tr is made the root of the target language tree .
+otherwise let sp be the parent of sr , and tp be the target node aligned to sp : tr is attached to tp .
+finally the ordering of all the nodes is determined , and the target tree is specified , and the target sentence is produced by reading off the labels of the nodes in order .
+translations are scored according to a log-linear combination of feature functions , each scoring different aspects of the translation process .
+we use a beam search decoder to find the best translation t * according to the log-linear combination of models : the models include inverted and direct channel models estimated by relative frequency , lexical weighting channel models following ( vogel et al. , 2003 ) , a trigram target language model using modified kneser-ney smoothing ( goodman , 2001 ) , an order model following ( quirk et al. , 2005 ) , and word count and phrase count functions .
+the weights for these models are determined using the method described in ( och , 2003 ) .
+to estimate the models and extract the treelets , we begin from a parallel corpus .
+first the corpus is word-aligned using giza + + ( och and ney , 2000 ) , then the source sentence are parsed , and finally dependencies are projected onto the target side following the heuristics described in ( quirk et al. , 2005 ) .
+this word aligned parallel dependency tree corpus provides training material for an order model and a target language tree-based language model .
+we also extract treelet translation pairs from this parallel corpus .
+to limit the combinatorial explosion of treelets , we only gather treelets that contain at most four words and at most two gaps in the surface string .
+this limits the number of mappings to be o ( n3 ) in the worst case , where n is the number of nodes in the dependency tree .
+language pairs .
+in the present paper we focus on english-togerman and english-to-japanese machine translation .
+both german and japanese differ markedly from english in ways that we believe illuminate well the strengths of a syntactically-informed smt system .
+we provide a brief sketch of the linguistic characteristics of german and japanese relevant to the present study .
+german .
+although english and german are closely related they both belong to the western branch of the germanic family of indo-european languages the languages differ typologically in ways that are especially problematic for current approaches to statistical machine translation as we shall now illustrate .
+we believe that these typological differences make english-to-german machine translation a fertile test bed for syntax-based smt .
+german has richer inflectional morphology than english , with obligatory marking of case , number and lexical gender on nominal elements and person , number , tense and mood on verbal elements .
+this morphological complexity , combined with pervasive , productive noun compounding is problematic for current approaches to word alignment ( corston-oliver and gamon , 2004 ) .
+equally problematic for machine translation is the issue of word order .
+the position of verbs is strongly determined by clause type .
+for example , in main clauses in declarative sentences , finite verbs occur as the second constituent of the sentence , but certain non-finite verb forms occur in final position .
+in figure 1 , for example , the english can aligns with german konnen in second position and set aligns with german festlegen in final position .
+aside from verbs , german is usually characterized as a free word-order language : major constituents of the sentence may occur in various orders , so-called separable prefixes may occur bound to the verb or may detach and occur at a considerable distance from the verb on which they depend , and extraposition of various kinds of subordinate clause is common .
+in the case of extraposition , for example , more than one third of relative clauses in human-translated german technical text are extraposed .
+for comparable english text the figure is considerably less than one percent ( gamon et al. , 2002 ) .
+japanese .
+word order in japanese is rather different from english .
+english has the canonical constituent order subject-verb-object , whereas japanese prefers subject-object-verb order .
+prepositional phrases in english generally correspond to postpositional phrases in japanese .
+japanese noun phrases are strictly head-final whereas english noun phrases allow postmodifiers such as prepositional phrases , relative clauses and adjectives .
+japanese has little nominal morphology and does not obligatorily mark number , gender or definiteness .
+verbal morphology in japanese is complex with morphological marking of tense , mood , and politeness .
+topicalization and subjectless clauses are pervasive , and problematic for current smt approaches .
+the japanese sentence in figure 1 illustrates several of these typological differences .
+the sentence-initial imperative verb move in the english corresponds to a sentence-final verb in the japanese .
+the japanese translation of the object noun phrase the camera slider switch precedes the verb in japanese .
+the english preposition to aligns to a postposition in japanese .
+experiments .
+our goal in the current paper is to measure the impact of parse quality on syntactically-informed statistical machine translation .
+one method for producing parsers of varying quality might be to train a parser and then to transform its output , e.g. by replacing the parsers selection of the parent for certain tokens with different nodes .
+rather than randomly adding noise to the parses , we decided to vary the quality in ways that more closely mimic the situation that confronts us as we develop machine translation systems .
+annotating data for pos requires considerably less human time and expertise than annotating syntactic relations .
+we therefore used an automatic pos tagger ( toutanova et al. , 2003 ) trained on the complete training section of the penn treebank ( sections 0221 ) .
+annotating syntactic dependencies is time consuming and requires considerable linguistic expertise.1 we can well imagine annotating syntactic dependencies in order to develop a machine translation system by annotating first a small quantity of data , training a parser , training a system that uses the parses produced by that parser and assessing the quality of the machine translation output .
+having assessed the quality of the output , one might annotate additional data and train systems until it appears that the quality of the machine translation output is no longer improving .
+we therefore produced parsers of varying quality by training on the first n sentences of sections 02 21 of the penn treebank , where n ranged from 250 to 39,892 ( the complete training section ) .
+at training time , the gold-standard pos tags were used .
+for parser evaluation and for the machine translation experiments reported here , we used an automatic pos tagger ( toutanova et al. , 2003 ) trained on sections 0221 of the penn treebank .
+we trained english-to-german and english-tojapanese treelet translation systems on approximately 500,000 manually aligned sentence pairs drawn from technical computer documentation .
+the sentence pairs consisted of the english source sentence and a human-translation of that sentence .
+table 1 summarizes the characteristics of this data .
+note that german vocabulary and singleton counts are slightly more than double the corresponding english counts due to complex morphology and pervasive compounding ( see section 2.3.1 ) .
+parser accuracy .
+to evaluate the accuracy of the parsers trained on different samples of sentences we used the traditional blind test section of the penn treebank ( section 23 ) .
+as is well-known in the parsing community , parse quality degrades when a parser trained on the wall street journal text in the penn tree- bank is applied to a different genre or semantic domain .
+since the technical materials that we were training the translation system on differ from the wall street journal in lexicon and syntax , we annotated a set of 250 sentences of technical material to use in evaluating the parser .
+each of the authors independently annotated the same set of 250 sentences .
+the annotation took less than six hours for each author to complete .
+inter-annotator agreement excluding punctuation was 91.8 % .
+differences in annotation were resolved by discussion , and the resulting set of annotations was used to evaluate the parsers .
+figure 2 shows the accuracy of parsers trained on samples of various sizes , excluding punctuation tokens from the evaluation , as is customary in evaluating dependency parsers .
+when measured against section 23 of the penn treebank , the section traditionally used for blind evaluation , the parsers range in accuracy from 77.8 % when trained on 250 sentences to 90.8 % when trained on all of sections 0221 .
+as expected , parse accuracy degrades when measured on text that differs greatly from the training text .
+a parser trained on 250 penn treebank sentences has a dependency accuracy of 76.6 % on the technical text .
+a parser trained on the complete penn treebank training section has a dependency accuracy of 84.3 % on the technical text .
+since the parsers make extensive use of lexical features , it is not surprising that the performance on the two corpora should be so similar with only 250 training sentences ; there were not sufficient instances of each lexical item to train reliable weights or lexical features .
+as the amount of training data increases , the parsers are able to learn interesting facts about specific lexical items , leading to improved accuracy on the penn treebank .
+many of the lexical items that occur in the penn treebank , however , occur infrequently or not at all in the technical materials so the lexical information is of little benefit .
+this reflects the mismatch of content .
+the wall street journal articles in the penn treebank concern such topics as world affairs and the policies of the reagan administration ; these topics are absent in the technical materials .
+conversely , the wall street journal articles contain no discussion of such topics as the intricacies of sql database queries .
+translation quality .
+table 2 presents the impact of parse quality on a treelet translation system , measured using bleu ( papineni et al. , 2002 ) .
+since our main goal is to investigate the impact of parser accuracy on translation quality , we have varied the parser training data , but have held the mt training data , part-ofspeech-tagger , and all other factors constant .
+we observe an upward trend in bleu score as more training data is made available to the parser ; the trend is even clearer in japanese.2 as a baseline , we include right-branching dependency trees , i.e. , trees in which the parent of each word is its left neighbor and the root of a sentence is the first word .
+with this analysis , treelets are simply subsequences of the sentence , and therefore are very similar to the phrases of phrasal smt .
+in englishto-german , this result produces results very comparable to a phrasal smt system ( koehn et al. , 2003 ) trained on the same data .
+for english-to-japanese , however , this baseline performs much worse than a phrasal smt system .
+although phrases and treelets should be nearly identical under this scenario , the decoding constraints are somewhat different : the treelet decoder assumes phrasal cohesion during translation .
+this constraint may account for the drop in quality .
+since the confidence intervals for many pairs overlap , we ran pairwise tests for each system to determine which differences were significant at the p < 0.05 level using the bootstrap method described in ( zhang and vogel , 2004 ) ; table 3 summarizes this comparison .
+neither language pair achieves a statistically significant improvement from increasing the training data from 25,000 pairs to the full training set ; this is not surprising since the increase in parse accuracy is quite small ( 90.2 % to 90.8 % on wall street journal text ) .
+to further understand what differences in dependency analysis were affecting translation quality , we compared a treelet translation system that used a parser trained on 250 penn treebank sentences to a treelet translation system that used a parser trained on 39,892 treebank sentences .
+from the test data , we selected 250 sentences where these two parsers produced different analyses .
+a native speaker of german categorized the differences in machine translation output as either improvements or regressions .
+we then examined and categorized the differences in the dependency analyses .
+table 4 summarizes the results of this comparison .
+note that this table simply identifies correlations between parse changes and translation changes ; it does not attempt to identify a causal link .
+in the analysis , we borrow the term np [ noun phrase ] identification from constituency analysis to describe the identification of dependency treelets spanning complete noun phrases .
+there were 141 sentences for which the machine translated output improved , 71 sentences for which the output regressed and 38 sentences for which the output was identical .
+improvements in the attachment of prepositions , adverbs , gerunds and dependent verbs were common amongst improved translations , but rare amongst regressed translations .
+correct identification of the dependent of a preposition3 was also much more common amongst improvements .
+certain changes , such as improved root identification and final punctuation attachment , were very common across the corpus .
+therefore their common occurrence amongst regressions is not very surprising .
+it was often the case that improvements in root identification or final punctuation attachment were offset by regressions elsewhere in the same sentence .
+improvements in the parsers are cases where the syntactic analysis more closely resembles the analysis of dependency structure that results from applying yamada and matsumotos head-finding rules to the penn treebank .
+figure 4 shows different parses produced by parsers trained on different numbers of sentences .
+the parser trained on 250 sentences incorrectly attaches the preposition from as a dependent of the noun objects whereas the parser trained on the complete penn treebank training section correctly attaches the preposition as a dependent of the verb manipulate .
+these two parsers also yield different analyses of the phrase microsoft access objects .
+in parse ( a ) , objects governs office and office in turn governs microsoft .
+this analysis is linguistically well-motivated , and makes a treelet spanning microsoft office available to the treelet translation system .
+in parse ( b ) , the parser has analyzed this phrase so that objects directly governs microsoft and office .
+the analysis more closely reflects the flat branching structure of the penn treebank but obscures the affinity of microsoft and office .
+an additional measure of parse utility for mt is the amount of translation material that can be extracted from a parallel corpus .
+we increased the parser training data from 250 sentences to 39,986 sentences , but held the number of aligned sentence pairs used train other modules constant .
+the count of treelet translation pairs occurring at least twice in the english-german parallel corpus grew from 1,895,007 to 2,010,451 .
+conclusions .
+we return now to the questions and concerns raised in the introduction .
+first , is a treelet smt system sensitive to parse quality ?
+we have shown that such a system is sensitive to the quality of the input syntactic analyses .
+with the less accurate parsers that result from training on extremely small numbers of sentences , performance is comparable to state-of-the-art phrasal smt systems .
+as the amount of data used to train the parser increases , both english-to-german and english-tojapanese treelet smt improve , and produce results that are statistically significantly better than the phrasal baseline .
+in the introduction we mentioned the concern that others have raised when we have presented our research : syntax might contain valuable information but current parsers might not be of sufficient quality .
+it is certainly true that the accuracy of the best parser used here falls well short of what we might hope for .
+a parser that achieves 90.8 % dependency accuracy when trained on the penn treebank wall street journal corpus and evaluated on comparable text degrades to 84.3 % accuracy when evaluated on technical text .
+despite the degradation in parse accuracy caused by the dramatic differences between the wall street journal text and the technical articles , the treelet smt system was able to extract useful patterns .
+research on syntactically-informed smt is not impeded by the accuracy of contemporary parsers .
+one significant finding is that as few as 250 sentences suffice to train a dependency parser for use in the treelet smt framework .
+to date our research has focused on translation from english to other languages .
+one concern in applying the treelet smt framework to translation from languages other than english has been the expense of data annotation : would we require 40,000 sentences annotated for syntactic dependencies , i.e. , an amount comparable to the penn treebank , in order to train a parser that was sufficiently accurate to achieve the machine translation quality that we have seen when translating from english ?
+the current study gives hope that source languages can be added with relatively modest investments in data annotation .
+as more data is annotated with syntactic dependencies and more accurate parsers are trained , we would hope to see similar improvements in machine translation output .
+we challenge others who are conducting research on syntactically-informed smt to verify whether or to what extent their systems are sensitive to parse quality .

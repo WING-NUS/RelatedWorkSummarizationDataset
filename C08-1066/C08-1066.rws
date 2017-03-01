@@ -1,0 +1,51 @@
+A necessary (if not sufficient) condition for true
+natural language understanding is a mastery of
+open-domain natural language inference (NLI):
+the task of determining whether a natural-language
+hypothesis can be inferred from a given premise.
+Indeed, NLI can enable more immediate applications,
+such as semantic search and question answering (Harabagiu and Hickl, 2006). In recent
+years a spectrum of approaches to robust, opendomain
+NLI have been explored within the context
+of the Recognizing Textual Entailment challenge
+(Dagan et al., 2005). Up to now, the most
+successful approaches have used fairly shallow
+semantic representations, relying on measures of
+lexical or semantic overlap (Jijkoun and de Rijke,
+2005), pattern-based relation extraction (Romano et al., 2006), or approximate matching of
+predicate-argument structure (Hickl et al., 2006).
+Such methods, while robust and often effective,
+are at best partial solutions, unable to explain even
+simple forms of logical inference. For example,
+most shallow approaches would fail to license the
+introduction of large in the following example:
+(1) Every firm saw costs grow more than expected,
+even after adjusting for inflation.
+Every large firm saw costs grow.
+At the other extreme, some researchers have approached
+NLI as logical deduction, building on
+work in theoretical semantics to translate sentences
+into first-order logic (FOL), and then applying
+a theorem prover or model builder (Akhmatova,
+2005; Fowler et al., 2005). Regrettably, such approaches
+tend to founder on the myriad complexities
+of full semantic interpretation, including tense,
+aspect, causality, intensionality, modality, vagueness,
+idioms, indexicals, ellipsis, and many other
+issues. (What is the right FOL representation of
+(1), for example?) FOL-based systems that have
+attained high precision (Bos and Markert, 2006)
+have done so at the cost of very poor recall.
+This work explores a middle way, by developing
+a computational model of what (Lakoff 1970)
+called natural logic, which characterizes valid patterns
+of inference in terms of syntactic forms resembling natural language as much as possible. For example, natural logic might sanction (1) by
+observing that: in ordinary (upward monotone)
+contexts, deleting modifiers preserves truth; in
+downward monotone contexts, inserting modifiers
+preserves truth; and every is downward monotone
+in its restrictor NP. A natural logic system can thus
+achieve the expressivity and precision needed to
+handle a great variety of simple logical inferences,
+while sidestepping the difficulties of full semantic
+interpretation.

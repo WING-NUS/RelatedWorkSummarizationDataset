@@ -1,0 +1,207 @@
+a statistical approach to anaphora resolution abstract .
+this paper presents an algorithm for identifying pronominal anaphora and two experiments based upon this algorithm .
+we incorporate multiple anaphora resolution factors into a statistical framework � specifically the distance between the pronoun and the proposed antecedent , gender / number / animaticity of the proposed antecedent , governing head information and noun phrase repetition .
+we combine them into a single probability that enables to identify the referent .
+our first experiment shows the relative contribution of each source of information and demonstrates a success rate of 82.9 % for all sources combined .
+the second experiment investigates a method for unsupervised learning of gender / number / animaticity information .
+we present some experiments illustrating the accuracy of the method and note that with this information added , our pronoun resolution method achieves 84.2 % accuracy .
+introduction .
+we present a statistical method for determining pronoun anaphora .
+this program differs from earlier work in its almost complete lack of hand-crafting , relying instead on a very small corpus of penn wall street journal tree-bank text ( marcus et al. , 1993 ) that has been marked with co-reference information .
+the first sections of this paper describe this program : the probabilistic model behind it , its implementation , and its performance .
+the second half of the paper describes a method for using ( portions of ) the aforementioned program to learn automatically the typical gender of english words , information that is itself used in the pronoun resolution program .
+in particular , the scheme infers the gender of a referent from the gender of the pronouns that refer to it and selects referents using the pronoun anaphora program .
+we present some typical results as well as the more rigorous results of a blind evaluation of its output .
+a probabilistic model .
+there are many factors , both syntactic and semantic , upon which a pronoun resolution system relies . ( mitkov ( 1997 ) does a detailed study on factors in anaphora resolution . )
+we first discuss the training features we use and then derive the probability equations from them .
+the first piece of useful information we consider is the distance between the pronoun and the candidate antecedent .
+obviously the greater the distance the lower the probability .
+secondly , we look at the syntactic situation in which the pronoun finds itself .
+the most well studied constraints are those involving reflexive pronouns .
+one classical approach to resolving pronouns in text that takes some syntactic factors into consideration is that of hobbs ( 1976 ) .
+this algorithm searches the parse tree in a leftto-right , breadth-first fashion that obeys the major reflexive pronoun constraints while giving a preference to antecedents that are closer to the pronoun .
+in resolving inter-sentential pronouns , the algorithm searches the previous sentence , again in left-to-right , breadth-first order .
+this implements the observed preference for subject position antecedents .
+next , the actual words in a proposed noun- phrase antecedent give us information regarding the gender , number , and animaticity of the proposed referent .
+for example : marie giraud carries historical significance as one of the last women to be executed in france .
+she became an abortionist because it enabled her to buy jam , cocoa and other war-rationed goodies .
+here it is helpful to recognize that " marie " is probably female and thus is unlikely to be referred to by " he " or " it " . given the words in the proposed antecedent we want to find the probability that it is the referent of the pronoun in question .
+we collect these probabilities on the training data , which are marked with reference links .
+the words in the antecedent sometimes also let us test for number agreement .
+generally , a singular pronoun cannot refer to a plural noun phrase. so that in resolving such a pronoun any plural candidates should be ruled out .
+however a singular noun phrase can be the referent of a plural pronoun , as illustrated by the following example : " i think if i tell via corn i need more time , they will take ' cosby ' across the street , " says the general manager of a network affiliate .
+it is also useful to note the interaction between the head constituent of the pronoun p and the antecedent .
+for example : a japanese company might make television picture tubes in japan , assemble the tv sets in malaysia and export them to indonesia .
+here we would compare the degree to which each possible candidate antecedent ( a japanese company , television picture tubes , japan , tv sets , and malaysia in this example ) could serve as the direct object of " export " . these probabilities give us a way to implement selectional restriction .
+a canonical example of selectional restriction is that of the verb " eat " , which selects food as its direct object .
+in the case of " export " the restriction is not as clearcut .
+nevertheless it can still give us guidance on which candidates are more probable than others .
+the last factor we consider is referents ' mention count .
+noun phrases that are _ mentioned repeatedly are preferred .
+the training corpus is marked with the number of times a referent has been mentioned up to that point in the story .
+here we are concerned with the probability that a proposed antecedent is correct given that it has been repeated a certain number of times .
+in effect , we use this probability information to identify the topic of the segment with the belief that the topic is more likely to be referred to by a pronoun .
+the idea is similar to that used in the centering approach ( brennan et al. , 1987 ) where a continued topic is the highest-ranked candidate for pronominalization .
+given the above possible sources of information , we arrive at the following equation. where f ( p ) denotes a function from pronouns to their antecedents : f ( p ) = arg mcax p ( a ( p ) = alp , h , , t , 1 , s p , ci , la ) where a ( p ) is a random variable denoting the referent of the pronoun p and a is a proposed antecedent .
+in the conditioning events , h is the head constituent above p , i / ir is the list of candidate antecedents to be considered , t is the type of phrase of the proposed antecedent ( always a noun-phrase in this study ) , 1 is the type of the head constituent , sp describes the syntactic structure in which p appears , cr specifies the distance of each antecedent from p and m is the number of times the referent is mentioned .
+note that w , d , and m are vector quantities in which each entry corresponds to a possible antecedent .
+when viewed in this way , a can be regarded as an index into these vectors that specifies which value is relevant to the particular choice of antecedent .
+this equation is decomposed into pieces that correspond to all the above factors but are more statistically manageable .
+the decomposition makes use of bayes ' theorem and is based on certain independence assumptions discussed below .
+given a particular choice of the antecedent candidates , the distance is independent of distances of candidates other than the antecedent ( and the distance to non-referents can be ignored ) : the syntactic structure so and the distance from the pronoun da are independent of the number of times the referent is mentioned .
+then we combine so and dc , into one variable dh , hobbs distance , since the hobbs algorithm takes both the syntax and distance into account .
+to avoid the sparse-data problem , the heads h are clustered according to how they behave in p ( wolh , t , i ) .
+the probability of too is then computed on the basis of h 's cluster c ( h ) .
+our corpus also contains referents ' repetition information , from which we can directly compute p ( akno ) .
+the four components in equation ( 8 ) can be estimated in a reasonable fashion .
+the system computes this product and returns the antecedent wo for a pronoun p that maximizes this probability .
+more formally , we want the program to return our antecedent function f ( p ) .
+the implementation .
+we use a small portion of the penn wall street journal tree-bank as our training corpus .
+from this data , we collect the three statistics detailed in the following subsections .
+the hobbs algorithm .
+the hobbs algorithm makes a few assumptions about the syntactic trees upon which it operates that are not satisfied by the tree-bank trees that form the substrate for our algorithm .
+most notably , the hobbs algorithm depends on the existence of an n parse-tree node that is absent from the penn tree-bank trees .
+we have implemented a slightly modified version of hobbs algorithm for the tree-bank parse trees .
+we also transform our trees under certain conditions to meet hobbs ' assumptions as much as possible .
+we have not , however , been able to duplicate exactly the syntactic structures assumed by hobbs .
+once we have the trees in the proper form ( to the degree this is possible ) we run hobbs ' algorithm repeatedly for each pronoun until it has proposed n ( = 15 in our experiment ) candidates .
+the ith candidate is regarded as occurring at " hobbs distance " dh = i .
+then the probability p ( dh = ila ) is simply : we use i x i to denote the number of times x is observed in our training set .
+the gender / animaticity statistics .
+after we have identified the correct antecedents it is a simple counting procedure to compute p ( plwa ) where wo is in the correct antecedent for the pronoun p ( note the pronouns are grouped by their gender ) : when there are multiple relevant words in the antecedent we apply the likelihood test designed by dunning ( 1993 ) on all the words in the candidate np .
+given our limited data , the dunning test tells which word is the most informative , call it w , and we then use p ( piw.7 ) � the mention count statistics .
+the referents range from being mentioned only once to begin mentioned 120 times in the training examples .
+instead of computing the probability for each one of them we group them into " buckets " , so that ma is the bucket for the number of times that a is mentioned .
+we also observe that the position of a pronoun in a story influences the mention count of its referent .
+in other words , the nearer the end of the story a pronoun occurs , the more probable it is that its referent has been mentioned several times .
+we measure position by the sentence number , j .
+the method to compute this probability is : resolving pronouns .
+after collecting the statistics on the training examples , we run the program on the test data .
+for any pronoun we collect n ( = 15 in the experiment ) candidate antecedents proposed by hobbs ' algorithm .
+it is quite possible that a word appears in the test data that the program never saw in the training data and fow which it hence has no p ( plwo ) probability .
+the experiment .
+the algorithm has two modules .
+one collects the statistics on the training corpus required by equation ( 8 ) and the other uses these probabilities to resolve pronouns in the test corpus .
+our data consists of 93,931 words ( 3975 sentences ) and contains 2477 pronouns , 1371 of which are singular ( he , she and it ) .
+the corpus is manually tagged with reference indices and referents ' repetition numbers .
+the result presented here is the accuracy of the program in finding antecedents for he , she , and it and their various forms ( e.g. him , his , himself , etc . )
+the cases where " it " is merely a dummy subject in a cleft sentence ( example 1 ) or has conventional unspecified referents ( example 2 ) are excluded from computing the precision : example 1 : it is very hard to justify paying a silly price for jaguar if an out-and-out bidding war were to start now .
+example 2 : it is raining .
+we performed a ten-way cross-validation where we reserved 10 % of the corpus for testing and used the remaining 90 % for training .
+our preliminary results are shown in the last line of table 1 .
+we are also interested in finding the relative importance of each probability ( i.e. each of the four factors in equation ( 8 ) in pronoun resolution .
+to this end , we ran the program " incrementally " , each time incorporating one more probability .
+the results are shown in table 1 ( all obtained from cross-validation ) .
+the last column of table 1 contains the p-values for testing the statistical significance of each improvement .
+due to relatively large differences between tree-bank parse trees and hobbs ' trees , our hobbs ' implementation does not yield as high an accuracy as it would have if we had had perfect hobbs ' tree representations .
+since the hobbs ' algorithm serves as the base of our scheme , we expect the accuracy to be much higher with more accurately transformed trees .
+we also note that the very simple model that ignores syntax and takes the last mentioned noun-phrase as the referent performs quite a bit worse , about 43 % correct .
+this indicates that syntax does play a very important role in anaphora resolution .
+we see a significant improvement after the word knowledge is added to the program .
+the p ( plwa ) probability gives the system information about gender and animaticity .
+the contribution of this factor is quite significant , as can be seen from table 1 .
+the impact of this probability can be seen more clearly from another experiment in which we tested the program ( using just hobbs distance and gender information ) on the training data .
+here the program can be thought of having " perfect " gender / animaticity knowledge .
+we obtained a success rate of 89.3 % .
+although this success rate overstates the effect , it is a clear indication that knowledge of a referent 's gender and animaticity is essential to anaphora resolution .
+we hoped that the knowledge about the governing constituent would , like gender and animaticity , make a large contribution .
+to our surprise , the improvement is only about 2.2 % .
+this is partly because selection restrictions are not clearcut in many cases .
+also , some head verbs are too general to restrict the selection of any np .
+examples are " is " and " has " , which appear frequently in wall street journal : these verbs are not " selective " enough and the a.ssociated probability is not strong enough to rule out erroneous candidates .
+sparse data also causes a problem in this statistic .
+consequently , we observe a relatively small enhancement to the system .
+the mention information gives the system some idea of the story 's focus .
+the more frequently an entity is repeated , the more likely it is to be the topic of the story and thus to be a candidate for pronominalization .
+our results show that this is indeed the case .
+references by pronouns are closely related to the topic or the center of the discourse .
+np repetition is one simple way of approximately identifying the topic .
+the more accurately the topic of a segment can be identified , the higher the success rate we expect an anaphora resolution system can achieve .
+unsupervised learning of gender information .
+the importance of gender information as revealed in the previous experiments caused us to consider automatic methods for estimating the probability that nouns occurring in a large corpus of english text deonote inanimate , masculine or feminine things .
+the method described here is based on simply counting co-occurrences of pronouns and noun phrases , and thus can employ any method of analysis of the text stream that results in referent / pronoun pairs ( cf . ( hatziv-assiloglou and mckeown , 1997 ) for another application in which no explicit indicators are available in the stream ) .
+we present two very simple methods for finding referent / pronoun pairs , and also give an application of a salience statistic that can indicate how confident we should be about the predictions the method makes .
+following this , we show the results of applying this method to the 21-million-word 1987 wall street journal corpus using two different pronoun reference strategies of varying sophistication , and evaluate their performance using honorifics as reliable gender indicators .
+the method is a very simple mechanism for harvesting the kind of gender information present in discourse fragments like " kim slept .
+she slept for a long time . "
+even if kim 's gender was unknown before seeing the first sentence , after the second sentence , it is known .
+the probability that a referent is in a particular gender class is just the relative frequency with which that referent is referred to by a pronoun p that is part of that gender class .
+that is , the probability of a referent ref being in gender class gc .
+in this work we have considered only three gender classes , masculine , feminine and inanimate , which are indicated by their typical pronouns , he , she , and it .
+however , a variety of pronouns indicate the same class : plural pronouns like " they " and " us " reveal no gender information about their referent and consequently aren 't useful , although this might be a way to learn pluralization in an unsupervised manner .
+in order to gather statistics on the gender of referents in a corpus , there must be some way of identifying the referents .
+in attempting to bootstrap lexical information about referents ' gender , we consider two strategies , both completely blind to any kind of semantics .
+one of the most naive pronoun reference strategies is the " previous noun " heuristic .
+on the intuition pronouns closely follow their referents , this heuristic simply keeps track of the last noun seen and submits that noun as the referent of any pronouns following .
+this strategy is certainly simple-minded but , as noted earlier , it achieves an accuracy of 43 % .
+in the present system , a statistical parser is used ( see ( charniak , 1997 ) ) simply as a tagger .
+this apparent parser overkill is a control to ensure that the part-of-speech tags assigned to words are the same when we use the previous noun heuristic and the hobbs algorithm , to which we wish to compare the previous noun method .
+in fact , the only part-of-speech tags necessary are those indicating nouns and pronouns .
+obviously a much superior strategy would be to apply the anaphora-resolution strategy from previous sections to finding putative referents .
+however , we chose to use only the hobbs distance portion thereof .
+we do not use the " mention " probabilities p ( alma ) , as they are not given in the unmarked text .
+nor do we use the gender / animiticity information gathered from the much smaller hand-marked text , both because we were interested in seeing what unsupervised learning could accomplish , and because we were concerned with inheriting strong biases from the limited hand-marked data .
+thus our second method of finding the pronoun / noun co-occurrences is simply to parse the text and then assume that the noun-phrase at hobbs distance one is the antecedent .
+given a pronoun resolution method and a corpus , the result is a set of pronoun / referent pairs .
+by collating by referent and abstracting away to the gender classes of pronouns , rather than individual pronouns , we have the relative frequencies with which a given referent is referred to by pronouns of each gender class .
+we will say that the gender class for which this relative frequency is the highest is the gender class to which the referent most probably belongs .
+however , any syntax-only pronoun resolution strategy will be wrong some of the time - these methods know nothing about discourse boundaries , intentions , or real-world knowledge .
+we would like to know , therefore , whether the pattern of pronoun references that we observe for a given referent is the result of our supposed " hypothesis about pronoun reference " - that is , the pronoun reference strategy we have provisionally adopted in order to gather statistics - or whether the result of some other unidentified process .
+this decision is made by ranking the referents by log-likelihood ratio , termed salience , for each referent .
+the likelihood ratio is adapted from dunning ( 1993 , page 66 ) and uses the raw frequencies of each pronoun class in the corpus as the null hypothesis , pr ( gc01 ) as well as pr ( ref e gci ) from equation 9 .
+making the unrealistic simplifying assumption that references of one gender class are completely independent of references for another classes ' , the likelihood function in this case is just the product over all classes of the probabilities of each class of reference to the power of the number of observations of this class .
+evaluation .
+we ran the program on 21 million words of wall street journal text .
+one can judge the program informally by simply examining the results and determining if the program 's gender decisions are correct ( occasionally looking at the text for difficult cases ) .
+figure 1 shows the 43 noun phrases with the highest salience figures ( run using the hobbs algorithm ) .
+an examination of these show that all but three are correct . ( the three mistakes are " husband , " " wife , " and " years . "
+we return to the significance of these mistakes later . )
+as a measure of the utility of these results , we also ran our pronoun-anaphora program with these statistics added .
+this achieved an accuracy rate of 84.2 % .
+this is only a small improvement over what was achieved without the data .
+we believe , however , that there are ways to improve the accuracy of the learning method and thus increase its influence on pronoun anaphora resolution .
+finally we attempted a fully automatic direct test of the accuracy of both pronoun methods for gender determination .
+to that end , we devised a more objective test , useful only for scoring the subset of referents that are names of people .
+in particular , we assume that any noun-phrase with the honorifics " mrs. " or " ms. " may be confidently assigned to gender classes he , she , and she , respectively .
+thus we compute precision as follows : there are several things to note about these results .
+first , as one might expect given the already noted superior performance of the hobbs scheme over last-noun , hobbs also performs better at determining gender .
+secondly , at first glance , the 70.3 % accuracy of the hobbs method is disappointing , only slightly superior to the 65.3 % accuracy of hobbs at finding correct referents .
+it might have been hoped that the statistics would make things considerably more accurate .
+in fact , the statistics do make things considerably more accurate .
+figure 2 shows average accuracy as a function of number of references for a given referent .
+it can be seen that there is a significant improvement with increased referent count .
+the reason that the average over all referents is so low is that the counts on referents obey zipf 's law , so that the mode -of the distribution on counts is one .
+thus the 70.3 % overall accuracy is a mix of relatively high accuracy for referents with counts greater than one , and relatively low accuracy for referents with counts of exactly one . 7 previous work the literature on pronoun anaphora is too extensive to summarize , so we concentrate here on corpus-based anaphora research .
+aone and bennett ( 1996 ) present an approach to an automatically trainable anaphora resolution system .
+they use japanese newspaper articles tagged with discourse information as training examples for a machine-learning algorithm which is the c4.5 derision-tree algorithm by quinlan ( 1993 ) .
+they train their decision tree using ( anaphora , antecedent ) pairs together with a set of feature vectors .
+among the 66 features are lexical , syntactic , semantic , and positional features .
+their machine learning-based resolver ( mlr ) is trained using decision trees with 1971 anaphoras ( excluding those referring to multiple discontinuous antecedents ) and they report an average success rate of 74.8 % .
+mitkov ( 1997 ) describes an approach that uses a set of factors as constraints and preferences .
+the constraints rule out implausible candidates and the preferences emphasize the selection of the most likely antecedent .
+the system is not entirely " statistical " in that it consists of various types of rule-based knowledge � syntactic , semantic , domain , discourse , and heuristic .
+a statistical approach is present in the discourse module only where it is used to determine the probability that a noun ( verb ) phrase is the center of a sentence .
+the system also contains domain knowledge including the domain concepts , specific list of subjects and verbs , and topic headings .
+the evaluation was conducted on 133 paragraphs of annotated computer science text .
+the results show an accuracy of 83 % for the 512 occurrences of it .
+lappin and leass ( 1994 ) report on a ( essentially non-statistical ) approach that relies on salience measures derived from syntactic structure and a dynamic model of attentional state .
+the system employs various constraints for np- pronoun non-coreference within a sentence .
+it also uses person , number , and gender features for ruling out anaphoric dependence of a pronoun on an np .
+the algorithm has a sophisticated mechanism for assigning values to several salience parameters and for computing global salience values .
+a blind test was conducted on manual text containing 360 pronoun occurrences ; the algorithm successfully identified the antecedent of the pronoun in 86 % of these pronoun occurrences .
+the addition of a module that contributes statistically measured lexical preferences to the range of factors the algorithm considers improved the performance by 2 % .
+conclustion and future research .
+we have presented a statistical method for pronominal anaphora that achieves an accuracy of 84.2 % .
+the main advantage of the method is its essential simplicity .
+except for implementing the hobbs referent-ordering algorithm , all other system knowledge is imbedded in tables giving the various component probabilities used in the probability model .
+we believe that this simplicity of method will translate into comparative simplicity as we improve the method .
+since the research described herein we have thought of other influences on anaphora resolution and their statistical correlates .
+we hope to include some of them in future work .
+also , as indicated by the work on unsupervised learning of gender information , there is a growing arsenal of learning techniques to be applied to statistical problems .
+consider again the three high-salience words to which our unsupervised learning program assigned incorrect gender : " husband " , " wife " , and " years . "
+we suspect that had our pronoun-assignment method been able to use the topic information used in the complete method , these might well have been decided correctly .
+that is , we suspect that " husband " , for example , was decided incorrectly because the topic of the article was the woman , there was a mention of her " husband , " but the article kept on talking about the woman and used the pronoun " she . "
+while our simple program got confused , a program using better statistics might not have .
+this too is a topic for future research .

@@ -1,0 +1,16 @@
+0#(chinchor, 1998);(tjong kim sang and de meulder, 2003)#supervised named entity recognition now performs almost as well as human annotation in english $1 and has excellent performance on other languages $2 .
+0#(nadeau and sekine 2007)#for a survey of the state of the art , see $1 .
+(claim)#of the features we explore here , all but the pronoun information were introduced in supervised work .
+0.1#(black et al. 1998)#supervised approaches such as $1 have used clustering to group together different nominals referring to the same entity in ways similar to the consistency approach outlined below in section 3.2 .
+(claim)#semi-supervised approaches have also achieved notable success on the task .
+0.2#(riloff and jones, 1999);(collins and singer, 1999)#co-training $1 $2 begins with a small set of labeling heuristics and gradually adds examples to the training data .
+0.2#(collins and singer, 1999)#various co-training approaches presented in $1 all score about 91 % on a dataset of named entities ; the inital labels were assigned using 7 hand-written seed rules .
+0.2#(collins and singer, 1999)#however , $1 show that a mixture-of-naive-bayes generative clustering model ( which they call an em model ) , initialized with the same seed rules , performs much more poorly at 83 % .
+0.3#(evans, 2003);(etzioni et al., 2005);(cucerzan, 2007);(pasca, 2004)#much later work $1 $2 $3 $4 relies on the use of extremely large corpora which allow very precise , but sparse features .
+0.3#(etzioni et al., 2005);(pasca, 2004)#for instance $1 and $2 use web queries to count occurrences of cities such as x and similar phrases .
+(claim)#although our research makes use of a fairly large amount of data , our method is designed to make better use of relatively common contextual features , rather than searching for high-quality semantic features elsewhere .
+1#(li et al., 2004);(bhattacharya and getoor, 2006);(charniak, 2001)#models of the internal structure of names have been used for cross-document coreference $1 $2 and a goal in their own right $3 .
+1#(li et al., 2004)#$1 take named entity classes as a given , and develops both generative and discriminative models to detect coreference between members of each class . their generative model designates a particular mention of a name as a representative and generates all other mentions from it according to an editing process .
+1#(bhattacharya and getoor, 2006)#$1 operates only on authors of scientific papers . their model accounts for a wider variety of name variants than ours , including misspellings and initials . in addition , they confirm our intuition that gibbs sampling for inference has insufficient mobility ; rather than using a heuristic algorithm as we do ( see section 3.5 ) , they use a data-driven block sampler .
+1#(charniak, 2001)#$1 uses a markov chain to generate 6 different components of people ' names , again assuming that the class of personal names can be pre-distinguished using a name list . he infers coreference relationships between similar names appearing in the same document , using the same notion of consistency between names as our model .
+(claim)#as with our model , the clusters found are relatively good , although with some mistakes even on frequent items ( for example , " john " is sometimes treated as a descriptor like " secretary " ) .

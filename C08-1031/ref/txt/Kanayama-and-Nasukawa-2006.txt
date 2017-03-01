@@ -1,0 +1,189 @@
+fully automatic lexicon expansion for domain-oriented sentiment analysis .
+abstract .
+this paper proposes an unsupervised lexicon building method for the detection of polar clauses , which convey positive or negative aspects in a specific domain .
+the lexical entries to be acquired are called polar atoms , the minimum human-understandable syntactic structures that specify the polarity of clauses .
+as a clue to obtain candidate polar atoms , we use context coherency , the tendency for same polarities to appear successively in contexts .
+using the overall density and precision of coherency in the corpus , the statistical estimation picks up appropriate polar atoms among candidates , without any manual tuning of the threshold values .
+the experimental results show that the precision of polarity assignment with the automatically acquired lexicon was 94 % on average , and our method is robust for corpora in diverse domains and for the size of the initial lexicon .
+introduction .
+sentiment analysis ( sa ) ( nasukawa and yi , 2003 ; yi et al. , 2003 ) is a task to recognize writers feelings as expressed in positive or negative comments , by analyzing unreadably large numbers of documents .
+extensive syntactic patterns enable us to detect sentiment expressions and to convert them into semantic structures with high precision , as reported by kanayama et al. ( 2004 ) .
+from the example japanese sentence ( 1 ) in the digital camera domain , the sa system extracts a sentiment representation as ( 2 ) , which consists of a predicate and an argument with positive ( + ) polarity .
+this paper addresses the japanese version of domain-oriented sentiment analysis , which identifies polar clauses conveying goodness and badness in a specific domain , including rather objective expressions .
+building domain-dependent lexicons for many domains is much harder work than preparing domain- independent lexicons and syntactic patterns , because the possible lexical entries are too numerous , and they may differ in each domain .
+to solve this problem , we have devised an unsupervised method to acquire domain- dependent lexical knowledge where a user has only to collect unannotated domain corpora .
+the knowledge to be acquired is a domain- dependent set of polar atoms .
+a polar atom is a minimum syntactic structure specifying polarity in a predicative expression .
+for example , to detect polar clauses in the sentences ( 3 ) and ( 4 ) i , the following polar atoms ( 5 ) and ( 6 ) should appear in the lexicon : this atom can be generally used for this verb regardless of its arguments .
+in the polar atom ( 6 ) , on the other hand , the nominative case of the verb tsuku ( have ) is limited to a specific noun zuumu ( zoom lens ) , since the verb tsuku does not hold the polarity in itself .
+the automatic decision for the scopes of the atoms is one of the major issues .
+for lexical learning from unannotated corpora , our method uses context coherency in terms of polarity , an assumption that polar clauses with the same polarity appear successively unless the context is changed with adversative expressions .
+exploiting this tendency , we can collect candidate polar atoms with their tentative polarities as those adjacent to the polar clauses which have been identified by their domain-independent polar atoms in the initial lexicon .
+we use both intrasentential and inter-sentential contexts to obtain more candidate polar atoms .
+our assumption is intuitively reasonable , but there are many non-polar ( neutral ) clauses adjacent to polar clauses .
+errors in sentence delimitation or syntactic parsing also result in false candidate atoms .
+thus , to adopt a candidate polar atom for the new lexicon , some threshold values for the frequencies or ratios are required , but they depend on the type of the corpus , the size of the initial lexicon , etc .
+our algorithm is fully automatic in the sense that the criteria for the adoption of polar atoms are set automatically by statistical estimation based on the distributions of coherency : coherent precision and coherent density .
+no manual tuning process is required , so the algorithm only needs unannotated domain corpora and the initial lexicon .
+thus our learning method can be used not only by the developers of the system , but also by end- users .
+this feature is very helpful for users to ' the english translations are included only for convenience. analyze documents in new domains .
+in the next section , we review related work , and section 3 describes our runtime sa system .
+in section 4 , our assumption for unsupervised learning , context coherency and its key metrics , coherent precision and coherent density are discussed .
+section 5 describes our unsupervised learning method .
+experimental results are shown in section 6 , and we conclude in section 7 .
+related work .
+sentiment analysis has been extensively studied in recent years .
+the target of sa in this paper is wider than in previous work .
+for example , yu and hatzivassiloglou ( 2003 ) separated facts from opinions and assigned polarities only to opinions .
+in contrast , our system detects factual polar clauses as well as sentiments .
+unsupervised learning for sentiment analysis is also being studied .
+for example , hatzivassiloglou and mckeown ( 1997 ) labeled adjectives as positive or negative , relying on semantic orientation .
+turney ( 2002 ) used collocation with excellent or poor to obtain positive and negative clues for document classification .
+in this paper , we use contextual information which is wider than for the contexts they used , and address the problem of acquiring lexical entries from the noisy clues .
+inter-sentential contexts as in our approach were used as a clue also for subjectivity analysis ( riloff and wiebe , 2003 ; pang and lee , 2004 ) , which is two-fold classification into subjective and objective sentences .
+compared to it , this paper solves a more difficult problem : three-fold classification into positive , negative and non-polar expressions using imperfect coherency in terms of sentiment polarity .
+learning methods for phrase-level sentiment analysis closely share an objective of our approach .
+popescu and etzioni ( 2005 ) achieved high-precision opinion phrases extraction by using relaxation labeling .
+their method iteratively assigns a polarity to a phrase , relying on semantic orientation of co-occurring words in specific relations in a sentence , but the scope of semantic orientation is limited to within a sentence .
+wilson et al. ( 2005 ) proposed supervised learning , dividing the resources into prior polarity and context polarity , which are similar to polar atoms and syntactic patterns in this paper , respectively .
+wilson et al. prepared prior polarities from existing resources , and learned the context polarities by using prior polarities and annotated corpora .
+therefore the prerequisite data and learned data are opposite from those in our approach .
+we took the approach used in this paper because we want to acquire more domain-dependent knowledge , and context polarity is easier to access in japanese ' .
+our approach and their work can complement each other .
+methodology of clause-level sa .
+as figure 1 illustrates , the flow of our sentiment analysis system involves three steps .
+the first step is sentence delimitation : the input document is divided into sentences .
+the second step is proposition detection : propositions which can form polar clauses are identified in each sentence .
+the third step is polarity assignment : the polarity of each proposition is examined by considering the polar atoms .
+this section describes the last two processes , which are based on a deep sentiment analysis method analogous to machine translation ( kanayama et al. , 2004 ) ( hereafter the mt method ) .
+proposition detection .
+our basic tactic for clause-level sa is the high- precision detection of polar clauses based on deep syntactic analysis .
+clause-level means that only predicative verbs and adjectives such as in ( 7 ) are detected , and adnominal ( attributive ) usages of verbs and adjectives as in ( 8 ) are ignored , because utsukushii ( beautiful ) in ( 8 ) does not convey a positive polarity .
+here we use the notion of a proposition as a clause without modality , led by a predicative verb or a predicative adjective .
+the propositions detected from a sentence are subject to the assignment of polarities .
+basically , we detect a proposition only at the head of a syntactic tree3 .
+however , this limitation reduces the recall of sentiment analysis to a very low level .
+in the example ( 7 ) above , utsukushii is the head of the tree , while those initial clauses in ( 9 ) to ( 11 ) below are not .
+in order to achieve higher recall while maintaining high precision , we apply two types of syntactic patterns , modality patterns and conjunctive patterns4 , to the tree structures from the full-parsing .
+modality patterns match some auxiliary verbs or corresponding sentence-final expressions , to allow for specific kinds of modality and negation .
+one of the typical patterns is [ v to omou ] ( i think v ) 5 , which allows utsukushii in ( 9 ) to be a proposition .
+also negation is handled with a modality pattern , such as [ v nai ] ( not v ) .
+in this case a neg feature is attached to the proposition to identify utsukushii in ( 10 ) as a negated proposition .
+on the other hand , no proposition is identified in ( 11 ) due to the deliberate absence of a pattern [ v to yoi ] ( i hope v ) .
+we used a total of 103 domain-independent modality patterns , most of which are derived from the mt method , and some patterns are manually added for this work to achieve higher recall .
+another type of pattern is conjunctive patterns , which allow multiple propositions in a sentence .
+we used a total of 22 conjunctive patterns also derived from the mt method , as exemplified in table 1 .
+in such cases of coordinative clauses and causal clauses , both clauses can be polar clauses .
+on the other hand , no proposition is identified in a conditional clause due to the absence of corresponding conjunctive patterns .
+polarity assignment using polar atoms .
+to assign a polarity to each proposition , polar atoms in the lexicon are compared to the proposition .
+a polar atom consists of polarity , verb or adjective , and optionally , its arguments .
+example ( 12 ) is a simple polar atom , where no argument is specified .
+this atom matches any proposition whose head is utsukushii .
+example ( 13 ) is a complex polar atom , which assigns a negative polarity to any proposition whose head is the verb kaku and where the accusative case is miryoku .
+a polarity is assigned if there exists a polar atom for which verb / adjective and the arguments coincide with the proposition , and otherwise no polarity is assigned .
+the opposite polarity of the polar atom is assigned to a proposition which has the neg feature .
+we used a total of 3,275 polar atoms , most of which are derived from an english sentiment lexicon ( yi et al. , 2003 ) .
+according to the evaluation of the mt method ( kanayama et al. , 2004 ) , high- precision sentiment analysis had been achieved using the polar atoms and patterns , where the system never took positive sentiment for negative and vice versa , and judged positive or negative to neutral expressions in only about 10 % cases .
+however , the recall is too low , and most of the lexicon is for domain-independent expressions , and thus we need more lexical entries to grasp the positive and negative aspects in a specific domain .
+context coherency .
+this section introduces the intra- and inter- sentential contexts in which we assume context coherency for polarity , and describes some preliminary analysis of the assumption .
+intra-sentential and inter-sentential context .
+the identification of propositions described in section 3.1 clarifies our viewpoint of the contexts .
+here we consider two types of contexts : intra-sentential context and inter- sentential context .
+figure 2 illustrates the context coherency in a sample discourse ( 14 ) , where the polarities are perfectly coherent .
+the intra-sentential context is the link between propositions in a sentence , which are detected as coordinative or causal clauses .
+if there is an adversative conjunction such as -kedo ( but ) in the third sentence in ( 14 ) , a flag is attached to the relation , as denoted with 0 in figure 2 .
+though there are differences in syntactic phenomena , this is similar to the semantic orientation proposed by hatzivassiloglou and mckeown ( 1997 ) .
+the inter-sentential context is the link between propositions in the main clauses of pairs of adjacent sentences in a discourse .
+the polarities are assumed to be the same in the inter-sentential context , unless there is an adversative expression as those listed in table 2 .
+if no proposition is detected as in a nominal sentence , the context is split .
+that is , there is no link between the proposition of the previous sentence and that of the next sentence .
+preliminary study on context coherency .
+we claim these two types of context can be used for unsupervised learning as clues to assign a tentative polarity to unknown expressions .
+to validate our assumption , we conducted preliminary observations using various corpora .
+corpora .
+throughout this paper we used japanese corpora from discussion boards in four different domains , whose features are shown in table 3 .
+all of the corpora have clues to the boundaries of postings , so they were suitable to identify the discourses .
+coherent precision .
+how strong is the coherency in the context proposed in section 4.1 ?
+using the polar clauses detected by the sa system with the initial lexicon , we observed the coherent precision of domain d with lexicon l , defined as : context shows the coherency of the two types of context that we considered .
+the cp values are much higher than those in the window methods , because the relationships between adjacent pairs of clauses are handled more appropriately by considering syntactic trees , adversative conjunctions , etc .
+the cp values for inter-sentential and intra-sentential contexts are almost the same , and thus both contexts can be used to obtain 2.5 times more clues for the intra-sentential context .
+in the rest of this paper we will use both contexts .
+we also observed the coherent precision for each domain corpus .
+the results in the center column of table 5 indicate the number is slightly different among corpora , but all of them are far from perfect coherency .
+coherent density .
+besides the conflicting cases , there are many more cases where a polar clause does not appear in the polar context .
+we also observed the coherent density of the domain d with the lexicon l defined as : this indicates the ratio of polar clauses that appear in the coherent context , among all of the polar clauses detected by the system .
+the right column of table 5 shows the coherent density in each domain .
+the movie domain has notably higher coherent density than the others .
+this indicates the sentiment expressions are more frequently used in the movie domain .
+the next section describes the method of our unsupervised learning using this imperfect context coherency .
+counts of candidate polar atoms .
+from each proposition which does not have a polarity , candidate polar atoms in the form of simple atoms ( just a verb or adjective ) or complex atoms ( a verb or adjective and its rightmost argument consisting of a pair of a noun and a postpositional ) are extracted .
+for each candidate polar atom a , the total appearances f ( a ) , and the occurrences in positive contexts p ( a ) and negative contexts n ( a ) are counted , based on the context of the adjacent clauses ( using the method described in section 4.1 ) .
+if the proposition has the neg feature , the polarity is inverted .
+table 6 shows examples of candidate polar atoms with their frequencies .
+determination for adding to lexicon .
+among the located candidate polar atoms , how can we distinguish true polar atoms , which should be added to the lexicon , from fake polar atoms , which should be discarded ?
+as shown in section 4 , both the coherent precision ( 72-77 % ) and the coherent density ( 7-19 % ) are so small that we cannot rely on each single appearance of the atom in the polar context .
+one possible approach is to set the threshold values for frequency in a polar context , max ( p ( a ) , n ( a ) ) and for the ratio of appearances in polar contexts among the tooptimum threshold values should depend on the corpus and the initial lexicon .
+evaluation by polar atoms .
+first we propose a method of evaluation of the lexical learning .
+it is costly to make consistent and large gold standards in multiple domains , especially in identification tasks such as clause- level sa ( cf. classification tasks ) .
+therefore we evaluated the learning results by asking human annotators to classify the acquired polar atoms as positive , negative , and neutral , instead of the instances of polar clauses detected with the new lexicon .
+this can be done because the polar atoms themselves are informative enough to imply to humans whether the expressions hold positive or negative meanings in the domain .
+to justify the reliability of this evaluation method , two annotators9 evaluated 200 randomly selected candidate polar atoms in the digital camera domain .
+the agreement results are shown in table 7 .
+the manual classification was agreed upon in 89 % of the cases and the kappa value was 0.83 , which is high enough to be considered consistent .
+using manual judgment of the polar atoms , we evaluated the performance with the following three metrics .
+type precision .
+the coincidence rate of the polarity between the acquired polar atom and the human evaluators judgments .
+it is always false if the evaluators judged it as neutral .
+token precision .
+the coincidence rate of the polarity , weighted by its frequency in the corpus .
+this metric emulates the precision of the detection of polar clauses with newly acquired poler atoms , in the runtime sa system .
+relative recall .
+the estimated ratio of the number of detected polar clauses with the expanded lexicon to the number of detected polar clauses with the initial lexicon .
+relative recall will be 1 when no new polar atom is acquired .
+since the precision was high enough , this metric can be used for approximation of the recall , which is hard to evaluate in extraction tasks such as clause- / phrase-level sa .
+robustness for different conditions .
+diversity of corpora .
+for each of the four domain corpora , the annotators evaluated 100 randomly selected polar atoms which were newly acquired by our method , to measure the precisions .
+relative recall is estimated by comparing the numbers of detected polar clauses from randomly selected 2,000 sentences , with and without the acquired polar atoms .
+table 8 shows the results .
+the token precision is higher than 90 % in all of the corpora , including the movie domain , which is considered to be difficult for sa ( turney , 2002 ) .
+this is extremely high precision for this task , because the correctness of both the extraction and polarity assignment was evaluated simultaneously .
+the relative recall 1.28 in the digital camera domain means the recall is increased from 43 % 10 to 55 % .
+the difference was smaller in other domains , but the domain-dependent polar clauses are much informative than general ones , thus the high- precision detection significantly enhances the system .
+we evaluated the token precision and the relative recall in the domains of digital cameras and movies .
+figure 4 shows the results .
+the results showed both relative recall and token precision were lower than in our method for every 0 , in both corpora .
+the optimum 0 was 0.3 in the movie domain and 0.1 in the digital camera domain .
+therefore , in this preset approach , a tuning process is necessary for each domain .
+our method does not require this tuning , and thus fully automatic learning was possible .
+unlike the normal precision-recall tradeoff , the token precision in the movie domain got lower when the 0 is strict .
+this is due to the frequent polar atoms which can be acquired at the low ratios of the polarity .
+our method does not discard these important polar atoms .
+size of the initial lexicon .
+we also tested the performance while varying the size of the initial lexicon l. we prepared three subsets of the initial lexicon , l0.8 , l0.5 , and l0.2 , removing polar atoms randomly .
+these lexicons had 0.8 , 0.5 , 0.2 times the polar atoms , respectively , compared to l. table 9 shows the precisions and recalls using these lexicons for the learning process .
+though the cd values vary , the precision was stable , which means that our method was robust even for different sizes of the lexicon .
+the smaller the initial lexicon , the higher the relative recall , because the polar atoms which were removed from l were recovered in the learning process .
+this result suggests the possibility of the bootstrapping method from a small initial lexicon .
+qualitative evaluation .
+as seen in the agreement study , the polar atoms used in our study were intrinsically meaningful to humans .
+this is because the atoms are predicate-argument structures derived from predicative clauses , and thus humans could imagine the meaning of a polar atom by generating the corresponding sentence in its predicative form .
+in the evaluation process , some interesting results were observed .
+for example , a negative atom nai + - kerare-ga ( to be free from vignetting ) was acquired in the digital camera domain .
+even the evaluator who was familiar with digital cameras did not know the term kerare ( vignetting ) , but after looking up the dictionary she labeled it as negative .
+our learning method could pick up such technical terms and labeled them appropriately .
+also , there were discoveries in the error analysis .
+an evaluator assigned positive to aru + - kamera-ga ( to have camera ) in the mobile phone domain , but the acquired polar atom had the negative polarity .
+this was actually an insight from the recent opinions that many users want phones without camera functions .
+conclusion .
+we proposed an unsupervised method to acquire polar atoms for domain-oriented sa , and demonstrated its high performance .
+the lexicon can be expanded automatically by using unannotated corpora , and tuning of the threshold values is not required .
+therefore even end-users can use this approach to improve the sentiment analysis .
+these features allow them to do on-demand analysis of more narrow domains , such as the domain of digital cameras of a specific manufacturer , or the domain of mobile phones from the female users point of view .

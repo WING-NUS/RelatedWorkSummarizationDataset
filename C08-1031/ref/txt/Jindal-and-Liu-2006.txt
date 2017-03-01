@@ -1,0 +1,248 @@
+mining comparative sentences and relations .
+abstract .
+this paper studies a text mining problem , comparative sentence mining .
+a comparative sentence expresses an ordering relation between two sets of entities with respect to some common features .
+for example , the comparative sentence canons optics are better than those of sony and nikon expresses the comparative relation : ( better , { optics } , { canon } , { sony , nikon } ) .
+given a set of evaluative texts on the web , e.g. , reviews , forum postings , and news articles , the task of comparative sentence mining is ( 1 ) to identify comparative sentences from the texts and ( 2 ) to extract comparative relations from the identified comparative sentences .
+this problem has many applications .
+for example , a product manufacturer wants to know customer opinions of its products in comparison with those of its competitors .
+in this paper , we propose two novel techniques based on two new types of sequential rules to perform the tasks .
+experimental evaluation has been conducted using different types of evaluative texts from the web .
+results show that our techniques are very promising .
+introduction .
+one of the most important ways of evaluating an entity or event is to directly compare it with a similar entity or event .
+the objective of this work is to extract and to analyze comparative sentences in evaluative texts on the web , e.g. , customer reviews , forum discussions , and blogs .
+this task has many important applications .
+for example , after a new product is launched , the manufacturer of the product wants to know consumer opinions on how the product compares with those of its competitors .
+extracting such information can help businesses in its marketing and product benchmarking efforts .
+in recent years , there was a growing interest in analyzing evaluative texts on the web ( e.g. , pang , lee & vaithyanathan , 2002 ; turney , 2002 ; wilson , yu & hatzivassiloglou 2003 ; wiebe & hwa 2004 ; hu & liu , 2004 ; popescu & etzioni 2005 ; carenini , ng & zwart 2005 ; riloff & wiebe 2005 ) .
+the main focus has been on sentiment classification and opinion extraction ( positive or negative comments on an entity or event ) .
+comparisons are related to but also different from sentiments and opinions , which are subjective .
+comparisons can be subjective or objective .
+for example , a typical opinion sentence is the picture quality of camera x is great a subjective comparison is the picture quality of camera x is better than that of camera y .
+an objective comparison is car x is 2 feet longer than car y .
+we can see that comparative sentences use different language constructs from typical opinion sentences ( although the first comparative sentence above is also an opinion ) .
+in this paper , we study the problem of comparative sentence mining .
+it has two tasks : given a set of evaluative texts , identify comparative sentences from them , and classify the identified comparative sentences into different types ( or classes ) .
+extract comparative relations from the identified sentences .
+this involves the extraction of entities and their features that are being compared , and comparative keywords .
+the relation is expressed with ( < relationword > , < features > , < entitys1 > , < entitys2 > ) .
+for example , we have the comparative sentence canons optics is better than those of sony and nikon .
+the extracted relation is : ( better , { optics } , { canon } , { sony , nikon } ) .
+both tasks are very challenging .
+although we see that the above sentences all contain some indicators i.e. , better , longer , many sentences that contain such words are not comparatives , e.g. , i cannot agree with you more .
+the second step is a difficult information extraction problem .
+for the first task , we present an approach that integrates class sequential rules ( csr ) and nave bayesian classification to perform the task .
+this task is studied in detail in ( jindal & liu 2006 ) .
+we include it for completeness .
+for the second task , a new type of rules called label sequential rules ( lsr ) is proposed for extraction .
+our results show that lsrs outperform conditional random fields ( crf ) ( lafferty , mccallum & pereira 2001 ) , which is perhaps the most effective extraction method so far ( mooney & bunescu 2005 ) .
+experimental evaluation has been conducted using web evaluative texts , including consumer reviews , forum postings and news articles .
+the results show that the proposed methods are very promising .
+in summary , this paper makes the following two contributions : 1 .
+it proposes the study of comparative sentence mining .
+to the best of our knowledge , there is no reported study on this problem .
+although linguists have investigated the semantics of comparative constructs , their work is mainly for human understanding and is not directly applicable to our classification and extraction tasks . 2 .
+it proposes two new methods to identify comparative sentences and to extract comparative relations from these sentences based on two new types of rules , class sequential rules and label sequential rules .
+related work .
+researchers in linguistics have studied the syntax and semantics of comparative constructs for a long time ( e.g. , moltmann 1997 ; doran et al. 1994 ; kennedy 2005 ) .
+however , they have not examined computational methods for extracting comparative sentences and relations .
+in text mining , we found no direct work on comparative sentence mining .
+the most related works are sentiment classification and opinion extraction , which as we pointed out are different from our work .
+sentiment classification classifies opinion texts or sentences as positive or negative .
+pang , lee and vaithyanathan ( 2002 ) examined several learning algorithms for sentiment classification of movie reviews .
+turney ( 2002 ) proposed a method based on mutual information between document phrases and the words excellent and poor to find indicative words for sentiment classification .
+dave , lawrence , pennock ( 2003 ) proposed another method .
+in ( hu and liu 2004 ) , some methods were proposed to extract opinions from customer reviews , i.e. , identifying product features commented on by customers and determining whether the opinions are positive or negative . ( popescu & etzioni 2005 ) and ( carenini , ng & zwart 2005 ) explore the issues further .
+other related work on sentiment classification and opinion extraction includes ( morinaga et al. 2002 ; yu & hatzivassiloglou 2003 ; yi et al 2003 ; wilson , wiebe & hwa 2004 ; kim & hovy 2004 ; riloff & wiebe 2005 ) .
+however , none of them extract or analyze comparisons .
+our work is also related to information extraction .
+mooney & bunescu ( 2005 ) gave a good survey and comparison of existing methods .
+conditional random field ( crf ) ( lafferty , mccallum & pereira 2001 ) is perhaps the best method so far .
+we are not aware of any existing work specifically for extraction of comparative relations .
+we show that the lsr method outperforms crf for our task .
+comparative sentence mining problem .
+in linguistics , comparatives are based on specialized morphemes , more / most , -er / -est , less / least and as , for the purpose of establishing orderings of superiority , inferiority and equality , and than and as for making a standard against which an entity is compared .
+the coverage in linguistics is however limited because in practice many comparisons do not use these keywords , such as user preferences ( e.g. , i prefer intel to amd ) and comparatives expressed using other words ( e.g. , lead , beat , etc ) .
+we consider them in this work .
+broadly speaking , comparatives can be classified into two main types : gradable and non -gradable .
+gradable comparatives are based on such relationships as greater or less than , equal to , and greater or less than all others .
+non-gradable comparatives express implicit comparisons ( e.g. , toyota has gps , but nissan does not have ) .
+in this paper , we focus on gradable comparatives .
+such a comparative sentence expresses an explicit ordering between entities .
+although linguists have studied both syntax and semantics of comparatives ( doran et al 1994 ; moltmann 1997 ; kennedy 2005 ) , their work is mainly for human understanding and it provides limited help to our computational tasks of classification and extraction .
+part-of-speech ( pos ) tagging .
+we now give an introduction to part-of-speech ( pos ) tagging as it is useful to our subsequent discussion and also the proposed techniques .
+in grammar , part-of-speech of a word is a linguistic category defined by its syntactic or morphological behavior .
+common pos categories are : noun , verb , adjective , adverb , pronoun , preposition , conjunction and interjection .
+then there are many categories which arise from different forms of these categories .
+in this work , we use brill 's tagger ( brill 1992 ) .
+important pos tags to this work and their categories are : nn : noun , nnp : proper noun , prp : pronoun , vbz : verb , present tense , 3rd person singular , jjr : comparative adjective , jjs : superlative adjective , rbr : comparative adverb , rbs : superlative adverb .
+although jjr , jjs , rbr , and rbs tags represent comparatives , many sentences containing such tags are not comparisons .
+many sentences that do not contain any of these tags may be comparisons .
+thus , we cannot solely use these tags to identify comparative sentences .
+problem definition .
+in this paper we study the problem based on sentences .
+thus we also state the problem based on sentences .
+definition ( entity and feature ) : an entity is the name of a person , a product brand , a company , a location , etc , under comparison in a comparative sentence .
+a feature is a part or property of the entity that is being compared .
+types of comparatives non-equal gradable : relations of the type greater or less than that express a total ordering of some entities with regard to certain features .
+this type also includes user preferences .
+equative : relations of the type equal to that state two entities as equal with respect to some features .
+superlative : relations of the type greater or less than all others that rank one entity over all others .
+non-gradable : sentences which compare features of two or more entities , but do not explicitly grade them .
+the first three types of comparative are called gradable comparatives .
+this work only focuses on these three types .
+for simplicity , from now on we use comparative sentences and gradable comparative sentences interchangeably .
+note that in a long comparative sentence , there can be multiple relations separated by delimiters such as commas ( , ) and conjunctions such as and and but .
+definition ( comparative relation ) : a comparative relation captures the essence of a comparative sentence and is represented with the following : ( relationword , features , entitys1 , entitys2 , type ) where relation word : the keyword used to express a comparative relation in a sentence. features : a set of features being compared. entitys1 and entitys2 : sets of entities being compared .
+entities in entitys1 appear to the left of the relation word and entities in entitys2 appear to the right of the relation word. type : non-equal gradable , equative or superlative , ( not mention earlier for easy understanding ) .
+each of the sets can be empty .
+we do not claim that this relation representation captures everything about comparative sentences .
+our experiences show that it covers a large portion of practically useful comparisons .
+our objective : given a collection of evaluative texts , ( 1 ) identify the three types of comparative sentences , and ( 2 ) extract comparative relations from the sentences .
+two types of sequential rules .
+we now start to present the proposed techniques , which are based on two types of sequential rules .
+mining of such rules is related to mining of sequential patterns ( spm ) ( agrawal and srikant 1994 ) .
+given a set of input sequences , spm finds all subsequences ( called sequential patterns ) that satisfy a user-specified minimum support threshold .
+below , we first explain some notations , and then define the two new types of rules , class sequential rules ( csr ) used in classification of sentences , and label sequential rules ( lsr ) used in relation item extraction .
+for more details about these types of rules and their mining algorithms , please see ( liu 2006 ) .
+let i = { i1 , i2 , ... , in } be a set of items .
+a sequence is an ordered list of itemsets .
+an itemset x is a non-empty set of items .
+we denote a sequence s by ( a1a2 ... ar ) , where ai is an itemset , also called an element of s .
+we denote an element of a sequence by { x1 , x2 , ... , xk } , where xj is an item .
+an item can occur only once in an element of a sequence , but can occur multiple times in different elements .
+class sequential rules .
+a data instance ( si , yi ) in d is said to cover the csr if x is a subsequence of si .
+a data instance ( si , yi ) is said to satisfy a csr if x is a subsequence of si and yi = y .
+the support ( sup ) of the rule is the fraction of total instances in d that satisfies the rule .
+the confidence ( conf ) of the rule is the proportion of instances in d that covers the rule also satisfies the rule .
+given a labeled sequence data set d , a minimum support ( minsup ) and a minimum confidence ( minconf ) threshold , csr mining finds all class sequential rules in d. label sequential rules .
+a label sequential rule ( lsr ) is of the following form , x - > y , where y is a sequence and x is a sequence produced from y by replacing some of its items with wildcards .
+a wildcard , denoted by a * , matches any item .
+the definitions of support and confidence are similar to those above .
+the input data is a set of sequences , called data sequences .
+such rules are useful because one may be interested in predicting some items in an input sequence , e.g. , items 7 and 8 in the above example .
+the confidence of the rule gives us the estimated probability that the two * s are 7 and 8 given that an input sequence contains ( { 1 } { 3 } { * , * } ) .
+this is exactly what we are interested in , i.e. , to use such rules to predict and extract relation items .
+mining of the two types of rules is quite involved .
+interested readers , please refer to ( liu 2006 ) for details .
+identify gradable comparative sentences .
+we now introduce the integrated approach of csrs and learning to identify gradable comparative sentences .
+for gradable comparatives , it is easy to use a set of keywords to identify almost all comparative sentences , i.e. , with a very high recall ( 98 % ) .
+however , the precision is low ( 32 % according to our data set ) .
+we thus designed the following 2-step strategy for learning : use the keywords to filter out those sentences that are unlikely to be comparisons .
+the remaining set of sentences r forms the candidate comparative sentences .
+work on r to improve the precision through supervised learning , i.e. , to classify the sentences in r into comparative and non-comparative sentences .
+sequence data preparation : we use the keywords as pivots to form the sequence data set .
+for each sentence that contains at least one keyword , we use the keyword and the items that are within a radius of r to form a sequence .
+we used a radius of 3 for optimal results .
+for each keyword , we combine the actual keyword and its pos tag to form a single item .
+the reason is that some keywords have multiple pos tags depending upon their uses , which can be important in determining whether a sentence is a comparative sentence or not .
+for other words in the sentence , we simply use their pos tags .
+finally , we attach a manually labeled class to each sequence , comparative or non-comparative .
+csr generation : based on the sequence data we generate csrs .
+in rule generation , for rules involving different keywords , different minimum supports are used because some keywords are very frequent and some are very rare .
+the mechanism behind this is quite involved ( see ( jindal & liu 2006 ; liu 2006 ) for details ) .
+in addition to automatically generated rules , we also have 13 rules compiled manually , which are more complex and difficult to find by current mining techniques .
+learning using a nave bayesian classifier : we used the nave bayesian ( nb ) model to build the final classifier using csrs and manual rules as attributes .
+a new database for nb learning is created .
+the attribute set is the set of all sequences on the left-hand-side of the rules .
+the classes are not used .
+the idea is that we use rules to identify attributes that are predictive of the classes .
+a rules predictability is indicated by its confidence .
+each sentence forms an instance in the training data .
+if the sentence has a particular pattern in the attribute set , the corresponding attribute value is 1 and 0 otherwise .
+using the resulting data , it is easy to perform nb learning .
+more details about this step can be found in ( jindal and liu 2006 ) extract comparative relations .
+this step performs two tasks : classification of the comparative sentences obtained from the last step into one of the three types or classes , non-equal gradable , equative , and superlative .
+note that it is possible to combine this task with the previous step to build a 4-class classifier .
+however , the results were poor .
+breaking the task into two performed better .
+extraction of features , entities and relation keywords .
+classify comparative sentences into three types .
+for this classification task , the keywords alone are already sufficient .
+that is , we use the set of keywords as the attribute set for machine learning .
+the classes are non- equal gradable , equative and superlative .
+if the sentence has a particular keyword in the attribute set , the corresponding attribute value is 1 , and otherwise is 0 .
+the svm learner gives the best result in this case .
+extraction of relation items .
+we now discuss how to extract relation entries / items .
+label sequential rules are used for this task .
+in this work , we make the following assumptions : there is only one relation in a sentence .
+in practice , this is violated only in a very small number of cases .
+entities and features are nouns ( includes nouns , plural nouns and proper nouns ) and pronouns .
+this covers a majority of cases .
+however , a feature can sometimes be a noun used in its verb form or some action described as a verb ( e.g. , intel costs more , costs is a verb and a feature ) .
+we leave this to our future work .
+sequence data generation : we create a sequence database for mining as follows : since we are interested in predicting and extracting items representing entitys ] ( denoted by $ es ] ) , entitys2 ( denoted by $ es2 ) , and features ( denoted by $ ft ) , non-entity-feature ( denoded by $ nef ) , which are called labels , we first manually label such words in each sentence in the training data .
+note that non-entity-feature represents a noun or pronoun that is not a feature or entity .
+for example , in the sentence intel / nnp is / vbz better / jjr than / in amd / nn , the proper noun intel is labeled with $ es ] , and the noun amd is labeled with $ es2 .
+we use the four labels as pivots to generate sequence data .
+for every occurrence of a label in a sentence , a separate sequence is created and put in the sequence database .
+we used a radius of 4 for optimal results .
+the following words are also added to keep track of the distance between two items in a generated pattern : distance words = { l1 , l2 , l3 , l4 , r1 , r2 , r3 , r4 } , where li means distance of i to the left of the pivot. ri means the distance of i to the right of pivot .
+special words # start and # end are used to mark the start and the end of a sentence .
+lsr generation : after the sequence database is built , we first generate all frequence sequences ( minsup = 1 % ) ) .
+we only keep sequences that have at least one label , and the label has no pos tag associated with it .
+for example , we keep ( { $ es1 } { vbz } ) , and discard ( { $ es1 , nn } { vbz } ) and ( { nn } { vbz } ) .
+only the remaining sequences are used to generate lsrs .
+note that an entity or a feature can be a noun ( nn ) , a proper noun ( nnp ) , a plural noun ( nns ) or a pronoun ( prp ) .
+we now replace each occurrence of label { ci } in a sequence with { ci , nn } , { ci , nnp } , { ci , nns } and { ci , prp } and generate 4 rules with separate confidences and supports .
+this specialization enables us to generate rules with much lower supports .
+if there is more than one class in a rule , this substitution is done for one label at a time .
+so , k labels in a sequence will give 4 * k new rules .
+for example , the sequence , ( { $ es1 } { vbz } ) , generates the following 4 csrs .
+the supports and confidences of the new rules are computed by scaning the training data once .
+we then select a set of rules to be used for extraction based on the sequential covering algorithm in machine learning .
+however , in our case , it is more complex because each sentence contains multiple labels .
+if a rule covers a label in a sentence , the sentence cannot be removed .
+we need the training sentences to build the sequential cover .
+the algorithm works as follows : select the lsr rule with the highest confidence .
+replace the matched elements in the sentences that satisfy the rule with the labels ( { ci } ) in the rule .
+recalculate the confidence of each remaining rule based on the modified data from step 1 .
+repeat step 1 and 2 until no rule left with confidence higher than the minconf value ( we used 90 % ) .
+the rules are then applied to match each comparative sentence in the test data to extract the components of the relation .
+the process is similar to the above sequential covering .
+the relation word in the relation is the keyword that identifies the sentence as a comparative sentence .
+empirical evaluation .
+this section evaluates our approaches .
+we first describe the data sets used and then present the experimental results .
+data sets and labeling .
+we collected data from disparate web sources to represent different types of data .
+our data consists of customer reviews , forum discussions and random news articles .
+the sentence distribution of each type is given in table 2 .
+not every sentence contained all three , i.e. entities s1 , s2 and features .
+for superlatives , entitys2 is normally empty .
+labeling : the data sets were manually labeled by 2 human labelers .
+conflicts were resolved through discussions .
+experimental results .
+we now give the precision , recall and f-score results .
+all the results were obtained through 5-fold cross validations .
+identifying gradable comparatives : nb using csrs and crf for extracting relation entries manual rules as the attribute set gave a precision of 82 % and a recall of 81 % ( f-score = 81 % ) for identification of gradable comparative sentences .
+we also tried various other techniques , e.g. , svm ( joachims 1999 ) , csr rules only , etc . , but the results were all poorer .
+due to space limitations , we are unable to give all the details . ( jindal & liu 2006 ) has all the results using a larger dataset .
+classification into three different gradable types : for classification of only gradable comparatives , nb gave an accuracy of 87 % and svm gave an accuracy of 96 % .
+when svm was applied to sentences extracted from the previous step , the average f-score was 80 % .
+accuracy is not used as some sentences in the set are not comparisons .
+extraction of relations : comparisons of precision , recall and f-score results of label sequential rules ( lsrs ) and conditional random fields ( crf ) are given in figure 1 .
+we used the crf system from sarawagi ( 2004 ) .
+lsrs gave an overall f-score of 72 % , while crf gives an overall f-score of 58 % .
+for entitys1 , lsrs give 100 % precision , because such entities have nice characteristics , e.g. , occurring at the start of a sentence , before a verb phrase , etc .
+crf performed reasonably well too , although not as good as lsrs .
+for entitys2 , crf performed poorly .
+entities in entitys2 usually appear in the later part of the sentence and can be anywhere .
+lsrs covering a long range of items usually perform better than local contexts used in crf .
+it is also interesting to note that lsrs gave consistently high precisions .
+the recalls of both systems were significantly affected by errors of the pos tagger .
+figure 1 does not include relation word extraction results since for such extraction we do not need rules .
+after classification , we simply find those keywords in the sentences , which give very accurate results : using lsrs and keywords , we were able to extract 32 % of complete relations and 32 % of three-fourth relations ( one of relation items was not extracted ) .
+pronouns formed 16 % of entitys 1 .
+in our current work , we do not perform pronoun resolution , which we plan to do in the future .
+conclusions and future work .
+this paper studied the new problem of identifying comparative sentences in evaluative texts , and extracting comparative relations from them .
+two techniques were proposed to perform the tasks , based on class sequential rules and label sequential rules , which give us syntactic clues of comparative relations .
+experimental results show that these methods are quite promising .
+this work primarily used pos tags and keywords .
+in our future work , we also plan to explore other language features ( e.g. , named entities , dependency relationships of different constructs , etc ) to improve the accuracy .

@@ -1,0 +1,108 @@
+answer selection and confidence estimation .
+abstract .
+we describe bbn � s question answering work at trec 2002 .
+we focus on two issues : answer selection and confidence estimation .
+we found that some simple constraints on the candidate answers can improve a pure irbased technique for answer selection .
+we also found that a few simple features derived from the question-answer pairs can be used for effective confidence estimation .
+our results also confirmed earlier findings that the world-wide web is a very useful resource for answering trec-style factoid questions .
+introduction .
+answer selection and confidence estimation are two central issues in question answering ( qa ) .
+the goal of answer selection is to choose from a pool of answer candidates the most likely answer for a question .
+the goal of confidence estimation is to compute p ( correct | q , a ) , the probability of answer correctness given a question q and an answer a. a qa system can use the confidence score to decide whether or not to show the user the answer .
+this is important because showing an incorrect answer has negative consequences : it not only burdens and but also may mislead the user with incorrect information .
+for answer selection , we used a hmm-based ir system ( miller et al , 1999 ) to first select documents that are likely to contain answers to a question and then rank candidate answers based on the answer contexts using the same ir system .
+then we used a few constraints to re-rank the candidates .
+such constraints include whether a numerical answer quantifies the correct noun , whether the answer is of the correct location sub-type and whether the answer satisfies the verb arguments of the question .
+for confidence estimation , direct estimation of p ( correctl q , a ) is impossible because it would require virtually unlimited training data .
+instead , we computed the probability based on a few features that concern q and a. a similar technique was used by ittycheriah et al , 2001 .
+the features were empirically selected with two criteria in mind : being able to predict answer correctness and having a small dimensionality .
+the features we used are the answer type of the question , the number of matched question words in the answer context and whether the answer satisfies the verb arguments of the question .
+we also experimented with using the world wide web to supplement the trec corpus for answer finding .
+our results confirmed the positive findings reported in earlier studies ( dumais et al , 2002 ) .
+we also found that the frequency of an answer in the returned web pages is a strong predictor of answer correctness .
+the next section describes the base qa system ( i.e. without using the web ) , including answer selection and confidence estimation .
+section 3 describes how to use the web to supplement the base system .
+section 4 lays out our trec 2002 qa results .
+section 5 summaries this work .
+in our experiments , we used the trec9 & 10 questions for training .
+to be consistent with the trec 2002 qa track , only factoid questions in trec9 & 10 were used for training .
+the base system .
+answer selection .
+selecting the best answer for a question from the trec corpus takes the following steps .
+first we used bbn � s ir system ( miller et al , 1999 ) to select the top n documents from the trec corpus .
+the question was then typed .
+a question classifier automatically assigned the question to one of the 30 types defined in our answer type taxonomy . ( in some rare cases a question was assigned to more than one type .
+for convenience of discussion , we will assume one type per question ) .
+similar to taxonomies used in other qa systems , ours includes common named entities such as persons , dates , locations , numbers , monetary amounts and so forth .
+then the candidate answers were ranked .
+the pool of candidates consists of all occurrences of all named entities in the top documents that match the answer type of the question .
+named entities in the documents were recognized using bbn � s identifinder system ( bikel et al , 1999 ) .
+the candidates were first ranked using bbn � s ir system .
+to score a candidate , every text window that has the candidate at the center and has less than 60 words ( for efficiency considerations ) was scored against the question by the ir engine .
+the score for the candidate took that of the highest- scored window .
+the purpose of using multiple passages is to avoid choosing the optimal passage length , which is known to a tricky problem .
+a similar strategy was used by kaszkiel for document retrieval ( kaszkiel & zobel , 2001 ) .
+then the candidates were re-ranked , by applying the following constraints : if the question asks for a number , check whether the answer quantifies the same noun in the answer context as in the question .
+if the question looks for a sub-type of locations ( e.g. a country , state or city ) , check whether the answer is of that sub-type .
+we employed lists of countries , states and cities for this purpose .
+this constraint is useful because our taxonomy does not distinguish different kinds of locations .
+check if the answer satisfies the verb arguments of the question .
+for example , if the question is � who killed x � , a preferred candidate should be the subject of the verb � killed � and x should be the object of � killed � in the answer context .
+verb arguments were extracted from parse trees of the question and the sentences in the corpus .
+we used bbn � s sift parser ( miller et al , 2000 ) for verb argument extraction .
+candidates that satisfy the above constraints were ranked before those that do not .
+the highest ranked candidate was chosen as the answer for the question .
+the constraints produced a 2 % absolute improvement on the training questions .
+confidence estimation .
+we used three features to estimate p ( correct | q , a ) .
+one feature is whether the answer satisfies the verb arguments of the question .
+this is a boolean feature and we denote it vs .
+using the training questions , we obtained p ( correct | vs is true ) = 0.49 and p ( correct | vs is false ) = 0.23 , which clearly indicate vs is predictive of answer correctness .
+the second feature is a pair of integers ( m , n ) , where m is the number of content words in common between the question and the text window containing the answer , and n is the total number of content words in the question .
+the text window has a fixed length ( 30 words ) and has the answer at the center .
+like p ( correct | vs ) , p ( correct | m , n ) were also computed from the training questions .
+table 1 shows p ( correct | m , n ) when n = 4 .
+as expected , p ( correct | m , n ) monotonically increases with m when n is fixed .
+the third feature is t , the answer type of the question .
+table 2 shows p ( correct | t ) as computed from the training questions .
+as expected , some types of questions ( e.g.
+person ) are more likely to result in a correct answer than other types of questions ( e.g.
+animal ) .
+using the web for answer finding .
+some studies reported positive results using the world wide web to supplement the trec corpora for question answering ( dumais et al , 2002 ) .
+the idea is simple : the enormous amount of data on the web makes it possible to use very strict , precision oriented search criteria that would be impractical to apply on the much smaller trec corpora .
+we experimented with using the web for question answering too .
+in our experiments , we used the web search engine google because of its efficiency and coverage .
+similar to ( dumais et al , 2002 ) , we used two forms of queries , exact and non-exact .
+the former rewrites a question into a declarative sentence while the latter is a conjunction of all content words in the question .
+for efficiency considerations , we only looked for answers within the top 100 hits for each web search .
+furthermore , we confined to the short summaries returned by google rather than using the whole web pages in order to further cut the processing cost .
+the summaries were processed using bbn � s identifinder .
+the most frequent named entity that matches the answer type of the question was extracted as the answer .
+for an answer from the web , we computed confidence based on its frequency in the google summaries .
+since a lot of the data on the web is of dubious quality , we also checked if the same answer was also produced by the base system from the trec corpus .
+the confidence of a web answer was computed as : figure 1 plots the probability of answer correctness as a function of f and intrec .
+the figure shows that there is a strong correlation between f and answer correctness .
+the probability of answer correctness also strongly depends on the boolean feature intrec .
+the question-answer pairs from the web were merged with the ones produced by the base system .
+since for the trec2002 qa track each question can only have one answer , we chose the one with the higher confidence score if the web answer and the answer from base system are different for a question .
+if the answers are the same for a question , the confidence score took the maximum of the score from base system and the score from the web .
+trec2002 results .
+we measured our trec 2002 qa results using two metrics .
+the first is unranked average precision , which is the percentage of questions for which the answer is correct .
+the second metric is ranked average precision1 , which is the official metric adopted by trec 2002 ( voorhees , 2003 ) .
+given a ranked list of question-answer pairs , the ranked average precision is computed by the following algorithm .
+although the ranked average precision does not directly reflect how well the system computes confidence scores , it correlates strongly with the quality of confidence estimation because it rewards systems that place correct question-answer pairs ahead of incorrect ones .
+one way to determine how well a confidence estimation method works is to compare its ranked average precision with that of a baseline that produces random confidence scores and that of a upper-bound that gives confidence 1 to all correct question-answer pairs and confidence 0 to all incorrect ones .
+it is easy to verify that the expected value of the ranked average precision for the baseline is the same as the unranked average precision .
+table 3 shows the ranked scores of the base system and the web-supplemented system together with the baseline ( unranked ) and the upper-bound scores .
+the results show that our confidence estimation techniques work reasonably well : the ranked score is significantly better than the baseline for both runs .
+this is especially true for the web- supplemented run , where the difference between the ranked score and the upper-bound is very small .
+the web- supplemented run is significantly better than the base system , confirming findings published in earlier studies ( dumais et al , 2002 ) .
+conclusions .
+we described our question answering work for the trec2002 qa track .
+in particular , we have explored two problems : answer selection and confidence estimation .
+we found that some simple constraints can improve a pure irbased technique for answer selection .
+our confidence estimation techniques used a few simple features such as answer type , verb argument satisfaction , the number of question words matched by the answer context and answer frequency in the retrieved web pages .
+performance scores on the trec2002 test-bed show that our confidence estimation techniques work reasonably well .
+our results also confirmed findings by other researchers that the web is a useful resource for answering trec-style factoid questions .

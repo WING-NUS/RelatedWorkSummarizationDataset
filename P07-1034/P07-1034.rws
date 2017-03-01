@@ -1,0 +1,36 @@
+There have been several studies in NLP that address
+domain adaptation, and most of them need labeled
+data from both the source domain and the target domain.
+Here we highlight a few representative ones.
+For generative syntactic parsing, (Roark and Bacchiani 2003) have used the source domain data
+to construct a Dirichlet prior for MAP estimation
+of the PCFG for the target domain. (Chelba and Acero 2004) use the parameters of the maximum
+entropy model learned from the source domain as
+the means of a Gaussian prior when training a new
+model on the target data. (Florian et al. 2004) first
+train a NE tagger on the source domain, and then use
+the tagger’s predictions as features for training and
+testing on the target domain.
+The only work we are aware of that directly models the different distributions in the source and the
+target domains is by (Daum´e III and Marcu 2006).
+They assume a “truly source domain” distribution,
+a “truly target domain” distribution, and a “general
+domain” distribution. The source (target) domain
+data is generated from a mixture of the “truly source
+(target) domain” distribution and the “general domain”
+distribution. In contrast, we do not assume
+such a mixture model.
+None of the above methods would work if there
+were no labeled target instances. Indeed, all the
+above methods do not make use of the unlabeled
+instances in the target domain. In contrast, our instance
+weighting framework allows unlabeled target
+instances to contribute to the model estimation.
+(Blitzer et al. 2006) propose a domain adaptation
+method that uses the unlabeled target instances to
+infer a good feature representation, which can be regarded
+as weighting the features. In contrast, we
+weight the instances. The idea of using pt(x)
+ps(x) to
+weight instances has been studied in statistics (Shimodaira,2000), but has not been applied to NLP
+tasks.

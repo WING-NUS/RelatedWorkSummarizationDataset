@@ -1,0 +1,215 @@
+machine transliteration abstract .
+it is challenging to translate names and technical terms across languages with different alphabets and sound inventories .
+these items are commonly transliterated , i.e. , replaced with approximate phonetic equivalents .
+for example , " computer " in english comes out as " konpyuutaa " in japanese .
+translating such items from japanese back to english is even more challenging , and of practical interest , as transliterated items make up the bulk of text phrases not found in bilingual dictionaries .
+we describe and evaluate a method for performing backwards transliterations by machine .
+this method uses a generative model , incorporating several distinct stages in the transliteration process .
+introduction .
+one of the most frequent problems translators must deal with is translating proper names and technical terms .
+for language pairs like spanish / english , this presents no great challenge : a phrase like antonio gil usually gets translated as antonio gil .
+however , the situation is more complicated for language pairs that employ very different alphabets and sound systems , such as japanese / english and arabic / english .
+phonetic translation across these pairs is called transliteration .
+we will look at japanese / english transliteration in this article .
+japanese frequently imports vocabulary from other languages , primarily ( but not exclusively ) from english .
+it has a special phonetic alphabet called katakana , which is used primarily ( but not exclusively ) to write down foreign names and loanwords .
+the katakana symbols are shown in figure 1 , with their japanese pronunciations .
+the two symbols shown in the lower right corner ( � , ) are used to lengthen any japanese vowel or consonant .
+to write a word like golfbag in katakana , some compromises must be made .
+for example , japanese has no distinct l and r. sounds : the two english sounds collapse onto the same japanese sound .
+a similar compromise must be struck for english h and f. also , japanese generally uses an alternating consonant-vowel structure , making it impossible to pronounce lfb without intervening vowels .
+notice how the transliteration is more phonetic than orthographic ; the letter h in johnson does not produce any katakana .
+also , a dot-separator ( o ) is used to separate words , but not consistently .
+and transliteration is clearly an information-losing operation : ranpu could come from either lamp or ramp , while aisukuriimu loses the distinction between ice cream and i scream .
+transliteration is not trivial to automate , but we will be concerned with an even more challenging problem � going from katakana back to english , i.e. , back-transliteration .
+human translators can often " sound out " a katakana phrase to guess an appropriate translation .
+automating this process has great practical importance in japanese / english machine translation .
+katakana phrases are the largest source of text phrases that do not appear in bilingual dictionaries or training corpora ( a.k.a.
+" not- found words " ) , but very little computational work has been done in this area .
+yamron et al. ( 1994 ) briefly mention a pattern-matching approach , while arbabi et al. ( 1994 ) discuss a hybrid neural-net / expert-system approach to ( forward ) transliteration .
+the information-losing aspect of transliteration makes it hard to invert .
+here are some problem instances , taken from actual newspaper articles : here are a few observations about back-transliteration that give an idea of the difficulty of the task : back-transliteration is less forgiving than transliteration .
+there are many ways to write an english word like switch in katakana , all equally valid , but we do not have this flexibility in the reverse direction .
+for example , we cannot drop the t in switch , nor can we write arture when we mean archer .
+forward-direction flexibility wreaks havoc with dictionary-based solutions , because no dictionary will contain all katakana variants .
+back-transliteration is harder than romanization .
+a romanization scheme simply sets down a method for writing a foreign script in roman letters .
+finally , not all katakana phrases can be " sounded out " by back- transliteration .
+some phrases are shorthand , e.g. , 7 � 7 " ( waapuro ) should be translated as word processing .
+others are onomatopoetic and difficult to translate .
+these cases must be solved by techniques other than those described here .
+the most desirable feature of an automatic back-transliterator is accuracy .
+if possible , our techniques should also be : portable to new language pairs like arabic / english with minimal effort , possibly reusing resources .
+robust against errors introduced by optical character recognition .
+relevant to speech recognition situations in which the speaker has a heavy foreign accent .
+aable to take textual ( topical / syntactic ) context into account , or at least be able to return a ranked list of possible english translations .
+like most problems in computational linguistics , this one requires full world knowledge for a 100 % solution .
+choosing between katarina and catalina ( both good guesses for 9 ) might even require detailed knowledge of geography and figure skating .
+at that level , human translators find the problem quite difficult as well , so we only aim to match or possibly exceed their performance .
+a modular learning approach .
+bilingual glossaries contain many entries mapping katakana phrases onto english phrases , e.g. , ( aircraft carrier 2 7 is t " i ' 9 7 ) .
+it is possible to automatically analyze such pairs to gain enough knowledge to accurately map new katakana phrases that come along , and this learning approach travels well to other language pairs .
+a naive approach to finding direct correspondences between english letters and katakana symbols , however , suffers from a number of problems .
+one can easily wind up with a system that proposes iskrym as a back-transliteration of aisukuriimu .
+taking letter frequencies into account improves this to a more plausible-looking isclim .
+moving to real words may give is crime : the i corresponds to ai , the s corresponds to su , etc .
+unfortunately , the correct answer here is ice cream .
+after initial experiments along these lines , we stepped back and built a generative model of the transliteration process , which goes like this : an english phrase is written .
+a translator pronounces it in english .
+the pronunciation is modified to fit the japanese sound inventory .
+the sounds are converted into katakana .
+katakana is written .
+this divides our problem into five subproblems .
+fortunately , there are techniques for coordinating solutions to such subproblems , and for using generative models in the reverse direction .
+these techniques rely on probabilities and bayes ' theorem .
+suppose we build an english phrase generator that produces word sequences according to some probability distribution p ( w ) .
+and suppose we build an english pronouncer that takes a word sequence and assigns it a set of pronunciations , again probabilistically , according to some p ( pi w ) .
+given a pronunciation p , we may want to search for the word sequence w that maximizes p ( w ip ) .
+bayes ' theorem lets us equivalently maximize p ( w ) � p ( plw ) , exactly the two distributions we have modeled .
+extending this notion , we settled down to build five probability distributions : following pereira and riley ( 1997 ) , we implement p ( w ) in a weighted finite-state acceptor ( wfsa ) and we implement the other distributions in weighted finite-state transducers ( wfsts ) .
+a wfsa is a state / transition diagram with weights and symbols on the transitions , making some output sequences more likely than others .
+a wfst is a wfsa with a pair of symbols on each transition , one input and one output .
+inputs and outputs may include the empty symbol e. also following pereira and riley ( 1997 ) , we have implemented a general composition algorithm for constructing an integrated model p ( xlz ) from models p ( xly ) and p ( y1z ) , treating wfsas as vvfsts with identical inputs and outputs .
+we use this to combine an observed katakana string with each of the models in turn .
+the result is a large wfsa containing all possible english translations .
+we have implemented two algorithms for extracting the best translations .
+the first is dijkstra 's shortest-path graph algorithm ( dijkstra 1959 ) .
+the second is a recently discovered k-shortest-paths algorithm ( eppstein 1994 ) that makes it possible for us to identify the top k translations in efficient 0 ( m + n log n + kn ) time , where the wfsa contains n states and m arcs .
+the approach is modular .
+we can test each engine independently and be confident that their results are combined correctly .
+we do no pruning , so the final wfsa contains every solution , however unlikely .
+the only approximation is the viterbi one , which searches for the best path through a wfsa instead of the best sequence ( i.e. , the same sequence does not receive bonus points for appearing more than once ) .
+probabilistic models .
+this section describes how we designed and built each of our five models .
+for consistency , we continue to print written english word sequences in italics ( golf ball ) , english sound sequences in all capitals ( g aa l f b ao l ) , japanese sound sequences in lower case ( goruhubooru ) and katakana sequences naturally ( = ' ) 1 ) .
+word sequences .
+the first model generates scored word sequences , the idea being that ice cream should score higher than ice creme , which should score higher than aice kreem .
+we adopted a simple unigram scoring method that multiplies the scores of the known words and phrases in a sequence .
+our 262,000-entry frequency list draws its words and phrases from the wall street journal corpus , an on-line english name list , and an on-line gazetteer of place names . '
+a portion of the wfsa looks like this : an ideal word sequence model would look a bit different .
+it would prefer exactly those strings which are actually grist for japanese transliterators .
+for example , people rarely transliterate auxiliary verbs , but surnames are often transliterated .
+we have approximated such a model by removing high-frequency words like has , an , are , am , were , their , and does , plus unlikely words corresponding to japanese sound bites , like coup and oh .
+we also built a separate word sequence model containing only english first and last names .
+if we know ( from context ) that the transliterated phrase is a personal name , this model is more precise .
+words to english sounds .
+the next wfst converts english word sequences into english sound sequences .
+we use the english phoneme inventory from the on-line cmu pronunciation dictionary , minus the stress marks . '
+this gives a total of 40 sounds , including 14 vowel sounds ( e.g. , aa , ae , uw ) , 25 consonant sounds ( e.g. , k , hh , r ) , plus one special symbol ( pause ) .
+the dictionary has pronunciations for 110,000 words , and we organized a tree-based wfst from it : note that we insert an optional pause between word pronunciations .
+we originally thought to build a general letter-to-sound wfst ( divay and vitale 1997 ) , on the theory that while wrong ( overgeneralized ) pronunciations might occasionally be generated , japanese transliterators also mispronounce words .
+however , our letter-to-sound wfst did not match the performance of japanese transliterators , and it turns out that mispronunciations are modeled adequately in the next stage of the cascade .
+english sounds to japanese sounds .
+next , we map english sound sequences onto japanese sound sequences .
+this is an inherently information-losing process , as english r and l sounds collapse onto japanese r , the 14 english vowel sounds collapse onto the 5 japanese vowel sounds , etc .
+we face two immediate problems : an obvious target inventory is the japanese syllabary itself , written down in katakana ( e.g. , - = ) or a roman equivalent ( e.g. , ni ) .
+with this approach , the english sound k corresponds to one of t ( ka ) , ( ki ) , ( ku ) , ( ke ) , or ( ko ) , depending on its context .
+unfortunately , because katakana is a syllabary , we would be unable to express an obvious and useful generalization , namely that english k usually corresponds to japanese k , independent of context .
+moreover , the correspondence of japanese katakana writing to japanese sound sequences is not perfectly one-to-one ( see section 3.4 ) , so an independent sound inventory is well-motivated in any case .
+our japanese sound inventory includes 39 symbols : 5 vowel sounds , 33 consonant sounds ( including doubled consonants like kk ) , and one special symbol ( pause ) .
+an english sound sequence like ( p r ow pause s aa k er ) might map onto a japanese sound sequence like ( p u r o pause s a kk a a ) .
+note that long japanese vowel sounds are written with two symbols ( a a ) instead of just one ( aa ) .
+this scheme is attractive because japanese sequences are almost always longer than english sequences .
+our wfst is learned automatically from 8,000 pairs of english / japanese sound sequences , e.g. , ( ( s aa k er ) ( s a kk a a ) ) .
+we were able to produce these pairs by manipulating a small english-katakana glossary .
+for each glossary entry , we converted english words into english sounds using the model described in the previous section , and we converted katakana words into japanese sounds using the model we describe in the next section .
+we then applied the estimation-maximization ( em ) algorithm ( baum 1972 ; dempster , laird , and rubin 1977 ) to generate symbol-mapping probabilities , shown in figure 2 .
+our em training goes like this : english sounds ( in capitals ) with probabilistic mappings to japanese sound sequences ( in lower case ) , as learned by estimation-maximization .
+only mappings with conditional probabilities greater than 1 % are shown , so the figures may not sum to 1 .
+we have also built models that allow individual english sounds to be " swallowed " ( i.e. , produce zero japanese sounds ) .
+however , these models are expensive to compute ( many more alignments ) and lead to a vast number of hypotheses during wfst composition .
+furthermore , in disallowing " swallowing , " we were able to automatically remove hundreds of potentially harmful pairs from our training set , e.g. , ( ( b aa r b er sh aa p ) 4- * ( b aab a a ) ) .
+because no alignments are possible , such pairs are skipped by the learning algorithm ; cases like these must be solved by dictionary lookup anyway .
+only two pairs failed to align when we wished they had � both involved turning english y uw into japanese u , as in ( ( y uw k ah l ey l 1y ) + -4 ( u k urere ) ) .
+note also that our model translates each english sound without regard to context .
+we have also built context-based models , using decision trees recoded as wfsts .
+for example , at the end of a word , english t is likely to come out as ( t o ) rather than ( t ) .
+however , context-based models proved unnecessary for back-transliteration .
+they are more useful for english-to-japanese forward transliteration .
+japanese sounds to katakana .
+to map japanese sound sequences like ( m oot a a ) onto katakana sequences like ) , we manually constructed two wfsts .
+composed together , they yield an integrated wfst with 53 states and 303 arcs , producing a katakana inventory containing 81 symbols , including the dot-separator ( . ) .
+the first wfst simply merges long japanese vowel sounds into new symbols aa , ii , uu , ee , and oo .
+the second wfst maps japanese sounds onto katakana symbols .
+the basic idea is to consume a whole syllable worth of sounds before producing any katakana .
+this fragment shows one kind of spelling variation in japanese : long vowel sounds ( 00 ) are usually written with a long vowel mark ( 21 " ) but are sometimes written with repeated katakana ( 717t ) . 71 . ) .
+we combined corpus analysis with guidelines from a japanese textbook ( jorden and chaplin 1976 ) to turn up many spelling variations and unusual katakana symbols : spelling variation is clearest in cases where an english word like switch shows up transliterated variously in different dictionaries .
+treating these variations as an equivalence class enables us to learn general sound mappings even if our bilingual glossary adheres to a single narrow spelling convention .
+we do not , however , generate all katakana sequences with this model ; for example , we do not output strings that begin with a subscripted vowel katakana .
+so this model also serves to filter out some ill-formed katakana sequences , possibly proposed by optical character recognition .
+katakana to ocr .
+perhaps uncharitably , we can view optical character recognition ( ocr ) as a device that garbles perfectly good katakana sequences .
+typical confusions made by our commercial ocr system include t : for 71. for , 7 for 7 , and 7 for i. to generate pre-ocr text , we collected 19,500 characters worth of katakana words , stored them in a file , and printed them out .
+to generate post-ocr text , we ocr 'd the printouts .
+we then ran the em algorithm to determine symbol-mapping ( " garbling " ) probabilities .
+here is part of that table : this model outputs a superset of the 81 katakana symbols , including spurious quote marks , alphabetic symbols , and the numeral 7 � 3 a sample back-transliteration .
+we can now use the models to do a sample back-transliteration .
+we start with a katakana phrase as observed by ocr .
+we then serially compose it with the models , in reverse order .
+each intermediate stage is a wfsa that encodes many possibilities .
+the final stage contains all back-transliterations suggested by the models , and we finally extract the best one .
+we turn the string into a chained 12-state / 11-arc wfsa and compose it with the p ( iclo ) model .
+this yields a fatter 12-state / 15-arc wfsa , which accepts the correct spelling at a lower probability .
+next comes the poo model , which produces a 28-state / 31-arc wfsa whose highest-scoring sequence is : this english string is closest phonetically to the japanese , but we are willing to trade phonetic proximity for more sensical english ; we rescore this vvfsa by composing it with p ( w ) and extract the best translation : other section 1 examples ( aasudee and robaato shyoon renaado ) are translated correctly as earth day and robert sean leonard .
+we may also be interested in the k best translations .
+in fact , after any composition , we can inspect several high-scoring sequences using the algorithm of eppstein ( 1994 ) .
+given the following katakana input phrase : notice that different r and l combinations are visible in this list .
+the top five final translations are : inspecting the k-best list is useful for diagnosing problems with the models .
+if the right answer appears low in the list , then some numbers are probably off somewhere .
+if the right answer does not appear at all , then one of the models may be missing a word or suffer from some kind of brittleness .
+a k-best list can also be used as input to a later context-based disambiguator , or as an aid to a human translator .
+experiments .
+we have performed two large-scale experiments , one using a full-language p ( w ) model , and one using a personal name language model .
+in the first experiment , we extracted 1,449 unique katakana phrases from a corpus of 100 short news articles .
+of these , 222 were missing from an on-line 100,000-entry bilingual dictionary .
+we back-transliterated these 222 phrases .
+many of the translations are perfect : technical program , sex scandal , omaha beach , new york times , ramon diaz .
+others are close : tanya harding , nickel simpson , danger washington , world cap .
+some miss the mark : nancy care again , plus occur , patriot miss rea1.4 while it is difficult to judge overall accuracy � some of the phrases are onomatopoetic , and others are simply too hard even for good human translators � it is easier to identify system weaknesses , and most of these lie in the p ( w ) model .
+for example , nancy kerrigan should be preferred over nancy care again .
+in a second experiment , we took ( non-ocr ) katakana versions of the names of 100 u.s. politicians , e.g. : ' 112 ( jyon.buroo ) , 7 ) 1 " 7 ( aruhonsu damatto ) , and -q . 4 ' 7 .s / ( maiku.dewain ) .
+we back-transliterated these by machine and asked four human subjects to do the same .
+these subjects were native english speakers and news-aware ; we gave them brief instructions .
+the results were as in table 1 .
+there is room for improvement on both sides .
+being english speakers , the human subjects were good at english name spelling and u.s. politics , but not at japanese phonetics .
+a native japanese speaker might be expert at the latter but not the former .
+people who are expert in all of these areas , however , are rare .
+on the automatic side , many errors can be corrected .
+a first-name / last-name model would rank richard bryan more highly than richard brian .
+a bigram model would prefer orren hatch over olin hatch .
+other errors are due to unigram training problems , or more rarely , incorrect or brittle phonetic models .
+for example , long occurs much more often than ron in newspaper text , and our word selection does not exclude phrases like long island .
+so we get long wyden instead of ron wyden .
+one way to fix these problems is by manually changing unigram probabilities .
+reducing p ( long ) by a factor of ten solves the problem while maintaining a high score for p ( long rongu ) .
+despite these problems , the machine 's performance is impressive .
+when word separators ( p ) are removed from the katakana phrases , rendering the task exceedingly difficult for people , the machine 's performance is unchanged .
+in other words , it offers the same top-scoring translations whether or not the separators are present ; however , their presence significantly cuts down on the number of alternatives considered , improving efficiency .
+when we use ocr , 7 % of katakana tokens are misrecognized , affecting 50 % of test strings , but translation accuracy only drops from 64 % to 52 % .
+discussion .
+in a 1947 memorandum , weaver ( 1955 ) wrote : one naturally wonders if the problem of translation could conceivably be treated as a problem of cryptography .
+when i look at an article in russian , i say : " this is really written in english , but it has been coded in some strange symbols .
+i will now proceed to decode . "
+( p .
+18 ) whether this is a useful perspective for machine translation is debatable ( brown et al. 1993 ; knoblock 1996 ) � however , it is a dead-on description of transliteration .
+most katakana phrases really are english , ready to be decoded .
+we have presented a method for automatic back-transliteration which , while far from perfect , is highly competitive .
+it also achieves the objectives outlined in section 1 .
+it ports easily to new language pairs ; the p ( w ) and p ( ejw ) models are entirely reusable , while other models are learned automatically .
+it is robust against ocr noise , in a rare example of high-level language processing being useful ( necessary , even ) in improving low-level ocr .
+there are several directions for improving accuracy .
+the biggest problem is that raw english frequency counts are not the best indication of whether a word is a possible source for transliteration .
+alternative data collection methods must be considered .
+we may also consider changes to the model sequence itself .
+as we have presented it , our hypothetical human transliterator produces japanese sounds from english sounds only , without regard for the original english spelling .
+this means that english homonyms will produce exactly the same katakana strings .
+in reality , though , transliterators will sometimes key off spelling , so that tonya and tanya produce toonya and taanya .
+it might pay to carry along some spelling information in the english pronunciation lattices .
+sentential context should be useful for determining correct translations .
+it is often clear from a japanese sentence whether a katakana phrase is a person , an institution , or a place .
+in many cases it is possible to narrow things further � given the phrase " such-and-such , arizona , " we can restrict our p ( w ) model to include only those cities and towns in arizona .
+it is also interesting to consider transliteration for other languages .
+in arabic , for example , it is more difficult to identify candidates for transliteration because there is no distinct , explicit alphabet that marks them .
+furthermore , arabic is usually written without vowels , so we must generate vowel sounds from scratch in order to produce correct english .
+finally , it may be possible to embed phonetic-shift models inside speech recognizers , to explicitly adjust for heavy foreign accents .

@@ -1,0 +1,18 @@
+Though the evaluation of syntactic parsers has been
+a major concern in the parsing community, and a
+couple of works have recently presented the comparison
+of parsers based on different frameworks,
+their methods were based on the comparison of the
+parsing accuracy in terms of a certain intermediate
+parse representation (Ringger et al., 2004; Kaplan et al., 2004; Briscoe and Carroll, 2006; Clark and Curran, 2007; Miyao et al., 2007; Clegg and Shepherd, 2007; Pyysalo et al., 2007b; Pyysalo et al., 2007a; Sagae et al., 2008). Such evaluation requires
+gold standard data in an intermediate representation.
+However, it has been argued that the conversion of
+parsing results into an intermediate representation is
+difficult and far from perfect.
+The relationship between parsing accuracy and
+task accuracy has been obscure for many years.
+(Quirk and Corston-Oliver 2006) investigated the
+impact of parsing accuracy on statistical MT. However,
+this work was only concerned with a single dependency
+parser, and did not focus on parsers based
+on different frameworks.

@@ -1,0 +1,390 @@
+computational learning theory : survey and selected bibliography .
+goals of the field .
+give a rigorous , computationally detailed and plausible account of how learning can be done .
+translation : computationally detailed : exhibit algorithms that learn .
+plausible : with a feasible quantity of computational resources , and with reasonable information and interaction requirements .
+the alert reader notices the buzzword " reasonable " slack for a dazzling variety of models .
+definition of learning .
+not now !
+this also is part of the goals .
+so far the emphasis has been on inductive learning ( from examples ) of concepts ( binary classifications of examples ) adapting the methods of analysis of algorithms and complexity theory to evaluate the resource use of proposed learning algorithms .
+when the examples are random , statistical methods are also important .
+general resources .
+directly relevant recurrent meetings are the international workshops on algorithmic learning theory , alt [ 18 , 19 ] and the annual workshops on computational learning theory , colt [ 42 , 63 , 110 , 130 ] .
+currently , the only textbook in the field is natarajan 's [ 101 ] .
+surveys by laird [ 83 ] and valiant [ 129 ] are valuable .
+somewhat more peripheral are the european meetings on analogical and inductive inference , all , and the al machine learning community 's annual international conference on machine learning .
+in addition , the general al meetings , aaai and ijcai , currently have a large number of papers devoted to learning , as do the neural net meetings .
+inductive inference .
+inductive inference [ 16 , 35 , 80 , 102 ] is to computational learning theory roughly as computability theory is to complexity and analysis of algorithms inductive inference and computability theory are historically and logically prior to and part of their polynomially-obsessed younger counterparts , share a body of techniques from recursion theory , and are a source of potent ideas and analogies in their respective fields .
+however , i must leave to others better qualified a systematic survey of recent progress in inductive inference .
+the basic pac model .
+the seminal paper is valiant 's [ 131 ] .
+in it , he proposed a new criterion of correctness for learning concepts from examples , emphasized the importance of polynomial time learning algorithms , and demonstrated that a classical algorithm learns k-cnf formulas with respect to the new criterion in polynomial time .
+he also emphasized the importance of coping with irrelevant attributes , introduced additional oracles for learning and gave learning algorithms for monotone dnf formulas and read-once formulas using these oracles , and gave cryptographic evidence that boolean circuits are unlearnable .
+we now describe the components of the basic model introduced by valiant ; much of the work in the field can be understood as variations on this theme .
+examples .
+these may be boolean assignments , real numbers , points in euclidean space , finite or infinite strings of symbols , etc .
+a universe x of possible examples is chosen , and a computational representation of individual examples .
+concepts .
+a concept is extensionally just a subset of x. an unknown target concept is to be learned ; a single concept ( intended to approximate the target concept ) will be the output of the learning algorithm .
+a particular class c of possible target concepts is chosen ; the learnability of c is investigated .
+the hypothesis space h of a learning algorithm is the class of concepts from which its outputs are chosen .
+in the basic definition , c is a subclass of h , that is , we assume adequacy of representation .
+a computational representation of hypotheses from h is chosen .
+since the choice of h and its computational representation strongly affects the learnability of c , the relevant notion is learnability of c in terms of h. distributions on examples .
+examples are generated independently according to a fixed but unknown probability distribution d on the universe x. approximation of one concept c by another c ' is measured with respect to d. classes of distributions .
+in general , we may know something ( perhaps everything ) about the distribution d. a class 1 , of the possible distributions on x can be used to represent certain kinds of knowledge about d. in particular , a singleton class signifies that d is known to the learning algorithm .
+labelled examples .
+learning algorithm .
+x , c , and h are fixed , along with their computational representations .
+a class d of distributions is fixed .
+a learning algorithm a takes as input two parameters e and 6 and has access to the example oracle determined by some c e c and some distribution d from d. when a halts , its output is a single concept from h. the intuition a draws labelled examples of c using the example oracle , and eventually conjectures hypothesis h meant to approximate c to within c with respect to the distribution d. sometimes this may not happen , but the probability that it doesn 't should be less than b .
+pac-identification .
+we say that the learning algorithm a pac-identifies concepts from c in terms of h with respect to a class of distributions d if and only if for every distribution d in d and every concept c e c , for all positive numbers c and 6 , when a is run with inputs e and 6 and access to the example oracle for d and c , it eventually halts and outputs a concept h e h such that with probability at least 1 5 , d ( c a h ) < e .
+the initials " pac " stand for probably ( except for 5 ) approximately ( except for c ) correct .
+distribution-free learning .
+if a pac-identifies concepts from c in terms of h with respect to the class of all possible distributions on x , then we simply say a pac-identifies concepts from c in terms of h. the distribution-free requirement , that the learning algorithm work with respect to an arbitrary unknown distribution , is quite strong .
+however , since the performance of the output hypothesis is measured with respect to the same unknown distribution examples are drawn from , it is not impossibly strong .
+in practice restricted classes of distributions have not been fruitful , except in the case of the uniform distribution or the class of product distributions .
+polynomial time .
+we measure efficiency of the learning algorithm with respect to relevant parameters : size of examples , size of target concept , 1 / e , and 1 / 6 .
+" size " of an example is usually the length of the string representing it in the selected computational representation of examples , though this is not generally used for real-valued examples .
+when the examples of a given concept are of uniform length , this is not problematic ; otherwise , various expedients have been used .
+in order to define the " size " of a target concept , we select a particular computational representation of concepts from the target class c. then size of the target concept is usually the length of the string representing it in the representation chosen for c , though for real- valued examples it is often the number of parameters to specify the concept in the chosen representation .
+different choices of representation may produce very different sizes for the same target concept c consider the difference between representing boolean functions by circuits , boolean formulas , or dnf formulas .
+as is usual , a bound polynomial in the relevant parameters is a gross indicator of computational tractability .
+this is all in the spirit of traditional complexity theory ; nevertheless , it may get us into trouble .
+representations and complexity .
+we may define a representation ' r of a class of concepts simply as a set of ordered pairs of strings ( x , u ) .
+we interpret u as specifying a concept c and x as specifying an example that is a member of c .
+for example , to define one representation , r.dfa , of the class of regular sets over an alphabet e , we specify straightforward interpretations of the strings u as deterministic finite-state acceptors and the strings x as finite strings over e. then ( x , u ) e r , dfa if and only if the automaton represented by u accepts the string x .
+representations inherit the usual definitions of complexity ; for example , rdfa is in ptime , also in dspace ( log n ) .
+normally we restrict attention to representations in ptime this means that there is a uniform polynomial-time algorithm to classify the example represented by x according to the concept represented by u .
+learnability .
+with the background of a system of representing examples , concepts from c , and concepts from h , we may say that c is learnable in terms of h provided there exists a polynomial-time learning algorithm that pac- identifies c in terms of h. we may want to say just c is learnable .
+two conflicting definitions have been used : c is learnable in terms of c. c is learnable in terms of some class h with a polynomial-time representation .
+alternative ( 1 ) is desirable for positive results ; it is also termed properly learnable .
+alternative ( 2 ) is desirable for negative results ; it is also termed predictable .
+we 'll use " properly pac-learnable " for ( 1 ) and " pac- learnable " or " polynomially predictable " for ( 2 ) .
+alternative definitions .
+the model described above is noticeably fuzzy more of a " definition schema " than a definition .
+many variants of the model have been considered .
+the fundamental paper of haussler , kearns , littlestone and warmuth [ 60 , 61 ] provides careful definitions and systematic proofs of equivalence for a large number of alternative models , including one-button and two-button variants , the functional model , whether or not a bound is given on the size of the target concept , randomized algorithms and probabilistic halting conditions , dependence on 6 , and on-line prediction from random examples .
+the paper is also a good source of useful proof techniques .
+see also the parameterization scheme proposed by ben- david , benedek and mansour [ 23 ] for models of learn- ability .
+in the two-button model there are separate distributions and example oracles for the positive and negative examples of a concept ; the model described above is the one-button model .
+the protocol , or environment of the learning algorithm , can be different .
+for example , in addition to the parameters e and s the learning algorithm may also be given bounds on the length of examples and the size of the target concept .
+or , instead of the parameters c and 5 and access to the example oracle , the learning algorithm may simply be given a collection of labelled examples as its input , the functional model .
+in an on-line prediction model , the learning algorithm indefinitely repeats a cycle of : ( 1 ) requesting an example ( unlabelled ) , ( 2 ) predicting its classification according to the target concept , ( 3 ) receiving the correct classification .
+haussler , littlestone and warmuth [ 62 ] consider the probability of a mistake of prediction at the t-th trial when the examples are drawn according to a fixed unknown probability distribution .
+haussler , kearns , littlestone and warmuth [ 60 ] prove the equivalence of on-line polynomial prediction from random examples with pac-learning using a hypothesis class h with a polynomial-time representation , justifying the identification of these two terms .
+littlestone [ 87 ] defines the absolute mistake bound model of prediction ; the worst-case number of mistakes of prediction over any sequence of examples must be bounded by a polynomial in the length of examples and the size of the target concept .
+a polynomial-time algorithm in the absolute mistake bound model can be transformed into a pac-learning algorithm for the same class of concepts .
+however , blum [ 26 ] proves that if one-way functions exist then there are pac-learnable concept classes that are not predictable in littlestone 's absolute mistake bound model by a polynomial time algorithm .
+occam 's razor .
+sample size .
+if we drop the requirement of a polynomial-time algorithm , we concentrate on the sample size , the number of examples required by a learning algorithm .
+an upper bound on the number of samples required by a consistent learning algorithm for c in terms of c is a basic technique in the construction of pac-learning algorithms is " occam 's razor " : take a large enough set of labelled examples and find a simple enough hypothesis h e h that is consistent with the labelled sample , that is , labels each example as in the sample .
+the discrete razor .
+blumer , ehrenfeucht , hamsler and warmuth [ 31 ] quantify " large enough " and " simple enough " in terms of the length of the output hypothesis as a string .
+they show that if there is a polynomial-time algorithm and a constant fi > 0 such that for any sample of m examples labelled according to a concept c e c the algorithm finds a hypothesis h e h consistent with the sample whose length is bounded by the product of m1-13 and a polynomial in the length of c , the class c is pac- learnable in terms of h. note that this does not require finding the smallest hypothesis consistent with the sample ; in fact , its size may depend on the sample size , but not linearly some nontrivial data-compression must be going on .
+efficient approximations of set covers and weighted set covers are useful in this context .
+the continuous razor .
+the string-based approach does not treat real numbers .
+the ground-breaking paper of blumer , ehrenfeucht , haussler and warmuth [ 32 ] demonstrates that the vapnik-chervonenkis dimension of the hypothesis space h may be used to give a result analogous to the discrete occam 's razor .
+the vc dimension of a class h of concepts is the size of the largest sample that can be labelled in all possible ways by concepts from h. for example , the class of closed intervals in the real line has vc-dimension 2 .
+if it is finite , the vc-dimension gives a polynomial bound on the number of possible labellings of a set of m examples by concepts from h. for a finite class h , an upper bound on the vc-dimension is log h , a hint of why it generalizes hypothesis length .
+converse ?
+does pac-learnability imply the existence of an occam algorithm ?
+board and pitt [ 104 ] show that a converse holds in many natural classes .
+another kind of converse is given by schapire [ 121 ] .
+voting schemes .
+voting schemes give another general class of techniques for constructing learning algorithms .
+majority vote .
+barzdin and freivalds [ 20 ] use voting schemes to achieve small numbers of errors of prediction in inductive inference .
+as a simple example , if h is a finite set of concepts containing the target concept , the majority vote strategy for on-line prediction takes the first example , x , and predicts the label " + " if x belongs to a majority of the concepts in h and predicts the label " - " otherwise .
+when the correct label is received , all the concepts that misclassify this example are removed from h. at each point , h contains just those concepts consistent with all the labelled examples seen so far .
+since each error of prediction removes at least half the remaining elements of h , the total number of errors of prediction is bounded by log ihi .
+littlestone [ 87 ] gives an optimal algorithm for this problem , which votes to minimize the worst-case number of errors of prediction .
+as shown by goldman , rivest and schapire [ 48 ] there is a close relationship between counting problems and majority vote .
+weighted majority .
+in a generalization of this idea , we can assign a numerical weight w ( h ) to each hypothesis h e h and use the weighted majority vote of the hypotheses to make predictions .
+the value of w ( h ) is adjusted in response to the track record of h 's successful and unsuccessful predictions .
+majority vote corresponds to initial weights w ( h ) = 1 , where w ( h ) is changed to 0 if h makes an error of prediction .
+a more complex updating scheme can permit a simpler base of hypotheses .
+littlestone 's winnow algorithms [ 87 ] use multiplicative update rules to learn linearly separable boolean functions .
+for example , with the hypothesis space of single variables and a simple update rule , disjunctions of k out of n variables can be learned with at most 0 ( k log n ) errors of prediction .
+littlestone [ 88 ] proves strong results on the resistance of winnow to errors in the data .
+littlestone and warmuth [ 90 ] give a general weighted majority algorithm that is robust with respect to errors in the data , and they prove bounds on the absolute mistake bound of the algorithm as a function of the bound for the best algorithm in the initial set h of algorithms .
+a generalization of the weighted majority algorithm is given by vovk [ 135 ] .
+littlestone , long and warmuth [ 89 ] use a weighting scheme to develop an efficient algorithm for the on-line prediction of linear functions with a bound on the worst case sum of squared errors that is optimal up to a constant factor , which is also robust in the presence of noise in the data .
+closure and reductions .
+as in complexity theory , closure results and problem reductions give us a means of transferring learnability ( or unlearnability ) results among concept classes .
+closure results .
+the set of all pac-learnable classes of concepts over universe x is closed under the union of two classes .
+that is , we can take pac-learning algorithms for c1 in terms of hi and c2 in terms of h2 and construct a pac-learning algorithm for c1 u c2 in terms of hi u h2 .
+the idea is to run both learning algorithms and take the output with the smaller empirical prediction error for a sufficiently large sample .
+the set is also clearly closed under the operation of complementing each concept in a class with respect to x. however , consider the operation of taking two classes c1 and c2 and forming the class of unions ci u c2 where cl e ci and c2 e c2 , with a straightforward representation .
+for example , applying this operation to two copies of the class of monomials yields the 2- term dnf formulas .
+it is not known whether the set of pac-learnable classes of concepts is closed under this operation.2 general closure results for the set of all pac-learnable classes of concepts are disappointingly scarce .
+kearns , li , pitt and valiant [ 75 ] give some restricted boolean closure results for the set of pac-learnable classes .
+another type of closure result is given by helm- bold , sloan and warmuth [ 68 ] for the nested differences of intersection-closed classes of concepts , predicated on the existence of polynomial-time algorithms to return the ( set-theoretically ) smallest concept containing a given set of positive examples .
+this may be applied , for example , to the nested differences of orthogonal rectangles .
+problem reductions .
+kearns , li , pitt and valiant [ 75 ] give substitution-based reductions for boolean formulas that show , e.g. , the monotone or read-once3 versions of classes of boolean formulas are no easier to pac-learn than the basic classes .
+for example , if monotone read-once dnf formulas are pac-learnable , then so are general dnf formulas .
+pitt and warmuth [ 107 ] define a general type of problem reduction that preserves polynomial-time predictability , which they term prediction-preserving reductions .
+the basic idea is that each concept c in domain a is mapped to a concept g ( c ) in domain b ( with at most a polynomial increase in length of representation ) and each example x in domain a is mapped to an example f ( x ) in domain b by a polynomial-time algorithm in such a way that for all x and c , x e c if and only if f ( x ) e g ( c ) . ( this is a bit too simple in general , see the paper for the correct refinements . )
+the effect is that if we have a polynomial-time prediction algorithm in domain b , we may compose the reduction with it to get a polynomial-time prediction algorithm for domain a by substituting yi for each occurrence of x. it is clear that the assignment x satisfies 0 if and only if the assignment f ( x ) satisfies g ( 0 ) .
+these transformations do not in general preserve special distributions ( e.g. , product distributions ) , so the distribution-free requirement is important here .
+pitt and warmuth define prediction-completeness of a representation of concepts r over a set of such representations in the usual way , and prove , for example , that the class rdfa of regular sets represented by deterministic finite acceptors is prediction-complete over dspace ( log n ) , and the class rnfa of regular sets represented by nondeterministic finite acceptors is prediction-complete over nspace ( log n ) .
+since the class rbp of boolean formulas is in dspace ( log n ) , this result implies that polynomial predictability of dfas would imply polynomial predictability of boolean formulas .
+pitt and warmuth also give several examples of concept classes prediction-complete over ptime by reductions from the class of all boolean circuits .
+by a similar technique , long and warmuth [ 91 ] prove that the class of convex polytopes specified as the convex hull of vertices is prediction-complete over ptime .
+schapire [ 119 ] considers the pattern languages [ 6 ] and exhibits a prediction-preserving reduction of nondeterministic boolean circuits to the pattern languages . ( note that the pattern languages have an np-complete membership problem , and are therefore not necessarily a ptime representation . )
+what is pac-learnable ?
+classes of boolean formulas .
+valiant [ 131 ] shows monomials and k-cnf formulas are properly pac-learnable using only positive examples .
+haussler [ 57 ] gives an algorithm using an approximate cover and occam 's razor that properly pac-learns kcnf using both positive and negative examples , in which the dependence on irrelevant attributes ( that is , variables not appearing the target concept ) is logarithmic rather than polynomial .
+littlestone [ 87 ] shows that k-cnf formulas are polynomial-time predictable by an on-line algorithm with logarithmic dependence on irrelevant attributes .
+his algorithm uses a weighted majority of clauses and gives a worst-case bound on the number of mistakes of prediction for any sequence of examples .
+he applies the technique more generally to linearly separable boolean formulas .
+by constructing occam algorithms , rivest [ 116 ] shows that k-decision lists are properly pac-learnable , and ehrenfeucht and haussler [ 36 ] show that rank k decision trees are properly pac-learnable .
+blum and singh [ 29 ] show that for a fixed k , the class of all concepts denoted by f ( ti , ... , tk ) where f is any boolean function on k arguments and the ti are monomials , is pac-learnable in terms of the class of general dnf formulas .
+the questions remain open of whether general cnf and dnf formulas or general decision trees are pac-learnable . 6.2 geometric & algebraic concepts blumer , ehrenfeucht , haussler and warmuth show by means of their continuous version of occam 's razor that classes such as axis-parallel rectangles in en , open or closed halfspaces in en , or , for fixed k , the set of all halfsp aces in en defined by surfaces of degree at most k are properly pac-learnable .
+baum [ 21 ] shows that for fixed k , unions or intersections of halfspaces in ek are pac-learnable .
+long and warmuth [ 91 ] give a reduction to prove the polynomial predictability of classes consisting of a union of a fixed number of flats , and an occam algorithm for predicting fixed finite unions of boxes .
+abe [ 1 ] proves that the class of semilinear sets of dimensions 1 and 2 with unary coding is pac-learnable by means of an occam algorithm .
+helmbold , sloan and warmuth [ 67 ] give an efficient on-line algorithm for predicting membership in an integer lattice , which is applied to learn rational lattices , cosets of lattices , and a subclass of the commutative regular languages .
+by the closure result for nested differences of intersection closed classes , they also show that nested differences of these classes are polynomially predictable [ 68 ] . 7 what isn 't pac-learnable ?
+if rp = np , then by the discrete occam 's razor , every ptime representation of concepts h is properly pac-learnable . ( use any convenient np oracle to find a shortest hypothesis in h consistent with a given set of labelled examples . )
+thus , non-learnability results are relative to unproved complexity theoretic or cryptographic assumptions .
+so far , all the nonlearnability results based on np 0 rp have been representation-dependent .
+that is , they rely on the restriction that hypotheses must come from the class h. the general form of these results is : " if rp 0 np , then concept class h is not properly pac-learnable . "
+this does not preclude h being pac- learnable in terms of some other class h ' .
+pitt and valiant [ 105 ] give several non-learnability results of this type .
+they show that if np 0 rp then k-term dnf formulas are not properly pac-learnable ( for k > 2 ) , nor are boolean threshold formulas nor read-once formulas .
+jerrum [ 71 ] similarly shows that a simple class of formulas invariant under cyclic shifts of the variables is not properly pac-learnable .
+note that concepts representable by k-term dnf formulas are also learnable by k-cnf formulas , which are pac-learnable .
+here is a case in which h is not pac- learnable by h ( if np 0 rp ) , but h is pac-learnable by a larger class h ' .
+blum and singh [ 29 ] exhibit a generalization of this phenomenon to arbitrary boolean functions of k terms .
+making the target class smaller or the hypothesis class larger cannot make learning harder ; however , the opposite changes may make learning harder .
+the basic lemma , due to pitt and valiant , is that if the problem of deciding whether there is a hypothesis in h consistent with an arbitrary labelled set of examples is np-complete , then h is not properly pac-learnable unless np = rp .
+to see this , suppose a is an algorithm to pac-learn h in terms of h. let s be an arbitrary labelled set of examples and consider the distribution that assigns probability 1 / isi to each example from s , and zero probability to all other examples .
+suppose we run a with e < 1 / isi and ( 5 = 1 / 2 , and this distribution on examples ( labelled as they are in s. )
+if there is a hypothesis h e h consistent with s , then with probability at least 1 / 2 a must halt and output some h ' e h that is e-close to h .
+but by the definition of the distribution and e , any concept e-close to h must agree with h on all the examples from s , i.e. , in this case h ' is consistent with s. on the other hand , if there is no hypothesis h e h consistent with s , a will not output one .
+thus our np complete problem is in rp . 7.2 the pattern languages schapire [ 119 ] shows that the pattern languages are not polynomially predictable assuming the class of sets recognized by deterministic polynomial sized circuits is a proper subclass of the class of sets recognized by nondeterministic polynomial sized circuits .
+what 's the catch ?
+as noted above , the membership problem for pattern languages is np-complete , so they are not necessarily a ptime representation .
+in particular , it is conceivable that the pattern languages could be properly pac- learnable yet not polynomially predictable .
+this is analogous to the distinction between identification and prediction in inductive inference .
+cryptographic assumptions .
+stronger results may be had , apparently at the cost of stronger assumptions .
+the results are stronger : they claim that certain classes of concepts are not polynomially predictable the representation of output concepts doesn 't matter ( as long as it is in ptime . )
+the stronger assumptions and basic constructions are borrowed from public-key cryptography .
+it is logical that cryptography ( which tries to make unpredictable things ever easier to compute ) and computational learning theory ( which tries to make more powerful classes of concepts predictable ) should meet along certain frontiers .
+valiant [ 131 ] observes that the construction of a pseudo-random function by goldreich , goldwasser and micali [ 50 ] is also the construction of a class of unpredictable boolean circuits .
+thus , if one-way functions exist , the class of all boolean circuits is not polynomially predictable .
+since the representation class of boolean circuits is in ptime , long and warmuth 's reduction shows that if one-way functions exist , convex polytopes in e " represented by their vertices are not polynomially predictable .
+it is open whether the class of convex poly- topes in en represented as an intersection of halfspaces is polynomially predictable .
+kearns and valiant [ 78 ] show that more specific cryptographic assumptions imply that certain less powerful classes of concepts are not polynomially predictable. hi particular , they show that assuming the intractability of any of the three problems ( 1 ) deciding quadratic residuosity modulo a composite ( 2 ) inverting rsa or ( 3 ) factoring blum integers , the class of boolean formulas is not polynomially predictable , nor is the class of finite depth feedforward networks of threshold gates .
+using pitt and warmuth 's prediction-preserving reduction of boolean formulas to dfas , the same result applies to dfas .
+the basic ideas may be summarized as follows .
+imagine a secure public-key cryptosystem to encode single bit messages .
+for each pair of keys ( e , d ) , the set of strings that decode to 1 should be unpredictable given a polynomial number of examples of strings decoding to 1 and to 0 ( which we can generate for ourselves , since this is a public-key system ) , we should have no polynomial advantage in guessing whether a new encoding of a coin flip decodes to 1 or 0 .
+so the question comes down to : determine " small " classes of concepts sufficient to represent the decoding function in specific cryptosystems .
+except this isn 't enough e.g. , we don 't know of any way to compute quadratic residuosity modulo a composite with a log depth circuit or a polynomial-sized boolean formula .
+here kearns and valiant supply a very clever idea move some tasks that are computationally onerous but cryptographically irrelevant into the " input . "
+put another way , create additional " features " that reduce the computational complexity of the decoding function but not its cryptographic strength .
+the relevant features in each case are the successive squares of the input string x modulo the composite n that is part of the key .
+this does not affect ( modulo polynomial-time computation ) the cryptographic security of the predicate , but it suffices to make the remaining part of the computation feasible with a log depth circuit ( and therefore a polynomial-sized boolean formula . )
+errors and noise .
+potential applications of learning algorithms will have to cope with data contaminated with errors both systematic and random .
+in the work described below , the assumption is that there is a correct target concept to be approximated within e despite the errors in the exampies .
+various models of error in the example oracle have been studied .
+malicious errors .
+valiant [ 128 ] defines malicious errors as follows .
+a coin flip with success probability 13 determines which calls to example will be affected by errors .
+when there is no error , example returns a correctly chosen labelled example as before .
+the result when an error occurs may be any example whatsoever with correct or incorrect sign , assumed to be generated by a malicious adversary .
+valiant gives an algorithm to pac-learn k-dnf formulas over n variables using only negative examples that tolerates a malicious error rate on the order of c / nk .
+kearns and li [ 73 , 74 ] prove that , under very weak conditions on the concept class , no learning algorithm can overcome a malicious error rate of ( 3 = cl ( 1 + c ) or larger .
+they also show that for algorithms using only negative examples , no pac-learning algorithm for kdnf formulas can overcome an error rate of # = celnk for some c > 0 .
+of course , in the presence of errors there may be no hypothesis consistent with all the examples , so the simple occam 's razor does not apply .
+kearns and li give a generalization of occam 's razor in which it suffices to find a hypothesis consistent with a large fraction ( at least 1 e / 2 ) of the examples .
+less malicious errors .
+angluin and laird [ 14 , 82 ] define a model of errors called classification noise .
+as in valiant 's model , a coin flip with success probability # determines which calls to example will be affected by error .
+when an error occurs , the example is still drawn correctly according to the distribution d , but it is returned with its sign reversed .
+this kind of error is particularly benign angluin and laird give an algorithm that pac-learns k-cnf formulas for any noise rate 0 < 1 / 2 .
+in this case , the running time of the algorithm is allowed to grow polynomially in the inverse of ( 13 1 / 2 ) .
+shackelford and volper [ 123 ] consider a model of attribute noise for concepts with n boolean attributes .
+in their model , each example is potentially affected by noise in reporting its attributes .
+that is , each example is drawn correctly according to d and is then reported with the correct sign but with each of the n bits of the example flipped with probability / 3 < 1 / 2 .
+shackelford and volper give a procedure to overcome the effects of such noise provided 13 is known , which gives a polynomial-time algorithm that pac-learns k-dnf formulas assuming # is known .
+the running time depends polynomially on the inverse of ( 1 / 2 13 ) in this case as well .
+goldman and sloan have shown how to remove the assumption that / 3 is known for the case of learning 1-dnf .
+sloan [ 125 , 126 ] defines also malicious misclassification noise , which is similar to misclassification noise except that when an error occurs , an adversary may choose not to reverse the sign of the example .
+this can model the situation in which certain examples are more likely to be misclassified than others .
+for a natural variant of attribute noise in which different attributes may have different rates of noise ( each rate bounded by 13 ) , goldman and sloan have shown that under very weak assumptions about the concept class , no learning algorithm can tolerate a noise rate of 13 = e / 2 or larger .
+thus attribute noise with differing rates is essentially as bad as malicious errors .
+distributions , revisited .
+recall that in the basic pac-learning model , a learning algorithm has to be prepared to cope with an arbitrary unknown distribution on examples : the distribution-free requirement .
+results described in this section show just how strong that requirement is , and propose ways of weakening it .
+" weak " is not so weak .
+the parameters 6 , bounding the failure probability of the learning algorithm , and e , bounding the prediction error of the hypothesis output when the learning algorithm succeeds , have very different roles in the learning protocol .
+to what extent may each be " boosted " ?
+is there a procedure to take a learning algorithm that achieves a mediocre failure probability ( or prediction error ) and improve it ?
+the answer is straightforward for 6 we can re-run the algorithm several times and take the " best-looking " hypothesis that is , the one with the best empirical prediction error over a sufficient number of examples [ 60 ] .
+however , it is not at all straightforward for c .
+thus , h performs slightly ( by an inverse polynomial ) better than chance when used to predict c 's labelling of examples drawn according to d. their results show that even a weak learning algorithm for boolean formulas could be used to get a polynomial- time algorithm for any of the three basic cryptographic problems they consider .
+schapire [ 121 , 122 ] proves this is no fluke : surprisingly enough , weak learnability implies pac-learnability ( not necessarily with the same hypothesis space . )
+his method exploits the distribution-free requirement by constructing filtered versions of the basic distribution that focus on the " weaknesses " of output hypotheses and force enough improvement that an output consisting of a majority vote of three hypotheses exhibits an improved prediction error .
+this can be iterated sufficiently many times to achieve any given prediction error e .
+schapire 's results have a variety of consequences , including a strong partial converse of occam 's razor , bounds on the space complexity of learning , and bounds on the expected number of mistakes in the on-line model of prediction .
+freund [ 41 ] gives an alternative construction , in which the final output hypothesis is a single majority vote of a large collection of hypotheses from the original class .
+goldman , kearns and schapire [ 47 ] investigate the sample complexity of weak learning , which can be quite different from the sample complexity of pac-learning .
+restricted classes of distributions .
+suppose the learning algorithm " knows " the distribution d on examples , or at least a restricted class d of distributions from which it may be drawn : how much does this help ?
+in several specific cases it does seem to help : learning algorithms have been devised for certain problems assuming the uniform distribution or the class of product distributions that significantly improve on the results known for the distribution free case .
+benedek and itai [ 25 ] consider the general situation of learning with respect to a fixed , known distribution and prove results characterizing learnability with respect to a fixed d. polynomial-time algorithms .
+kearns and pitt [ 76 ] give a polynomial-time algorithm for pac-learning k-variable patterns in terms of disjunction 's of k-variable patterns under the following class of distributions .
+the distribution on negative examples is arbitrary , and the distribution on positive examples is the product of k arbitrary distributions , each supplying one string to be substituted for a variable of the pattern .
+as noted earlier , read-once boolean formulas are no easier to pac-learn in the distribution free case than general boolean formulas , which may be difficult indeed , by the results of kearns and valiant [ 78 ] .
+however , the reduction does not preserve distributions .
+read-once and read-k-times restrictions appear to interact particularly favorably with the uniform distribution and product distributions , and also , with membership queries ( see below . )
+in the case of the read-once restriction , the reason appears to be that changing the value of a single variable affects only the path of gates from the unique occurrence of that variable to the root of the formula ( viewed as a tree . )
+kearns , li , pitt and valiant [ 75 ] show that read-once dnf formulas are pac-learnable with respect to the uniform distribution , as do pagallo and haussler [ 103 ] .
+goldman , kearns and schapire [ 49 ] show that some restricted classes of read-once formulas are pac-learnable with respect to certain fixed simple product distributions .
+schapire [ 120 ] significantly generalizes these results by giving an algorithm that pac-learns the class of probabilistic read-once formulas with respect to the class of product distributions .
+the class of probabilistic read-once formulas properly generalizes the class of read-once formulas , and provides an interesting example of a class of p-concepts , defined and studied by kearns and schapire [ 77 ] .
+a kp-formula has at most k occurrences of each variable .
+hancock and mansour [ 56 ] give an algorithm that pac-learns monotone kp-dnf formulas with respect to the class of product distributions .
+ac in quasi-polynomial time .
+linial , mansour and nisan [ 86 ] consider learning the class ac of constant depth circuits over the basis of and , or , and not with unbounded fan-in , applying fourier spectrum techniques .
+using a representation of boolean functions as linear combinations of parity functions of subsets of the input , they show that functions in ac are well approximated with respect to the uniform distribution by their lower-order terms in this representation . ( intuitively , because ac cannot compute good approximations to the parity of a large set of inputs . )
+this is used to derive a straightforward pac- learning algorithm for ac functions with respect to the uniform distribution that has time and sample complexity 0 ( n10100g ( n ) ) , quasi-polynomial .
+furst , jackson and smith [ 43 ] improve this result to allow the class of product distributions on the boolean attributes in place of the uniform distribution .
+verbeurgt [ 133 ] gives a simpler algorithm to pac-learn dnf formulas with respect to the uniform distribution whose running time is quasi-polynomial , but whose sample complexity is polynomial .
+equivalence queries .
+often it is convenient to develop learning algorithms using equivalence queries [ 8 ] , usually in combination with other types of queries .
+the input to an equivalence query is a hypothesis h e h , and the output is either " yes " , if h is extensionally the same as the target concept c , or a counterexample x consisting of an arbitrarily chosen example classified differently by h and the target concept c .
+thus a counterexample is an arbitrary element of ( h a c ) .
+in the equivalence query model , the criterion for successful learning is exact identification , that is , the learning algorithm must halt and output a hypothesis exactly equivalent to the target concept .
+the assumption is that the counterexamples are arbitrarily chosen by an adversary , though as maass [ 92 ] points out , randomized learning algorithms necessitate care in specifying the type of adversary .
+since equivalence queries are dependent upon the hypothesis class h and its representation , we say c is exactly identified in terms of h. when we omit " in terms of , " we imply that h = c. the term extended equivalence queries has also been used to signal the situation that h 0 c. equivalence queries in effect provide " direct access " to counterexamples , and may at first seem too powerful .
+however , a polynomial-time learning algorithm developed using equivalence queries can be transformed into an algorithm in the absolute mistake bound model [ 87 ] or in the pac-model [ 8 ] .
+the idea for the first transformation is to run the learning algorithm until it makes an equivalence query with a hypothesis h , and then to use h to predict the labels of examples until ( if ever ) there is a mistake of prediction , say on example x .
+then the suspended learning algorithm is resumed , with x as the counterexample returned by the equivalence query .
+for the second transformation , we substitute for each equivalence query an " approximate equivalence test " that consists of checking the hypothesis h against a sufficiently large set of labelled examples drawn from example .
+if the examples are all correctly classified , we stop and declare success .
+otherwise , any incorrectly classified example will serve as the counterexample .
+many of the known pac-learnable discrete concept classes can be exactly learned in polynomial time using only equivalence queries .
+blum [ 26 ] shows that this is not true in general if one-way functions exist .
+maass and turan [ 93 ] give polynomial-time algorithms for learning discrete geometric concepts using equivalence queries only .
+yokomori [ 137 ] gives a polynomial-time algorithm for learning very simple grammars using only equivalence queries .
+angluin [ 10 ] shows that no polynomial-time algorithm can learn dnf formulas ( resp . , dfas , nfas , cfgs ) in terms of dnf formulas ( resp . , dfas , nfas , cfgs ) using only equivalence queries .
+the idea of is that if hypotheses are constrained to be polynomial size dnf formulas ( or dfas , nfas , or dgs ) then particularly uninformative counterexamples may be chosen , enforcing very slow progress towards exact identification . 11 active learning : positive in the basic pac model , as in the absolute mistake bound model and the equivalence query model , the selection of examples is not under the control of the learning algorithm ; the model is one of passive learning .
+if we permit the learning algorithm control over the selection of examples , we get a more active model , in which certain classes of concepts may be easier to learn .
+valiant [ 131 ] considers specific oracles designed to give the learner more information about the target concept , and demonstrates the learnability of monotone dnf formulas and p-formulas with respect to certain of these oracles .
+angluin introduces membership and equivalence queries [ 8 ] , and other types of queries [ 9 ] .
+gasarch and smith [ 44 ] consider queries in the context of inductive inference .
+membership queries .
+we may permit the learning algorithm access to another oracle , member , which takes as input an example x and returns as output the classification of x with respect to the target concept c .
+such a query is called a membership query .
+in this setting we may define pac- learning with membership queries in the obvious way .
+the transformation sketched in the previous section shows that a polynomial-time algorithm that exactly identifies c in terms of h using equivalence and membership queries can be converted to a pac-learning algorithm for c in terms of h with membership queries .
+automata and formal languages .
+angluin [ 8 ] gives a polynomial-time algorithm for learning deterministic finite state acceptors using membership and equivalence queries .
+sakakibara [ 118 ] generalizes this result to deterministic bottom up tree automata .
+ishizaka [ 70 ] gives a polynomial-time algorithm that exactly identifies the class of simple deterministic context free grammars in terms of general context free grammara using membership and equivalence queries .
+maler and pnueli [ 95 ] give an efficient algorithm to learn a subclass of the infinitary regular sets using membership and equivalence queries .
+rivest and schapire [ 111 , 112 , 113 ] consider the problem of a robot navigating in an unknown environment and attempting to construct an accurate map of that environment .
+for the case of finite state environments with deterministic actions , they give polynomial-time algorithms to construct a perfect model of the unknown environment , even in the absence of an operation to reset the robot to a known state .
+one of the corollaries of their results is a new and more efficient algorithm for learning dfas using equivalence and membership queries .
+geometric concepts .
+bultman and maass [ 34 ] give efficient algorithms for identifying a variety of discrete geometric concepts using only membership queries .
+baum [ 22 ] demonstrates the power of membership queries and random examples for learning concepts describable by certain kinds of neural nets .
+in particular , he sketches a polynomial-time algorithm to learn the intersection of m halfspaces in n dimensions using random examples and membership queries.4 subclasses of cnf and dnf .
+angluin [ 7 ] gives a polynomial-time algorithm that exactly identifies k-term dnf formulas using equivalence and membership queries .
+blum and rudich [ 28 ] show that k-term dnf formulas can be exactly identified in terms of general dnf formulas by a randomized algorithm that uses membership and equivalence queries and runs in expected time 0 ( n 2 ( k ) ) .
+this means that dnf formulas of 0 ( log n ) terms are pac-learnable with membership queries .
+valiant [ 131 ] gives an algorithm that can be viewed as exactly learning monotone dnf formulas in polynomial time using equivalence and membership queries [ 9 ] .
+a propositional horn sentence is a cnf formula with at most one positive literal per clause .
+angluin , frazier and pitt [ 11 ] give a polynomial-time algorithm that exactly identifies the class of propositional horn sentences using membership and equivalence queries .
+however , " more " nonmonotonicity , e.g. , two positive literals per clause , yields a problem no easier than predicting general cnf or dnf formulas with membership queries , which remains open .
+read-once formulas .
+angluin , hellerstein , and karpinski [ 12 ] give a polynomial-time algorithm that exactly identifies the class of general read-once boolean formulas using membership and equivalence queries .
+subsequent results have demonstrated the surprising power of membership queries to aid in learning read-once formulas over a variety of more powerful bases .
+raghavan and schach [ 109 ] give a polynomial-time algorithm to learn single-contact switch configurations using equivalence and membership queries .
+this class of boolean functions properly includes the read-once boolean functions , and raghavan and schach 's algorithm improves the time bound of the angluin , heller- stein and karpinski algorithm . 4 there is a technical constraint on the interaction of the concept and the distribution on examples that prevents certain pathological conditions .
+a result due independently to hancock [ 51 ] and hellerstein and karpinski [ 65 ] shows that there is a polynomial-time algorithm using membership and equivalence queries to learn read-once formulas over the basis of not and threshold gates , which is also a proper generalization of the read-once boolean formulas .
+hancock [ 52 ] gives a polynomial-time algorithm using membership and equivalence queries to learn p-formula decision trees , another proper generalization of read-once boolean formulas .
+hancock and hellerstein [ 55 ] give polynomial algorithms using membership and equivalence queries that exactly identify read-once formulas over extended bases and fields .
+these results have recently been extended and improved by bshouty , hancock , and heller- stein [ 33 ] .
+hancock , golea and marchand [ 54 ] give a polynomial-time algorithm to learn nonoverlapping perceptron networks ( or read-once formulas over a weighted threshold basis ) using random examples and membership queries. km-formulas .
+generalizing the read-once or p restriction to allow two or a bounded number of occurrences of each variable , there has also been progress .
+hancock gives polynomial- time algorithms to pac-identify 2p-dnf formulas and kp-decision trees using random examples and membership queries [ 53 ] .
+for the first class , aizenstein and pitt [ 4 ] prove the stronger result that 2p-dnf formulas are exactly identifiable in polynomial time using equivalence and membership queries .
+predicting 3p-dnf formulas with membership queries is no easier than predicting general dnf formulas with membership queries [ 53 ] , so 2 seems to be the limit of this line of attack .
+the status of 2p-boolean formulas of greater structural complexity is open .
+errors in membership queries .
+errors in the responses to membership queries have not yet been much studied .
+sakakibara [ 117 ] defines a model in which answers to queries are subject to random independent noise , which he shows can be effectively removed by repeating the query sufficiently often .
+anglum and slonim [ 15 ] consider a model in which a fixed but randomly chosen fraction of membership queries can be answered " i don 't know " and the answers are persistent , that is , do not change when queried again .
+they demonstrate a polynomial-time algorithm to learn monotone dnf formulas in this model .
+active learning : negative .
+lower bounds .
+maass and turan [ 94 ] present general lower bounds on the number of membership and equivalence queries required for exact identification of all concepts from a class c. in particular , they show this quantity is bounded below by 717- of the vapnik-chervonenkis dimension of c. they also give a lower bound in terms of the number of equivalence queries to identify elements of c using arbitrary subsets of the domain as hypotheses .
+in effect , these results establish that membership queries do not ( even in pathological cases ) confer an extraordinary advantage over computationally unrestricted algorithms using only examples .
+reductions .
+generalizing pitt and warmuth 's definitions , angluin and kharitonov [ 13 ] define prediction with respect to random examples and membership queries , and a reduction that preserves prediction with membership queries .
+in addition to the function g that maps concepts in domain a to concepts in domain b , and the function f that maps examples in domain a to examples in domain b , there is also a function h that maps examples in domain b to answers or examples in domain a. intuitively , h is the inverse of f , so that examples queried in domain b may be transformed into examples to be queried in domain a. however , the examples queried in domain b may not be in the range of f , then the function h must itself supply an answer , typically a constant + or for all examples not in the range of f .
+with this new reduction , the class of dfas is apparently not complete over dspace ( log n ) , however , the class of finite unions of dfas or two-way dfas is complete over dspace ( log n ) .
+also , general boolean formulas can be reduced to 3p-boolean formulas .
+hence , predicting 3p-boolean formulas or finite unions of dfas or two-way dfas with membership queries is as hard as predicting boolean formulas with membership queries .
+implications of cryptography .
+generalizing the results of kearns and valiant [ 78 ] , anglum and kharitonov [ 13 ] use results and techniques from public-key cryptography to show limitations on the classes of concepts that are pac-learnable using membership queries .
+using na , or and yung 's construction of a public-key encryption system secure against chosen cyphertext attack [ 97 ] , they show that assuming the intractability of ( 1 ) recognizing quadratic residues modulo a composite , ( 2 ) inverting rsa encryption , or ( 3 ) factoring blum integers , there is no pac-learning algorithm with membership queries for several concept classes , including general boolean formulas , constant depth threshold circuits , 3p-boolean formulas , finite unions or intersections of deterministic finite acceptors , 2-way deterministic finite acceptors , nondeterministic finite acceptors , and context-free grammars .
+they also show that if there exist one-way functions that cannot be inverted by polynomial-sized circuits , an application of existing secure signature schemes can be used to show that cnf and dnf formulas formulas are either pac-learnable without membership queries , or are not pac-learnable even with membership queries .
+this result shows that under fairly weak cryptographic assumptions membership queries won 't help with learning cnf or dnf formulas .
+consequently , classes such as cnf and dnf formulas , or nondeterministic finite acceptors and context-free grammars , which have so far resisted pac-learning with membership queries , appear to be out of reach .
+nonclosure results .
+the " folk wisdom " that finite conjunctions or disjunctions of concepts from a learnable class may be unlearn- able is also supported by the results above .
+for example , though dfas and read-once boolean formulas are pac- learnable with membership queries , the results above give cryptographic evidence that finite intersections or unions of dfas are not , and conjunctions or disjunctions of as few as three read-once boolean formulas are not .
+generalizations of the pac model .
+haussler [ 58 ] considers a powerful decision-theoretic generalization of pac-learning to settings in which the rules to be learned are not necessarily boolean-valued nor deterministic , and adequacy of representation is not necessarily assumed .
+he proves very general results on the sample sizes sufficient for learning in such domains , using appropriate generalizations of the vc-dimension , with specific application to the problem of learning in terms of neural nets .
+in one application of this approach , kearns and schapire [ 77 ] define a p-concept to be a map c from x to [ 0,1 ] , where c ( z ) is interpreted as the probability that c classifies x positively .
+in this learning paradigm , examples are drawn according to an unknown distribution d on x and then stochastically classifed as positive or negative by an unknown p-concept c .
+they distinguish the goals of ( 1 ) finding a good prediction rule , that is , a decision rule whose prediction error is within e of the bayes optimal rule , and ( 2 ) finding a good model of probability , that is , a good approximation h to the target rule in the sense that ih ( x ) c ( x ) i is small for most inputs x with respect to d. yamanishi [ 136 ] defines a stochastic rule similarly and considers the problem of learning stochastic decision lists .
+abe , takeuchi and warmuth [ 2 ] investigate relations among various definitions of " distance " between two p-concepts , with particular emphasis on the kullback-liebler divergence .
+fischer , mt , and simon [ 37 ] define related notions of multiplicative , additive or linear pac-estimability of a class of distributions .
+abe and warmuth [ 3 ] consider the concrete problem of approximating a distribution using a stochastic automaton .
+other models .
+at this point the reader may feel that the field is coherent , and the models settled ; this impression is wrong !
+the goal stated in section 1 is yet very distant , and the major part of the vitality of the field lies in its ability to generate new models , approaches , formalizations .
+we therefore point , possibly at the future : valiant [ 1321 : a model of neuroids , neurons with state , and task-specific learning algorithms .
+aldous and vazirani [ 5 ] : an extension of the pac model to examples generated using a markov chain .
+rivest and sloan [ 114 ] : a model of learning a concept from subconcepts and an algorithm to learn boolean circuits , see also kivinen [ 79 ] .
+vitter and lin [ 134 ] : a model of parallel learning .
+natarajan [ 98 ] : a model of learning from exercises .
+li and vitanyi [ 85 ] : a theory of learning " simple " concepts from " simple " distributions based on program- size complexity .
+floyd [ 40 ] : a model of space-bounded learning .
+rivest and sloan [ 115 ] : a bayesian model of scientific theories and experiments .
+ben-david , itai and kushilevitz [ 24 ] : a model of learning using estimates of " distance " from the target .
+li [ 84 ] : a model of learning a string , motivated by dna sequencing , see also jiang and li [ 72 ] .
+helmb old and long [ 66 ] : a model of learning concepts that change over time .
+blum , heller- stein and littlestone [ 27 ] : dealing efficiently with infinite attribute spaces .
+maass [ 92 ] : a model of worst- case " oblivious " example sequences and the power of randomized algorithms in this setting .
+models of teaching have been defined and investigated by goldman and kearns [ 45 , 46 ] and shinohara and miyano [ 124 ] .
+open problems .
+in order of increasing strength : are decision trees pac- learnable ?
+is dnf or cnf pac-learnable ?
+are intersections or unions of half spaces in en pac-learnable ?
+for membership queries : determine the bases over which read-once formulas are pac-learnable with membership queries .
+determine which classes of 2p-formulas are pac-learnable with membership queries .
+of course , the basic open problem is to account for the possibility of learning .

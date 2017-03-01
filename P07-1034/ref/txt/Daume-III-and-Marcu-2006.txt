@@ -1,0 +1,350 @@
+domain adaptation for statistical classifiers .
+abstract .
+the most basic assumption used in statistical learning theory is that training data and test data are drawn from the same underlying distribution .
+unfortunately , in many applications , the in-domain test data is drawn from a distribution that is related , but not identical , to the out-of-domain distribution of the training data .
+we consider the common case in which labeled out-of-domain data is plentiful , but labeled in-domain data is scarce .
+we introduce a statistical formulation of this problem in terms of a simple mixture model and present an instantiation of this framework to maximum entropy classifiers and their linear chain counterparts .
+we present efficient inference algorithms for this special case based on the technique of conditional expectation maximization .
+our experimental results show that our approach leads to improved performance on three real world tasks on four different data sets from the natural language processing domain .
+introduction .
+the generalization properties of most current statistical learning techniques are predicated on the assumption that the training data and test data come from the same underlying probability distribution .
+unfortunately , in many applications , this assumption is inaccurate .
+it is often the case that plentiful labeled data exists in one domain ( or coming from one distribution ) , but one desires a statistical model that performs well on another related , but not identical domain .
+hand labeling data in the new domain is a costly enterprise , and one often wishes to be able to leverage the original , out-of-domain data when building a model for the new , in-domain data .
+we do not seek to eliminate the annotation of in-domain data , but instead seek to minimize the amount of new annotation effort required to achieve good performance .
+this problem is known both as domain adaptation and transfer .
+in this paper , we present a novel framework for understanding the domain adaptation problem .
+the key idea in our framework is to treat the in-domain data as drawn from a mixture of two distributions : a truly in-domain distribution and a general domain distribution .
+similarly , the out-of-domain data is treated as if drawn from a mixture of a truly out-of-domain distribution and a general domain distribution .
+we apply this framework in the context of conditional classification models and conditional linear-chain sequence labeling models , for which inference may be efficiently solved using the technique of conditional expectation maximization .
+we apply our model to four data sets with varying degrees of divergence between the in-domain and out-of-domain data and obtain predictive accuracies higher than any of a large number of baseline systems and a second model proposed in the literature for this problem .
+the domain adaptation problem arises very frequently in the natural language processing domain , in which millions of dollars have been spent annotating text resources for morphological , syntactic and semantic information .
+however , most of these resources are based on text from the news domain ( in most cases , the wall street journal ) .
+the sort of language that appears in text from the wall street journal is highly specialized and is , in most circumstances , a poor match to other domains .
+for instance , there has been a recent surge of interest in performing summarization ( elhadad , kan , klavans , & mckeown , 2005 ) or information extraction ( hobbs , 2002 ) of biomedical texts , summarization of electronic mail ( rambow , shrestha , chen , & lauridsen , 2004 ) , information extraction from transcriptions of meetings , conversations or voice-mail ( huang , zweig , & padmanabhan , 2001 ) , among others .
+conversely , in the machine translation domain , most of the parallel resources that machine translation system depend on for parameter estimation are drawn from transcripts of political meetings , yet the translation systems are often targeted at news data ( munteanu & marcu , 2005 ) .
+statistical domain adaptation .
+in the multiclass classification problem , one typically assumes the existence of a training set d = { ( xn , yn ) e x x y : 1 < n < n } , where x is the input space and y is a finite set .
+it is assumed that each ( xn , yn ) is drawn from a fixed , but unknown base distribution p and that the training set is independent and identically distributed , given p .
+the learning problem is to find a function f : x * y that obtains high predictive accuracy ( this is typically done either by explicitly minimizing the regularized empirical error , or by maximizing the probabilities of the model parameters ) .
+domain adaptation .
+in the context of domain adaptation , the situation becomes more complicated .
+we assume that we are given two sets of training data , d ( ) and d ( i ) , the out-of-domain and in- domain data sets , respectively .
+we no longer assume that there is a single fixed , but known distribution from which these are drawn , but rather assume that d ( ) is drawn from a distribution p ( ) and d ( i ) is drawn from a distribution p ( i ) .
+the learning problem is to find a function f that obtains high predictive accuracy on data drawn from p ( i ) . ( indeed , our model will turn out to be symmetric with respect to d ( i ) and d ( ) , but in the contexts we consider obtaining a good predictive model of d ( i ) makes more intuitive sense . )
+we will assume that d ( ) = n ( ) and d ( i ) = n ( i ) , where typically we have n ( i ) n ( ) .
+as before , we will assume that the n ( ) out-of-domain data points are drawn iid from p ( ) and that the n ( i ) in-domain data points are drawn iid from p ( i ) .
+obtaining a good adaptation model requires the careful modeling of the relationship between p ( i ) and p ( ) .
+if these two distributions are independent ( in the obvious intuitive sense ) , then the out-of-domain data d ( ) is useless for building a model of p ( i ) and we may as well ignore it .
+on the other hand , if p ( i ) and p ( ) are identical , then there is no adaptation necessary and we can simply use a standard learning algorithm .
+in practical problems , though , p ( i ) and p ( ) are neither identical nor independent .
+prior work .
+there has been relatively little prior work on this problem , and nearly all of it has focused on specific problem domains , such as n-gram language models or generative syntactic parsing models .
+the standard approach used is to treat the out-of-domain data as prior knowledge and then to estimate maximum a posterior values for the model parameters under this prior distribution .
+this approach has been applied successfully to language modeling ( bacchiani & roark , 2003 ) and parsing ( roark & bacchiani , 2003 ) .
+also in the parsing domain , hwa ( 1999 ) and gildea ( 2001 ) have shown that simple techniques based on using carefully chosen subsets of the data and parameter pruning can improve the performance of an adapted parser .
+these models assume a data distribution p ( d 0 ) with parameters 0 and a prior distribution over these parameters p ( 0 q ) with hyper-parameters q .
+they estimate the qhyperparameters from the out-of-domain data and then find the maximum a posteriori parameters for the in-domain data , with the prior fixed .
+in the context of conditional and discriminative models , the only domain adaptation work of which we are aware is the model of chelba and acero ( 2004 ) .
+this model again uses the out-of-domain data to estimate a prior distribution , but does so in the context of a maximum entropy model .
+specifically , a maximum entropy model is trained on the out-of-domain data , yielding optimal weights for that problem .
+these weights are then used as the mean weights for the gaussian prior on the learned weights for the in-domain data .
+though effective experimentally , the practice of estimating a prior distribution from out-of-domain data and fixing it for the estimation of in-domain data leaves much to be desired .
+theoretically , it is strange to estimate and fix a prior distribution from data ; this is made more apparent by considering the form of these models .
+denoting the in-domain data and parameters by d ( i ) and 0 , respectively , and the out-of-domain data and parameters by d ( ) and q , we obtain the following form for these prior estimation models : one would have a very difficult time rationalizing this optimization problem by anything other than experimental performance .
+moreover , these models are unusual in that they do not treat the in-domain data and the out-of-domain data identically .
+intuitively , there is no difference in the two sets of data ; they simply come from different , related distributions .
+yet , the prior-based models are highly asymmetric with respect to the two data sets .
+this also makes generalization to more than one out of domain data set difficult .
+finally , as we will see , the model we propose in this paper , which alleviates all of these problems , outperforms them experimentally .
+a second generic approach to the domain adaptation problem is to build an out of domain model and use its predictions as features for the in domain data .
+this has been successfully used in the context of named entity tagging ( ? ) .
+this approach is attractive because it makes no assumptions about the underlying classifier ; in fact , multiple classifiers can be used .
+our framework .
+in this paper , we propose the following relationship between the in-domain and the out-ofdomain distributions .
+we assume that instead of two underlying distributions , there are actually three underlying distributions , which we will denote q ( ) , q ( 9 ) and q ( i ) .
+we then consider p ( ) to be a mixture of q ( ) and q ( 9 ) , and consider p ( i ) to be a mixture of q ( i ) and q ( 9 ) .
+one can intuitively view the q ( ) distribution as a distribution of data that is truly out-of-domain , q ( i ) as a distribution of data that is truly in-domain and q ( 9 ) as a distribution of data that is general to both domains .
+thus , knowing q ( 9 ) and q ( i ) is sufficient to build a model of the in-domain data .
+the out-of-domain data can help us by providing more information about q ( 9 ) than is available by just considering the in-domain data .
+for example , in part-of-speech tagging , the assignment of the tag determiner ( dt ) to the word the is likely to be a general decision , independent of domain .
+however , in the wall street journal , monitor is almost always a verb ( vb ) , but in technical documentation it will most likely be a noun .
+the q ( 9 ) distribution should account for the case of the / dt , the q ( ) should account for monitor / vb and q ( i ) should account for monitor / nn .
+domain adaptation in maximum entropy models .
+the domain adaptation framework outlined in section 2.3 is completely general in that it can be applied to any statistical learning model .
+in this section we apply it to log- linear conditional maximum entropy models and their linear chain counterparts , since these models have proved quite effective in many learning tasks .
+we will first review the maximum entropy framework , then will extend it to the domain adaptation problem ; finally we will discuss domain adaptation in linear chain maximum entropy models .
+maximum entropy models .
+the maximum entropy framework seeks a conditional distribution p ( y i x ) that is closest ( in the sense of kl divergence ) to the uniform distribution but also matches a set of training data d with respect to feature function expectations ( della pietra , della pietra , & lafferty , 1997 ) .
+by introducing one lagrange multiplier az for each feature function fz , this optimization problem results in a probability distribution of the form : here , u v denotes the scalar product of two vectors u and v , given by : u v = ez uzvz .
+the normalization constant in eq ( 2 ) , z ~ , x, is obtained by summing the exponential over all possible classes y ' e y. this probability distribution is also known as an exponential distribution or a gibbs distribution .
+the learning ( or optimization ) problem is to find the vector a that maximizes the likelihood in eq ( 2 ) .
+in practice , to prevent over-fitting , one typically optimizes a penalized ( log ) likelihood , where an isotropic gaussian prior with mean 0 and covariance matrix ~ 2i is placed over the parameters a ( chen & rosenfeld , 1999 ) .
+the graphical model for the standard maximum entropy model is depicted on the left of figure 1 .
+in this figure , circular nodes correspond to random variables and square nodes correspond to fixed variables .
+shaded nodes are observed in the training data and empty nodes are hidden or unobserved .
+arrows denote conditional dependencies .
+in general , the feature functions f ( x , y ) may be arbitrary real-valued functions ; however , in this paper we will restrict our attention to binary features .
+in practice , this is not a harsh restriction : many problems in the natural language domain naturally employ only binary features ( for real valued features , binning techniques can be applied ) .
+additionally , for notational convenience , we will assume that the features fz ( x , y ) can be written in product form as gz ( y ) hz ( x ) for arbitrary binary functions g over outputs and binary features h over inputs .
+the latter assumption means that we can consider x to be a binary vector where xz = hz ( x ) ; in the following this will simplify notation significantly ( the extension to the full case is straightforward , but messy , and is therefore not considered in the remainder of this paper ) .
+by considering x as a vector , we may move the class dependence to the parameters and consider a to be a matrix where ay , z is the weight for hz for class y .
+we will write ay to refer to the column vector of a corresponding to class y .
+as x is also considered a column vector , we write ayt x as shorthand for the dot product between x and the weights for class y .
+under this modified notation , we may rewrite eq ( 2 ) as : the parameters a can be estimated using any convex optimization technique ; in practice , limited memory bfgs ( nash & nocedal , 1991 ; averick & more , 1994 ) seems to be a good choice ( malouf , 2002 ; minka , 2003 ) and we will use this algorithm for the experiments described in this paper .
+in order to perform these calculations , one must be able to compute the gradient of eq ( 4 ) with respect to a , which is available in closed form .
+the maximum entropy genre adaptation model .
+according to this model , the zns are binary random variables that we assume are drawn from a bernoulli distribution with parameter 7r ( ' ) ( for in-domain ) and 7r ( o ) ( for outof-domain ) .
+furthermore , we assume that there are three a vectors , a ( ' ) , a ( o ) and a ( g ) corresponding to q ( ' ) , q ( o ) and q ( g ) , respectively .
+for instance , if zn = 1 , then we assume that ~ xn should be classified using a ( ' ) .
+finally , we model the binary vectors x ( ' ) n s ( respectively x ( o ) n s ) as being drawn independently from bernoulli distributions parameterized by ip ( ' ) and ip ( g ) ( respectively , ip ( o ) and ip ( g ) ) .
+again , when zn = 1 , we assume that xn is drawn according to ip ( ' ) .
+this corresponds to a naive bayes assumption over the generative probabilities of the xn vectors .
+finally , we place a common beta prior over the naive bayes parameters , ip .
+allowing v to range over { i , o , g } , the full hierarchical model is : we term this model the maximum entropy genre adaptation model ( the mega model ) .
+the story for out-of-domain data points is identical , but uses the truly out-of-domain and general-domain parameters , rather than the truly in-domain parameters and general-domain parameters .
+linear chain models .
+the straightforward extension of the maximum entropy classification model to the maximum entropy markov model ( memm ) ( mccallum , freitag , & pereira , 2000 ) is obtained by assuming that the targets yn are sequences of labels .
+the canonical example for this model is part of speech tagging : each word in a sequence is assigned a part of speech tag .
+by introducing a first order markov assumption on the tag sequence , one obtains a linear chain model that can be viewed as the discriminative counterpart to the standard ( generative ) hidden markov model .
+the parameters of these models can be estimated again using limited memory bfgs .
+the extension of the mega model to the linear chain framework is similarly straightforward , under the assumption that each label ( part of speech tag ) has its own indicator variable z ( versus a global indicator variable z for the entire tag sequence ) .
+the techniques described herein may also be applied to the conditional random field framework of lafferty , mccallum , and pereira ( 2001 ) , which fixes a bias problem of the memm by performing global normalization rather than per-state normalization .
+there is , however , a subtle difficulty in a direct application to crfs .
+specifically , one would need to decide if a single z variable would be assigned to an entire sentence , or to each word individually .
+in the memm case , it is most natural to have one z per word .
+however , to do so in a crf would be computationally more expensive .
+in the remainder , we continue to use the memm model for efficiency purposes .
+conditional expectation maximization .
+inference in the mega model is slightly more complex than in standard maximum entropy models .
+however , inference can be solved efficiently using conditional expectation maximization ( cem ) , a variant of the standard expectation maximization ( em ) algorithm ( dempster , laird , & rubin , 1977 ) , due to jebara and pentland ( 1998 ) .
+at a high level , em is useful for computing in generative models with hidden variables , while cem is useful for computing in discriminative models with hidden variables ; the mega model belongs to the latter family , so cem is the appropriate choice .
+in eq ( 6 ) , ez denotes an expectation .
+one may now apply jensens inequality to this equation , which states that f ( elx } ) g elf ( x ) } whenever f is convex .
+taking f = log , we are able to decompose the log of an expectation into the expectation of a log .
+this typically separates terms and makes taking derivatives and solving the resolution optimization problem tractable .
+unfortunately , em cannot be directly applied to conditional models ( such as the mega model ) of the form in eq ( 7 ) because such models result in an m-step that requires the maximization of an equation of the form given in eq ( 8 ) .
+jensens inequality can be applied to the first term in eq ( 8 ) , which can be maximized readily as in standard em .
+however , applying jensens inequality to the second term would lead to an upper bound on the likelihood , since that term appears negated .
+the conditional em solution ( jebara & pentland , 1998 ) is to bound the change in log-likelihood between iterations , rather than the log-likelihood itself .
+the change in log- likelihood can be written as in eq ( 9 ) , where ot denotes the parameters at iteration t .
+by rewriting the conditional distribution p ( y i x ) as p ( x , y ) divided by p ( x ) , we can express lc as the log of the joint distribution difference minus the log of the marginal distribution .
+here , we can apply jensens inequality to the first term ( the joint difference ) , but not to the second ( because it appears negated ) .
+fortunately , jensens is not the only bound we can employ .
+the standard variational upper bound of the logarithm function is : log x < x 1 ; this leads to a lower bound of the negation , which is exactly what is desired .
+this bound is attractive for other reasons : ( 1 ) it is tangent to the logarithm ; ( 2 ) it is tight ; ( 3 ) it makes contact at the current operating point ( according to the maximization at the previous time step ) ; ( 4 ) it is a simply linear function ; and ( 5 ) in the terminology of the calculus of variations , it is the variational dual to the logarithm ; see ( smith , 1998 ) .
+applying jensens inequality to the first term in eq ( 9 ) and the variational dual to the second term , we obtain that the change of log-likelihood in moving from model parameters ot-1 at time t 1 to ot at time t ( which we shall denote qt ) is bounded by al > qt , where qt is defined by eq ( 10 ) , where h = ] e { z i x ; o } when z = 1 and 1 ] e { z i x ; o } when z = 0 , with expectations taken with respect to the parameters from the previous iteration .
+by applying the two bounds ( jensens inequality and the variational bound ) , we have removed all sums of logs , which are hard to deal with analytically .
+the full derivation is given in appendix a. the remaining expression is a lower bound on the change in likelihood , and maximization of it will result in maximization of the likelihood .
+as in the map variant of standard em , there is no change to the e-step when priors are placed on the parameters .
+the assumption in standard em is that we wish to maximize p ( o i x , y ) a p ( o ) p ( y i o , x ) where the prior probability of o is ignored , leaving just the likelihood term of the parameters given the data .
+in map estimation , we do not make this assumption and instead use a true prior p ( o ) .
+in doing so , we need only to add a factor of logp ( o ) to the definition of qt in eq ( 10 ) .
+it is important to note that although we do make use of a full joint distribution p ( x , y , z ) , the objective function of our model is conditional .
+the joint distribution is only used in the process of creating the bound : the overall optimization is to maximize the conditional likelihood of the labels given the input .
+in particular , the bound using the full joint likelihood holds for any parameters of the marginal .
+parameter estimation for the mega model .
+as made explicit in eq ( 10 ) , the relevant distributions for performing cem are the full joint distributions over the input variables x , the output variables y , and the hidden variables z .
+additionally , we require the marginal distribution over the x variables and the z variables .
+finally , we need to compute expectations over the z variables .
+we will derive the expectation step in this section and present the final solution for the maximization step for each class of variables .
+the derivation of the equations for the maximization is given in appendix b. the q bound on complete conditional likelihood for the mega modelis given below : in this equation , p ' ( ) is the probability distribution at the previous iteration .
+the first term in eq ( 11 ) is the bound for the in-domain data , while the second term is the bound for the out-of-domain data .
+in all the optimizations described in this section , there are nearly identical terms for the in-domain parameters and the out-of-domain parameters .
+for brevity , we will only explicitly write the equations for the in-domain parameters ; the corresponding out-of-domain equations can be easily derived from these .
+moreover , to reduce notational overload , we will elide the superscripts denoting in-domain and out-of-domain when obvious from context .
+for notational brevity , we will use the notation depicted in table 1 .
+expectation step .
+the e-step is concerned with calculating hn given current model parameters .
+since zn e 10 , 11 , we easily find hn = p ( zn = 1i ~ ) , which can be calculated as follows : here , z is the partition function from before .
+this can be easily calculated for z e { 0 , 11 and the expectation can be found by dividing the value for z = 1 by the sum over both .
+m-step for a. viewing qt as a function of a , it is easy to see that optimization for this variable is convex .
+an analytical solution is not available , but the gradient of qt with respect to a ( ' ) can be seen to be identical to the gradient of the standard maximum entropy posterior , eq ( 4 ) , but where each data point is weighted according to its posterior probability , ( 1 hn ) .
+we may thus use identical optimization techniques for computing optimal a variables as for standard maximum entropy models ; the only difference is that the data points are now weighted .
+a similar story holds for a ( ) .
+in the case of a ( g ) , we obtain the standard maximum entropy gradient , computed over all n ( ' ) + n ( ) data points , where each xn ( ' ) is weighted by hn and each xn ( ) is weighted by hn ( ) .
+this is shown in appendix b.2.
+the case for , 0 ( ) is identical .
+for , 0 ( 6 ) , the only difference is that we must replace each sum to over the data points with two sums , one for each of the in-domain and out-of-domain points ; and , as before , the 1 ^ hns must be replaced with hn ; this is made explicit in the appendix .
+thus , to optimize the , 0 variables , we simply iterate through and optimize each component analytically , as given above , until convergence .
+training algorithm .
+the full training algorithm is depicted in figure 2 .
+convergence properties of the cem algorithm ensure that this will converge to a ( local ) maximum in the posterior space .
+if local optima become a problem in practice , one can alternatively use a stochastic optimization algorithm , in which a temperature is applied enabling the optimization to jump out of local optima early on .
+however , we do not explore this idea further in this work .
+in the context of our application , this extension was not required .
+cem convergence .
+one immediate question about the conditional em model we have described is how many em iterations are required for the model to converge .
+in our experiments , 5 iterations of cem is more than sufficient , and often only 2 or 3 are necessary .
+to make this more clear , in figure 3 , we have plotted the negative complete log likelihood of the model on the first data set , described below in section 6.2 .
+there are three separate maximizations in the full training algorithm ( see figure 2 ) ; the first involves updating the 7r variables , the second involves optimizing the a variables and the third involves optimizing the 0 variables .
+we compute the likelihood after each of these steps .
+running a total 5 cem iterations is still relatively efficient in our model .
+the dominating expense is in the weighted maximum entropy optimization , which , at 5 cem iterations , must be computed 15 times ( each iteration requires the optimization of each of the three sets of a variables ) .
+at worst this will take 15 times the amount of time to train a model on the complete data set ( the union of the in-domain and out-of-domain data ) , but in practice we can resume each optimization at the ending point of the previous iteration , which causes the subsequent optimizations to take much less time .
+prediction .
+once training has supplied us with model parameters , the subsequent task is to apply these parameters to unseen data to obtain class predictions .
+we assume all this test data is in-domain ( i.e. , is drawn either from q ( i ) or q ( g ) in the notation of the introduction ) , and obtain a decision rule of the form given in eq ( 13 ) for a new test point x .
+thus , the decision rule is to simply select the class which has highest probability according to the maximum entropy classifiers , weighted linearly by the marginal probabilities of the new data point being drawn from q ( i ) versus q ( g ) .
+in this sense , our model can be seen as linearly interpolating an in-domain model and ageneral-domain model , but where the interpolation parameter is input specific .
+experimental results .
+in this section , we describe the result of applying the mega model to several datasets with varying degrees of divergence between the in-domain and out-of-domain data .
+however , before describing the data and results , we will discuss the systems against which we compare .
+baseline systems .
+though there has been little literature on this problem and thus few real systems against which to compare , there are several obvious baselines , which we describe in this section .
+onlyi : this model is obtained simply by training a standard maximum entropy model on the in-domain data .
+this completely ignores the out-of-domain data and serves as a baseline case for when such data is unavailable .
+onlyo : this model is obtained by training a standard maximum entropy model on the out-of-domain data , completely ignoring the in-domain data .
+this serves as a baseline for expected performance without annotating any new data .
+it also gives a sense of how close the out-of-domain distribution is to the in-domain distribution .
+lini : this model is obtained by linearly interpolating the onlyi and onlyo systems .
+the interpolation parameter is estimated on held-out ( development ) in-domain data .
+this means that , in practice , extra in-domain data would need to be annotated in order to create a development set ; alternatively , cross-validation could be used .
+mix : this model is obtained by training a maximum entropy model on the union of the out-of-domain and in-domain data sets .
+mixw : this model is also obtained by training a maximum entropy model on the union of the out-of-domain and in-domain data sets , but where the out-of-domain data is down- weighted so that is effectively equinumerous with the in-domain data .
+feats : this model uses the out-of-domain data to build one classifier and then uses this classifiers predictions as features for the in-domain data , as described by ? ( ? ) .
+prior : this is the adaptation model described in section 2.2 , where the out-of-domain data is used to estimate a prior for the in-domain classifier .
+in the case of the maximum entropy models we consider here , the weights learned from the out-of-domain data are used as the mean of the gaussian prior distribution placed over the weights in the training of the in-domain data , as is described by chelba and acero ( 2004 ) .
+in all cases , we tune model hyperparameters using performance on development data .
+this development data is taken to be a random 20 % of the training data in all cases .
+once appropriate hyperparameters are found , the 20 % is folded back in to the training set .
+data sets .
+we evaluate our models on three different problems .
+the first two problems come from the automatic content extraction ( ace ) data task .
+this data was selected because the ace program specifically looks at data in different domains .
+the third problem is the same as that tackled by chelba and acero ( 2004 ) , which required them to annotate data themselves .
+mention type classification .
+the first problem , mention type , is a subcomponent of the entity mention detection task ( an extension of the named entity tagging task , wherein pronouns and nominals are marked , in addition to simple names ) .
+we assume that the extents of the mentions are marked and we simply need to identify their type , one of : person , geo-political entity , organization , location , weapon or vehicle .
+as the out-of-domain data , we use the newswire and broadcast news portions of the ace 2005 training data ; as the in-domain data , we use the fisher conversations data .
+an example out-of-domain sentence is : we use 23k out-of-domain examples ( each mention corresponds to one example ) , 1k in-domain examples and 456 test examples .
+accuracy is computed as 0 / 1 loss .
+we use the standard feature functions employed in named entity models , include lexical items , stems , prefixes and suffixes , capitalization patterns , part-of-speech tags , and membership information on gazetteers of locations , businesses and people .
+the accuracies reported are the result of running ten fold cross-validation .
+mention tagging .
+the second problem , mention tagging is the precursor to the mention type task , in which we attempt to tag entity mentions in raw text .
+we use the standard begin / in / out encoding and use a maximum entropy markov model to perform the tagging ( mccallum et al. , 2000 ) .
+as the out-of-domain data , we use again the newswire and broadcast news data ; as the in-domain data , we use broadcast news data that has been transcribed by automatic speech recognition .
+the in-domain data lacks capitalization , punctuation , etc . , and also contains transcription errors ( speech recognition word error rate is approximately 15 % ) .
+for the tagging task , we have 112k out-of-domain examples ( in the context of tagging , an example is a single word ) , but now 5k in-domain examples and 11k test examples .
+accuracy is f-measure across the segmentation .
+we use the same features as in the mention type identification task .
+the scores reported are after ten fold cross-validation .
+recapitalization .
+the final problem , recap , is the task of recapitalizing text .
+following chelba and acero ( 2004 ) , we again use a maximum entropy markov model , where the possible tags are : lowercase , capitalized , all upper case , punctuation or mixed case .
+the out-of-domain data in this task comes from the wall street journal , and two separate in-domain data sets come from broadcast news text from cnn / npr and abc primetime , respectively .
+we use 3.5m out-of-domain examples ( one example is one word ) .
+for the cnn / npr data , we use 146k in-domain training examples and 73k test examples ; for the abc primetime data , we use 33k in-domain training examples and 8k test examples .
+we use identical features to chelba and acero ( 2004 ) .
+in order to maintain comparability to the results described by chelba and acero ( 2004 ) , we do not perform cross-validation for these experiments : we use the same train / test split as described in their paper .
+feature selection .
+while the maximum entropy models used for the classification are adept at dealing with many irrelevant and / or redundant features , the naive bayes generative model , which we use to model the distribution of the input variables , can overfit on such features .
+this turned out not to be a problem for the mention type and mention tagging problems , but for the recap problems , it caused some errors .
+to alleviate this problem , for the recap problem only , we applied a feature selection algorithm just to the features used for the naive bayes model ( the entire feature set was used for the maximum entropy model ) .
+specifically , we took the 10k top features according to the information gain criteria to predict in- domain versus out-of-domain ( as opposed to feature selection for class label ) ; forman ( 2003 ) provides an overview of different selection techniques .
+results .
+our results are shown in table 2 , where we can see that training only on in-domain data always outperforms training only on out-of-domain data .
+the linearly interpolated model does not improve on the base models significantly .
+placing all the data in one bag helps , and there is no clear advantage to re-weighting the out domain data .
+the prior model and the feats model perform roughly comparably , with the prior model edging out by a small margin.2 our model outperforms both the prior model and the feats model .
+the value of 10k was selected arbitrarily after an initial run of the model on development data ; it was not tuned to optimize either development or test performance .
+our numbers for the result of the prior model on the data from chelba and acero ( 2004 ) differ slightly from those reported in their paper .
+there are two potential reasons for this .
+first , most of their numbers .
+table 2 : experimental results ; the first set of rows show the sizes of the in-domain and out-of-domain training data sets .
+the second set of rows ( accuracy ) show the performance of the various models on each of the four tasks .
+the last two rows ( % reduction ) show the percentage reduction in error rate by using the mega model over the baseline model ( mix ) and the best alternative method ( prior ) .
+we applied mcnemars test ( gibbons & chakraborti , 2003 , section 14.5 ) to gage statistical significance of these results , comparing the results of the prior model with our own mega model ( for the mention tagging experiment , we compute mcnemars test on simple hamming accuracy rather than f-score ; this is suboptimal , but we do not know how to compute statistical significance for the f-score ) .
+for the mention type task , the difference is statistical significant at the p < 0.03 level ; for the mention tagging task , p < 0.001 ; for the recapitalization tasks , the difference on the abc data is significant only at the p < 0.06 level , while for the cnn / npr data it is significant at the p < 0.004 level .
+in the mention type task , we have improved a baseline model trained only on in-domain data from an accuracy of 81.2 % up to 92.1 % , a relative improvement of 13.4 % .
+for mention tagging , we improve from 83.5 % f-measure up to 88.2 % , a relative improvement of 5.6 % .
+in the abc recapitalization task ( for which much in-domain data is available ) , we increase performance from 95.5 % to 98.1 % , a relative improvement of 2.9 % .
+in the cnn / npr recapitalization task ( with very little in-domain data ) , we increase performance from 94.6 % to 96.8 % , a relative improvement of 2.3 % . are reported based on using all 20m examples ; we consider only the 3.5m example case .
+second , there are likely subtle differences in the training algorithms used .
+nevertheless , on the whole , our relative improvements agree with those in their paper .
+learning curves .
+of particular interest is the amount of annotated in-domain data needed to see a marked improvement from the onlyo baseline to a well adapted system .
+we show in figure 4 the learning curves on the mention type and mention tagging problems .
+along the x-axis , we plot the amount of in-domain data used ; along the y-axis , we plot the accuracy .
+we plot three lines : a flat line for the onlyo model that does not use any in-domain data , and curves for the prior and megam models .
+as we can see , our model maintains an accuracy above both the other models , while the prior curve actually falls below the baseline in the type identification task.3 model introspection .
+we have seen in the previous sections that the mega model routinely outperforms competing models .
+despite this clear performance improvement , a question remains open regarding the internal workings of the models .
+the 7r ( i ) variable captures the degree to which the in- domain data set is truly in-domain .
+the z variables in the model aim to capture , for each test data point , whether it is general domain or in-domain .
+in this section , we discuss the particular values of the parameters the model learns for these variables .
+we present two analyses .
+in the first ( section 7.1 ) , we inspect the models inner workings on the mention type task from section 6.2.1 .
+in this analysis , we look specifically at the expected values of the hidden variables found by the model .
+in the second analysis ( section 7.2 ) , we look at the ability of the model to judge degree of relatedness , as defined by the 7r variables. his is because the fisher data is personal conversations .
+it hence has a much higher degree of first and second person pronouns than news . ( the baseline that always guesses person achieves a 77.8 % accuracy . )
+by not being able to intelligently use the out-of-domain data only when the in-domain model is unsure , performance drops , as observed in the prior model .
+model expectations .
+to focus our discussion , we will consider only the mention type task , section 6.2.1 .
+in table 3 , we have shown seven test-data examples from the mention type task .
+the pre-context is the text that appears before the entity and the post-context is the text that appears after .
+we report the true class and the class our model hypothesizes .
+finally , we report the probability of this example being truly in-domain , according to our model .
+as we can see , the three examples that the model thinks are general domain are new jersey , hospital and government .
+it believes that me , anything and kid are all in-domain .
+in general , the probabilities tend to be skewed toward 0 and 1 , which is not uncommon for naive bayes models .
+we have shown two errors in this data .
+in the first , our model thinks that hospital is a location when truly it is an organization .
+this is a difficult distinction to make : in the training data , hospitals were often used as locations .
+the second example error is anything in is he capable of getting anything over here .
+the long-distance context of this example is a discussion about biological warfare and saddam hussein , and anything is supposed to refer to a type of biological warhead .
+our model mistakingly thinks this is a person .
+this error is likely due to the fact that our model identifies that the word anything is likely to be truly in-domain ( the word is not so common in newswire ) .
+it has also learned that most truly in-domain entities are people .
+thus , lacking evidence otherwise , the model incorrectly guesses that anything is a person .
+it is interesting to observe that the model believes that the entity me in gives me chills is closer to general domain than the me in the fisher thing calling me ha ha they screwed up .
+this likely occurs because the context ha ha has not occurred anywhere in the out-of-domain training data , and twice in the in-domain training data .
+it is unlikely this example would have been misclassified otherwise ( me is fairly clearly a person ) , but this example shows that our model is able to take context into account in deciding the domain .
+all of the decisions made by the model , shown in table 3 seem qualitatively reasonable .
+the numbers are perhaps excessively skewed , but the ranking is believable .
+the in-domain data is primarily from conversations about random ( not necessarily news worthy ) topics , and is hence highly colloquial .
+contrastively , the out-of-domain data is from formal news .
+the model is able to learn that entities like new jersey and government have more to do with news that words like me and kid .
+degree of relatedness .
+in this section , we analyze the values of 7r found by the model .
+low values of 7r ( ' ) and 7r ( ) mean that the in-domain data was significantly different than the out-of-domain data ; high values mean that they were similar .
+this is because a high value for 7r means that the general domain model will be used in most cases .
+for all tasks but mention type , the values of 7r were middling around 0.4 .
+for mention type , 7r ( ' ) was 0.14 and 7r ( ) was 0.11 , indicating that there was a significant difference between the in-domain and out-of-domain data .
+the exact values for all tasks are shown in table 4 .
+these values for 7r make intuitive sense .
+the distinction between conversation data and news data ( for the mention type task ) is significantly stronger than the difference between manually and automatically transcribed newswire ( for the mention tagging task ) .
+the values for 7r reflect this qualitative distinction .
+the rather strong difference between the 7r values for the recapitalization tasks was not expected a priori .
+however , a post hoc analysis shows this result is reasonable .
+we compute the kl divergence between a unigram language model for the out-of-domain data set and each of the in-domain data sets .
+the kl divergence for the cnn data was 0.07 , while the divergence for the abc data 0.11 .
+this confirms that the abc data is perhaps more different from the baseline out-of-domain than the cnn data , as reflected by the 7r values .
+we are also interested in cases where there is little difference between in-domain and out-of-domain data .
+to simulate this case , we have performed the following experiment .
+we consider again the mention type task , but use only the training portion of the out-ofdomain data .
+we randomly split the data in half , assigning each half to in-domain and out-of-domain .
+in theory , the model should learn that it may rely only on the general domain model .
+we performed this experiment under ten fold cross-validation and found that the average value of 7r selected by the model was 0.94 .
+while this is strictly less than one , it does show that the model is able to identify that these are very similar domains .
+conclusion and discussion .
+in this paper , we have presented the mega model for domain adaptation in the discriminative ( conditional ) learning framework .
+we have described efficient optimization algorithms based on the conditional em technique .
+we have experimentally shown , in four data sets , that our model outperforms a large number of baseline systems , including the current state of the art model , and does so requiring significantly less in-domain data .
+although we focused specifically on discriminative modeling in a maximum entropy framework , we believe the novel , basic idea on which this work is foundedto break the in-domain distribution p ( ' ) and out-of-domain distribution p ( ) into three distributions , q ( ' ) , q ( o ) and q ( g ) is general .
+in particular , one could perform a similar analysis in the case of generative models and obtain similar algorithms ( though in the case of a generative model , standard em could be used ) .
+such a model could be applied to domain adaptation in language modeling or machine translation .
+with the exception of the work described in section 2.2 , previous work in-domain adaptation is quite rare , especially in the discriminative learning framework .
+there is a substantial literature in the language modeling / speech community , but most of the adaptation with which they are concerned is based on adapting to new speakers ( iyer , ostendorf , & gish , 1997 ; kalai , chen , blum , & rosenfeld , 1999 ) .
+from a learning perspective , the mega model is most similar to a mixture of experts model .
+our model can be seen as a constrained experts model , with three experts , where the constraints specify that in-domain data can only come from one of two experts , and out-of-domain data can only come from one of two experts ( with a single expert overlapping between the two ) .
+most attempts to build discriminative mixture of experts models make heuristic approximations in order to perform the necessary optimization ( jordan & jacobs , 1994 ) , rather than apply conditional em , which gives us strict guarantees that we monotonically increase the data ( incomplete ) log likelihood of each iteration in training .
+the domain adaptation problem is also closely related to multitask learning ( also known as learning to learn and inductive transfer ) .
+in multitask learning , one attempts to learn a function that solves many machine learning problems simultaneously .
+this related problem is discussed by thrun ( 1996 ) , caruana ( 1997 ) and baxter ( 2000 ) , among others .
+the similarity between multitask learning and domain adaptation is that they both deal with data drawn from related , but distinct distributions .
+the primary difference is that domain adaptation cares only about predicting one label type , while multitask learning cares about predicting many .
+as the various sub-communities of the natural language processing family begin and continue to branch out into domains other than newswire , the importance of developing models for new domains without annotating much new data will become more and more important .
+the mega model is a first step toward being able to migrate simple classification-style models ( classifiers and maximum entropy markov models ) across domains .
+continued research in the area of adaptation is likely to benefit from other work done in active learning and in learning with large amounts unannotated data .

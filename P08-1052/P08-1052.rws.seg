@@ -1,0 +1,24 @@
+(claim)#characterizing semantic relations .
+0#(turney and littman 2005)#$1 characterize the relationship between two words as a vector with coordinates corresponding to the web frequencies of 128 fixed phrases like " x for y " and " y for x " instantiated from a fixed set of 64 joining terms like for , such as , not the , is * , etc . these vectors are used in a nearest-neighbor classifier to solve sat verbal analogy problems , yielding 47 % accuracy .
+0#(nastase and szpakowicz 2003);(turney and littman 2005)#the same approach is applied to classifying noun-modifier pairs : using the diverse dataset of $1 , $2 achieve f-measures of 26.5 % with 30 fine-grained relations , and 43.2 % with 5 course-grained relations .
+0#(turney 2005)#$1 extends the above approach by introducing the latent relational analysis ( lra ) , which uses automatically generated synonyms , learns suitable patterns , and performs singular value decomposition in order to smooth the frequencies .
+0#(turney, 2006b)#the full algorithm consists of 12 steps described in detail in $1 . when applied to sat questions , it achieves the state-of-the-art accuracy of 56 % . on the diverse dataset , it yields an f-measure of 39.8 % with 30 classes , and 58 % with 5 classes .
+0#(turney 2006a)#$1 presents an unsupervised algorithm for mining the web for patterns expressing implicit semantic relations . for example , cause ( e.g. , cold virus ) is best characterized by " x * causes x " and " y in * early x " is the best pattern for temporal ( e.g. , morning frost ) . with 5 classes , he achieves f-measure = 50.2 % .
+(claim)#noun-noun compound semantics .
+(claim)#$1 reduces the problem of noun compound interpretation to choosing the best paraphrasing preposition from the following set : of , for , in , at , on , from , with or about . he achieved 40 % accuracy using corpus frequencies .
+0.1#(lapata and keller 2005)#this result was improved to 55.7 % by $1 who used web-derived n-gram frequencies .
+0.1#(barker and szpakowicz 1998)#$1 use syntactic clues and the identity of the nouns in a nearest-neighbor classifier , achieving 60-70 % accuracy .
+0.1#(rosario and hearst 2001)#$1 used a discriminative classifier to assign 18 relations for noun compounds from biomedical text , achieving 60 % accuracy .
+0.1#(rosario et al. 2002)#$1 reported 90 % accuracy with a " descent of hierarchy " approach which characterizes the relationship between the nouns in a bioscience noun-noun compound based on the mesh categories the nouns belong to .
+0.1#(girju et al. 2005)#$1 apply both classic ( svm and decision trees ) and novel supervised models ( semantic scattering and iterative semantic specialization ) , using wordnet , word sense disambiguation , and a set of linguistic features . they test their system against both lauer 's 8 prepositional paraphrases and another set of 21 semantic relations , achieving up to 54 % accuracy on the latter .
+0.1#(nakov and hearst, 2006)#in a previous work $1 , we have shown that the relationship between the nouns in a noun-noun compound can be characterized using verbs extracted from the web , but we provided no formal evaluation .
+0.1#(kim and baldwin 2006)#$1 characterized the semantic relationship in a noun-noun compound using the verbs connecting the two nouns by comparing them to predefined seed verbs . their approach is highly resource intensive ( uses wordnet , corelex and moby 's thesaurus ) , and is quite sensitive to the seed set of verbs : on a collection of 453 examples and 19 relations , they achieved 52.6 % accuracy with 84 seed verbs , but only 46.7 % with 57 seed verbs .
+(claim)#paraphrase acquisition .
+(claim)#our method of extraction of paraphrasing verbs and prepositions is similar to previous paraphrase acquisition approaches .
+0.2#(lin and pantel 2001)#$1 extract paraphrases from dependency tree paths whose ends contain semantically similar sets of words by generalizing over these ends .
+(claim)#for example , given " x solves y " , they extract paraphrases like " x finds a solution to y " , " x tries to solve y " , x resolves y , y is resolved by x , etc .
+0.2#(shinyama et al. 2002)#the approach is extended by $1 , who use named entity recognizers and look for anchors belonging to matching semantic classes , e.g. , location , organization .
+0.2#(nakov et al. 2004)#the idea is further extended by $1 , who apply it in the biomedical domain , imposing the additional restriction that the sentences from which the paraphrases are extracted cite the same target paper .
+(claim)#word similarity .
+0.3#(alshawi and carter, 1994);(grishman and sterling, 1994);(lin, 1998)#another important group of related work is on using syntactic dependency features in a vector-space model for measuring word similarity , e.g. , $1 $2 $3 .
+(claim)#for example , given a noun , $1 extracts verbs that have that noun as a subject or object , and adjectives that modify it .

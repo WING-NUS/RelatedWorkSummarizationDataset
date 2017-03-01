@@ -1,0 +1,155 @@
+semi-automatic recognition of noun modifier relationships .
+abstract .
+semantic relationships among words and phrases are often marked by explicit syntactic or lexical clues that help recognize such relationships in texts .
+within complex nominals , however , few overt clues are available .
+systems that analyze such nominals must compensate for the lack of surface clues with other information .
+one way is to load the system with lexical semantics for nouns or adjectives .
+this merely shifts the problem elsewhere : how do we define the lexical semantics and build large semantic lexicons ?
+another way is to find constructions similar to a given complex nominal , for which the relationships are already known .
+this is the way we chose , but it too has drawbacks .
+similarity is not easily assessed , similar analyzed constructions may not exist , and if they do exist , their analysis may not be appropriate for the current nominal .
+we present a semi-automatic system that identifies semantic relationships in noun phrases without using precoded noun or adjective semantics .
+instead , partial matching on previously analyzed noun phrases leads to a tentative interpretation of a new input .
+processing can start without prior analyses , but the early stage requires user interaction .
+as more noun phrases are analyzed , the system learns to find better interpretations and reduces its reliance on the user .
+in experiments on english technical texts the system correctly identified 60-70 % of relationships automatically .
+introduction .
+any system that extracts knowledge from text cannot ignore complex noun phrases .
+in technical domains especially , noun phrases carry much of the information .
+part of that information is contained in words ; cataloguing the semantics of single words for computational purposes is a difficult task that has received much attention .
+but part of the information in noun phrases is contained in the relationships between components .
+we have built a system for noun modifier relationship ( nmr ) analysis that assigns semantic relationships in complex noun phrases .
+syntactic analysis finds noun phrases in a sentence and provides a flat list of premodifiers and postmodifying prepositional phrases and appositives .
+the nmr analyzer first brackets the flat list of premodifiers into modifier-head pairs .
+next , it assigns nmrs to each pair .
+nmrs are also assigned to the relationships between the noun phrase and each post- modifying phrase .
+background .
+noun compounds .
+a head noun along with a noun premodifier is often called a noun compound .
+syntactically a noun compound acts as a noun : a modifier or a head may again be a compound .
+the nmr analyzer deals with the semantics of a particular kind of compound , namely those that are transparent and endocentric .
+the meaning of a transparent compound can be derived from the meaning of its elements .
+for example , laser printer is transparent ( a printer that uses a laser ) .
+guinea pig is opaque : there is no obvious direct relationship to guinea or to pig .
+an endocentric compound is a hyponym of its head .
+desktop computer is endocentric because it is a kind of computer .
+bird brain is exocentric because it does not refer to a kind of brain , but rather to a kind of person ( whose brain resembles that of a bird ) .
+since the nmr analyzer is intended for technical texts , the restriction to transparent endocentric compounds should not limit the utility of the system .
+our experiments have found no opaque or exocentric compounds in the test texts .
+semantic relations in noun phrases .
+most of the research on relationships between nouns and modifiers deals with noun compounds , but these relationships also hold between nouns and adjective premodifiers or postmodifying prepositional phrases .
+lists of semantic labels have been proposed , based on the theory that a compound expresses one of a small number of covert semantic relations .
+levi ( 1978 ) argues that semantics and word formation make noun-noun compounds a heterogeneous class .
+she removes opaque compounds and adds nominal non-predicating adjectives .
+for this class levi offers nine semantic labels .
+according to her theory , these labels represent underlying predicates deleted during compound formation .
+george ( 1987 ) disputes the claim that levis non-predicating adjectives never appear in predicative position .
+warren ( 1978 ) describes a multi-level system of semantic labels for noun-noun relationships .
+warren ( 1984 ) extends the earlier work to cover adjective premodifiers as well as nouns .
+the similarity of the two lists suggests that many adjectives and premodifying nouns can be handled by the same set of semantic relations .
+recognizing semantic relations .
+programs that uncover the relationships in modifier-noun compounds often base their analysis on the semantics of the individual words ( or a composition thereof ) .
+such systems assume the existence of some semantic lexicon .
+leonards system ( 1984 ) assigns semantic labels to noun-noun compounds based on a dictionary that includes taxonomic and meronymic ( part- whole ) information , information about the syntactic behaviour of nouns and about the relationships between nouns and verbs .
+finin ( 1986 ) produces multiple semantic interpretations of modifier-noun compounds .
+the interpretations are based on pre- coded semantic class information and domain- dependent frames describing the roles that can be associated with certain nouns .
+ter stals system ( 1996 ) identifies concepts in text and unifies them with structures extracted from a hand-coded lexicon containing syntactic information , logical form templates and taxonomic information .
+in an attempt to avoid the hand-coding required in other systems , vanderwende ( 1993 ) automatically extracts semantic features of nouns from online dictionaries .
+combinations of features imply particular semantic interpretations of the relationship between two nouns in a compound .
+noun modifier relationship labels .
+table 1 lists the nmrs used by our analyzer .
+the list is based on similar lists found in literature on the semantics of noun compounds .
+it may evolve as experimental evidence suggests changes .
+for each nmr , we give a paraphrase and example modifier-noun compounds .
+following the tradition in the study of noun compound semantics , the paraphrases act as definitions and can be used to check the acceptability of different interpretations of a compound .
+the paraphrases serve as definitions in this section and to help with interpretation during user interactions ( as illustrated in section 6 ) .
+in the analyzer , awkward paraphrases with adjectives could be improved by replacing adjectives with their wordnet pertainyms ( miller , 1990 ) , giving , for example , charity benefits from charitable donation instead of charitable benefits from charitable donation .
+noun modifier bracketing .
+the bracketing problem for noun-noun-noun compounds has been investigated by liberman & sproat ( 1992 ) , pustejovsky et al. ( 1993 ) , resnik ( 1993 ) and lauer ( 1995 ) among others .
+since the nmr analyzer must handle premodifier sequences of any length with both nouns and adjectives , it requires more general techniques .
+our semi-automatic bracketer ( barker , 1998 ) allows for any number of adjective or noun premodifiers .
+each subphrase consists of a modifier ( possibly compound , as in ( 4 ) ) and a head ( possibly compound , as in ( 5 ) ) .
+the nmr analyzer assigns an nmr to the modifier-head pair that makes up each subphrase .
+once an nmr has been assigned , the system must store the assignment to help automate future processing .
+instead of memorizing complete noun phrases ( or even complete subphrases ) and analyses , the system reduces compound modifiers and compound heads to their own local heads and stores these reduced pairs with their assigned nmr .
+this allows it to analyze different noun phrases that have only reduced pairs in common with previous phrases .
+for example , ( 6 ) and ( 7 ) have the reduced pair ( 8 ) in common .
+assigning nmrs .
+three kinds of construction require nmr assignments : the modifier-head pairs from the bracketed premodifier sequence ; postmodifying prepositional phrases ; appositives .
+these three kinds of input can be generalized to a single forma triple consisting of modifier , head and marker ( m , h , mk ) .
+to assign an nmr to a triple ( m , h , mk ) , the system looks for previous triples whose distance to the current triple is minimal .
+the nmrs assigned to previous similar triples comprise lists of candidate nmrs .
+the analyzer then finds what it considers the best nmr from these lists of candidates to present to the user for approval .
+appositives are automatically assigned equative .
+distance between triples .
+the distance between two triples is a measure of the degree to which their modifiers , heads and markers match .
+table 3 gives the eight different values for distance used by nmr analysis .
+the analyzer looks for previous triples at the lower distances before attempting to find triples at higher distances .
+for example , it will try to find identical triples before trying to find triples whose markers do not match .
+several things about the distance measures require explanation .
+first , a preposition is more similar to a nil marker than to a different preposition .
+unlike a different preposition , the nil marker is not known to be different from the marker in an overtly marked pair .
+next , no evidence suggests that triples with matching m are more similar or less similar than triples with matching h ( distances 3 and 6 ) .
+triples with matching prepositional marker ( distance 4 ) are considered more similar than triples with matching m or h only .
+a preposition is an overt indicator of the relationship between m and h ( see quirk , 1985 : chapter 9 ) so a correlation is more likely between the preposition and the nmr than between a given m or h and the nmr .
+if the current triple has a prepositional marker not seen in any previous triple ( distance 5 ) , the system finds candidate nmrs in its nmr marker dictionary .
+this dictionary was constructed from a list of about 50 common atomic and phrasal prepositions .
+the various meanings of each preposition were mapped to nmrs by hand .
+since the list of prepositions is small , dictionary construction was not a difficult knowledge engineering task ( requiring just twenty hours of work of a secondary school student ) .
+the best nmrs .
+the lists of candidate nmrs consist of all those nmrs previously assigned to ( m , h , mk ) triples at a minimum distance from the triple under analysis .
+if the minimum distance was 3 or 6 , there may be two candidate lists : lm contains the nmrs previously assigned to triples with matching m , lhwith matching h. the analyzer attempts to choose a set r of candidates to suggest to the user as the best nmrs for the current triple .
+if there is one list l of candidate nmrs , r contains the nmr ( or nmrs ) that occur most frequently in l. for two lists lm and lh , r could be found in several ways .
+we could take r to contain the most frequent nmrs in lm u lh .
+this absolute frequency approach has a bias towards nmrs in the larger of the two lists .
+alternatively , the system could prefer nmrs with the highest relative frequency in their lists .
+if there is less variety in the nmrs in lm than in lh , m might be a more consistent indicator of nmr than h. consider example ( 12 ) .
+if line has been seen as a head more often than front as a modifier , one of the nmrs assigned to line may have the highest absolute frequency in lm ^ lh .
+but if location has the highest relative frequency , this method correctly assigns location to ( 12 ) .
+there is a potential bias , however , for smaller lists ( a single nmr in a list always has the highest relative frequency ) .
+premodifiers as classifiers .
+user interaction .
+the nmr analyzer is intended to start processing from scratch .
+a session begins with no previous triples to match against the triple at hand .
+to compensate for the lack of previous analyses , the system relies on the help of a user , who supplies the correct nmr when the system cannot determine it automatically .
+in order to supply the correct nmr , or even to determine if the suggested nmr is correct , the user must be familiar with the nmr definitions .
+to minimize the burden of this requirement , all interactions use the modifier and head of the current phrase in the paraphrases from section 3 .
+furthermore , if the appropriate nmr is not among those suggested by the system , the user can request the complete list of paraphrases with the current modifier and head .
+user input is shown bold underlined .
+at any prompt the user may type list to view the complete list of nmr paraphrases for the current modifier and head .
+evaluation .
+we present the results of evaluating the nmr analyzer in the context of a large knowledge acquisition experiment ( see barker et al. , 1998 ) .
+the nmr analyzer is one part of a larger interactive semantic analysis system .
+the experiment evaluated the semantic analysis of atkinson ( 1990 ) .
+we refer to it as the small engines experiment .
+other experiments have shown similar results .
+we consider three evaluation criteria .
+first , we evaluate the analyzers ability to learn to make better suggestions to the user as more noun phrases are analyzed .
+second , we evaluate its coverage by comparing the number of relationships assigned with the total number of such relationships in the text ( i.e. , the number it should have assigned ) .
+third , we assess the burden that semi-automatic analysis places on the user .
+improvement in system performance .
+since the system starts with no previous noun phrase analyses , the user is responsible for supplying nmrs at the beginning of a session .
+to measure the rate of learning , we compare the cumulative number of assignments required from the user to the cumulative number of correct assignments suggested by the system .
+in the small engines experiment , 886 modifier-noun pairs were assigned an nmr .
+we consider the systems assignment correct when the correct label is among its suggestions .
+according to this definition , 608 of the 886 nmrs ( 69 % ) were assigned correctly by the system .
+figure 2 shows the cumulative number of nmr assignments supplied by the user versus those determined correctly by the system .
+after about 100 assignments , the system was able to make the majority of assignments automatically .
+the curves in the figure show that the system learns to make better suggestions as more phrases are analyzed .
+nmr coverage .
+the nmr analyzer depends on a parser to find noun phrases in a text .
+if parsing is not 100 % successful , the analyzer will not see all noun phrases in the input text .
+it is not feasible to find manually the total number of relationships in a texteven in one of only a few hundred sentences .
+to measure coverage , we sampled 100 modifier-noun pairs at random from the small engines text and found that 87 of them appeared in the analyzers output .
+at 95 % confidence , we can say that the system extracted between 79.0 % and 92.2 % of the modifier-noun relationships in the text .
+user burden .
+user burden is a fairly subjective criterion .
+to measure burden , we assigned an onus rating to each interaction during the small engines experiment .
+future work .
+although the list of nmrs was inspired by the relationships found commonly in others lists , it has not undergone a more rigorous validation ( such as one described in barker et al. , 1997 ) .
+in section 5.2 we discussed different approaches to choosing nmrs from two lists of candidates .
+we have implemented and compared five different techniques for choosing the best nmrs , but experimental results are inconclusive as to which techniques are better .
+we should seek a more theoretically sound approach followed by further experimentation .
+the nmr analyzer currently allows its stored triples ( and associated nmrs ) to be saved in a file at the end of a session .
+any number of such files can be reloaded at the beginning of subsequent sessions , seeding the new sessions .
+it is necessary to establish the extent to which the triples and assignments from one text or domain are useful in the analysis of noun phrases from another domain .

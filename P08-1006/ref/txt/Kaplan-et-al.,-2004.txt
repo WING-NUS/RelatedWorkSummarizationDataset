@@ -1,0 +1,188 @@
+speed and accuracy in shallow and deep stochastic parsing .
+abstract .
+this paper reports some experiments that compare the accuracy and performance of two stochastic parsing systems .
+the currently popular collins parser is a shallow parser whose output contains more detailed semantically- relevant information than other such parsers .
+the xle parser is a deep-parsing system that couples a lexical functional grammar to a log- linear disambiguation component and provides much richer representations theory .
+we measured the accuracy of both systems against a gold standard of the parc 700 dependency bank , and also measured their processing times .
+we found the deep-parsing system to be more accurate than the collins parser with only a slight reduction in parsing speed .
+introduction .
+in applications that are sensitive to the meanings expressed by natural language sentences , it has become common in recent years simply to incorporate publicly available statistical parsers .
+a state-of-the-art statistical parsing system that enjoys great popularity in research systems is the parser described in collins ( 1999 ) ( henceforth the collins parser ) .
+this system not only is frequently used for off-line data preprocessing , but also is included as a black-box component for applications such as document summarization ( daume and marcu , 2002 ) , information extraction ( miller et al. , 2000 ) , machine translation ( yamada and knight , 2001 ) , and question answering ( harabagiu et al. , 2001 ) .
+this is because the collins parser shares the property of robustness with other statistical parsers , but more than other such parsers , the categories of its parse-trees make grammatical distinctions that presumably are useful for meaning- sensitive applications .
+for example , the categories of the model 3 collins parser distinguish between heads , arguments , and adjuncts and they mark some long- distance dependency paths ; these distinctions can guide application-specific postprocessors in extracting important semantic relations .
+in contrast , state-of-the-art parsing systems based on deep grammars mark explicitly and in much more detail a wider variety of syntactic and semantic dependencies and should therefore provide even better support for meaning-sensitive applications .
+but common wisdom has it that parsing systems based on deep linguistic grammars are too difficult to produce , lack coverage and robustness , and also have poor run-time performance .
+the collins parser is thought to be accurate and fast and thus to represent a reasonable trade-off between good-enough output , speed , and robustness .
+this paper reports on some experiments that put this conventional wisdom to an empirical test .
+we investigated the accuracy of recovering semantically-relevant grammatical dependencies from the tree-structures produced by the collins parser , comparing these dependencies to gold-standard dependencies which are available for a subset of 700 sentences randomly drawn from section 23 of the wall street journal ( see king et al. ( 2003 ) ) .
+we compared the output of the xle system , a deep-grammar-based parsing system using the english lexical-functional grammar previously constructed as part of the pargram project ( butt et al. , 2002 ) , to the same gold standard .
+this system incorporates sophisticated ambiguity-management technology so that all possible syntactic analyses of a sentence are computed in an efficient , packed representation ( maxwell and kaplan , 1993 ) .
+in accordance with lfg theory , the output includes not only standard context-free phrase-structure trees but also attribute-value matrices ( lfgs f ( unctional ) structures ) that explicitly encode predicate-argument relations and other meaningful properties .
+xle selects the most probable analysis from the potentially large candidate set by means of a stochastic disambiguation component based on a log-linear ( a.k.a. maximum-entropy ) probability model ( riezler et al. , 2002 ) .
+the stochastic component is also ambiguity-enabled in the sense that the computations for statistical estimation and selection of the most probable analyses are done efficiently by dynamic programming , avoiding the need to unpack the parse forests and enumerate individual analyses .
+the underlying parsing system also has built-in robustness mechanisms that allow it to parse strings that are outside the scope of the grammar as a shortest sequence of well- formed fragments .
+furthermore , performance parameters that bound parsing and disambiguation work can be tuned for efficient but accurate operation .
+as part of our assessment , we also measured the parsing speed of the two systems , taking into account all stages of processing that each system requires to produce its output .
+for example , since the collins parser depends on a prior part-of-speech tagger ( ratnaparkhi , 1996 ) , we included the time for pos tagging in our collins measurements .
+xle incorporates a sophisticated finite-state morphology and dictionary lookup component , and its time is part of the measure of xle performance .
+performance parameters of both the collins parser and the xle system were adjusted on a heldout set consisting of a random selection of 1 / 5 of the parc 700 dependency bank ; experimental results were then based on the other 560 sentences .
+for model 3 of the collins parser , a beam size of 1000 , and not the recommended beam size of 10000 , was found to optimize parsing speed at little loss in accuracy .
+on the same heldout set , parameters of the stochastic disambiguation system and parameters for parsing performance were adjusted for a core and a complete version of the xle system , differing in the size of the constraint-set of the underlying grammar .
+for both xle and the collins parser we wrote conversion programs to transform the normal ( tree or f- structure ) output into the corresponding relations of the dependency bank .
+this conversion was relatively straightforward for lfg structures ( king et al. , 2003 ) .
+however , a certain amount of skill and intuition was required to provide a fair conversion of the collins trees : we did not want to penalize configurations in the collins trees that encoded alternative but equally legitimate representations of the same linguistic properties ( e.g. whether auxiliaries are encoded as main verbs or aspect features ) , but we also did not want to build into the conversion program transformations that compensate for information that collins cannot provide without ap pealing to additional linguistic resources ( such as identifying the subjects of infinitival complements ) .
+we did not include the time for dependency conversion in our measures of performance .
+the experimental results show that stochastic parsing with the core lfg grammar achieves a better f-score than the collins parser at a roughly comparable parsing speed .
+the xle system achieves 12 % reduction in error rate over the collins parser , that is 77.6 % f-score for the xle system versus 74.6 % for the collins parser , at a cost in parsing time of a factor of 1.49 .
+stochastic parsing with lfg .
+parsing with lexical-functional grammar .
+the grammar used for this experiment was developed in the pargram project ( butt et al. , 2002 ) .
+it uses lfg as a formalism , producing c ( onstituent ) -structures ( trees ) and f ( unctional ) -structures ( attribute value matrices ) as output .
+the c-structures encode constituency and linear order .
+f-structures encode predicate-argument relations and other grammatical information , e.g. , number , tense , statement type .
+the xle parser was used to produce packed representations , specifying all possible grammar analyses of the input .
+in our system , tokenization and morphological analysis are performed by finite-state transductions arranged in a compositional cascade .
+both the tokenizer and the morphological analyzer can produce multiple outputs .
+for example , the tokenizer will optionaly lowercase sentence initial words , and the morphological analyzer will produce walk + verb + pres + 3sg and walk + noun + pl for the input form walks .
+the resulting tokenized and morphologically analyzed strings are presented to the symbolic lfg grammar .
+the grammar can parse input that has xml delimited named entity markup : < company > columbia savings < / company > is a major holder of so-calledjunk bonds .
+to allow the grammar to parse this markup , the tokenizer includes an additional tokenization of the strings whereby the material between the xml markup is treated as a single token with a special morphological tag ( + namedentity ) .
+as a fall back , the tokenization that the string would have received without that markup is also produced .
+the named entities have a single multiword predicate .
+this helps in parsing both because it means that no internal structure has to be built for the predicate and because predicates that would otherwise be unrecognized by the grammar can be parsed ( e.g. , cie .
+financiere de paribas ) .
+as described in section 5 , it was also important to use named entity markup in these experiments to more fairly match the analyses in the parc 700 dependency bank .
+to increase robustness , the standard grammar is augmented with a fragment grammar .
+this allows sentences to be parsed as well-formed chunks specified by the grammar , in particular as ss , nps , pps , and vps , with unparsable tokens possibly interspersed .
+these chunks have both c-structures and f-structures corresponding to them .
+the grammar has a fewest-chunk method for determining the correct parse .
+the grammar incorporates a version of optimality theory that allows certain ( sub ) rules in the grammar to be prefered or disprefered based on ot marks triggered by the ( sub ) rule ( frank et al. , 1998 ) .
+the complete version of the grammar uses all of the ( sub ) rules in a multi-pass system that depends on the ranking of the ot marks in the rules .
+for example , topicalization is disprefered , but the topicalization rule will be triggered if no other parse can be built .
+a one-line rewrite of the complete grammar creates a core version of the grammar that moves the majority of the ot marks into the nogood space .
+this effectively removes the ( sub ) rules that they mark from the grammar .
+so , for example , in the core grammar there is no topicalization rule , and sentences with topics will receive a fragment parse .
+this single-pass core grammar is smaller than the complete grammar and hence is faster .
+the xle parser also allows the user to adjust performance parameters bounding the amount of work that is done in parsing for efficient but accurate operation .
+xles ambiguity management technology takes advantage of the fact that relatively few f-structure constraints apply to constituents that are far apart in the c-structure , so that sentences are typically parsed in polynomial time even though lfg parsing is known to be an np-complete problem .
+but the worst-case exponential behavior does begin to appear for some constructions in some sentences , and the computational effort is limited by a skimming mode whose onset is controlled by a user-specified parameter .
+when skimming , xle will stop processing the subtree of a constituent whenever the amount of work exceeds that user-specified limit .
+the subtree is discarded , and the parser will move on to another subtree .
+this guarantees that parsing will be finished within reasonable limits of time and memory but at a cost of possibly lower accuracy if it causes the best analysis of a constituent to be discarded .
+as a separate parameter , xle also lets the user limit the length of medial constituents , i.e. , constituents that do not appear at the beginning or the end of a sentence ( ignoring punctuation ) .
+the rationale behind this heuristic is to limit the weight of constituents in the middle of the sentence but still to allow sentence-final heavy constituents .
+this discards constituents in a somewhat more principled way as it tries to capture the psycholinguistic tendency to avoid deep center-embedding .
+when limiting the length of medial constituents , cubic- time parsing is possible for sentences up to that length , even with a deep , non-context-free grammar , and linear parsing time is possible for sentences beyond that length .
+the complete grammar achieved 100 % coverage of section 23 as unseen unlabeled data : 79 % as full parses , 21 % fragment and / or skimmed parses .
+dynamic programming for estimation and stochastic disambiguation .
+the stochastic disambiguation model we employ defines an exponential ( a.k.a. log-linear or maximum-entropy ) probability model over the parses of the lfg grammar .
+the advantage of this family of probability distributions is that it allows the user to encode arbitrary properties of the parse trees as feature-functions of the probability model , without the feature-functions needing to be independent and non-overlapping .
+the general form of conditional exponential models is as follows : dynamic-programming algorithms that allow the efficient estimation and searching of log-linear models from a packed parse representation without enumerating an exponential number of parses have been recently presented by miyao and tsujii ( 2002 ) and geman and johnson ( 2002 ) .
+these algorithms can be readily applied to the packed and / or-forests of maxwell and kaplan ( 1993 ) , provided that each conjunctive node is annotated with feature-values of the log- linear model .
+in the notation of miyao and tsujii ( 2002 ) , such afeature forest ^ is defined as a tuple ( c , d , r , ^ , s ) where c is a set of conjunctive nodes , d is a set of disjunctive nodes , r e c is the root node , ^ : d > 2c is a conjunctive daughter function , and s : c > 2d is a disjunctive daughter function .
+a dynamic-programming solution to the problem of finding most probable parses is to compute the weight od of each disjunctive node as the maximum weight of its conjunctive daugher nodes , i.e. , keeping a trace of the maximally weighted choices in a computaton of the weight or of the root conjunctive node r allows us to efficiently recover the most probable parse of a sentence from the packed representation of its parses .
+the same formulae can be employed for an efficient calculation of probabilistic expectations of feature- functions for the statistical estimation of the parameters a. replacing the maximization in equation 1 by a summation defines the inside weight of disjunctive node .
+correspondingly , equation 2 denotes the inside weight of a conjunctive node .
+the outside weight v ) c of a conjunctive node is defined as the outside weight of its disjunctive mother node ( s ) : the outside weight of a disjunctive node is the sum of the product of the outside weight ( s ) of its conjunctive mother ( s ) , the weight ( s ) of its mother ( s ) , and the inside weight ( s ) of its disjunctive sister ( s ) : from these formulae , the conditional expectation of a feature-function fi can be computed from a chart with root node r for a sentence y in the following way : formula 5 is used in our system to compute expectations for discriminative bayesian estimation from partially labeled data using a first-order conjugate-gradient routine .
+for a more detailed description of the optimization problem and the feature-functions we use for stochastic lfg parsing see riezler et al. ( 2002 ) .
+we also employed a combined it regularization and feature selection technique described in riezler and vasserman ( 2004 ) that considerably speeds up estimation and guarantees small feature sets for stochastic disambiguation .
+in the experiments reported in this paper , however , dynamic programming is crucial for efficient stochastic disambiguation , i.e. to efficiently find the most probable parse from a packed parse forest that is annotated with feature-values .
+there are two operations involved in stochastic disambiguation , namely calculating feature-values from a parse forest and calculating node weights from a feature forest .
+clearly , the first one is more expensive , especially for the extraction of values for non-local feature-functions over large charts .
+to control the cost of this computation , our stochastic disambiguation system includes a user-specified parameter for bounding the amount of work that is done in calculating feature-values .
+when the user-specified threshold for feature-value calculation is reached , this computation is discontinued , and the dynamic programming calculation for most-probable-parse search is computed from the current feature-value annotation of the parse forest .
+since feature-value computation proceeds incrementally over the feature forest , i.e. for each node that is visited all feature-functions that apply to it are evaluated , a complete feature annotation can be guaranteed for the part of the and / or-forest that is visited until discontinuation .
+as discussed below , these parameters were set on a held-out portion of the parc700 which was also used to set the collins parameters .
+in the experiments reported in this paper , we used a threshold on feature-extraction that allowed us to cut off feature-extraction in 3 % of the cases at no loss in accuracy .
+overall , feature extraction and weight calculation accounted for 5 % of the computation time in combined parsing and stochastic selection .
+the gold-standard dependency bank .
+we used the parc 700 dependency bank ( depbank ) as the gold standard in our experiments .
+the depbank consists of dependency annotations for 700 sentences that were randomly extracted from section 23 of the upenn wall street journal ( wsj ) treebank .
+as described by ( king et al. , 2003 ) , the annotations were boot-strapped by parsing the sentences with a lfg grammar and transforming the resulting f-structures to a collection of dependency triples in the depbank format .
+to prepare a true gold standard of dependencies , the tentative set of dependencies produced by the robust parser was then corrected and extended by human validators2 .
+in this format each triple specifies that a particular relation holds between a head and either another head or a feature value , for example , that the subj relation holds between the heads run and dog in the sentence the dog ran .
+average sentence length of sentences in depbank is 19.8 words , and the average number of dependencies per sentence is 65.4 .
+the corpus is freely available for research and evaluation , as are documentation and tools for displaying and pruning structures.3 in our experiments we used a reduced version of the depbank , including just the minimum set of dependencies necessary for reading out the central semantic relations and properties of a sentence .
+we tested against this reduced gold standard to establish accuracy on a lower bound of the information that a meaning-sensitive application would require .
+the reduced version contained all the argument and adjunct dependencies shown in fig . 1 , and a few selected semantically-relevant features , as shown in fig . 2 .
+the features in fig . 2 were chosen because it was felt that they were fundamental to the meaning of the sentences , and in fact they are required by the semantic interpreter we have used in a knowledge-based application ( crouch et al. , 2002 ) .
+feature meaning .
+as a concrete example , the dependency list in fig . 3 is the reduced set corresponding to the following sentence : he reiterated his opposition to such funding , but expressed hope of a compromise .
+an additional feature of the depbank that is relevant to our comparisons is that dependency heads are represented by their standard citation forms ( e.g. the verb swam in a sentence appears as swim in its dependencies ) .
+we believe that most applications will require a conversion to canonical citation forms so that semantic relations can be mapped into application-specific databases or ontologies .
+the predicates of lfg f-structures are already represented as citation forms ; for a fair comparison we ran the leaves of the collins tree through the same stemmer modules as part of the tree-to-dependency translation .
+we also note that proper names appear in the depbank as single multi-word expressions without any internal structure .
+that is , there are no dependencies holding among the parts of people names ( a.
+boyd simpson ) , company names ( goldman , sachs & co ) , and organization names ( federal reserve ) .
+this multiword analysis was chosen because many applications do not require the internal structure of names , and the identification of named entities is now typically carried out by a separate non-syntactic pre-processing module .
+this was captured for the lfg parser by using named entity markup and for the collins parser by creating complex word forms with a single pos tag ( section 5 ) .
+conversion to dependency bank format .
+a conversion routine was required for each system to transform its output so that it could be compared to the depbank dependencies .
+while it is relatively straightforward to convert lfg f-structures to the dependency bank format because the f-structure is effectively a dependency format , it is more difficult to transform the output trees of the model 3 collins parser in a way that fairly allocates both credits and penalties .
+lfg conversion we discarded the lfg tree structures and used a general rewriting system previously developed for machine translation to rewrite the relevant f-structure attributes as dependencies ( see king et al. ( 2003 ) ) .
+the rewritings involved some deletions of irrelevant features , some systematic manipulations of the analyses , and some trivial respellings .
+the deletions involved features produced by the grammar but not included in the parc 700 such as negative values of pass , perf , and prog and the feature measure used to mark measure phrases .
+the manipulations are more interesting and are necessary to map systematic differences between the analyses in the grammar and those in the dependency bank .
+for example , coordination is treated as a set by the lfg grammar but as a single coord dependency with several conj relations in the dependency bank .
+finally , the trivial rewritings were used to , for example , change stmt-type decl in the grammar to stmt-type declarative in the dependency bank .
+for the reduced version of the parc 700 substantially more features were deleted .
+collins model 3 conversion an abbreviated representation of the collins tree for the example above is shown in fig . 4 .
+in this display we have eliminated the head lexical items that appear redundantly at all the nonterminals in a head chain , instead indicating by a single number which daughter is the head .
+thus , s2 indicates that the head of the main clause is its second daughter , the vp , and its head is its first vp daughter .
+indirectly , then , the lexical head of the s is the first verb reiterated .
+the model 3 output in this example includes standard phrase structure categories , indications of the heads , and the additional -a marker to distinguish arguments from adjuncts .
+the terminal nodes of this tree are inflected forms , and the first phase of our conversion replaces them with their citation forms ( the verbs reiterate and express , and the decapitalized and standardized he for he and his ) .
+we also adjust for systematic differences in the choice of heads .
+the first conjunct tends to be marked as the head of a coordination in model 3 output , whereas the dependency bank has a more symmetric representation : it introduces a new coord head and connects that up to the conjunction , and it uses a separate conj relation for each of the coordinated items .
+similarly , model 3 identifies the syntactic markers to and that as the heads of complements , whereas the dependency bank treats these as selectional features and marks the main predicate of the complements as the head .
+these adjustments are carried out without penalty .
+we also compensate for the differences in the representation of auxiliaries : model 3 treats these as main verbs with embedded complements instead of the perf , prog , and passive features of the depbank , and our conversion flattens the trees so that the features can be read off .
+the dependencies are read off after these and a few other adjustments are made .
+nps under vps are read off either as objects or adjuncts , depending on whether or not the np is annotated with the argument indicator ( -a ) as in this example ; the -a presumably would be missing in a sentence like john arrived friday , and friday would be treated as an adjunct .
+similarly , np-as under s are read off as subject .
+in this example , however , this principle of conversion does not lead to a match with the dependency bank : in the depbank grammatical relations that are factored out of conjoined structures are distributed back into those structures , to establish the correct semantic dependencies ( in this case , that he is the subject of both reiterate and express and not of the introduced coord ) .
+we avoided the temptation of building coordinate distribution into the conversion routine because , first , it is not always obvious from the model 3 output when distribution should take place , and second , that would be a first step towards building into the conversion routine the deep lexical and syntactic knowledge ( essentially the functional component of our lfg grammar ) that the shallow approach explicitly discounts .
+for the same reasons our conversion routine does not identify the subjects of infinitival complements with particular arguments of matrix verbs .
+the model 3 trees provide no indication of how this is to be done , and in many cases the proper assignment depends on lexical information about specific predicates ( to capture , for example , the well-known contrast between promise and persuade ) .
+model 3 trees also provide information about certain long-distance dependencies , by marking with -g annotations the path between a filler and a gap and marking the gap by an explicit trace in the terminal string .
+the filler itself is not clearly identified , but our conversion treats all wh categories under sbar as potential fillers and attempts to propagate them down the gap-chain to link them up to appropriate traces .
+in sum , it is not a trivial matter to convert a model 3 tree to an appropriate set of dependency relations , and the process requires a certain amount of intuition and skill .
+for our experiments we tried to define a conversion that gives appropriate credit to the dependencies that can be read from the trees without relying on an undue amount of sophisticated linguistic knowledge .
+experiments .
+we conducted our experiments by preparing versions of the test sentences in the form appropriate to each system .
+we used a configuration of the xle parser that expects sentences conforming to ordinary text conventions to appear in a file separated by double line-feeds .
+a certain amount of effort was required to remove the part-ofspeech tags and labeled brackets of the wsj corpus in a way that restored the sentences to a standard english format ( for example , to remove the space between wo and nt that remains when the pos tags are removed ) .
+since the parc 700 treats proper names as multiword expressions , we then augmented the input strings with xml markup of the named entities .
+these are parsed by the grammar as described in section 2 .
+we used manual named entity markup for this experiment because our intent is to measure parsing technology independent of either the time or errors of an automatic named-entity extractor .
+however , in other experiments with an automatic finite-state extractor , we have found that the time for named-entity recognition is negligible ( on the order of seconds across the entire corpus ) and makes relatively few errors , so that the results reported here are good approximations of what might be expected in more realistic situations .
+as input to the collins parser , we used the part-ofspeech tagged version of section 23 that was provided with the parser .
+from this we extracted the 700 sentences in the parc 700 .
+we then modified them to produce named entity input so that the parses would match the parc 700 .
+this was done by putting underscores between the parts of the named entity and changing the final part of speech tag to the appropriate one ( usually nnp ) if necessary . ( the number of words indicated at the beginning of the input string was also reduced accordingly . )
+an example is shown in ( 1 ) .
+after parsing , the underscores were converted to spaces to match the parc 700 predicates .
+before the final evaluation , 1 / 5 of the parc 700 dependency bank was randomly extracted as a heldout set .
+this set was used to adjust the performance parameters of the xle system and the collins parser so as to optimize parsing speed without losing accuracy .
+for example , the limit on the length of medial phrases was set to 20 words for the xle system ( see sec . 2 ) , and a regularizer penalty of 10 was found optimal for the bl prior used in stochastic disambiguation .
+for the collins parser , a beam size of 1000 was found to improve speed considerably at little cost in accuracy .
+furthermore , the np-bracketing flag ( npbflag ) was set to 0 to produce an extended set of np levels for improved argument / adjunct distinction6 .
+the final evaluation was done on the remaining 560 examples .
+timing results are reported in seconds of cpu time7 .
+po s tagging of the input to the collins parser took 6 seconds and this was added to the timing result of the collins parser .
+time spent for finite-state morphology and dictionary lookup for xle is part of the measure of its timing performance .
+we did not include the time for dependency extraction or stemming the collins output .
+table 1 shows timing and accuracy results for the reduced dependency set .
+the parser settings compared are model 3 of the collins parser adjusted to beam size 1000 , and the core and complete versions of the xle system , differing in the size of the grammars constraint- set .
+clearly , both versions of the xle system achieve a significant reduction in error rate over the collins parser ( 12 % for the core xle system and 20 % for the complete system ) at an increase in parsing time of a factor of only 1.49 for the core xle system .
+the complete version gives an overall improvement in f-score of 5 % over the collins parser at a cost of a factor of 5 in parsing time .
+conclusion .
+we presented some experiments that compare the accuracy and performance of two stochastic parsing systems , the shallow collins parser and the deep-grammar-based xle system .
+we measured the accuracy of both systems against a gold standard derived from the parc 700 dependency bank , and also measured their processing times .
+contrary to conventional wisdom , we found that the shallow system was not substantially faster than the deep parser operating on a core grammar , while the deep system was significantly more accurate .
+furthermore , extending the grammar base of the deep system results in much better accuracy at a cost of a factor of 5 in speed .
+our experiment is comparable to recent work on reading off propbank-style ( kingsbury and palmer , 2002 ) predicate-argument relations from gold-standard tree- bank trees and automatic parses of the collins parser .
+gildea and palmer ( 2002 ) report f-score results in the 55 % range for argument and boundary recognition based on automatic parses .
+from this perspective , the nearly 75 % f-score that is achieved for our deterministic rewriting of collins trees into dependencies is remarkable , even if the results are not directly comparable .
+our scores and gildea and palmers are both substantially lower than the 90 % typically cited for evaluations based on labeled or unlabeled bracketing , suggesting that extracting semantically relevant dependencies is a more difficult , but we think more valuable , task .

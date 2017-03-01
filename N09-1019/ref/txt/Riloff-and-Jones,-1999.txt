@@ -1,0 +1,161 @@
+learning dictionaries for information extraction by multi-level bootstrapping .
+abstract .
+information extraction systems usually require two dictionaries : a semantic lexicon and a dictionary of extraction patterns for the domain .
+we present a multilevel bootstrapping algorithm that generates both the semantic lexicon and extraction patterns simultaneously .
+as input , our technique requires only unannotated training texts and a handful of seed words for a category .
+we use a mutual bootstrapping technique to alternately select the best extraction pattern for the category and bootstrap its extractions into the semantic lexicon , which is the basis for selecting the next extraction pattern .
+to make this approach more robust , we add a second level of bootstrapping ( meta- bootstrapping ) that retains only the most reliable lexicon entries produced by mutual bootstrapping and then restarts the process .
+we evaluated this multilevel bootstrapping technique on a collection of corporate web pages and a corpus of terrorism news articles .
+the algorithm produced high-quality dictionaries for several semantic categories .
+introduction .
+the purpose of information extraction ( ie ) systems is to extract domain-specific information from natural language text .
+ie systems typically rely on two domain-specific resources : a dictionary of extraction patterns and a semantic lexicon .
+the extraction patterns may be constructed by hand or may be generated automatically using one of several techniques .
+most systems that generate extraction patterns automatically use special training resources , such as texts annotated with domain-specific tags ( e.g. , autoslog ( riloff 1993 ; 1996a ) , crystal ( soderland et al. 1995 ) , rapier ( califf 1998 ) , srv ( freitag 1998 ) , whisk ( soderland 1999 ) ) or manually defined keywords , frames , or object recognizers ( e.g. , palka ( kim & moldovan 1993 ) and liep ( huffman 1996 ) ) .
+autoslog-ts ( riloff 1996b ) takes a different approach by using a preclassified training corpus in which texts only need to be labeled as relevant or irrelevant to the domain .
+semantic lexicons , for information extraction are almost always constructed by hand because general-purpose resources , such as wordnet ( miller 1990 ) , do not contain the necessary domain-specific vocabulary .
+however there have been recent efforts to automate the construction of domain- specific semantic lexicons as well ( riloff & shepherd 1997 ; roark & charniak 1998 ) .
+we explore the idea of learning both a dictionary of extraction patterns and a domain-specific semantic lexicon simultaneously .
+furthermore , our technique requires no special training resources .
+the input to our algorithm is a set of unannotated training texts and a handful of " seed " words for the semantic category of interest .
+the heart of our approach is a mutual bootstrapping technique that learns extraction patterns from the seed words and then exploits the learned extraction patterns to identify more words that belong to the semantic category .
+we also introduce a second level of bootstrapping that retains only the most reliable lexicon entries from the results of mutual bootstrapping and restarts the process with the enhanced semantic lexicon .
+this two-tiered bootstrapping process is less sensitive to noise than a single level of bootstrapping and produces highly-quality dictionaries .
+in this paper , we first describe the mutual bootstrapping algorithm that generates both a semantic lexicon and extraction patterns simultaneously .
+in the second section , we describe how the mutual bootstrapping process is itself bootstrapped to produce more accurate dictionaries at each iteration .
+in the third section , we present the results from experiments with two text collections : a set of corporate web pages , and a corpus of terrorism newswire articles .
+mutual bootstrapping .
+information extraction ( ie ) systems are designed to extract specific types of information from text .
+the categories of interest are defined in advance and usually require the extraction of noun phrases ( nps ) , such as the names of people , companies , or locations .
+for some ie tasks , the set of possible extractions is finite .
+for example , extracting country names from text is straightforward because it is easy to define a list of all countries .
+however , most ie tasks require the extraction of a potentially open-ended set of phrases .
+for example , it is impossible to enumerate all noun phrases that might describe a person , company , or location .
+most ie systems use both a semantic lexicon of known phrases and a dictionary of extraction patterns to recognize relevant noun phrases .
+for example , an ie system to identify locations might use a semantic lexicon that lists country names and the 50 u.s. states , and then rely on extraction patterns to recognize other location phrases such as cities , neighborhoods , and general descriptions like " downtown " or " northwest region " .
+the semantic lexicon can also support the use of semantic constraints in the extraction patterns .
+our goal is to automate the construction of both a lexicon and extraction patterns for a semantic category using bootstrapping .
+the heart of our approach is based on the observation that extraction patterns can generate new examples of a semantic category , which in turn can be used to identify new extraction patterns .
+we will refer to this process as mutual bootstrapping .
+the mutual bootstrapping process begins with a text corpus and a handful of predefined seed words for a semantic category .
+before bootstrapping begins , the text corpus is used to generate a set of candidate extraction patterns .
+we used autoslog ( riloff 1993 ; 1996a ) in an exhaustive fashion to generate extraction patterns for every noun phrase in the corpus .
+given a noun phrase to extract , autoslog uses heuristics to generate a linguistic expression that represents relevant context for extracting the np .
+this linguistic expression should be general enough to extract other relevant noun phrases as well .
+because we applied autoslog exhaustively , the complete set of extraction patterns that it produced is capable of extracting every noun phrase in the training corpus .
+we then applied the extraction patterns to the corpus and recorded their extractions .
+using this data , the mutual bootstrapping procedure identifies the extraction pattern that is most useful for extracting known category members .
+this extraction pattern is then used to propose new phrases that belong in the semantic lexicon .
+figure 1 outlines the mutual bootstrapping algorithm .
+at each iteration , the algorithm saves the best extraction pattern for the category to a list ( cat eplist ) .
+all of its extractions are assumed to be category members and are added to the semantic lexicon ( semlex ) .
+then the next best extraction pattern is identified , based on both the original seed words plus the new words that were just added to the lexicon , and the process repeats .
+since the semantic lexicon is constantly growing , the extraction patterns need to be rescored after each iteration .
+an important question is how long to run the bootstrapping loop .
+the simplest approach is to use a threshold cutoff , but we will discuss this issue more in the eval uation section .
+the scoring heuristic is based on how many different lexicon entries a pattern extracts .
+this scoring metric rewards generality ; a pattern that extracts a variety of category members will be scored higher than a pattern that extracts only one or two different category members , no matter how often .
+scoring is also based on a " head phrase " matching scheme instead of requiring an exact match .
+head phrase matching means that x matches y if x is the rightmost substring of y. for example , " new zealand " will match any phrase that ends with " new zealand " , such as " eastern new zealand " or " the modern day new zealand " .
+it would not match " the new zealand coast " or just " zealand " . head phrase matching is important for generality because any noun phrase can be preceded by an arbitrary number of modifiers .
+generate all candidate extraction patterns from the training corpus using autoslog .
+each np was stripped of leading articles , common adjectives ( e.g. , " his " , " its " , " other " ) , and numbers before being matched and saved to the lexicon .
+we used a small stopword list ~ and a number recognizer to discard overly general words such as pronouns and numbers .
+using these criteria , we scored each extraction pattern using the rlogf metric used previously by autoslog-ts ( riloff 1996b ) .
+the score for extraction pattern i is computed as : where fi is the number of unique lexicon entries among the extractions produced by patterni , ni is the total number of unique nps that patterni extracted , and ri = nf , ,. only the most reliable extraction patterns but also patterns that will frequently extract relevant information ( even if irrelevant information will also be extracted ) .
+for example , the pattern " kidnapped in < x > " will extract locations but it will also extract many dates ( e.g. , " kidnapped in january " ) .
+even if it extracts dates and locations equally often , the fact that it frequently extracts locations makes it essential to have in the dictionary or many locations will be missed .
+intuitively , the rlogf metric tries to strike a balance between reliability and frequency .
+the r value is high when the pattern 's extractions are highly correlated with the semantic category , and the f value is high when the pattern extracts a large number of category members .
+figure 2 shows the results of the first five iterations of mutual bootstrapping to build location dictionaries from a terrorism corpus .
+ten seed words were used : bolivia , city , colombia , district , guatemala , honduras , neighborhood , nicaragua , region , town .
+an asterisk after a noun phrase means that the noun phrase was acquired as a category member through bootstrapping .
+the f and n values for each pattern are shown in parentheses .
+note that because of head phrase matching , " chapare region " will match the seed word " region " and be counted as a location when scoring the extraction pattern .
+but since that exact phrase was not in the lexicon before , it is considered to be a new location and added to it .
+figure 2 shows both the strengths and weaknesses of the mutual bootstrapping approach .
+the extraction patterns are indicative of locations and have identified several new location phrases ( e.g. , jauja , san miguel , soyapango , and this northern area ) .
+but several non- location phrases have also been generated ( e.g. , private property , head , clash , back , air , left side ) .
+most of these mistakes came from the pattern " shot in < x > " , because this expression can refer to non-location phrases such as body parts .
+also , most of these extraction patterns occur infrequently in the corpus .
+although " headquartered in < x > " and " gripped < x > " are good location extractors , together they appeared only seven times in the 1500 training texts .
+as we will show in the next section , there are many other location patterns that occur much more frequently and are therefore more important to have in the dictionary .
+multi-level bootstrapping .
+the mutual bootstrapping algorithm works well but its performance can deteriorate rapidly when non- category words enter the semantic lexicon .
+once an extraction pattern is chosen for the dictionary , all of its extractions are immediately added to the lexicon and a few bad entries can quickly infect the dictionary .
+for example , if a pattern extracts dates as well as locations , then the dates are added to the lexicon and subsequent patterns are rewarded for extracting them .
+to make the algorithm more robust , we introduced a second level of bootstrapping .
+the outer bootstrapping mechanism , which we call meta ~ bootstrapping , compiles the results from the inner ( mutual ) bootstrapping process and identifies the five most reliable lexicon entries .
+these five nps are retained for the permanent semantic lexicon and the rest of the mutual bootstrapping process is discarded .
+the entire mutual bootstrapping process is then restarted from scratch .
+the meta- bootstrapping process is illustrated in figure 3 .
+to determine which nps are most " reliable " , we score each np based on the number of different category patterns ( members of cat eplist ) that extracted it .
+this criteria is based on the intuition that a noun phrase extracted by three different category patterns is more likely to belong to the category than a noun phrase extracted by only one pattern .
+we also add in a small factor to account for the strength of the patterns that extracted it .
+this is used mainly for tie-breaking purposes .
+the scoring formula is shown below , where ni is the number of different category patterns that extracted npi .
+the main advantage of meta-bootstrapping comes from re-evaluating the extraction patterns after each mutual bootstrapping process .
+for example , after the first mutual bootstrapping run , five new words are added to the permanent semantic lexicon .
+then mutual bootstrapping is restarted from scratch with the original seed words plus these five new words .
+now , the best pattern selected by mutual bootstrapping might be different from the best pattern selected last time .
+this produces a snowball effect because its extractions are added to the temporary semantic lexicon which is the basis for choosing the next extraction pattern .
+in practice , what happens is that the ordering of the patterns changes ( sometimes dramatically ) between subsequent runs of mutual bootstrapping .
+in particular , more general patterns seem to float to the top as the permanent semantic lexicon grows .
+figure 4 shows the top 20 extraction patterns produced for several categories after 50 iterations of meta- bootstrapping .
+note that the top five terrorism location patterns are different from the top five terrorism location patterns generated by mutual bootstrapping alone ( shown in figure 2 ) .
+the top five patterns produced by meta-bootstrapping are much more common , extracting a total of 79 unique nps , while the top five patterns produced by mutual bootstrapping extracted only 30 unique nps .
+evaluation .
+to evaluate the meta-bootstrapping algorithm , we performed experiments with two text collections : corporate web pages collected for the webkb project ( craven et al. 1998 ) and terrorism news articles from the muc-4 corpus ( muc-4 proceedings 1992 ) .
+for training , we used 4160 of the web pages and 1500 of the terrorism texts .
+we preprocessed the web pages first by removing html tags and adding periods to separate independent phrases.3 autoslog generated 19,690 candidate extraction patterns from the web page training set , and 14,064 candidate extraction patterns from the terrorism training set.4 then we ran the meta-bootstrapping algorithm on three semantic categories for the web pages ( locations , person titles , and companies ) , and two semantic categories for the terrorism articles ( locations and weapons ) .
+we used the seed word lists shown in figure 5 .
+we used different location seeds for the two text collections because the terrorism articles were mainly from latin america while the web pages were much more international .
+we ran the meta-bootstrapping algorithm ( outer bootstrapping ) for 50 iterations .
+the extraction patterns produced by the last iteration were the output of the system , along with the permanent semantic lexicon .
+for each meta-bootstrapping iteration , we ran the mutual bootstrapping procedure ( inner bootstrapping ) until it produced 10 patterns that extracted at least one new np ( i.e. , not currently in the semantic lexicon ) .
+but there were two exceptions : ( 1 ) if the best pattern had score < 0.7 then mutual bootstrapping stopped , or ( 2 ) if the best pattern had score > 1.8 then mutual bootstrapping continued .
+intuitively , mutual bootstrapping stops when the best pattern looks especially dubious ( its extractions would be risky to add to the lexicon ) or keeps going if it is still generating strong extraction patterns .
+this scheme allows mutual bootstrapping to produce a variable number of extraction patterns , depending on how reliable it believes them to be .
+these criteria worked well empirically on the categories that we tested , but a more formal strategy is a worthwhile avenue for future research .
+first , we evaluated the semantic lexicons in isolation by manually inspecting each word .
+we judged a word to belong to the category if it was a specific category member ( e.g. , " ibm " is a specific company ) or a general referent for the category ( e.g. , " the company " is a referent for companies ) .
+although referents are meaningless in isolation , they are useful for information extraction tasks because a coreference resolver should be able to find their antecedent .
+the referents were also very useful during bootstrapping because a pattern that extracts " the company " will probably also extract specific company names .
+table 1 shows the accuracy of the semantic lexicon after the 1st iteration of meta-bootstrapping and after each 10th iteration .
+each cell shows the number of true category members among the entries generated thus far .
+for example , 32 phrases were added to company semantic lexicon after the tenth iteration and 25 of those ( 78 % ) were true company phrases .
+table 1 shows that our algorithm found about 100-200 new phrases for all of the categories , and the density of good phrases was high .
+to put our results in perspective , other researchers have generated a semantic lexicon for the terrorism weapon category and achieved accuracy rates of 34 / 200 ( 17 % ) ( riloff & shepherd 1997 ) and 93 / 257 ( 36 % ) ( roark & charniak 1998 ) .
+so our results are significantly better than those reported previously for this category .
+to our knowledge , no one has reported results for the other categories that we tested .
+we also wanted to verify that the phrases in the semantic lexicon would be likely to appear in new texts .
+so we created a test set by manually tagging all noun phrases that were legitimate extractions for each category in 233 new web pages.5 table 2 shows the recall and precision scores on the test set for three experiments .
+in the first experiment ( baseline ) , we generated a baseline by extracting all noun phrases in the test set that contained one of the original seed words .
+in the second experiment ( lexicon ) , we manually filtered the semantic lexicon to remove incorrect entries and then extracted every noun phrase in the test set that contained a lexicon entry .
+in the third experiment ( union ) , we extracted all noun phrases in the test set that either contained a lexicon entry or were extracted by an extraction pattern generated for the category .
+table 2 shows that the seed words by themselves achieved high precision for locations and titles but low recall .
+the low precision for companies is mainly due to the presence of " company " in the seed word list , which is extremely common but extracts mostly referents and not specific company names .
+we did not count referents as legitimate extractions in these experiments .
+the second column ( lexicon ) shows that the semantic lexicons were useful for extracting information from new web pages .
+the lexicon achieved about 50 % recall with 66-77 % precision for locations and titles .
+the results for companies were substantially lower , but still above the baseline .
+we hypothesize that the set of possible company names is much larger than the set of locations and titles in corporate web pages , so we probably need to generate a much larger lexicon of company names to achieve good results for this category .
+the third column ( union ) shows that using the lexicon and the extraction patterns to identify new information slightly increases recall for locations and titles , but also slightly decreased precision .
+in retrospect , we realized that we probably need to use more extraction patterns .
+for this experiment , we only used patterns with a score > 0.7 , which produced only 63 title extraction patterns and 87 company extraction patterns .
+since the patterns represent very specific linguistic expressions , we probably need to lower that threshold .
+we also plan to consider schemes for allowing both the semantic lexicon and the extraction patterns to vote on possible extractions .
+conclusions .
+bootstrapping is a powerful technique for leveraging small amounts of knowledge to acquire more domain knowledge automatically .
+an important aspect of our bootstrapping mechanism is that it generates domain- specific dictionaries .
+for example , the location dictionary generated from the web pages contained mainly country names and u.s. cities while the location dictionary generated from the terrorism articles contained mostly cities and towns in latin america .
+generating domain-specific dictionaries is a strength because the dictionaries are tailored for the domain of interest .
+but some categories may behave strangely if one does not anticipate their role in the domain .
+for example , we tried using this bootstrapping technique for the semantic category " vehicle " using the terrorism corpus , but the resulting dictionaries looked remarkably similar to the weapon dictionaries .
+in retrospect , we realized that vehicles are often weapons in the terrorism texts , either as car bombs or fighter planes .
+so in this domain , considering vehicles to be weapons usually makes sense .
+in summary , we have shown that multi-level bootstrapping can produce high-quality dictionaries for a variety of categories .
+our bootstrapping method has two advantages over previous techniques for learning information extraction dictionaries : both a semantic lexicon and a dictionary of extraction patterns are acquired simultaneously , and no special training resources are needed .
+our algorithm needs only a corpus of ( unannotated ) training texts and a small set of seed words as input .
+the resulting semantic lexicon does need to be manually inspected to get rid of bad entries , but this can be done in a few minutes .
+multilevel bootstrapping appears to be a promising approach for acquiring domain knowledge automatically , and we hope to apply this technique to other knowledge acquisition tasks as well .

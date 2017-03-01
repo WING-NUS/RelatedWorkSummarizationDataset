@@ -1,0 +1,294 @@
+how to select an answer string ?
+abstract .
+given a question q and a sentence / paragraph sp that is likely to contain the answer to q , an answer selection module is supposed to select the exact answer sub-string a c sp .
+we study three distinct approaches to solving this problem : one approach uses algorithms that rely on rich knowledge bases and sophisticated syntactic / semantic processing ; one approach uses patterns that are learned in an unsupervised manner from the web , using computational biology-inspired alignment algorithms ; and one approach uses statistical noisy-channel algorithms similar to those used in machine translation .
+we assess the strengths and weaknesses of these three approaches and show how they can be combined using a maximum entropy-based framework .
+introduction .
+the recent activity in research on automated question answering concentrating on factoids brief answers has highlighted the two basic stages of the process information retrieval , to obtain a list of candidate passages likely to contain the answer , and answer selection , to identify and pinpoint the exact answer among and within the candidates .
+in this paper we focus on the second stage .
+we situate this work in the context of the trec question answering evaluation competitions , organized annually since 1999 by nist ( voorhees , 1999 ; 2000 ; 2001 ; 2002 ) , and use both the trec question and answer collections , the trec text corpus of some 1 million newspaper and similar articles , and the trec scoring method of mean reciprocal rank ( mrr ) , in order to make our results comparable to other research .
+what constitutes a correct , exact answer to a natural language question is easiest described by means of examples .
+the trec guidelines ( http : / / trec.nist.gov / pubs.html ) specify , for instance , that given the question what river in the us is known as the big muddy ? , strings such as mississippi , the mississippi , the mississippi river , and mississippi river should be judged as exact answers , while strings such as 2,348 miles ; mississippi , mississip , and known as the big muddy , the mississippi is the longest river in the us should be considered inexact .
+automatically finding in a document collection the correct , exact factoid answer to a natural language question is by no means a trivial problem , since it involves several processes that are each fairly sophisticated , including the ability to understand the question , derive the expected answer type , generate information retrieval queries to select documents , paragraphs , and sentences that may contain the answer , and pinpoint in these paragraphs and sentences the correct , exact , answer sub-string .
+the best question answering systems built to date are complex artefacts that use a large number of components such as syntactic / semantic parsers , named-entity ta ggers , and information retrieval engines .
+unfortunately , such complexity masks the contribution of each module , making it difficult to assess why the system fails to find accurate answers . - for this reason , we are constantly designing experiments that will enable us to understand better the strengths and weaknesses of the components we are using and to prioritize our work , in order to increase the overall performance of our system .
+one such experiment , for example , showed clearly that answer selection is far from being a solved problem .
+to diagnose the impact of the answer selection component , we did the following : we used the 413 trec-2002 questions that were paired by human assessors with correct , exact answers in the trec collection .
+for each question , we selected all sentences that were judged as containing a correct , exact answer to it .
+we presented the questions and just these answer sentences to the best answer selection module we had available at that time ; in other words , we created perfect experimental conditions , consistent to those that one would achieve if one had perfect document , paragraph , and sentence retrieval components .
+to our surprise , we found that our answer selection module was capable of selecting the correct , exact answer in only 68.2 % of the cases .
+that is , even when we gave our system only sentences that contained correct , exact answers , it failed to identify more than 30 % of them !
+two other answer selection modules , which we were developing at the same time , produced even worse results : 63.4 % and 56.7 % correct .
+somewhat more encouraging , we determined that an oracle that could select the best answer produced by any of the three answer selection modules would have produced 78.9 % correct , exact answers .
+still , that left over 20 % correct answers not being recognized .
+the results of this experiment suggested two clear ways for improving the performance of our overall qa system : increase the performance of any ( or all ) answer selection module ( s ) .
+develop methods for combining the strengths of the different modules .
+in this chapter , we show that the maximum entropy ( me ) framework can be used to address both of these problems .
+by using a relatively small corpus of question-answer pairs annotated by humans with correctness judgments as training data , and by tuning a relatively small number of log- linear features on the training corpus , we show that we can substantially increase the performance of each of our individual answer selection modules .
+pooling the answers produced by all systems leads to an additional increase in performance .
+this suggests that our answer selection modules have complementary strengths and that the me framework enables one to learn and exploit well the individualities of each system .
+ultimately , real users do not care about the ability of an answer selection module to find exact , correct answers in hand-picked sentences .
+because of this , to substantiate the claims made in this chapter , we carried out all our evaluations in the context of an end-to-end qa system , textmap , in which we varied only the answer selection component ( s ) .
+the textmap system implements the following pipeline ( see ( hermjakob et al. , 2002 ) for details ) : a question analyser identifies the expected answer type for the question given as input ( see section 2.1 for details ) .
+a query generator produces web- and trec-specific queries .
+the query generator exploits a database of paraphrases ( see section 2.3 ) .
+web queries are submitted to google and trec queries are submitted to the ir engine inquery ( callan et al. , 1995 ) , to retrieve respectively 100 web and 100 trec documents .
+a sentence retrieval module selects 100 sentences each from the retrieved web and trec documents that are most likely to contain a correct answer .
+each of the answer selection modules described in this paper pinpoints the correct answers and in the resulting 200 sentences and assigns them a score .
+the highest ranked answer is presented to the user .
+for the contrastive analysis of the answer selection modules we present in this chapter , we chose to use in all of our experiments the 413 factoid questions made available by nist as part of the trec-2003 qa evaluation .
+in all our experiments , we run our end-to-end qa system against documents available on either the web or the trec collection .
+we pinpoint exact answers in web- or trec-retrieved sentences using different answer selection or combinations of answer selection modules .
+to measure the performance of our answer selection modules in the context of the end -to-end qa system , we created by hand an exhaustive set of correct and exact answer patterns .
+if the answer returned by a system matched perfectly one of the answer patterns for the corresponding question , the answer was considered correct and exact .
+if the answer did not match the answer pattern , it was considered incorrect .
+naturally , this evaluation is not 100 % bullet proof .
+one can still have correct , exact answers that are not covered by the patterns we created ; or one can return answers that are correct and exact but unsupported .
+we took , however , great care in creating the answer patterns .
+qualitative evaluations of the correctness of the results reported in our experiments suggest that our methodology is highly reliable .
+most importantly though , even if the evaluation results are off by 1 or 2 % in absolute terms due to incomplete coverage of the patterns , the methodology is perfectly sound for measuring the relative performance of the different systems because all systems are evaluated against a common set of answer patterns .
+in this chapter , we present three different approaches to answer selection .
+one approach uses algorithms that rely on rich knowledge bases and sophisticated syntactic / semantic processing ( section 2 ) ; one approach uses patterns that are lea rned in an unsupervised manner from the web , using computational biology-inspired alignment algorithms ( section 3 ) ; and one approach uses statistical , noisy-channel algorithms similar to those used in machine translation ( section 4 ) .
+we assess the performance of each individual system in terms of number of correct , exact answers ranked in the top position , number of correct , exact answers ranked in the top 5 positions , mrr score1 based on the top five answers .
+we show that maximum entropy working with a relative small number of features has a significant impact on the performance of each system ( section 5 ) .
+we also show that the same me-based approach can be used to combine the outputs of the three systems .
+when we do so , the performance of the end-to-end qa system increases further ( section 5 ) .
+knowledge-based answer selection .
+this section describes a strongly knowledge-based approach to question answering .
+as described in the following subsections , this approach relies on several types of knowledge .
+among them , answer typing ( qtargets ) , semantic relationship matching , paraphrasing , and several additional heuristics all heavily rely on parsing , of both the question and all answer sentence candidates .
+we use the contex parser ( hermjakob , 1997 ; 2001 ) , a decision tree based deterministic parser , which has been enhanced for question answering by an additional treebank of 1,200 questions , named entity tagging that among other components uses bbn s identifinder ( bikel et al. , 1999 ) , and a semantically motivated parse tree structure that facilitates matching for paraphrasing and of question / answer pairs .
+qtargets .
+after parsing a question , textmap determines its answer type , or qtarget , such as proper-person , phone-number , or np .
+we have built a typology of currently 185 different types , organized into several classes ( abstract , semantic , relational , syntactic , etc . ) .
+an older version of the typology can be found at http : / / www.isi.edu / natural-language / projects / webclopedia / taxonomy / taxonomy _ toplevel.html.
+as words and answer types are often not enough to identify the proper answer , the knowledge-base answer selection modules also boosts the scores of answer candidates whose constituents have the same semantic relationships to one another as those in the question : paraphrases .
+sentences with a good answer often don t match the wording of the question ; sometimes simply matching surface words can result in an incorrect answer : neither word reordering nor simple word synonym expansion will help us to identify jacques chirac as the correct answer .
+to bridge the gap between question and answer sentence wordings , textmap uses paraphrasing .
+for any given question , textmap generates a set of high-precision meaning -preserving reformulations to increase the likelihood of finding correct answers in texts : the fourth reformulation will easily match mahatma gandhi was assassinated by a young hindu extremist , preferring it over alternatives such as mahatma gandhi died in 1948 .
+paraphrases can span a wide range , from simple syntactic reformulations ( when did the titanic sink ? = > the titanic sank when ? ) to rudimentary forms of inference ( where is thimphu ? = > thimphu is the capital of < which place > ? ) ; paraphrase patterns : a resource .
+rather than creating and storing thousands of paraphrases , we acquire paraphrase patterns , which are used at run-time to generate instantiated patterns against which candidate answers are matched .
+paraphrase patterns are acquired either by manual entry or by automated learning ( see section 3 ) and subsequent manual refinement and generalization .
+the paraphrase collection is pre-parsed , and then , at run-time , pattern matching of questions and paraphrases is performed at the parse tree level .
+expressing phrasal synonyms in extended natural language makes them easy to write , or , when they are automatically generated , easy to check and filter .
+the relatively generic declarative format also facilitates reuse in other applications and systems .
+the expressiveness and focus of the patterns is greatly enhanced when variables carry syntactic or semantic restrictions that can transcend parts of speech .
+compared to automatically generated patterns such as ( ravichandran and hovy , 2002 ) and ( lin and pantel , 2001 ) , there are also no limits on the number of variables per reformulation and , since all patterns are checked by hand , only very few misreformulations .
+the reformulation collection currently contains 550 assertions grouped into about 105 equivalence blocks .
+at run-time , the number of reformulations produced by our current system varies from one reformulation ( which might just rephrase a question into a declarative form ) to more than 40 , with an average of currently 5.03 reformulations per question for the trec-2003 questions .
+advanced forms of reformulation .
+as seen in earlier examples , the paraphrase paradigm can implement a form of inference .
+other advanced forms of reformulation in our system are reformulation chains , answer generation , and cross-part-of-speech placeholders .
+based on paraphrases not only improve answer pinpointing , but can also support document retrieval and passage selection by proving alternate and / or multi- word search expressions , and increase confidence in many answers .
+additional heuristics .
+answer selection is further guided by several additional heuristics that penalize answers for a variety of reasons , including : external knowledge .
+the knowledge-based answer selection module uses a limited amount of external knowledge to enhance performance .
+for some questions , wordnet glosses provide an answer , either directly , such as for definition questions , or indirectly ; north american free trade agreement rather than as an abbreviation for rice market .
+evaluation .
+when evaluated against the answer patterns we created for the 413 factoid questions in the trec-2003 collection , the knowledge-based answer selection module described in this section produced 35.83 % correct , exact answers .
+there were 57.38 % correct , exact answers in the top 5 candidates returned by a system , with a corresponding mrr score of 43.88 % .
+more details are provided in section 5 .
+pattern-based answer selection .
+at the trec 2001 conference , several systems emphasized the value of matching surface -oriented patterns , even without any reformulation , to pinpoint answers .
+the top-scoring insight system from moscow ( soubbotin and soubbotin , 2001 ) used some hundreds of surface -level patterns to identify answer strings without ( apparently ) applying qtargets or similar reasoning .
+several other systems also defined word-level patterns indicating specific qtargets ; e.g. , ( oh et al. , 2001 ) .
+the microsoft system ( brill et al. , 2001 ) extended the idea of a pattern to its limit , by reformulating the input question as a declarative sentence and then retrieving the sentence verbatim , with its answer as a completion , from the web , using normal search engines .
+for example , who was chester f. carlson ? was transformed to , among others , chester was f. carlson , chester f. was carlson , and chester f. carlson was , and submitted as web queries .
+although this approach yielded many wrong answers ( including chester f. carlson was born february 8 , 1906 , in seattle ) , the sheer number of correct answers returned often won the day .
+our estimate is that a large enough collection of word -level patterns , used even without reformulation , can provide at least 25 % mrr score , although some systems claimed considerably higher results ; see ( soubbotin and soubbotin , 2001 ) .
+automated learning of patterns .
+the principal obstacle to using the surface pattern technique is acquiring patterns in large enough variety and number .
+for any given qtarget , one can develop some patterns by hand , but there is no guarantee that one thinks of all of them , and one have no idea how accurate or even useful each pattern is .
+we therefore developed an automated procedure to learn such patterns from the web ( ravichandran and hovy , 2002 ) .
+using a regular search engine , we collected all the patterns associated with many frequently occurring qtargets ( some qtargets , such as planets and oceans , are known closed sets that require no patterns ) .
+some of the more precise patterns , associated with their qtarget in the qa typology , can be found at http : / / www.isi.edu / natural-language / projects / webclopedia / taxonomy / taxonomy _ toplevel.html.
+in addition to using the learned patterns as starting points to define reformulation pattern sets ( section 2 ) , we used them to construct an independent answer selection module .
+the purpose of this work was to empirically determine the limits of a qa system whose pinpointing knowledge is derived almost fully automatically .
+the pattern learning procedure can be phrased as follows .
+given a qtarget ( a relation such as year-of-birth ) , instantiated by a specific qa pair such as ( name _ of _ person , birthyear ) , extract from the web all the different lexicalized patterns ( templates ) that contain this qa pair , and also determine the precision of each pattern .
+the procedure contains two principal steps : extracting the patterns calculating the precision of each pattern .
+algorithm 1 : extracting patterns .
+we wish to learn the surface-level patterns that express a given qa relation such as year-of-birth .
+an instance of the relation for which the pattern is to be extracted is passed to a search engine as a qa pair .
+for example , to learn the patterns for the pair ( name _ of _ person birthyear ) , we submit a pair of anchor terms such as gandhi 1869 as a query to altavista .
+the top 1000 documents returned by the search engine are retrieved .
+these documents are broken into sentences by a simple sentence breaker .
+only sentences that contain both the question and the answer terms are retained . ( bbn s named entity tagger identifinder ( bikel et al. , 1999 ) was used to remove variations of names or a dates . )
+each of these sentences is converted into a suffix tree using an algorithm from computational biology ( gusfield , 1997 ) , to collect counts on all phrases and sub-phrases present in the document .
+the phrases obtained from the suffix tree are filtered so that only those containing both the question and answer terms are retained .
+this yields the set of patterns for the given qa pair .
+algorithm 2 : calculating the precision of each pattern .
+the question term alone ( without its answer term ) is given as query to altavista .
+as before , the top 1000 documents returned by the search engine for this query are retrieved .
+again , the documents are broken into sentences .
+only those sentences that contain the question terms are saved . ( again , identifinder is used to standardize names and dates . )
+for each pattern obtained in step 6 of algorithm 1 , a pattern-matching check is done against each sentence obtained from step 4 here , and only the sentences containing the answer are retained .
+this data is used to calculate the precision of each pattern according to the formula .
+furthermore , only those patterns are retained for which sufficient examples are obtained in step 5 of this algorithm .
+to increase the size of the data , we apply the algorithms with several different anchor terms of the same qtarget .
+for example , in algorithm 1 for year-of-birth we used mozart , gauss , gandhi , nelson mandela , michelangelo , christopher columbus , and sean connery , each with birth year .
+we then applied algorithm 2 with just these names , counting the yields of the patterns using only the exact birth years ( no additional words or reformulations , which would increase the yield score ) .
+note the overlaps among patterns .
+by not c ompressing them further we can record different precision levels .
+due to the many forms of expression possible , the qtarget definition posed greater problems .
+the similar patterns for disease and metal definitions indicate that one should not create specialized qtargets definition-disease and definition- metal .
+integrating patterns into a qa system .
+we have learned patterns for numerous qtargets .
+however , for questions about a qtarget without patterns , the system would simply fail .
+there are two possible approaches : either develop a method to learn patterns dynamically , on the fly , for immediate use , or integrate the patterns with other answer pinpointing methods .
+the former approach , developing automated ways to produce the seed anchor terms to learn new patterns , is under investigation .
+here we discuss the second , in which we use maximum entropy to integrate answers produced by the patterns ( if any ) with answers produced by a set of other features .
+in so doing we create a standalone answer selection module .
+we follow ittycheriah ( 2002 ) , who was the first to use a completely trainable statistical ( maximum entropy ) qa system .
+model .
+assuming we have several methods for producing answer candidates ( including , sometimes , patterns ) , we wish to select the best from all candidates in some integrated way .
+we model the problem of answer selection as a re -ranking problem ( ravichandran et al. , 2003 ) : maximum entropy is used to determine optimal values for the coefficients % that weight the various feature functions relative to each other .
+feature functions .
+for the base pattern-based answer selection module described in this section , we use only five basic feature functions .
+pattern : the pattern that fired for the given answer and qtarget .
+this is a binary feature function : 0 if no pattern fired , 1 if some pattern ( s ) did .
+frequency : magnini et al. ( 2002 ) have obs erved that the correct answer usually has a higher frequency in the collection of answer chunks .
+hence we count the number of time a potential answer occurs in the ir output and use its logarithm as a fe ature .
+this is a positive continuous valued feature .
+expected answer class ( qtarget ) : if the answer s class matches the qtarget , as derived from the question by contex , this feature fires ( i.e. , it has a value of 1 ) .
+details of this module are explained in ( hovy et al. , 2002 ) .
+this is a binary -valued feature .
+question word absent : usually a correct answer sentence contains a few of the question words .
+this feature fires if the candidate answer does not contain any of the question words .
+this is also a binary valued feature .
+word match : this function is the sum of itf2 values for the words in the question that match identically with words in the answer sentence .
+this is a positive continuous valued feature .
+training the system .
+we use the 1192 questions in the trec 9 and trec 10 data sets for training and the 500 questions in the trec 11 data set for cross-validation .
+we extract 5000 candidate answers for each question using contex .
+for each such answer we use the pattern file supplied by nist to tag answer chunks as either correct ( 1 ) or incorrect ( 0 ) .
+this is a very noisy way of tagging data : in some cases , even though the answer chunk may be tagged as correct , it may not be supported by the accompanying sentence , while in other cases , a correct chunk may be graded as incorrect , since the pattern file list did not represent a exhaustive list of answers .
+results .
+when evaluated against the answer patterns we created for the 413 factoid questions in the trec-2003 collection , the pattern-based answer selection module described in this section produced 25.18 % correct , exact answers .
+there were 35.59 % correct , exact answers in the top 5 candidates returned by a system , with a corresponding mrr score of 28.57 % .
+more details appear in section 5 .
+statistics-based answer selection .
+being inspired by the success of noisy-channel-based approaches in applications as diverse as speech recognition ( jelinek , 1997 ) , part of speech tagging ( church , 1988 ) , machine translation ( brown et al. , 1993 ) , information retrieval ( berger and lafferty , 1999 ) , and text summarization ( knight and marcu , 2002 ) , we have developed a noisy channel model for question answering .
+this model explains how a given sentence sa that contains an answer sub-string a to a question q can be rewritten into q through a sequence of stochastic operations .
+given a corpus of question- answer pairs ( q , sa ) , we can train a probabilistic model for estimating the conditional probability p ( q | sa ) .
+once the parameters of this model are learned , given a question q and the set of sentences i returned by an ir engine , one can find the sentence si e i and an answer in it aij by searching for the si , aij that maximizes the conditional probability p ( q | si , aij ) .
+a noisy-channel model for question answering .
+assume that we want to explain , for instance , why 1977 in sentence sa in figure 1 is a good answer for the question when did elvis presley die ?
+to do this , we build a noisy channel model that makes explicit how answer sentence parse trees are mapped into questions .
+consider , for example , the automatically derived answer sentence parse tree in figure 1 , which associates to nodes both syntactic and shallow semantic , named-entityspecific tags .
+in order to rewrite this tree into a question , we assume the following generative story : in general , answer sentences are much longer than typical factoid questions .
+to reduce the length gap between questions and answers and to increase the likelihood that our models can be adequately trained , we first make a cut in the answer parse tree and select a sequence of words , syntactic , and semantic tags .
+the cut is made so that every word in the answer sentence or one of its ancestors belongs to the cut and no two nodes on a path from a word to the root of the tree are in the cut .
+figure 1 depicts such a cut graphically .
+once the cut has been identified , we mark one of its elements as the answer string .
+in figure 1 , we decide to mark date as the answer string ( a _ date ) .
+there is no guarantee that the number of words in the cut and the number of words in the question match .
+to account for this , we stochastically assign to every element si in a cut a fertility according to table n ( | si ) .
+we delete elements of fertility 0 and duplicate elements of fertility 2 , etc .
+with probability p1 we also increment the fertility of an invisible word null .
+null and fertile words , i.e. words with fertility strictly greater than 1 , enable us to align long questions with short answers .
+zero fertility words enable us to align short questions with long answers .
+next , we replace answer words ( including the null word ) with question words according to the table t ( qi | sj ) .
+in the last step , we permute the question words according to a distortion table d , in order to obtain a well-formed , grammatical question .
+the probability p ( q | sa ) is computed by multiplying the probabilities in all the steps of our generative story ( figure 1 lists some of the factors specific to this computation . )
+the readers familiar with the statistical machine translation ( smt ) literature should recognize that steps 3 to 5 are nothing but a one-to-one reproduction of the generative story proposed in the smt context by brown et al. ( see ( brown et al. , 1993 ) for a detailed mathematical description of the model and the formula for computing the probability of an alignment and target string given a source string ) .3 to simplify our work and to enable us exploit existing off -the-shelf software , in the experiments we carried out , we assumed a flat distribution for the first two steps in our generative story .
+that is , we assumed that it is equally likely to take any cut in the tree and equally likely to choose as answer any syntactic / semantic element in an answer sentence .
+figure 1 .
+a generative model for question answering .
+training the model .
+assume that the question-answer pair in figure 1 appears in our training corpus .
+when this happens , we know that 1977 is the correct answer .
+to generate a training example from this pair , we tokenize the question , we parse the answer sentence , we identify the question terms and answer in the parse tree , and then we make a cut in the tree that satisfies the following conditions : condition a ) ensures that the question terms will be identified in the sentence .
+condition b ) helps learn answer types .
+condition c ) brings the sentence closer to the question by compacting portions that are syntactically far from question terms and answer .
+and finally the importance of lexical cues around question terms and answer motivates condition d ) .
+for the question-answer pair in figure 1 , the algorithm above generates the following training example : our algorithm for generating training pairs implements deterministically the first two steps in our generative story .
+the algorithm is constructed so as to be consistent with our intuition that a generative process that makes the question and answer as similar-looking as possible is most likely to enable us learn a useful model .
+each question-answer pair results in one training example .
+it is the examples generated through this procedure that we use to estimate the parameters of our model .
+for training , we use trec 9 and trec 10 questions ( 1091 ) with answer sentences ( 18618 ) automatically generated from the corresponding judgment sets .
+we also use questions ( 2000 ) from http : / / www.quiz-zone.co.uk with answer sentences ( 6516 ) semi-automatically collected from the web and annotated for correctness by a linguist4 .
+to estimate the parameters of our model , we use giza , a publicly available statistical machine translation package ( http : / / www.clsp.jhu.edu / ws99 / projects / mt / ) .
+using the model to select an answer string .
+assume now that the sentence in figure 1 is returned by an ir engine as a potential candidate for finding the answer to the question when did elvis presley die ?
+in this case , we don t know what the answer is , so we assume that any semantic / syntactic node in the answer sentence can be the answer , with the exception of the nodes that subsume question terms and stop words .
+in this case , given a question and a potential answer sentence , we generate an exhaustive set of question-answer sentence pairs , each pair labeling as answer ( a _ ) a different syntactic / semantic node .
+here are some of the question-answer sentence pairs we consider for the example in figure 1 : if we learned a good model , we would expect it to assign a higher probability to p ( q | sai ) than to p ( q | sa1 ) and p ( q | saj ) .
+hence , to select the answer string for a question q , we exhaustively generate all q sia .. pairs for each answer sentence si , use giza to assess p ( q | si , a .. ) and pick the answer ai , j that maximizes p ( q | si , a .. ) .
+results .
+when evaluated against the answer patterns we created for the 413 factoid questions in the trec-2003 collection , the statistical-based answer selection module described in this section produced 21.30 % correct , exact answers .
+there were 31.23 % correct , exact answers in the top 5 candidates returned by a system , with a corresponding mrr score of 24.83 % .
+for more details , see section 5 .
+maximum entropy to improve .
+individual answer selection modules and combine their outputs .
+motivation .
+simple inspection of the outputs produced by our individual components on a development corpus of questions from the trec-2002 collection revealed several consistent patterns of error : the pattern -based answer selection module performs well on questions whose qtargets are recognizable named entities ( names , organizations , locations ) .
+however , this module performs less well on questions with more general qtargets ( nps , for example ) .
+the statistics-based answer selection module does not restrict the t ypes of the answers it expects for a question qtargets : it assumes that any semantic constituent can be an answer .
+as a consequence , many of the answers produced by this module may not be exact .
+overall , all modules made some blatant mistakes .
+the patter n-based and statistics-based modules in particular sometimes select as top answers strings like he , she , and it , which are unlikely to be good answers for any factoid question one may imagine .
+to address these problems , we decided to use the maximum entropy framework to re-rank the answers produced by the answer selection modules and root out the blatant errors .
+in addition to fixing these blatant errors , we also hoped to also create the means for capitalizing on the strengths of the individual modules .
+a post-analysis of the trec 2003 questions showed that if we used an oracle to select the best answer from the pooled top 50 answers returned by each of the three modules , we could produce 77.23 % correct , exact answers .
+this result shows that there is a big opportunity to increase the performance of our end-to-end system by combining in a suitable manner the outputs of the various answer selection modules .
+maximum entropy framework .
+there are several ways of combining the output of various systems .
+one simple way would be to add or multiply the answer score produced by various systems .
+however , this method would not exploit several useful dependencies ( e.g. , answer redundancy or qtarget matching ) that are not explicitly modeled by all the individual answer selection modules .
+a good approach to overcoming this problem is to use machine learning re-ranking wherein these dependencies and the individual answer scores are modeled as feature functions .
+we implemented this re-ranking approach using maximum entropy , which is a linear classifier .
+we chose to work with a linear classifier because we had very little data for training ; in addition , any non-linear classifier is more prone to over-fitting on the training data ( principle of bias-variance trade-off ) .
+as in section 3 , we model the problem as a re-ranker as follows ( ravichandran et al. , 2003 ) : feature functions .
+we use 48 different types of feature functions to adjust the parameters of the maximum entropy model .
+these features can be broadly classified into the following categories .
+component-specific : scores from the individual answer selection module and associated features like the rank of the answer and the presence / absence of the answers produced by the individual answer selection module .
+we also add features based on the scores produced by the ir module and word overlap between question and answers .
+redundancy-specific : count of candidate answers in the collection .
+we also add additional features for the logarithm and the square root of the counts .
+qtarget-specific : it was observed that some of the answer selection modules answer certain qtargets better than others .
+we therefore model a set of features wherein we combine certain classes of qtarget with the score of the individual answer selection module .
+this enables the maximum entropy model to assign different model parameters to different types of questions and answer selection module .
+blatant-error-specific : we model a set of features based on the development set in an iterative process .
+these include ( negative ) features such as answers usually do not have personal pronouns and when questions usually do not contain day of the week as answe r , among others .
+experiments .
+we perform the following three sets of experiments .
+maximum entropy re-ranking performed on individual answer selection modules : in this experiment , we turn off all the features in any answer selection module that depends on another answer selection module and we use for re-ranking only the top 50 answers supplied by one answer selection component .
+thus this experiment enables us to assess the impact separately on each individual answer selection module of redundancy- , qtarget- , and blatant-error-specific features , as well as improved weighting of the features specific to each module .
+maximum entropy re-ranking on all answer selection modules : in this experiment we add all the features described in section 5.3 and test the performance of the combined system after re-ranking .
+re-ranking is performed on the answer set that results from combining the top 50 answers returned by each individual answer selection module .
+this experiment enables us to assess whether the me framework enables us to better exploit strengths specific to each answer selection module .
+feature selection : since we have only 200 training examples and almost 50 features , the training is likely to be highly prone to over-fitting .
+to avoid this problem we apply feature selection as described in ( della pietra et al. , 1996 ) .
+this reduces the number of features from 48 to 31 .
+table 1 summarizes the results : it shows the percentage of correct , exact answers returned by each answer selection module with and without me- based re-ranking , as well as the percentage of correct , exact answers returned by an end-to-end qa system that uses all three answer selection modules together .
+table 1 also shows the performance of these systems in terms of percentage of correct answers ranked in the top 5 answers and the corresponding mrr scores .
+table 1 .
+performance of various answer selection modules in textmap , an end-to-end qa system .
+the results in table 1 show that appropriate weighting of the features used by each answer selection module as well as the ability to capitalize on global features , such as the counts associated with each answer , are extremely important means for increasing the overall performance of a qa system .
+me re -ranking led to significant increases in performance for each answer selection module individually .
+when measured with respect to the ability of our system to find correct , exact answers when returning only the top answer , it accounted for 14.33 % reduction in the error rate of the knowledge-based answer selection module ; 7.1 % reduction in the error rate of the pattern-based answer selection module ; and 13.85 % reduction in the error rate of the statistical-based answer selection module .
+combining the outputs of all systems yields an additional increase in performance ; when over-fitting is avoided through feature selection , the overall reduction in error rate is 3.96 % .
+this corresponds to an increase in performance from 45.03 % to 47.21 % on the top-answer accuracy metric .
+the inspection of the weights computed by the me-based feature selection algorithm shows that our log-linear model was able to lock and exploit strengths and weaknesses of the various modules .
+for example , the weight learned for a feature that assesses the likelihood of the pattern-based module to find correct answers for questions that have quantity as a qtarget is negative , which suggests that the pattern-based module is not good at answering quantity-type questions .
+the weight learned for a feature that assesses the likelihood of the statistics-based module to find correct answers for questions that have an unknown or np qtarget is large , which suggests that the statistical module is better suited for answering these types of questions .
+the knowledge-based module is better than the others in answering quantity and definition questions .
+these results are quite intuitive : the pattern-based module did not have enough quantity-type questions in the training corpus to learn any useful patterns .
+the statistics-based module implemented here does not explicitly use the qtarget in answer selection and does not model the source probability of a given string being a correct answer .
+as a consequence , it explores a much larger space of choices when determining an answer compared to the other two modules .
+at the moment , the knowledge -based module yields the best individual results .
+this is not surprising given that it is a module that was engineered carefully , over a period of three years , to accommodate various types of qtargets and knowledge resources .
+many of the resources used by the knowledge-based module are not currently exploited by the other modules : the semantic relations identified by contex ; the ability to exploit the paraphrase patterns and advanced forms of reformulation for answer pinpointing ; the external sources of knowledge ( wordnet ; abbreviation lists ; etc . ) ; and a significant set of heuristics ( see section 2.4 ) .
+our results suggest that in order to build good answer selection modules , one needs to both exploit as many sources of knowledge as possible and have good methods for integrating them .
+the sources of knowledge used only by the knowledge-based answer selection module proved to have a stronger impact on the overall performance of our answer selection systems than the ability to automatically train parameters in the pattern- and statistics-based systems , which use poorer representations .
+yet , the ability to properly weight the contribution of various knowledge resources was equally important .
+for example , maximum entropy naturally integrated additional features into the knowledge-based answer selection module ; a significant part of the 9.2 % increase in correct answers reported in table 1 can be attributed to the addition of redundancy features , a source of knowledge that was unexploited by the base system .
+conclusions .
+given their large conceptual similarity , factoid question answering may seem an extension of information retrieval , with substrings and sentences replacing documents and document collections .
+however , the problem has so far stubbornly resisted attempts to find a single , uniform solution that provides as good results as systems employing multiple parallel strategies to perform answer selection .
+in this paper , we show how three rather different modules provide somewhat complementary results , and in the paragraphs above , we suggest some reasons for the complementarity .
+it is of course possible that a uniform solution will be found one day , but whether that solution will rest upon as simple a representation as vector spaces , or be as easy to train up as surface patterns , remains to be seen .
+after all , as textmap shows , factoid qa seems to benefit both from relatively deeper notions such as qtypes and ( semantic ) parsing as much as from relatively shallower operations such as reformulations of surface patterns ( whether created manually or by learning , and whether the starting point is anchor terms or input questions ) .
+a uniform representation / approach that encompasses all this has yet to be conceived .
+nonetheless , we remain optimistic that by investigating alternative approaches , we will be able to determine which types of modules work best for which types of problem variations ( including parameters such as domain , amount of training data , ease of acquisition of knowledge , types of question asked , complexity of answers required , etc . ) .

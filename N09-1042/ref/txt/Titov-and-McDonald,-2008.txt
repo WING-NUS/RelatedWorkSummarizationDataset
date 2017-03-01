@@ -1,0 +1,313 @@
+modeling online reviews with multi-grain topic models .
+abstract .
+in this paper we present a novel framework for extracting the ratable aspects of objects from online user reviews .
+extracting such aspects is an important challenge in automatically mining product opinions from the web and in generating opinion-based summaries of user reviews [ 18 , 19 , 7 , 12 , 27 , 36 , 21 ] .
+our models are based on extensions to standard topic modeling methods such as lda and plsa to induce multi-grain topics .
+we argue that multi-grain models are more appropriate for our task since standard models tend to produce topics that correspond to global properties of objects ( e.g. , the brand of a product type ) rather than the aspects of an object that tend to be rated by a user .
+the models we present not only extract ratable aspects , but also cluster them into coherent topics , e.g. , waitress and bartender are part of the same topic staff for restaurants .
+this differentiates it from much of the previous work which extracts aspects through term frequency analysis with minimal clustering .
+we evaluate the multi-grain models both qualitatively and quantitatively to show that they improve significantly upon standard topic models .
+introduction .
+the amount of web 2.0 content is expanding rapidly .
+due to its source , this content is inherently noisy .
+however , ui tools often allow for at least some minimal labeling , such as topics in blogs , numerical product ratings in user reviews and helpfulness rankings in online discussion forums .
+this unique mix has led to the development of tailored mining and retrieval algorithms for such content [ 18 , 11 , 24 ] .
+in this study we focus on online user reviews that have been provided for products or services , e.g. , electronics , hotels and restaurants .
+the most studied problem in this domain is sentiment and opinion classification .
+this is the task of classifying a text as being either subjective or objective , or with having positive , negative or neutral sentiment [ 34 , 25 , 31 ] .
+however , the sentiment of online reviews is often provided by the user .
+as such , a more interesting problem is to adapt classifiers to blogs and discussion forums to extract additional opinions of products and services [ 24 , 21 ] .
+recently , there has been a focus on systems that produce fine-grained sentiment analysis of user reviews [ 19 , 27 , 6 , 36 ] .
+as an example , consider hotel reviews .
+a standard hotel review will probably discuss such aspects of the hotel like cleanliness , rooms , location , staff , dining experience , business services , amenities etc .
+similarly , a review for a mp3 player is likely to discuss aspects like sound quality , battery life , user interface , appearance etc .
+readers are often interested not only in the general sentiment towards an object , but also in a detailed opinion analysis for each these aspects .
+for instance , a couple on their honeymoon are probably not interested in quality of the internet connection at a hotel , whereas this aspect can be of a primary importance for a manager on a business trip .
+these considerations underline a need for models that automatically detect aspects discussed in an arbitrary fragment of a review and predict the sentiment of the reviewer towards these aspects .
+if such a model were available it would be possible to systematically generate a list of sentiment ratings for each aspect , and , at the same time , to extract textual evidence from the reviews supporting each of these ratings .
+such a model would have many uses .
+the example above where users search for products or services based on a set of critical criteria is one such application .
+a second application would be a mining tool for companies that want fine-grained results for tracking online opinions of their products .
+another application could be zagat1 or tripadvisor2 style aspect-based opinion summarizations for a wide range of services beyond just restaurants and hotels .
+fine-grained sentiment systems typically solve the task in two phases .
+the first phase attempts to extract the aspects of an object that users frequently rate [ 18 , 7 ] .
+the second phase uses standard techniques to classify and aggregate sentiment over each of these aspects [ 19 , 6 ] .
+in this paper we focus on improved models for the first phase ratable aspect extraction from user reviews .
+in particular , we focus on unsupervised models for extracting these aspects .
+the model we describe can extend both probabilistic latent semantic analysis [ 17 ] and latent dirichlet allocation ( lda ) [ 3 ] both of which are state-of-the-art topic models .
+we start by showing that standard topic modeling methods , such as lda and plsa , do not model the appropriate aspects of user reviews .
+in particular , these models tend to build topics that globally classify terms into product instances ( e.g. , creative labs mp3 players versus ipods , or new york versus paris hotels ) .
+to combat this we extend both plsa and lda to induce multi-grain topics .
+specifically , we allow the models to generate terms from either a global topic , which is chosen based on the document level context , or a local topic , which is chosen based on a sliding window context over the text .
+the local topics more faithfully model aspects that are rated throughout the review corpus .
+furthermore , the number of quality topics is drastically improved over standard topic models that have a tendency to produce many useless topics in addition to a number of coherent ones .
+we evaluate the models both qualitatively and quantitatively .
+for the qualitative analysis we present a number of topics generated by both standard topic models and our new multi-grained topic models to show that the multi-grain topics are both more coherent as well as better correlated with ratable aspects of an object .
+for the quantitative analysis we will show that the topics generated from the multi-grained topic model can significantly improve multi-aspect ranking [ 30 ] , which attempts to rate the sentiment of individual aspects from the text of user reviews in a supervised setting .
+the rest of the paper is structured as follows .
+section 2 begins with a review of the standard topic modeling approaches , plsa and lda , and a discussion of their applicability to extracting ratable aspects of products and services .
+in the rest of the section we introduce a multi-grain model as a way to address the discovered limitations of plsa and lda .
+section 3 describe an inference algorithm for the multi- grain model .
+in section 4 we provide an empirical evaluation of the proposed method .
+we conclude in section 5 with an examination of related work .
+throughout this paper we use the term aspect to denote properties of an object that are rated by a reviewer .
+other terms in the literature include features and dimensions , but we opted for aspects due to ambiguity in the use of alternatives .
+unsupervised topic modeling .
+as discussed in the preceding section , our goal is to provide a method for extracting ratable aspects from reviews without any human supervision .
+therefore , it is natural to use generative models of documents , which represent document as mixtures of latent topics , as a basis for our approach .
+in this section we will consider applicability of the most standard methods for unsupervised modeling of documents , probabilistic latent semantic analysis , plsa [ 17 ] and latent dirichlet allocation , lda [ 3 ] to the considered problem .
+this analysis will allow us to recognize limitations of these models in the context of the considered problem and to propose a new model , multi-grain lda .
+plsa & lda .
+unsupervised topic modeling has been an area of active research since the plsa method was proposed in [ 17 ] as a probabilistic variant of the lsa method [ 9 ] , the approach widely used in information retrieval to perform dimensionality reduction of documents .
+plsa uses the aspect model [ 29 ] to define a generative model of a document .
+it assumes that the document is generated using a mixture of k topics , where the mixture coefficients are chosen individually for each document .
+the model is defined by parameters ^ , ^ and ^ , where ^ z is the distribution p ( w | z ) of words in latent topic z , ^ d is the distribution p ( z | d ) of topics in document d and ^ d is the probability of choosing document d , i.e. p ( d ) .
+then , generation of a word in this model is defined as follows : the expectation maximization ( em ) algorithm [ 10 ] is used to calculate maximum likelihood estimates of the parameters .
+this will lead to ^ ( d ) being proportional to the length of document d .
+as a result , the interesting parts of the model are the distributions of words in latent topics ^ , and ^ , the distributions of topics in each document .
+the number of parameters grows linear with the size of the corpus which leads to overfitting .
+a regularized version of the em algorithm , tempered em ( tem ) [ 26 ] , is normally used in practice .
+along with the need to combat overfitting by using appropriately chosen regularization parameters , the main drawback of the plsa method is that it is inherently transductive , i.e. , there is no direct way to apply the learned model to new documents .
+in plsa each document d in the collection is represented as a mixture of topics with mixture coefficients ^ d , but it does not define such representation for documents outside the collection .
+the hierarchical bayesian lda model proposed in [ 3 ] solves both of these problems by defining a generative model for distributions ^ d .
+in lda , generation of a collection is started by sampling a word distribution ^ z from a prior dirichlet distribution dir ( ^ ) for each latent topic .
+then each document d is generated as follows : the model is represented in figure 1a using the standard graphical model notation .
+lda has only two parameters , ^ and ^ , 3 which prevents it from overfitting .
+unfortunately exact inference in such model is intractable and various approximations have been considered [ 3 , 23 , 14 ] .
+originally , the variational em approach was proposed in [ 3 ] , which instead of generating ^ from dirichlet priors , point estimates of distributions ^ are used and approximate inference in the resulting model is performed using variational techniques .
+the number of parameters in this empirical bayes model is still not directly dependent on the number of documents and , therefore , the model is not expected to suffer from over- fitting .
+another approach is to use a markov chain monte carlo algorithm for inference with lda , as proposed in [ 14 ] .
+in section 3 we will describe a modification of this sampling method for the proposed multi-grain lda model .
+both lda and plsa methods use the bag-of-words representation of documents , therefore they can only explore co-occurrences at the document level .
+this is fine , provided the goal is to represent an overall topic of the document , but our goal is different : extracting ratable aspects .
+the main topic of all the reviews for a particular item is virtually the same : a review of this item .
+therefore , when such topic modeling methods are applied to a collection of reviews for different items , they infer topics corresponding to distinguishing properties of these items .
+e.g. when applied to a collection of hotel reviews , these models are likely to infer topics : hotels in france , new york hotels , youth hostels , or , similarly , when applied to a collection of mp3 players reviews , these models will infer topics like reviews of ipod or reviews of creative zen player .
+though these are all valid topics , they do not represent ratable aspects , but rather define clusterings of the reviewed items into specific types .
+in further discussion we will refer to such topics as global topics , because they correspond to a global property of the object in the review , such as its brand or base of operation .
+discovering topics that correlate with ratable aspects , such as cleanliness and location for hotels , is much more problematic with lda or plsa methods .
+most of these topics are present in some way in every review .
+therefore , it is difficult to discover them by using only co-occurrence information at the document level .
+in this case exceedingly large amounts of training data is needed and as well as a very large number of topics k. even in this case there is a danger that the model will be overflown by very fine-grain global topics or the resulting topics will be intersection of global topics and ratable aspects , like location for hotels in new york .
+we will show in section 4 that this hypothesis is confirmed experimentally .
+one way to address this problem would be to consider co- occurrences at the sentence level , i.e. , apply lda or plsa to individual sentences .
+but in this case we will not have a sufficient co-occurrence domain , and it is known that lda and plsa behave badly when applied to very short documents .
+this problem can be addressed by explicitly modeling topic transitions [ 5 , 15 , 33 , 32 , 28 , 16 ] , but these topic n-gram models are considerably more computationally expensive .
+also , like lda and plsa , they will not be able to distinguish between topics corresponding to ratable aspects and global topics representing properties of the reviewed item .
+in the following section we will introduce a method which explicitly models both types of topics and efficiently infers ratable aspects from limited amount of training data .
+mg-lda .
+we propose a model called multi-grain lda ( mg-lda ) , which models two distinct types of topics : global topics and local topics .
+as in plsa and lda , the distribution of global topics is fixed for a document .
+however , the distribution of local topics is allowed to vary across the document .
+a word in the document is sampled either from the mixture of global topics or from the mixture of local topics specific for the local context of the word .
+the hypothesis is that ratable aspects will be captured by local topics and global topics will capture properties of reviewed items .
+for example consider an extract from a review of a london hotel : ... public transport in london is straightforward , the tube station is about an 8 minute walk ... or you can get a bus for 1.50 .
+it can be viewed as a mixture of topic london shared by the entire review ( words : london , tube , ) , and the ratable aspect location , specific for the local context of the sentence ( words : transport , walk , bus ) .
+local topics are expected to be reused between very different types of items , whereas global topics will correspond only to particular types of items .
+in order to capture only genuine local topics , we allow a large number of global topics , effectively , creating a bottleneck at the level of local topics .
+of course , this bottleneck is specific to our purposes .
+other applications of multi-grain topic models conceivably might prefer the bottleneck reversed .
+finally , we note that our definition of multi-grain is simply for two-levels of granularity , global and local .
+in principle though , there is nothing preventing the model described in this section from extending beyond two levels .
+one might expect that for other tasks even more levels of granularity could be beneficial .
+we represent a document as a set of sliding windows , each covering t adjacent sentences within it .
+each window v in document d has an associated distribution over local topics bd v and a distribution defining preference for local topics versus global topics ^ d , v.
+a word can be sampled using any window covering its sentence s , where the window is chosen according to a categorical distribution ^ ~ .
+importantly , the fact that the windows overlap , permits to exploit a larger co-occurrence domain .
+these simple techniques are capable of modeling local topics without more expensive modeling of topics transitions used in [ 5 , 15 , 33 , 32 , 28 , 16 ] .
+introduction of a symmetrical dirichlet prior dir ( ^ ) for the distribution ^ ~ permits to control smoothness of topic transitions in our model .
+here , beta ( ^ mix ) is a prior beta distribution for choosing between local and global topics .
+though symmetrical beta distributions can be considered , we use a non-symmetrical one as it permits to regulate preference to either global or local topics by setting ^ glix and ^ o.x accordingly .
+figure 1b presents the corresponding graphical model .
+as we will show in the following section this model allows for fast approximate inference with collapsed gibbs sampling .
+we should note a fundamental difference between mglda and other methods that model topics at different levels or granularities such as hierarchical topic models like hlda [ 2 ] and pachinko allocation [ 20 , 22 ] .
+mg-lda topics are multi-grain with respect to the context that they were derived from , e.g. , document level or sentence level .
+hierarchical topic models instead model semantic interactions between topics that are all typically at the document level .
+the two methods are complementary and one can conceive of a hierarchical mg-lda .
+inference with mg-lda .
+in this section we will describe a modification of the inference algorithm proposed in [ 14 ] .
+but before starting with our gibbs sampling algorithm we should note that instead of sampling from dirichlet and beta priors we could fix ^ d , s as a uniform distribution and compute maximum likelihood estimates for ^ r and ^ r .
+such model can be trained by using the em algorithm or the tem algorithm and viewed as a generalization of the plsa aspect model .
+gibbs sampling is an example of a markov chain monte carlo algorithm [ 13 ] .
+it is used to produce a sample from a joint distribution when only conditional distributions of each variable can be efficiently computed .
+in gibbs sampling , variables are sequentially sampled from their distributions conditioned on all other variables in the model .
+such a chain of model states converges to a sample from the joint distribution .
+a naive application of this technique to lda would imply that both assignments of topics to words z and distributions ^ and ^ should be sampled .
+however , griffiths and steyvers [ 14 ] demonstrated that an efficient collapsed gibbs sampler can be constructed , where only assignments z need to be sampled , whereas the dependency on distributions ^ and ^ can be integrated out analytically .
+though derivation of the collapsed gibbs sampler for mg-lda is similar to the one proposed by griffiths and steyvers for lda , we rederive it here for completeness .
+in order to perform gibbs sampling with mg-lda we need to compute conditional probability p ( vd , i = v , rd , i = r , zd , i = zlv , r , z , w ) , where v , r and z are vectors of assignments of sliding windows , context ( global or local ) and topics for all the words in the collection except for the considered word at position i in document d .
+we denote by w a vector of all the words in the collection .
+we start by showing how the joint probability of the assignments and the words p ( w , v , r , z ) = p ( wlr , z ) p ( v , r , z ) can be evaluated .
+in this expression nv is the total number of windows in the collection , nd , v is the number of words assigned to window v , nd , v and n , v are the number of times a word from window v gl was assigned to global and to local topics , respectively .
+in both of these expressions , counts are computed without taking into account assignments of the considered word wd , i .
+sampling with such model is fast and in practice convergence can be achieved in time similar to that needed for standard lda implementations .
+one problem of the collapsed sampling approach is that when computing statistics it is not possible to aggregate over several samples from the probabilistic model [ 15 ] .
+it happens because there is no correspondence between indices of topics in different samples .
+for large collections one sample is generally sufficient , but with small collections such estimates might become very random .
+in all our experiments we used collapsed sampling methods .
+for smaller collections maximum likelihood estimation with em can be used or variational approximations can be derived [ 3 ] .
+experiments .
+in this section we present qualitative and quantitative experiments .
+for the qualitative analysis we show that local topics inferred by mg-lda do correspond to ratable aspects .
+we compare the quality of topics obtained by mglda with topics discovered by the standard lda approach .
+for the quantitative analysis we show that the topics generated from the multi-grain models can significantly improve multi-aspect ranking .
+experiments and results .
+we used the gibbs sampling algorithm both for mg-lda and lda , and ran the chain for 800 iterations to produce a sample for each of the experiments .
+distributions of words in each topic were then estimated as in ( 5 ) .
+the sliding windows were chosen to cover 3 sentences for all the experiments .
+coarse tuning of parameters of the prior distributions was performed both for the mg-lda and lda models .
+we varied the number of topics in lda and the number of local and global topics in mg-lda .
+quality of local topics for mg-lda did not seem to be influenced by the number of global topics kgl as long as kgl exceeded the number of local topics kloc by factor of 2 .
+for mp3 and hotel reviews datasets , when increasing kloc most of the local topics represented ratable aspects until a point when a further increase of kloc started to produce mostly non- meaningful topics .
+for lda we selected the topic number corresponding to the largest number of discovered ratable aspects .
+in this way our comparison was as fair to lda as possible .
+top words for the discovered local topics and for some of the global topics of mg-lda models are presented in table 2 - table 3 , one topic per line , along with selected topics from the lda models.7 we manually assigned labels to coherent topics to reflect our interpretation of their meaning .
+note that the mg-lda local topics represent the entire set of local topics used in mg-lda models .
+for lda we selected only the coherent topics which captured ratable aspects and additionally a number of example topics to show typical lda topics .
+global topics of mg-lda are not supposed to capture ratable aspects and they are not of primary interest in these experiments .
+in the tables we presented only typical mg-lda global topics and any global topics which , contrary to our expectations , discovered ratable aspects .
+for the reviews of mp3 players we present results of the mg-lda model with 10 local and 30 global topics .
+all 10 local topics seem to correspond to ratable aspects .
+furthermore , the majority of global topics represent brands of mp3 players or additional categorizations of players such as those with video capability .
+the only genuine ratable aspect mg-lda local sound quality features sound quality headphones volume bass earphones good settings ear rock excellent games features clock contacts calendar alarm notes game quiz feature extras solitaire usb pc windows port transfer computer mac software cable xp connection plug firewire reset noise backlight slow freeze turn remove playing icon creates hot cause disconnect case pocket silver screen plastic clip easily small blue black light white belt cover button play track menu song buttons volume album tracks artist screen press select battery hours life batteries charge aaa rechargeable time power lasts hour charged ( all topics ) in the set of global topics is support .
+though not entirely clear , the presence of support topic in the list of global topics might be explained by the considerable number of reviews in the dataset focused almost entirely on problems with technical support .
+the lda model had 40 topics and only 4 of them ( memory / battery , radio / recording , controls and possibly opinion ) corresponded to ratable aspects .
+and even these 4 topics are of relatively low quality .
+though mixing related topics radio and recording is probably appropriate , combining concepts memory and battery is clearly undesirable .
+also top words for lda topics contain entries corresponding to player properties or brands ( as lyra in memory / battery ) , or not so related words ( as battery and unit in radio / recording ) .
+in words beyond top 10 this happens for lda much more frequently than for mg-lda .
+other topics of the lda model seem either semantically incoherent ( as the last topic in table 2 ) or represent player brands or types .
+for the hotels reviews we present results of the mg-lda model with 15 local topics and 45 global topics and results of the lda model with 45 topics .
+again , top words for all the mg-lda local topics are given in table 3 .
+only 9 topics out of 45 lda topics corresponded to ratable aspects and these are shown in the table .
+also , as with the mp3 player reviews , we chose 3 typical lda topics ( beach resorts , las vegas and an incoherent topic ) .
+all the local topics of mglda again reflect ratable aspects and no global topics seem to capture any ratable aspects .
+all the global topics of mglda appear to correspond to hotel types and locations , such as beach resorts or hotels in las vegas , though some global topics are not semantically coherent .
+most of lda topics are similar to mg-lda global topics .
+we should note that as with the mp3 reviews , increasing number of topics for lda beyond 45 did not bring any more topics corresponding to ratable aspects .
+additionally , we performed an experiment on the mp3 reviews where we applied the lda model to individual sentences .
+this local lda model infers a number of valid aspects , but still a significant proportion of the topics are related to brands of mp3 players .
+even the topics which corresponded to ratable aspects were contaminated by brand specific words : 20 top words for about a half of the topics ( depending on the total number of topics ) contained brand- related words such as ipod , apple , sony , yepp etc .
+this result suggests that simultaneous modeling of both local and global topics is important for discovery of coherent ratable aspects .
+the dataset of restaurant reviews appeared to be challenging for both of the models .
+both mg-lda and lda models managed to capture only few ratable aspects : mg-lda discovered topics corresponding to ratable dimensions service , atmosphere , location and decor , lda discovered waiting time and service .
+space constraints do not allow us to present detailed results for this domain .
+one problem with this dataset is that restaurant reviews are generally short ( average review length is 4.2 sentences ) .
+also these results can probably be explained by observing the fact that the majority of natural ratable aspects are specific for a type of restaurants .
+e.g. , appropriate ratable aspects for italian restaurants could be pizza and pasta , whereas for japanese restaurants they are probably sushi and noodles .
+we could imagine generic categories like meat dishes and fish dishes but they are unlikely to be revealed by any unsupervised model as the overlap in the vocabulary describing these aspects in different cuisines is small .
+preliminary experiments suggested that mg-lda is able to infer appropriate ratable aspects if applied to a set of reviews of restaurants with a specific cuisine .
+for example , for mg-lda with 15 local topics applied to the collection of italian restaurant reviews , 9 topics corresponded to ratable dimensions : wine , pizza , pasta , general food , location , service , waiting , value and atmosphere .
+another approach to address this problem is to attempt hierarchical topic modeling [ 2 , 22 ] .
+quantitative experiments .
+data and problem set-up .
+topic models are typically evaluated quantitatively using measures like likelihood on held-out data [ 17 , 3 , 16 ] .
+however , likelihood does not reflect our actual purpose since we are not trying to predict whether a new piece of text is likely to be a review of some particular category .
+instead we wish to evaluate how well our learned topics correspond to aspects of an object that users typically rate .
+to accomplish this we will look at the problem of multi-aspect opinion rating [ 30 ] .
+in this task a system needs to predict a discrete numeric rating for multiple aspects of an object .
+for example , given a restaurant review , a system would predict on a scale of 1-5 how a user liked the food , service , and decor of the restaurant .
+this is a challenging problem since users will use a wide variety of language to describe each aspect .
+a user might say the x was great , where x could be duck , steak , soup , each indicating that the food aspect should receive a high rating .
+if our topic model identifies a food topic ( or topics ) , then this information could be used as valuable features when predicting the sentiment of an aspect since it will inform the classifier which sentences are genuinely about which aspects .
+to test this we used a set of reviews of hotels taken from tripadvisor.com8 that contained 27,564 reviews .
+these reviews are labeled with a rating of 1-5 for a variety of ratable aspects for hotels .
+we selected our review set to span hotels from a large number of cities .
+furthermore , we ensured that all reviews in our set had ratings for each of 6 aspects : check-in , service , value , location , rooms , and cleanliness .
+the reviews were automatically sentence split and tokenized .
+the multi-aspect rater we used was the pranking algorithm [ 8 ] , which is a perceptron-based online learning method .
+the input vector x is typically a set of binary features representing textual cues in a review .
+our base set of features are unigram , bigram and frequently occurring trigrams in the text .
+to add topic model features to the input representation we first estimated the topic distributions for each sentence using both lda and mg-lda .
+for mg-lda we could use estimators ( 6 ) and ( 7 ) , but there is no equivalent estimators for lda .
+instead for both models we set the probability of a topic for a sentence to be proportional to the number of words assigned to this topic .
+to improve the reliability of the estimator we produced 100 samples for each document while keeping assignments of the topics to all other words in the collection fixed .
+the probability estimates were then obtained by averaging over these samples .
+this approach allows for more direct comparison of both models .
+also , unlike estimators given in ( 6 ) and ( 7 ) , it is applicable to arbitrary text fragments , not necessarily sentences , which is desirable for topic segmentation .
+we then found top 3 topic for each sentence using both models , bucketed these topics by their probability and concatenated them with original features in x .
+to bucket the probabilities produced by lda and mg-lda we choose 5 buckets using thresholds to distribute the values as evenly as possible .
+we also tried many alternative methods for using the real value topic probabilities and found that bucketing with raw probabilities worked best .
+alternatives attempted include : using the probabilities directly as feature values ; normalizing values to ( 0,1 ) with and without bucketing ; using log-probabilities with and without bucketing ; using z-score with and without bucketing .
+results .
+all system runs are evaluated using ranking loss [ 8 , 30 ] which measures the average distance between the true and predicted numerical ratings .
+overall ranking loss is simply the average over each aspect .
+note that a lower loss means a better performance .
+we compared four models .
+the baseline simply rates each aspect as a 5 , which is the most common rating in the data set for all aspects .
+the second model is the standard pranking algorithm over input features , which we denote by prank .
+the third model is the pranking algorithm but including features derived from the lda topic model , which is denoted by prank + lda .
+the fourth and final model uses the pranking algorithm but with features derived from the mg-lda topic model , which is denoted by prank + mg-lda .
+all topic models were run to generate 15 topics .
+we ran two experiments .
+the first experiment used only unigram features plus lda and mg-lda features .
+results can be seen in table 4 .
+clear gains are to be had by adding topic model features .
+in particular , the mg-lda features result in a statistically significant improvement in loss over using the lda features .
+significance was tested using a paired t-test over multiple runs of the classifier on different splits of the data .
+results that are significant with a value of p < 0.001 are given in bold .
+our second experiment used the full input feature space ( unigrams , bigrams , and frequent trigrams ) plus the lda and mg-lda features .
+in this experiment we would expect the gains from topic model features to be smaller due to the bigram and trigram features capturing some non-local context , which in fact does happen .
+however , there are still significant improvements in performance by adding the mg-lda features .
+furthermore , the prank + mg-lda model still out performs the prank + lda model providing more evidence that the topics learned by multi-grain topic models are more representative of the ratable aspects of an object .
+when analyzing the results we can note that for the tripadvisor data the mg-lda model produced clear topics for the check-in , location , and several coherent rooms aspects .
+this corresponds rather closely with the improvements that are seen over just the prank system alone .
+note that we still see an improvement in service , cleanliness and value since a users ranking of different aspects is highly correlated [ 30 ] .
+in particular , users who have favorable opinions of most of the aspects almost certainly rate value high .
+the lda model produced clear topics that correspond to check-in , but noisy topics for location and rooms with location topics often specific to a single locale ( e.g. , paris ) and room topics often mixed with service , dining and hotel lobby terms .
+related work .
+recently there has been a tremendous amount of work on summarizing sentiment [ 1 ] and in particular summarizing sentiment by extracting and aggregating sentiment over ratable aspects .
+there have been many methods proposed from unsupervised to fully supervised systems .
+in terms of unsupervised aspect extraction , in which this work can be categorized , the system of hu and liu [ 18 , 19 ] was one of the earliest endeavors .
+in that study association mining is used to extract product aspects that can be rated .
+hu and liu defined an aspect as simply a string and there was no attempt to cluster or infer aspects that are mentioned implicitly , e.g. , the amount of stains in the room was overwhelming is about the cleanliness aspect for hotels .
+a similar work by popescu and etzioni [ 27 ] also extract explicit aspects mentions without describing how implicit mentions are extracted and clustered.10 clustering can be of particular importance for domains in which aspects are described with a large vocabulary , such as food for restaurants or rooms for hotels .
+both implicit mentions and clustering arise naturally out of the topic model formulation requiring no additional augmentations .
+gamon et al. [ 12 ] present an unsupervised system that does incorporate clustering , however , their method clusters sentences and not individual aspects to produce a sentence based summary .
+sentence clusters are labeled with the most frequent non-stop word stem in the cluster .
+carenini et al. [ 7 ] present a weakly supervised model that uses the algorithms of hu and liu [ 18 , 19 ] to extract explicit aspect mentions from reviews .
+the method is extended through a user supplied aspect hierarchy of a product class .
+extracted aspects are clustered by placing the aspects into the hierarchy using various string and semantic similarity metrics .
+this method is then used to compare extractive versus abstractive summarizations for sentiment [ 6 ] .
+there has also been some studies of supervised aspect extraction methods .
+for example , zhuang et al. [ 36 ] work on sentiment summarization for movie reviews .
+in that work , aspects are extracted and clustered , but they are done so manually through the examination of a labeled data set .
+the short-coming of such an approach is that it requires a labeled corpus for every domain of interest .
+a key point of note is that our topic model approach is orthogonal to most of the methods mentioned above .
+for example , the topic model can be used to help cluster explicit aspects extracted by [ 18 , 19 , 27 ] or used to improve the recall of knowledge driven approaches that require domain specific ontologies [ 7 ] or labeled data [ 36 ] .
+a closely related model to ours is that of mei et al. [ 21 ] which performs joint topic and sentiment modeling of collections .
+their topic-sentiment model ( tsm ) is essentially equivalent to the plsa aspect model with two additional topics.11 one of these topics has a prior towards positive sentiment words and the other towards negative sentiment words , where both priors are induced from sentiment labeled data .
+though results on web-blog posts are encouraging , it is not clear if their method can model sentiments towards discovered topics : induced distributions of the sentiment words are universal and independent of topics , and their model uses the bag-of-words assumption , which does not permit exploitation of co-occurrences of sentiment words with topical words .
+also it is still not known whether their model can achieve good results on review data , because , as discussed in section 2 and confirmed in the empirical experiments , modeling co-occurrences at the document level is not sufficient .
+another approach for joint sentiment and topic modeling was proposed in [ 4 ] .
+they propose a supervised lda ( slda ) model which tries to infer topics appropriate for use in a given classification or regression problem .
+as an application they consider prediction of the overall document sentiment , though they do not consider multi-aspect ranking .
+both of these joint sentiment-topic models are orthogonal to the multi-grain model proposed in our paper .
+it should be easy to construct a slda or tsm model on top of mg-lda .
+in our work we assumed a sentiment classifier as a next model in a pipeline , but building a joint sentiment- topic model is certainly a challenging next step in this work .
+several models have been proposed to overcome the bagof-words assumption by explicitly modeling topic transitions [ 5 , 15 , 33 , 32 , 28 , 16 ] .
+in our mg-lda model we instead proposed a sliding windows to model local topics , as it is computationally less expensive and leads to good results .
+however , it is possible to construct a multi-grain model which uses a n-gram topic model for local topics and a distribution fixed per document for global topics .
+the model of blei and moreno [ 5 ] also uses windows , but their windows are not overlapping and , therefore , it is a priori known from which window a word is going to be sampled .
+an approach related to ours is described in [ 35 ] .
+they consider discovery of topics from a set of comparable text collections .
+their cross-collection mixture model discovers cross-collection topics and a sub-topic of each cross- collection topic for every collection in the set .
+these subtopics summarize differences between collections for every discovered cross-collection topic .
+though the use of different topics types bears some similarity to the mg-lda model , the models are in fact quite different .
+the mg-lda model infers only types of collections ( global topics ) and cross-collection topics ( local topics ) and does not try to infer collection specific topics .
+topics in the cross-collection mixture model are all global because words for both types of topics are generated from a mixture associated with an entire document .
+however , it should be possible to construct a combination of the cross-collection mixture model of zhai et al. and mg-lda to infer both cross-collection local topics and their within-collection sub-topics .
+the crucial property of the mg-lda model is that the topic distributions in mglda are associated with different scopes in a text , which , to our knowledge , has not been attempted before .
+summary and future work .
+in this work we presented multi-grain topic models and showed that they are superior to standard topic models when extracting ratable aspects from online reviews .
+these models are particularly suited to this problem since they not only identify important terms , but also cluster them into coherent groups , which is a deficiency of many previously proposed methods .
+there are many directions we plan on investigating in the future for the problem of aspect extraction from reviews .
+a promising possibility is to develop a supervised version of the model similar to supervised lda [ 4 ] .
+in such a model it would be possible to infer topics for a multi-aspect classification task .
+another direction would be to investigate hierarchical topic models .
+ideally for a corpus of restaurant reviews , we could induce a hierarchy representing cuisines .
+within each cuisine we could then extract cuisine specific aspects such as food and possibly decor and atmosphere .
+other ratable aspects like service would ideally be shared across all cuisines in the hierarchy since there typically is a standard vocabulary for describing them .
+the next major step in this work is to combine the aspect extraction methods presented here with standard sentiment analysis algorithms to aggregate and summarize sentiment for products and services .
+currently we are investigating a two-stage approach where aspects are first extracted and sentiment is then aggregated .
+however , we are also interested in examining joint models such as the tsm model [ 21 ] .

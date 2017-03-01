@@ -1,0 +1,133 @@
+using scenario knowledge in automatic question answering .
+abstract .
+this paper describes a novel framework for using scenario knowledge in open- domain question answering ( q / a ) applications that uses a state-of-the-art textual entailment system ( hickl et al. , 2006b ) in order to discover textual information relevant to the set of topics associated with a scenario description .
+an intrinsic and an extrinsic evaluation of this method is presented in the context of an automatic q / a system and results from several user scenarios are discussed .
+introduction .
+users of today ' s automatic question-answering ( q / a ) systems generally have complex information needs that cannot be satisfied by asking single questions in isolation .
+when users interact with q / a systems , they often formulate sets of queries that they believe will help them er the information that needed to perform one or more specific tasks .
+while human users are generally able to identify their information needs independently , the information needs of organizations are often presented in the form of short prose descriptions known as scenarios which outline the range of knowledge sought by a customer in order to achieve a specific outcome or to accomplish a particular task . ( an example of one scenario is presented in figure 1 . )
+recent work in q / a has sought to use information derived from these kinds of scenarios in order to retrieve sets of answers that are more relevant and responsive to a customers information needs .
+while ( harabagiu et al. , 2005 ) used topic signatures ( lin and hovy , 2000 ; scenario description .
+the customer has commissioned a research project looking at the impact of the outsourcing of american jobs on the united states relationship with india .
+after conducting research on u.s. companies currently doing business in india , the customer wants to know why american corporations have sought to outsource jobs to india , the types of economic advantages that american companies could gain from relocating to india , and the kinds of economic or political inducements that india has offered to american companies looking to outsource jobs there .
+the customer is not interested in demographic information on indian employees of american firms .
+harabagiu , 2004 ) computed automatically from collections of documents relevant to a scenario in order to approximate the semantic content of a scenario , ( narayanan and harabagiu , 2004 ) employed formal models of the interrelated events , actions , states , and relations implicit to a scenario in order to produce fine-grained , context- sensitive inferences that could be used to answer questions .
+scenario knowledge was also included in the form of axiomatic logic transformation developed in ( moldovan et al. , 2003 ) .
+under this approach , information extracted from the scenario narrative is converted to logical axioms that can used in conjunction with a logic prover in order justify answers returned for questions .
+in this paper , we propose that scenario-relevant passages in natural language texts can be identified by recognizing a semantic relation , known as contextual entailment ( ce ) , that exists between a text passage and one of a set of subquestions that are conventionally implied by a scenario .
+under this model , we expect that a scenario s can be considered to contextually entail a passage t , when there exists at least one subquestion q derived from s that textually entails the passage t .
+we show that by using a state-of-the-art textual entailment system ( hickl et al. , 2006b ) , we can provide q / a systems with another mechanism for approximating the inference between questions and relevant answers .
+we show how each of these cases of contextual entailment can be computed and how it can be used in the intrinsic and extrinsic evaluation of a q / a system .
+the remainder of the paper is organized in the following way .
+section 2 introduces our notion of contextual entailment and provides a framework for recognizing instances of ce between scenarios and both questions and answers .
+section 3 describes the textual entailment system used at the core of our ce system .
+sections 4 and 5 describe separate frameworks for intrinsically and extrinsically evaluating the impact of ce on current q / a systems .
+section 6 presents results from our evaluations , and section 7 summarizes our conclusions .
+recognizing contextual entailment .
+we define contextual entailment ( ce ) as a directional relation that exists between a text passage t and one of a set of implicit subquestions q that can be derived from a users interpretation of a scenario .
+informally , we consider that a scenario s contextually entails a passage t when there exists at least one subquestion q implied by s that can be considered to entail .
+we expect that the meaning of an information-seeking scenario s can be represented as a question under discussion ( qud ) qs , which denotes a partially-ordered set of subquestions ( q e qs ) that represent the entire set of questions that could potentially be asked in order to er information relevant to s. taken together , we expect these subquestions to represent the widest possible construal of a users information need given s. we believe the set of subquestions implied by qs can be used to test whether a text passage is relevant to s. since the formal answerhood relation between a question and its answer ( s ) can be cast in terms of ( logical ) entailment ( groenendijk , 1999 ; lewis , 1988 ) , we believe that systems for recognizing textual entailment ( dagan et al. , 2005 ) could be used in order to identify those text passages that should be considered when ering information related to a scenario .
+based on these assumptions , we expect that the set of text passages that are textually entailed by subquestions derived from a scenario represent information that is more likely to be relevant to the overall topic of the scenario as a whole .
+we expect that there are three types of contextual entailment relationships that could prove useful for automatic q / a systems .
+first , as illustrated in case 1 in 1 , ce could exist between a scenario and one of the set of answers returned by a q / a system in response to a users question .
+second , as in case 2 , ce could be established directly between a scenario and the question asked by the user .
+finally , as in case 3 , ce could be established both between a scenario and a users question as well as between a scenario and one of the answers returned by the q / a system for that question .
+in case 1 , the scenario textually entails the meaning of the answer passage , as earnings growth from outsourcing necessarily represents one of the types of economic advantages that can be derived from outsourcing .
+however , the scenario cannot be seen as entailing the users question , as the users interest in job outsourcing in indonesia cannot be interpreted as being part of the topics that are associated with the scenario .
+in this case , recognition of contextual entailment would allow systems to be sensitive to the types of scenario-relevant information that is encountered > ering information related to a scenario .
+based on these assumptions , we expect that the set of text passages that are textually entailed by subquestions derived from a scenario represent information that is more likely to be relevant to the overall topic of the scenario as a whole .
+we expect that there are three types of contextual entailment relationships that could prove useful for automatic q / a systems .
+first , as illustrated in case 1 in 1 , ce could exist between a scenario and one of the set of answers returned by a q / a system in response to a users question .
+second , as in case 2 , ce could be established directly between a scenario and the question asked by the user .
+finally , as in case 3 , ce could be established both between a scenario and a users question as well as between a scenario and one of the answers returned by the q / a system for that question. even when the user asks questions that are not entailed by the scenario itself .
+we expect that this type of contextual entailment would allow systems to identify scenario-relevant knowledge throughout a users interaction with a system , regardless of topic of a users last query .
+in case 2 , the users question is entailed by the scenario , but no corresponding entailment relationship can be established between the scenario and the answer passage identified by the q / a system as an answer to the question .
+while political support may be interpretable as one of the benefits realized by companies that outsource , it cannot be understood as one of the economic advantages of outsourcing .
+here , recognizing that contextual entailment could not be established between the scenario and the answer but could be established between the scenario and the question could be used to signal the q / a system to consider additional answers before moving on to the users next question .
+by identifying contextual entailment relationships between answers and elements in a scenario , systems could perform valuable forms of answer validation that could be used to select only the most relevant answers for a users consideration .
+finally , in case 3 , entailment relationships exist between the scenario and both the users question and the returned answer , as saving $ 25 million can be considered to be both an economic advantage and one of the ways that companies profit from outsourcing .
+in this case , the establishment of contextual entailment could be used to inform topic models that could be used to identify and extract other similarly relevant passages for the user .
+in order to capture these three types of ce relationships , we developed the architecture for recognizing contextual entailment illustrated in figure 3 .
+this architecture includes three basic types of modules : ( 1 ) a context discovery module , which identifies passages relevant to the concepts mentioned in a scenario , ( 2 ) a textual entailment module , which recognizes implicational relationships between passages , and ( 3 ) a entailment merging module , which ranks relevant passages according to their relevance to the scenario itself .
+in context discovery , document retrieval queries are first extracted from each sentence found in a scenario .
+once a set of documents has been assembled , topic signatures ( lin and hovy , 2000 ; harabagiu 2004 ) are computed which identify the set of topic-relevant concepts and relations between concepts that are found in the relevant set of documents .
+weights associated with each set of topic signatures are then used to extract a set of relevant sentences referred to as topic answers from each relevant document .
+once a set of topic answers have been identified , each topic answer is paired with a question submitted by a user and sent to the textual entailment system described in section 2 .
+topic answers that are deemed to be positive entailments of the user question are assigned a confidence value by the te system and are then sent to a entailment merging module , which uses logistic regression in order to rank passages according to their expected relevance to the user scenario .
+here , logistic regression is used to find a set of coefficients bj ( where 0 < j < p ) in order to fit a variable x to a logistic transformation of a probability q .
+recent work in computational semantics ( haghighi et al. , 2005 ; hickl et al. , 2006b ; maccartney et al. , 2006 ) has demonstrated the viability of supervised machine learning-based approaches to the recognition of textual entailment ( te ) .
+while these approaches have not incorporated the forms of structured world knowledge featured in many logic-based te systems , classification-based approaches have been consistently among the top-performing systems in both the 2005 and 2006 pascal recognizing textual entailment ( rte ) challenges ( dagan et al. , 2005 ) , with the best systems ( such as ( hickl et al. , 2006b ) ) correctly identifying instances of textual entailment more than 75 % of the time .
+the architecture of our te system is presented in figure 4.1 pairs of texts are initially sent to a preprocessing module , which performs syntactic and semantic parsing of each sentence , resolves coreference , and annotates entities and predicates with a wide range of lexico-semantic and prag ' for more information on the te system described in this section , please see ( hickl et al. , 2006b ) and ( harabagiu and hickl , 2006 ) . matic information , including named entity information , synonymy and antonymy information , and polarity and modality information .
+once preprocessing is complete , texts are then sent to an alignment module , which uses lexical alignment module in conjunction with a paraphrase acquisition module in order to determine the likelihood that pairs of elements selected from each sentence contain corresponding information that could be used in recognizing textual entailment .
+lexical alignment is performed using a maximum entropy-based classifier which computes an alignment probability p ( a ) equal to the likelihood that a term selected from one text corresponds to an element selected from another text .
+once these pairs of corresponding elements are identified , alignment information is then used in order to extract portions of texts that could be related via one or more phrase-level alternations or paraphrases .
+in order to acquire these alternations , the most likely pairs of aligned elements were then sent to a paraphrase acquisition module , which extracts sentences that contain instances of both aligned elements from the world wide web .
+output from these two modules are then combined in a final classification module , which uses features derived from ( 1 ) lexico-semantic properties , ( 2 ) semantic dependencies , ( 3 ) predicate- based features ( including polarity and modality ) , ( 4 ) lexical alignment , and ( 5 ) paraphrase acquisition in order learn a decision tree classifier capable of determining whether an entailment relationship exists for a pair of texts .
+intrinsic evaluation of contextual entailment .
+since we believe ce is intrinsic to the q / a task , we have evaluated the impact of contextual entailment on our q / a system in two ways .
+first , we compared the quality of the answers produced , with and without contextual entailment .
+second , we evaluated the quality of the ranked list of paragraphs against the list of entailed paragraphs identified by the ce system and the set of relevant answers identified by the q / a system .
+this comparison was performed for each of the three cases of entailment presented in figure 2 .
+we have explored the impact of knowledge derived from the user scenario through different forms of contextual entailment by comparing the results of such knowledge integration in a q / a system against the usage of scenario knowledge reported in ( harabagiu et al. , 2005 ) .
+topic signatures , derived from the user scenario and from documents are used to establish text passages that are relevant to the scenario , and thus constitute relevant answers .
+for each such answer , one or multiple questions were built automatically with the method reported in ( harabagiu et al. , 2005 ) .
+when a new question was asked , its similarity to any of the questions generated based on the knowledge of the scenario is computed , and its corresponding answer is provided as an answer for the current question as well .
+since the questions are ranked by similarity to the current question , the answers are also ranked and produce the answer seti illustrated in figure 5 .
+when a q / a system is used for answering the question , the scenario knowledge can be used in two ways .
+first , the keywords extracted by the question processing module can be enhanced with concepts from the topic signatures to produce a ranked list of paragraphs , resulting from the passage retrieval module .
+these passages together with the question and the user scenario are used in one of the contextual entailment configurations to derive a list of entailed paragraphs from which the answer processing module can extract the answer set 2 illustrated in figure 5 .
+in another way , the ranked list of paragraphs is passed to the answer processing module , which provides a set of ranked answers to the contextual entailment configurations to derive a list of entailed answers , rep resented as answer set 3 in figure 5 .
+we evaluate the quality of each set of answers , and for the answer set 2 and 3 , we produce separate evaluation for each configuration for the contextual entailment .
+extrinsic evaluation of contextual entailment .
+questions asked in response to a user scenario tend to be complex .
+following work in ( hickl et al. , 2004 ) , we believe complex questions can be answered in one of two ways : either by ( 1 ) using techniques ( similar to the ones proposed in ( harabagiu et al. , 2006 ) ) for automatically decomposing complex questions into sets of informationally-simpler questions , or by ( 2 ) using a multi-document summarization ( mds ) system ( such as the one described in ( lacatusu et al. , 2006 ) ) in order to assemble a ranked list of passages which contain information that is potentially relevant to the users question .
+first , we expect that contextual entailment can be used to select the decompositions of a complex question that are most closely related to a scenario .
+by assigning more confidence to the decompositions that are contextually entailed by a scenario , systems can select a set of answers that are relevant to both the user scenario and the users question .
+in contrast , contextual entailment can be used in conjunction with the output of a mds system : once a summary has been constructed from the passages retrieved for a query , contextual entailment can be used to select the most relevant sentences from the summary .
+the architecture of this proposed system is illustrated in figure 6 .
+when using contextual entailment for selecting question decompositions , we rely on the method reported in ( harabagiu et al. , 2006 ) which generates questions by using a random walk on a bipartite graph of salient relations and answers .
+in this case , the recognition of entailment between questions operates as a filter , forcing questions that are not entailed by any of the signature answers derived from the scenario context ( see figure 3 ) to be dropped from consideration .
+when entailment information is used for re- ranking candidate answers , the summary is added to the scenario context , each summary sentence being treated akin to a signature answer .
+we believe that the summary contains the most informative information from both the question and the scenario , since the queries that produced it originated both in the question and in the scenario .
+by adding summary sentences to the scenario context , we have introduced a new dimension to the processing of the scenario .
+the contextual entailment is based on the textual entailments between any of the texts from the scenario context and any of the candidate answers .
+experimental results .
+in this section , we present preliminary results from four sets of experiments which show how forms of textual and contextual entailment can enhance the quality of answers returned by an automatic q / a system .
+questions used in these experiments were ered from human interactions with the interactive q / a system described in ( hickl et al. , 2006a ) .
+a total of 6 users were asked to spend approximately 90 minutes ering information related to three different information-ering scenarios similar to the one in table 1 .
+each user researched two different scenarios , resulting in a total of 12 total research sessions .
+once all research sessions were completed , linguistically well-formed questions were extracted from the system logs for each session for use in our experiments ; ungrammatical questions or keyword-style queries were not used in our experiments .
+table 2 presents a breakdown of the total number of questions collected for each of the 6 scenarios .
+in order to evaluate the performance of our q / a system under each of the experimental conditions described below , questions were re-submitted to the q / a system and the top 10 answers were retrieved .
+two annotators were then tasked with judging the correctness or relevance of each returned answer to the original question .
+if the answer could be considered to provide either a complete or partial answer to the original question , it was marked as correct ; if the answer contained information that could not be construed as an answer to the original question , it was marked as incorrect .
+textual entailment .
+following ( harabagiu and hickl , 2006 ) , we used te information in order to filter answers identified by the q / a system that were not entailed by the users original question .
+after filtering , the top- ranked entailed answer ( as determined by the q / a system ) was returned as the systems answer to the question .
+results from both a baseline version and a te-enhanced version of our q / a system are presented in table 4 .
+although no information from the scenario was used in this experiment , performance of the q / a system increased by more than 6 % over the baseline system for each of the three scenarios .
+these results suggest that te can be used effectively in order to boost the percentage of relevant answers found in the top answers returned by a system : by focusing only on answers that are entailed by a users question , we feel that systems can better identify passages that might contain information relevant to a users information need .
+contextual entailment .
+in order to evaluate the performance of our contextual entailment system directly , two annotators were tasked with identifying instances of ce amongst the passages and answers returned by our q / a system .
+annotators were instructed to mark a passage as being contextually entailed by a scenario only when the passage could be reasonably expected to be associated with one of the subtopics they believed to be entailed by the complex scenario .
+if the passage could not be associated with the extension of any subtopic they believed to be entailed by the scenario , annotators were instructed to mark the passage as not being contextually entailed by the scenario .
+for evaluation purposes , only examples that were marked by both annotators were considered as valid examples of ce .
+annotators were tasked with evaluating three types of output from our q / a system : ( 1 ) the ranked list of passages retrieved by our systems passage retrieval module , ( 2 ) the list of passages identified as being ce by the scenario , and ( 3 ) the set of answers marked as being ce by the scenario ( ansset3 ) .
+results from the annotation of these passages are presented in table 4 .
+annotators marked 39.3 % of retrieved passages as being ce by one of the three scenarios .
+this number increased substantially when only passages identified by the ce system were considered , as annotators judged 48.6 % of ce passages and 45.2 % of ce-filtered answers to be valid instances of contextual entailment .
+intrinsic evaluation .
+in order to evaluate the impact of ce on a q / a system , we compared the quality of answers produced ( 1 ) when no ce information was used ( ansset1 ) , ( 2 ) when ce information was used to select a list of entailed paragraphs that were submitted to an answer processing module ( ansset2 ) , and ( 3 ) when ce information was used directly to select answers ( ansset3 ) .
+results from these three experiments are presented in table 5 .
+as with the te-based experiments described in section 7.1 , we found that the q / a system was more likely to return at least one relevant answer among the top-ranked answers when contextual entailment information was used to either rank or select answers .
+when ce was used to rank passages for answer processing ( ansset2 ) , accuracy increased by nearly 9 % over the baseline ( ansset1 ) , while accuracy increased by almost 14 % overall when ce was used to select answers directly ( ansset3 ) .
+extrinsic evaluation .
+in order to evaluate the performance of the framework illustrated in figure 6 , we compared the performance of a question-focused mds system ( first described in ( lacatusu et al. , 2006 ) ) that did not use ce with a similar system that used ce to rank passages for a summary answer .
+when ce was not used , sentences identified by the systems q / a and mds system for each question were combined and ranked based on number of question keywords found in each sentence .
+in the ce-enabled system ( analogous to the system depicted in figure 6 ) , only the sentences that were contextually entailed by the scenario were considered ; sentences were then ranked using the real- valued entailment confidence computed by the ce system for each sentence .
+results from this system are presented in table 6 .
+although the ce-enabled system was more likely to return a scenario-relevant sentence in top position ( 48.23 % ) than the system that did not use ce ( 41.09 % ) , differences between the systems were much less apparent when the top 5 answers returned by each system were compared .
+conclusions .
+this paper introduced a new form of textual entailment , known as contextual entailment , which can be used to recognize scenario-relevant information in both the questions users ask and in the answers that automatic q / a systems return .
+in addition to outlining a framework for recognizing contextual entailment in texts , we showed that contextual entailment information can significantly enhance the quality of answers returned by a q / a system in response to users questions about a particular scenario .
+in our evaluations , we found that using contextual entailment allowed q / a systems to improve their accuracy by more than 10 % overall .

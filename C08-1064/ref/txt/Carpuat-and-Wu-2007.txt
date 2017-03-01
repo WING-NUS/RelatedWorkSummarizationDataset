@@ -1,0 +1,161 @@
+improving statistical machine translation using word sense disambiguation .
+abstract .
+we show for the first time that incorporating the predictions of a word sense disambiguation system within a typical phrase-based statistical machine translation ( smt ) model consistently improves translation quality across all three different iwslt chinese- english test sets , as well as producing statistically significant improvements on the larger nist chinese-english mt task and moreover never hurts performance on any test set , according not only to bleu but to all eight most commonly used automatic evaluation metrics .
+recent work has challenged the assumption that word sense disambiguation ( wsd ) systems are useful for smt .
+yet smt translation quality still obviously suffers from inaccurate lexical choice .
+in this paper , we address this problem by investigating a new strategy for integrating wsd into an smt system , that performs fully phrasal multi-word disambiguation .
+instead of directly incorporating a senseval-style wsd system , we redefine the wsd task to match the exact same phrasal translation disambiguation task faced by phrase-based smt systems .
+our results provide the first known empirical evidence that lexical semantics are indeed useful for smt , despite claims to the contrary .
+introduction .
+common assumptions about the role and usefulness of word sense disambiguation ( wsd ) models in full-scale statistical machine translation ( smt ) systems have recently been challenged .
+on the one hand , in previous work ( carpuat and wu , 2005b ) we obtained disappointing results when using the predictions of a senseval wsd system in conjunction with a standard word-based smt system : we reported slightly lower bleu scores despite trying to incorporate wsd using a number of apparently sensible methods .
+these results cast doubt on the assumption that sophisticated dedicated wsd systems that were developed independently from any particular nlp application can easily be integrated into a smt system so as to improve translation quality through stronger models of context and rich linguistic information .
+rather , it has been argued , smt systems have managed to achieve significant improvements in translation quality without directly addressing translation disambiguation as a wsd task .
+instead , translation disambiguation decisions are made indirectly , typically using only word surface forms and very local contextual information , forgoing the much richer linguistic information that wsd systems typically take advantage of .
+on the other hand , error analysis reveals that the performance of smt systems still suffers from inaccurate lexical choice .
+in subsequent empirical studies , we have shown that smt systems perform much worse than dedicated wsd models , both supervised and unsupervised , on a senseval wsd task ( carpuat and wu , 2005a ) , and therefore suggest that wsd should have a role to play in state-of-the-art smt systems .
+in addition to the senseval shared tasks , which have provided standard sense inventories and data sets , wsd research has also turned increasingly to designing specific models for a particular application .
+for instance , vickrey et al. ( 2005 ) and specia ( 2006 ) proposed wsd systems designed for french to english , and portuguese to english translation respectively , and present a more optimistic outlook for the use of wsd in mt , although these wsd systems have not yet been integrated nor evaluated in full-scale machine translation systems .
+taken together , these seemingly contradictory results suggest that improving smt lexical choice accuracy remains a key challenge to improve current smt quality , and that it is still unclear what is the most appropriate integration framework for the wsd models in smt .
+in this paper , we present first results with a new architecture that integrates a state-of-the-art wsd model into phrase-based smt so as to perform multi-word phrasal lexical disambiguation , and show that this new wsd approach not only produces gains across all available chinese-english iwslt06 test sets for all eight commonly used automated mt evaluation metrics , but also produces statistically significant gains on the much larger nist chinese-english task .
+the main difference between this approach and several of our earlier approaches as described in carpuat and wu ( 2005b ) and subsequently carpuat et al. ( 2006 ) lies in the fact that we focus on repurposing the wsd system for multi-word phrase-based smt .
+rather than using a generic senseval wsd model as we did in carpuat and wu ( 2005b ) , here both the wsd training and the wsd predictions are integrated into the phrase-based smt framework .
+furthermore , rather than using a single word based wsd approach to augment a phrase-based smt model as we did in carpuat et al. ( 2006 ) to improve bleu and nist scores , here the wsd training and predictions operate on full multi-word phrasal units , resulting in significantly more reliable and consistent gains as evaluted by many other translation accuracy metrics as well .
+specifically : instead of using a senseval system , we redefine the wsd task to be exactly the same as lexical choice task faced by the multi-word phrasal translation disambiguation task faced by the phrase-based smt system .
+instead of using predefined senses drawn from manually constructed sense inventories such as hownet ( dong , 1998 ) , our wsd for smt system directly disambiguates between all phrasal translation candidates seen during smt training .
+instead of learning from manually annotated training data , our wsd system is trained on the same corpora as the smt system .
+however , despite these adaptations to the smt task , the core sense disambiguation task remains pure wsd : the rich context features are typical of wsd and almost never used in smt .
+the dynamic integration of context-sensitive translation probabilities is not typical of smt .
+although it is embedded in a real smt system , the wsd task is exactly the same as in recent and coming senseval multilingual lexical sample tasks ( e.g. , chklovski et al. ( 2004 ) ) , where sense inventories represent the semantic distinctions made by another language .
+we begin by presenting the wsd module and the smt integration technique .
+we then show that incorporating it into a standard phrase-based smt baseline system consistently improves translation quality across all three different test sets from the chinese-english iwslt text translation evaluation , as well as on the larger nist chinese-english translation task .
+depending on the metric , the individual gains are sometimes modest , but remarkably , incorporating wsd never hurts , and helps enough to always make it a worthwile additional component in an smt system .
+finally , we analyze the reasons for the improvement .
+to the best of our knowledge , there has been no previous attempt at integrating a state-of-the-art wsd system for fully phrasal multi-word lexical choice into phrase-based smt , with evaluation of the resulting system on a translation task .
+while there are many evaluations of wsd quality , in particular the senseval series of shared tasks ( kilgarriff and rosenzweig ( 1999 ) , kilgarriff ( 2001 ) , mihalcea et al. ( 2004 ) ) , very little work has been done to address the actual integration of wsd in realistic smt applications .
+to fully integrate wsd into phrase-based smt , it is necessary to perform lexical disambiguation on multi-word phrasal lexical units ; in contrast , the model reported in cabezas and resnik ( 2005 ) can only perform lexical disambiguation on single words .
+like the model proposed in this paper , cabezas and resnik attempted to integrate phrase- based wsd models into decoding .
+however , although they reported that incorporating these predictions via the pharaoh xml markup scheme yielded a small improvement in bleu score over a pharaoh baseline on a single spanish-english translation data set , we have determined empirically that applying their single-word based model to several chinese- english datasets does not yield systematic improvements on most mt evaluation metrics ( carpuat and wu , 2007 ) .
+the single-word model has the disadvantage of forcing the decoder to choose between the baseline phrasal translation probabilities versus the wsd model predictions for single words .
+in addition , the single-word model does not generalize to wsd for phrasal lexical choice , as overlapping spans cannot be specified with the xml markup scheme .
+providing wsd predictions for phrases would require committing to a phrase segmentation of the input sentence before decoding , which is likely to hurt translation quality .
+it is also necessary to focus directly on translation accuracy rather than other measures such as alignment error rate , which may not actually lead to improved translation quality ; in contrast , for example , garcia-varea et al. ( 2001 ) and garcia-varea et al. ( 2002 ) show improved alignment error rate with a maximum entropy based context-dependent lexical choice model , but not improved translation accuracy .
+in contrast , our evaluation in this paper is conducted on the actual decoding task , rather than intermediate tasks such as word alignment .
+moreover , in the present work , all commonly available automated mt evaluation metrics are used , rather than only bleu score , so as to maintain a more balanced perspective .
+another problem in the context-sensitive lexical choice in smt models of garcia varea et al. is that their feature set is insufficiently rich to make much better predictions than the smt model itself .
+in contrast , our wsd-based lexical choice models are designed to directly model the lexical choice in the actual translation direction , and take full advantage of not residing strictly within the bayesian source- channel model in order to benefit from the much richer senseval-style feature set this facilitates .
+garcia varea et al. found that the best results are obtained when the training of the context-dependent translation model is fully incorporated with the em training of the smt system .
+as described below , the training of our new wsd model , though not incorporated within the em training , is also far more closely tied to the smt model than is the case with traditional standalone wsd models .
+in contrast with brown et al. ( 1991 ) , our approach incorporates the predictions of state-of-the- art wsd models that use rich contextual features for any phrase in the input vocabulary .
+in brown et al.s early study of wsd impact on smt performance , the authors reported improved translation quality on a french to english task , by choosing an english translation for a french word based on the single contextual feature which is reliably discriminative .
+however , this was a pilot study , which is limited to words with exactly two translation candidates , and it is not clear that the conclusions would generalize to more recent smt architectures .
+problems in translation-oriented wsd .
+the close relationship between wsd and smt has been emphasized since the emergence of wsd as an independent task .
+however , most of previous research has focused on using multilingual resources typically used in smt systems to improve wsd accuracy , e.g. , dagan and itai ( 1994 ) , li and li ( 2002 ) , diab ( 2004 ) .
+in contrast , this paper focuses on the converse goal of using wsd models to improve actual translation quality .
+recently , several researchers have focused on designing wsd systems for the specific purpose of translation .
+vickrey et al. ( 2005 ) train a logistic regression wsd model on data extracted from automatically word aligned parallel corpora , but evaluate on a blank filling task , which is essentially an evaluation of wsd accuracy .
+specia ( 2006 ) describes an inductive logic programming-based wsd system , which was specifically designed for the purpose of portuguese to english translation , but this system was also only evaluated on wsd accuracy , and not integrated in a full-scale machine translation system .
+ng et al. ( 2003 ) show that it is possible to use automatically word aligned parallel corpora to train accurate supervised wsd models .
+the purpose of the study was to lower the annotation cost for supervised wsd , as suggested earlier by resnik and yarowsky ( 1999 ) .
+however this result is also encouraging for the integration of wsd in smt , since it suggests that accurate wsd can be achieved using training data of the kind needed for smt .
+building wsd models for phrase-based smt .
+wsd models for every phrase in the input vocabulary .
+just like for the baseline phrase translation model , wsd models are defined for every phrase in the input vocabulary .
+lexical choice in smt is naturally framed as a wsd problem , so the first step of integration consists of defining a wsd model for every phrase in the smt input vocabulary .
+this differs from traditional wsd tasks , where the wsd target is a single content word .
+senseval for instance has either lexical sample or all word tasks .
+the target words for both categories of senseval wsd tasks are typically only content words primarily nouns , verbs , and adjectiveswhile in the context of smt , we need to translate entire sentences , and therefore have a wsd model not only for every word in the input sentences , regardless of their pos tag , but for every phrase , including tokens such as articles , prepositions and even punctuation .
+further empirical studies have suggested that includ ing wsd predictions for those longer phrases is a key factor to help the decoder produce better translations ( carpuat and wu , 2007 ) .
+wsd uses the same sense definitions as the smt system .
+instead of using pre-defined sense inventories , the wsd models disambiguate between the smt translation candidates .
+in order to closely integrate wsd predictions into the smt system , we need to formulate wsd models so that they produce features that can directly be used in translation decisions taken by the smt system .
+it is therefore necessary for the wsd and smt systems to consider exactly the same translation candidates for a given word in the input language .
+assuming a standard phrase-based smt system ( e.g. , koehn et al. ( 2003 ) ) , wsd senses are thus either words or phrases , as learned in the smt phrasal translation lexicon .
+those sense candidates are very different from those typically used even in dedicated wsd tasks , even in the multilingual senseval tasks .
+each candidate is a phrase that is not necessarily a syntactic noun or verb phrase as in manually compiled dictionaries .
+it is quite possible that distinct senses in our wsd for smt system could be considered synonyms in a traditional wsd framework , especially in monolingual wsd .
+in addition to the consistency requirements for integration , this requirement is also motivated by empirical studies , which show that predefined translations derived from sense distinctions defined in monolingual ontologies do not match translation distinction made by human translators ( specia et al. , 2006 ) .
+wsd uses the same training data as the smt system .
+wsd training does not require any other resources than smt training , nor any manual sense annotation .
+we employ supervised wsd systems , since senseval results have amply demonstrated that supervised models significantly outperform unsupervised approaches ( see for instance the english lexical sample tasks results described by mihalcea et al. ( 2004 ) ) .
+training examples are annotated using the phrase alignments learned during smt training .
+every input language phrase is sense-tagged with its aligned output language phrase in the parallel corpus .
+the phrase alignment method used to extract the wsd training data therefore depends on the one used by the smt system .
+this presents the advantage of training wsd and smt models on exactly the same data , thus eliminating domain mismatches between senseval data and parallel corpora .
+but most importantly , this allows wsd training data to be generated entirely automatically , since the parallel corpus is automatically phrase-aligned in order to learn the smt phrase bilexicon .
+the wsd system .
+the word sense disambiguation subsystem is modeled after the best performing wsd system in the chinese lexical sample task at senseval-3 ( carpuat et al. , 2004 ) .
+the features employed are typical of wsd and are therefore far richer than those used in most smt systems .
+the feature set consists of position- sensitive , syntactic , and local collocational features , since these features yielded the best results when combined in a naive bayes model on several senseval-2 lexical sample tasks ( yarowsky and florian , 2002 ) .
+these features scale easily to the bigger vocabulary and sense candidates to be considered in a smt task .
+the senseval system consists of an ensemble of four combined wsd models : the first model is a naive bayes model , since yarowsky and florian ( 2002 ) found this model to be the most accurate classifier in a comparative study on a subset of senseval-2 english lexical sample data .
+the second model is a maximum entropy model ( jaynes , 1978 ) , since klein and manning ( klein and manning , 2002 ) found that this model yielded higher accuracy than naive bayes in a subsequent comparison of wsd performance .
+the third model is a boosting model ( freund and schapire , 1997 ) , since boosting has consistently turned in very competitive scores on related tasks such as named entity classification .
+we also use the adaboost.mh algorithm .
+the fourth model is a kernel pca-based model ( wu et al. , 2004 ) .
+kernel principal component analysis or kpca is a nonlinear kernel method for extracting nonlinear principal components from vector sets where , conceptually , the n-dimensional input vectors are nonlinearly mapped from their original space rn to a high-dimensional feature space f where linear pca is performed , yielding a transform by which the input vectors can be mapped nonlinearly to a new set of vectors ( scholkopf et al. , 1998 ) .
+wsd can be performed by a nearest neighbor classifier in the high-dimensional kpca feature space .
+all these classifiers have the ability to handle large numbers of sparse features , many of which may be irrelevant .
+moreover , the maximum entropy and boosting models are known to be well suited to handling features that are highly interdependent . 4.5 integrating wsd predictions in phrase-based smt architectures it is non-trivial to incorporate wsd into an existing phrase-based architecture such as pharaoh ( koehn , 2004 ) , since the decoder is not set up to easily accept multiple translation probabilities that are dynamically computed in context-sensitive fashion .
+for every phrase in a given smt input sentence , the wsd probabilities can be used as additional feature in a loglinear translation model , in combination with typical context-independent smt bilexicon probabilities .
+we overcome this obstacle by devising a calling architecture that reinitializes the decoder with dynamically generated lexicons on a per-sentence basis .
+unlike a n-best reranking approach , which is limited by the lexical choices made by the decoder using only the baseline context-independent translation probabilities , our method allows the system to make full use of wsd information for all competing phrases at all decoding stages .
+experimental setup .
+the evaluation is conducted on two standard chinese to english translation tasks .
+we follow standard machine translation evaluation procedure using automatic evaluation metrics .
+since our goal is to evaluate translation quality , we use standard mt evaluation methodology and do not evaluate the accuracy of the wsd model independently .
+data set .
+preliminary experiments are conducted using training and evaluation data drawn from the multilingual btec corpus , which contains sentences used in conversations in the travel domain , and their translations in several languages .
+a subset of this data was made available for the iwslt06 evaluation campaign ( paul , 2006 ) ; the training set consists of 40000 sentence pairs , and each test set contains around 500 sentences .
+we used only the pure text data , and not the speech transcriptions , so that speech-specific issues would not interfere with our primary goal of understanding the effect of integrating wsd in a full- scale phrase-based model .
+a larger scale evaluation is conducted on the standard nist chinese-english test set ( mt-04 ) , which contains 1788 sentences drawn from newswire corpora , and therefore of a much wider domain than the iwslt data set .
+the training set consists of about 1 million sentence pairs in the news domain .
+basic preprocessing was applied to the corpus .
+the english side was simply tokenized and case- normalized .
+the chinese side was word segmented using the ldc segmenter .
+baseline smt system .
+since our focus is not on a specific smt architecture , we use the off-the-shelf phrase-based decoder pharaoh ( koehn , 2004 ) trained on the iwslt training set .
+pharaoh implements a beam search decoder for phrase-based statistical models , and presents the advantages of being freely available and widely used .
+the phrase bilexicon is derived from the intersection of bidirectional ibm model 4 alignments , obtained with giza + + ( och and ney , 2003 ) , augmented to improve recall using the grow-diag-final heuristic .
+the language model is trained on the english side of the corpus using the sri language modeling toolkit ( stolcke , 2002 ) .
+the loglinear model weights are learned using chiangs implementation of the maximum bleu training algorithm ( och , 2003 ) , both for the baseline , and the wsd-augmented system .
+due to time constraints , this optimization was only conducted on the iwslt task .
+the weights used in the wsd-augmented nist model are based on the best iwslt model .
+given that the two tasks are quite different , we expect further improvements on the wsd-augmented system after running maximum bleu optimization for the nist task .
+results and discussion .
+using wsd predictions in smt yields better translation quality on all test sets , as measured by all eight commonly used automatic evaluation metrics .
+the results are shown in table 1 for iwslt and table 2 for the nist task .
+paired bootstrap resampling shows that the improvements on the nist test set are statistically significant at the 95 % level .
+remarkably , integrating wsd predictions helps all the very different metrics .
+in addition to the widely used bleu ( papineni et al. , 2002 ) and nist ( doddington , 2002 ) scores , we also evaluate translation quality with the recently proposed meteor ( banerjee and lavie , 2005 ) and four edit-distance style metrics , word error rate ( wer ) , position- independent word error rate ( per ) ( tillmann et al. , 1997 ) , cder , which allows block reordering ( leusch et al. , 2006 ) , and translation edit rate ( ter ) ( snover et al. , 2006 ) .
+note that we report meteor scores computed both with and without using wordnet synonyms to match translation candidates and references , showing that the improvement is not due to context-independent synonym matches at evaluation time .
+comparison of the 1-best decoder output with and without the wsd feature shows that the sentences differ by one or more token respectively for 25.49 % , 30.40 % and 29.25 % of iwslt test sets 1 , 2 and 3 , and 95.74 % of the nist test set .
+tables 3 and 4 show examples of translations drawn from the iwslt and nist test sets respectively .
+a more detailed analysis reveals wsd predictions give better rankings and are more discriminative than baseline translation probabilities , which helps the final translation in three different ways .
+the rich context features help rank the correct translation first with wsd while it is ranked lower according to baseline translation probability scores .
+even when wsd and baseline translation probabilities agree on the top translation candidate , the stronger wsd scores help override wrong language model predictions .
+the strong wsd scores for phrases help the decoder pick longer phrase translations , while using baseline translation probabilities often translate those phrases in smaller chunks that include a frequent ( and incorrect ) translation candidate .
+for instance , the top 4 chinese sentences in table 4 , are better translated by the wsd-augmented system because the wsd scores help the decoder to choose longer phrases .
+in the first example , the phrase w-4 f-i ' r1 is correctly translated as a whole as no by the wsd-augmented system , while the baseline translates each word separately yielding an incorrect translation .
+in the following three examples , the wsd system encourages the decoder to translate the long phrases as single units , while the baseline introduces errors by breaking them down into shorter phrases .
+the last sentence in the table shows an example where the wsd predictions do not help the baseline system .
+the translation quality is actually much worse , since the verb ~ xz is incorrectly translated as to , despite the fact that the top candidate predicted by the wsd system alone is the much better translation has taken , but with a relatively low probability of 0.509 .
+conclusion .
+we have shown for the first time that integrating multi-word phrasal wsd models into phrase-based smt consistently helps on all commonly available automated translation quality evaluation metrics on all three different test sets from the chinese-english iwslt06 text translation task , and yields statistically significant gains on the larger kist chinese- english task .
+it is important to note that the wsd models never hurt translation quality , and always yield individual gains of a level that makes their integration always worthwile .
+we have proposed to consistently integrate wsd models both during training , where sense definitions and sense-annotated data are automatically extracted from the word-aligned parallel corpora from smt training , and during testing , where the phrasal wsd probabilities are used by the smt system just like all the other lexical choice features .
+context features are derived from state-of-the-art wsd models , and the evaluation is conducted on the actual translation task , rather than intermediate tasks such as word alignment .
+it is to be emphasized that this approach does not merely consist of adding a source sentence feature in the log linear model for translation .
+on the contrary , it remains a real wsd task , defined just as in the senseval multilingual lexical sample tasks ( e.g. , chklovski et al. ( 2004 ) ) .
+our model makes use of typical wsd features that are almost never used in smt systems , and requires a dynamically created translation lexicon on a per-sentence basis .
+to our knowledge this constitues the first attempt at fully integrating state-of-the-art wsd with conventional phrase-based smt .
+unlike previous approaches , the wsd targets are not only single words , but multi-word phrases , just as in the smt system .
+this means that wsd senses are unusually predicted not only for a limited set of single words or very short phrases , but for all phrases of arbitrarily length that are in the smt translation lexicon .
+the single word approach , as we reported in carpuat et al. ( 2006 ) , improved bleu and kist scores for phrase-based smt , but subsequent detailed empirical studies we have performed since then suggest that single word wsd approaches are less successful when evaluated under all other mt metrics ( carpuat and wu , 2007 ) .
+thus , fully phrasal wsd predictions for longer phrases , as reported in this paper , are particularly important to improve translation quality .
+the results reported in this paper cast new light on the wsd vs. smt debate , suggesting that a close integration of wsd and smt decisions should be incorporated in a smt model that successfully uses wsd predictions .
+our objective here is to demonstrate that this technique works for the widest possible class of models , so we have chosen as the baseline the most widely used phrase-based smt model .
+our positive results suggest that our experiments could be tried on other current statistical mt models , especially the growing family of tree- structured smt models employing stochastic transduction grammars of various sorts ( wu and chiang , 2007 ) .
+for instance , incorporating wsd predictions into an mt decoder based on inversion transduction grammars ( wu , 1997 ) such as the bracketing itg based models of wu ( 1996 ) , zens et al. ( 2004 ) , or cherry and lin ( 2007 ) would present an intriguing comparison with the present work .
+it would also be interesting to assess whether a more grammatically structured statistical mt model that is less reliant on an n-gram language model , such as the syntactic itg based grammatical channel translation model of ( wu and wong , 1998 ) , could make more effective use of wsd predictions .

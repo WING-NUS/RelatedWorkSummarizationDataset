@@ -1,0 +1,196 @@
+training and scaling preference functions for disambiguation .
+abstract .
+we present an automatic method for weighting the contributions of preference functions used in disambiguation .
+initial scaling factors are derived as the solution to a least-squares minimization problem , and improvements are then made by hill-climbing .
+the method is applied to disambiguating sentences in the atis ( air travel information system corpus , and the performance of the resulting scaling factors is compared with hand-tuned factors .
+we then focus on one class of preference function , those based on semantic lexical collocations .
+experimental results are presented showing that such functions vary considerably in selecting correct analyses .
+in particular we define a function that performs significantly better than ones based on mutual information and likelihood ratios of lexical associations .
+introduction .
+the importance of good preference functions for ranking competing analyses produced by language processing systems grows as the coverage of these systems improves .
+increasing coverage usually also increases the number of analyses for sentences previously covered , bringing the danger of lower accuracy for these sentences .
+large scale rule based analysis systems have therefore tended to employ a collection of functions to produce a score for sorting analyses in a preference order .
+in this paper we address two issues relating to the application of preference functions .
+combining multiple preference functions .
+the first problem we address is that of combining different functions , each of which is supposed to offer some contribution to selecting the best among a set of analyses of a sentence .
+although multiple functions have been used in other systems ( for example mccord 1990 , hobbs and bear 1990 ) , little is typically said about how the functions are combined to produce the overall score for an analysis , the weights presumably being determined by intuition or trial and error .
+mccord ( 1993 ) gives very specific information about the weights he uses to combine preference functions , though these weights are chosen by hand .
+selecting weights by hand , however , is a task for experts , which needs to be redone every time the system is applied to a new domain or corpus .
+furthermore , there is no guarantee that the selected weights will achieve optimal or even near-optimal performance .
+the speech processing community , on the other hand , has a longer history of using numerical evaluation functions and speech researchers have used schemes for scoring recognition hypotheses that are similar to the one proposed here for disambiguation .
+for example , ostendorf et al. ( 1991 ) improve recognition performance by using a linear combination of several scoring functions .
+in their work the weights for the linear combination are chosen to optimize a generalized mean of the rank of the correct word sequence .
+in our case , the problem is formulated as follows .
+each preference function is defined as a numerical ( possibly real-valued ) function on representations corresponding to the sentence analyses .
+a weighted sum of these functions is then used as the overall measure to rank the possible analyses of a particular sentence .
+we refer to the coefficients , or weights , used in this linear combination as the " scaling factors " for the functions .
+we determine these scaling factors automatically in order both to avoid the need for expert hand-tuning and to achieve performance that is at least locally optimal .
+we start with the solution to minimizing a squared-error cost function , a well known technique applied to many optimisation and classification problems .
+this solution is then enhanced by application of a hill-climbing technique .
+word sense collocation functions .
+until recently , the choice of the various functions used in rule based systems was made mainly according to anecdotal information about the effectiveness of , for example , various attachment preference strategies .
+there is now more empirical work comparing such functions , particularly in the case of functions based on statistical information about lexical or semantic collocations .
+lexical collocation functions , especially those determined statistically , have recently attracted a lot of attention in computational linguistics ( calzolari and bindi 1990 , church and hanks 1990 , sekine et al. 1992 , and hindle and rooth 1993 ) mainly , though not exclusively , for use in disambiguation .
+these functions are typically derived by observing the occurrences of tuples ( usually pairs or triples ) that summarise relationships present in an analysis of a text , or their surface occurrences .
+for example , hindle and rooth ( 1993 ) and resnik and hearst ( 1993 ) give experimental results on the effectiveness of functions based on lexical associations , or lexical-class associations , at selecting appropriate prepositional phrase attachments .
+we have experimented with a variety of specific functions which make use of collocations between word senses .
+the results we present show that these functions vary considerably in disambiguation accuracy , but that the best collocation functions are more effective than a function based on simple estimates of syntax rule probabilities .
+in particular , the best collocation function performs significantly better than a related function that defines collocation strength in terms of mutual information , reducing the error rate in a disambiguation task from approximately 30 % to approximately 10 % .
+we start by describing our experimental context and training data in section 2 .
+then we address the issue of selecting scaling factors by presenting our optimisation procedure in section 3 and a comparison with manual scaling in section 4 .
+finally we take a close look at a set of semantic collocation functions , defining them in in section 5 and comparing their effectiveness at disambiguation in section 6 .
+the experimental setup disambiguation task .
+all the experiments we describe here were done with the core language engine ( cle ) a mainly rule based natural language processing system ( alshawi 1992 ) .
+more specifically , the work on optimising preference factors and semantic collocations was done as part of a project on spoken language translation in which the cle was used for analysis and generation of both english and swedish ( agnas et al , 1993 ) .
+the work presented here is all concerned with the english analysis side , though we see no reason why its conclusions should not be applicable to swedish or other natural languages .
+in our experiments we made use of the air travel information system ( atis ) corpus of transcribed speech sentences .
+this application was chosen because the proposed method for automatic derivation of scaling factors requires a corpus of sentences that are representative of the sublanguage together with some independent measure of the correctness or plausibility of analyses of these sentences , and we had access to a hand-parsed sub-collection of the atis corpus built as part of the university of pennsylvania " treebank " project .
+another reason for choosing atis was that this provided a corpus of several thousand sentences in a constrained discourse domain , which helped avoid sparseness problems in training collocation functions .
+in the various experiments , the alternatives we are choosing between are analyses expressed in the version of quasi logical form ( qlf ) described by alshawi and crouch ( 1992 ) .
+qlfs express semantic content , but are derived compositionally from complete syntactic analyses of a sentence and therefore mirror much syntactic structure as well .
+however , the use of qlf analyses is not central to our method : the important thing is that the representation used is rich enough to support a variety of preference functions .
+we have experimented with combinations of around thirty different functions , and use twenty of them in our spoken language translation system ; the others contribute so little to overall performance that their computational cost cannot be justified .
+this default set of twenty was used throughout the scaling factor work described in sections 3 and 4 .
+it consists of one collocation-based function and nineteen non-collocation-based ones .
+the work described in section 6 involved substituting single alternative collocation-based functions for the single one in the set of twenty .
+many ( unscaled ) preference functions simply return integers corresponding to counts of particular constructs in the representation , for example the number of expressions corresponding to adjuncts , unresolved ellipsis , particular attachment configurations , or balanced conjunctions .
+there are also some real-valued functions , including the semantic collocation functions discussed later .
+training data .
+the pennsylvania treebank contained around 650 atis trees which we used during initial development of training and optimisation software .
+some of the results in these initial trials were encouraging , but most appeared to be below reasonable thresholds of statistical significance , so we concluded that it was worthwhile to produce more training data .
+for this purpose we developed a semi-automatic mechanism for producing skeletal constituent structure trees directly from qlf analyses proposed by our analyser .
+in order to make these trees compatible with treebank trees and also to make them relatively insensitive to minor changes in semantic analysis , these qlf-induced trees simply consist of nested constituents with two categories , a ( argument ) and p ( predication ) , corresponding to constituents induced by qlf term and form expressions respectively .
+the interactive software for producing the trees proposes constituents for confirmation by a user , and takes account of answers given to minimize the number of interactive choices that need to be made .
+of the 4615 sentences in our training set , the cle produced an acceptable constituent structure for 4092 ( about 89 % ) .
+a skeletal tree for each of these 4092 sentences was created this way and used in the various experiments whose results are described below .
+we do not directly address here the problems of applying preference functions to select the best analysis when none is completely correct ; we assume , based on our experience with the spoken language translator , that functions and scaling factors trained on cases where a completely correct analysis exists will also perform fairly well on cases where one does not .
+training score .
+employing treebank analyses in the training process required defining a measure of the " degree of correctness " of a qlf analysis under the assumption that the phrase- structure analysis in the treebank is correct .
+at first sight this might appear difficult in that qlf is a logical formalism , but in fact it preserves much of the geometry of constituent structure .
+specifically , significant ( typically bar-2 level ) constituents tend to give rise to term ( roughly argument ) or form ( roughly predication ) qlf subexpressions , though the details do not matter here .
+it is thus possible to associate segments of the input with such qlf subexpressions and to check whether such a segment is also present as a constituent in the treebank analysis .
+the issues raised by measuring qlf correctness in terms of agreement with structures containing less information than those qlfs are discussed further at the end of section 4 below .
+the explanation for setting a3 to 0 was that trees in the pennsylvania treebank contained many constituents that do not correspond to qlf form or term expressions ; we had to avoid penalizing qlf analyses simply because the treebank uses a different kind of linguistic representation .
+for qlf-induced trees , where the correspondence is one-to-one , it is also reasonable to set a3 to 0 because when i t \ q i is non-zero , i q n t i tends to be non-maximal .
+among the 4092 sentences for which skeletal trees were derived , there were only five with alternative qlfs for which the training score value was the same with a3 = 0 but would be different if a3 were non-zero .
+computing scaling factors .
+when we first implemented a disambiguation mechanism of the kind described above , an initial set of scaling factors was chosen by hand according to knowledge of how the particular raw preference functions were computed and introspection about the ' strength ' of the functions as indicators of preference .
+these initial scaling factors were subsequently revised according to their observed behaviour in ranking analyses , eventually leading to reasonably well behaved rankings .
+however , as suggested earlier , there are a number of disadvantages to manual tuning of scaling factors .
+these include the effort spent in maintaining the parameters , this effort being greater for those with less knowledge of how the raw preference functions are computed since this increases the effort for trial-and-error tuning .
+a point of diminishing returns is also reached after which further attempts at improvement through hand-tuning often turn out to be counter-productive .
+another problem was that it became difficult to detect preference functions that were ineffective , or simply wrong , if they were given sufficiently low scaling factors .
+probably a more serious problem is that the contributions of different preference functions to selecting the most plausible analyses seem to vary from one sublanguage to another .
+these disadvantages point to the need for automatic procedures to determine scaling factors that optimise preference function rankings for a particular sublanguage .
+in our framework , a numerical ' preference score ' is computed for each of the alternative analyses , and the analyses are ranked according to this score .
+as mentioned earlier , the preference score is a weighted sum of a set of preference functions : each preference function fb takes a complete qlf representation qi as input , returning a numerical score sib , the overall preference score being computed by summing over the product of function scores with their associated scaling factors cb .
+the training process begins by analysing the corpus sentences and computing , for each analysis of each sentence , the training score of the analysis with respect to the manually-approved skeletal tree and the ( unscaled ) values of the preference functions applied to that analysis .
+one source of variation in the data that we want to ignore in order to derive scaling factors appropriate for selecting qlfs is the fact that preference function values for an analysis often reflect characteristics shared by all analyses of a sentence as much as the differences between alternative analyses .
+for example , a function that counts the occurrences of certain constructs in a qlf will tend to give higher values for qlfs for longer sentences .
+in the limit , one can imagine a function 0 that , for an n-word sentence , returned a value of n + g for a qlf with training score g with respect to the skeletal tree .
+such a function , if it existed , would be extremely useful , but ( if sentence length were not also considered ) would not be a particularly accurate predictor of qlf training score .
+in order to discount irrelevant intersentence variability , both the training score with respect to the skeletal tree and all the preference function scores are therefore relativized by subtracting from them the corresponding values for the analysis of that sentence which best matches the skeletal tree .
+if the best match is shared by several analyses , the average for those analyses is subtracted .
+the relativized training score is the distance function with respect to which the first stage of scaling factor calculation takes place .
+it can be seen that the relativized results of our hypothetical preference function 0 are a perfect predictor of relativized training score .
+consider , for example , a six-word sentence with three qlfs , two of which , q1 and q2 , have completely correct skeletal tree structures , and the third of which , q3 , does not .
+least squares calculation .
+an initial set of scaling factors is calculated in a straightforward analytic way by approximating gi , the relativized training score of qi , by ej cjzij , where cj is the scaling factor for preference function fj and zij is the relativized score assigned to qi by fj .
+defining the error function as a sum of squares of differences in this way means that the minimum error is attained when the derivative with respect to each ck , � 2 ei zik ( gi � ej cjzij ) , is zero .
+these linear simultaneous equations , one for each of c1 ... cm , can be solved by gaussian elimination . ( for a full explanation of this standard technique , see moore and mccabe , 1989 , pp174ff and 680ff . )
+this least-squares set of scaling factors achieves quite good disambiguation performance ( see section 4 below ) but is not truly optimal because of the inherent nonlinearity of the goal , which is to maximize the proportion of sentences for which a correct qlf is selected , rather than to approximate training scores ( even relativized ones .
+suppose that a function m has a tendency to give high scores to correct qlfs when the contributions of other functions do not clearly favour any qlf , but that m tends to perform much less well when other functions come up with a clear choice .
+then increasing the scaling factor on m from the least-squares value will tend to improve system performance even though the sum of squares of errors is increased ; m 's tendency to perform well just when it is important to do so should be rewarded .
+iterative scaling factor adjustment .
+the least-squares scaling factors are therefore adjusted iteratively by a hill-climbing procedure that directly examines the qlf choices they give rise to on the training corpus .
+scaling factors are altered one at a time in an attempt to locally optimise the number of correct disambiguation decisions , i.e. the number of training sentences for which a qlf with a correct skeletal tree receives the highest score .
+a step in the iteration involves calculating the effect of an alteration to each factor in turn.4 if factors ck , k : ~ j are held constant , it is easy to find a set ( possibly empty ) of real-valued intervals [ uij , vij ] such that a correct choice will be made on sentence i if uij g cj g vij .
+by collecting these intervals for all the functions and for all the sentences in the training corpus , one can determine the effect on the number of correct disambiguation decisions of any alteration to any single scaling factor .
+the alteration selected is the one that gives the biggest increase in the number of sentences for which a correct choice is made .
+when no increase is possible , the procedure terminates .
+we found that convergence tends to be fairly rapid , with the number of steps seldom exceeding the number of scaling factors involved ( although the process does occasionally change a scaling factor it has already altered once , because intervening changes make this appropriate ) .
+one of the functions we used shows the limitations of least-squares scaling factor optimisation , alluded to above , in quite a dramatic way .
+the function in question returns the number of temporal modifiers in a qlf .
+its intended purpose is to favour readings of utterances like " atlanta to boston tuesday " where " tuesday " is a temporal modifier of the ( elliptical ) sentence rather than forming a compound noun with " boston " . linear scaling always gives this function a negative weight , causing temporal modifications to be downgraded , and in fact the relativized training score of a qlf turns out to be negatively correlated with the number of temporal modifiers it contains .
+however , the intuitions that led to the introduction of the function do seem to hold for qlfs that are close to being correct , and therefore iterative adjustment makes the weight positive .
+comparing scaling factor sets .
+the performance of the factors derived from least squares calculation and adjustment by hill-climbing was compared with that of various other sets of factors .
+the factor sets considered , roughly in increasing order of their expected quality , were : " normalized " factors : the magnitude of each factor is the inverse of the standard deviation of the preference function in question , making each function contribute equally .
+a factor is positive if it correlates positively with training scores , negative otherwise .
+factors chosen and tuned by hand for atis sentences before the work described in this paper was done , or , for functions developed during the work described here , without reference to any automatically-derived values .
+factors resulting from least squares calculation , as described in section 3 above .
+factors resulting from least squares calculation followed by hill-climbing adjustment ( section 3 above .
+to provide a baseline , performance was also evaluated for the technique of a random selection of a single qlf for each sentence .
+the performance of each set of factors was evaluated as follows .
+the set of 4092 sentences with skeletal trees was divided into five subsets of roughly equal size .
+each subset was " held out " in turn : the functions and scaling factors were trained on the other four subsets , and the system was then evaluated on the held-out subset .
+the system was deemed to have correctly processed a sentence if the qlf to which it assigned the highest score agreed exactly with the corresponding skeletal tree .
+the numbers of correctly-processed sentences ( i.e. sentences whose selected qlfs had correct constituent structures ) are shown in table 2 ; because all the sentences involved were within coverage , the theoretical maximum achievable is 4092 ( 100 % ) .
+we use a standard statistical method , the ' sign test ' ( explained in , for example , dixon and massey 1968 ) to assess the significance of the difference between two factor sets s , and s2 .
+define fi ( x ) to be the function that assigns 1 to a sentence x if si makes the correct choice in disambiguating x , and 0 if it makes the wrong choice .
+the null hypothesis is that f , ( x ) and f2 ( x ) , treated as random variables over x , have the same distribution , from which we would expect the difference between f , ( x ) and f2 ( x ) to be positive as often as it is negative .
+table 3 gives the number of cases in which this difference is positive or negative .
+as is usual for the sign test , the cases where the difference is 0 do not need to be taken into account .
+the test is applied to compare six pairs of factor sets .
+the " # sds " column shows the number of standard deviations represented by the difference between the " + " and " � " figures under the null hypothesis ; a # sds value of 1.95 is statistically significant at the 5 % level ( two-tail ) , and a value of 3.3 is significant at the 0.1 % level .
+table 3 shows that , in terms of wrong qlf choices , both sets of machine- optimised factors perform significantly better than the hand-optimised factors , to which considerable skilled effort had been devoted .
+it is worth emphasising that the process of determining the machine-optimised factors does not make use of the knowledge encoded by hand optimisation .
+the hill climbing factor set , in turn , performs significantly better than the least squares set from which it is derived .
+a possible objection to this analysis is that , because qlfs are much richer structures than constituent trees , it is possible for a qlf to match a tree perfectly but have some other characteristic that makes it incorrect .
+in general , the principle source of such discrepancies is a wrong choice of word sense , but pure sense ambiguity ( i.e. different predicates for the same syntactic behaviour of the same word ) turns out to be extremely rare in the atis corpus .
+an examination of the selected qlfs for the 20 + 36 = 56 sentences making up the + and � values for the comparison between the least squares and hill climbing factor sets showed that in no case did a qlf have a correct constituent structure but fail to be acceptable on other criteria .
+thus while the absolute percentage correctness figures for a set of scaling factors may be very slightly ( perhaps up to 1 % ) overoptimistic , this has no noticeable effect on the differences between factor sets .
+lexical semantic collocations .
+in this section we move from the problem of calculating scaling factors to the other main topic of this paper , showing how our experimental framework can be used diagnostically to compare the utility of competing suggestions for preference functions .
+we refer to the variant of collocations we used as lexical semantic collocations because ( i ) they are collocations between word senses rather than lexical items , and ( ii ) the relationships used are often deeper than syntactic relations ( for example the relations between a verb and its subject are different for passive and active sentences ) .
+the semantic collocations extracted from qlf expressions take the form of ( h1 , r , h2 ) triples where h1 and h2 are the head predicates of phrases in a sentence and r indicates the relationship ( e.g. a preposition or an argument position between the two phrases in the proposed analysis .
+for this purpose , the triple derivation software abstracted away from proper names and some noun and verb predicates when they appeared as heads of phrases , replacing them by hand-coded class predicates .
+for example , predicates for names of meals are mapped onto the class name cc _ specificmeal on the grounds that their distributions in unseen sentences are likely to be very similar .
+the first two functions have been used in other work on collocation ; some authors use simple pairs rather than triples ( i.e. no relation , just two words ) when computing collocation strengths so direct comparisons are a little difficult .
+the third function is an original variant of the second ; the fourth is original ; and the fifth is prompted by the arguments of dunning ( 1993 ) .
+mutual information : this relates the probability p1 ( a ) p2 ( b ) p3 ( c ) of the triple ( a , b , c ) assuming independence between its three fields , where pp ( x ) is the probability of observing x in position p , with the probability a estimated from actual observations of triples derived from analyses ranked highest ( or joint highest ) in training score .
+more specifically , we use ln ( a / ( p1 ( a ) p2 ( b ) p3 ( c ) ) ) .
+chi-squared : compares the expected frequency e of a triple with the square of the difference between e and the observed frequency f of the triple .
+here the observed frequency is in analyses ranked highest ( or joint highest ) in training score and the " expected " frequency assumes independence between triple fields .
+more specifically we use if-eief-e ) this variant of chi-squared , in which the numerator is signed , is used so that the function is monotonic , making it more suitable in preference functions .
+chi : as chi-squared , but the quantity used is ( f-e ) , as large values of f � e have a tendency to swamp the chi-squared function .
+mean distance : the average of the relativized training score for all qlf analyses ( not necessarily highest ranked ones ) which include the semantic collocation corresponding to the triple .
+in other words , the mean distance value for a triple is the mean amount by which a qlf giving rise to that triple falls short of perfection .
+likelihood ratio : for each triple ( h1 , r , h2 ) , the ratio of the maximum likelihood , given the distribution of triples in correct analyses of the training data , of the triple on the assumption that h1 and h2 are independent given r , to the maximum likelihood without that assumption . ( see dunning , 1993 , for a fuller explanation of the use of likelihood ratios .
+computation of the mutual information and chi-squared functions for triples involves the simple smoothing technique , suggested by ken church , of adding 0.5 to actual counts .
+from these five functions on triples we define five semantic collocation preference functions applied to qlfs , in each case by averaging over the result of applying the function to each triple derived from a qlf .
+we refer to these functions by the same names as their underlying functions on triples .
+the collocation functions are normalized by multiplying up by the number of words in the sentence to which the function is being applied .
+this normalization keeps scores for qlfs in the same sentence comparable while at the same time ensuring the triple function scores tend to grow with sentence length in the same way that the non-collocation functions tend to do , thus making the optimality of a set of scaling factors relatively insensitive to sentence length .
+our use of the mean distance function was motivated by the desire to take into account additional information from the training material which is not exploited by the other collocation functions .
+specifically , it takes into account all analyses proposed by the system , and also the magnitude of the training score .
+in contrast , the other collocation functions only make use of the training score to select the best analysis of a sentence , discarding the rest .
+another way of putting this is that the mean distance function is making use of negative examples and a measure of the degree of unacceptability of an analysis .
+comparing semantic collocation functions .
+an evaluation of each function acting alone on the five held-out sets of test data yielded the numbers of correctly-processed sentences shown in table 4 .
+the figures for the random baseline are repeated from table 2 .
+we also show , for comparison , the results for a function that scores a qlf according to the sum of the logs of the estimated probabilities of the syntax rules used in its construction .
+to arrive at the figures shown , where a function judged n qlfs equally plausible of which 0 < g < n were correct , we assigned a fractional count ng to that sentence , on the basis that a random choice among the n qlfs would pick a correct one with that probability .
+for significance tests , which require binary data , we took a function as performing correctly only if all the qlfs it selected were correct .
+such ties did not occur at all for the other experiments reported in this paper .
+a pairwise comparison of the results shows that all the differences between collocational functions are statistically highly significant .
+the syntax rule cost function is significantly worse than all the collocational functions except the mutual information one , for which the difference is not significant either way . ( there may , of course , exist better syntactic functions than the one we have tried . )
+the mean distance function is much superior to all the others when acting alone .
+presumably , this function has an edge over the other functions because it exploits the additional information from negative examples and degree of correctness .
+the difference in performance between our syntactic and semantic preference functions is broadly in line with the results presented by chang , luo , and su ( 1992 ) who use probabilities of semantic category tuples .
+however , this similarity in the results should be taken with some caution because our syntactic preference function is rather crude and because our best semantic function ( mean distance ) uses the additional information mentioned above which is not normally taken into account by direct estimates of tuple probabilities .
+when one collocation function is selected to act together with the nineteen noncollocation-based functions from the default set ( the set defined in section 2 and used in the experiments on scaling factor calculation ) the picture changes slightly .
+in this context , when scaling factors are calculated in the usual way , by least-squares followed by hill-climbing , the results for the best three of the above functions are as shown in table 5 .
+the difference between the mean distance function and the other two is still highly significant , and therefore this function is chosen to be the only collocational one to be included in the default set of twenty ( hence the " mean distance " condition here is the same as the " hill-climbing " one in section 4 ) .
+however , the difference between the chi and chi-squared functions is no longer quite so clear cut , and the relative advantage of the mean distance function compared with the chi function is less , perhaps because other preference functions make up for some shortfall of the chi function that is , at least in part , taken account of by the mean distance function .
+conclusion .
+we have presented a relatively simple analytic technique for automatically determining a set of scaling factors for preference functions used in semantic disambiguation .
+the initial scaling factors produced are optimal with respect to a score provided by a training procedure , and are further improved by comparison with instances of the task they are intended to perform .
+the experimental results presented indicate that by using a fairly crude training score measure ( comparing only phrase structure trees ) with a few thousand training sentences , the method can yield a set of scaling factors that are significantly better than those derived by a labour intensive hand tuning effort .
+we have also confirmed empirically that considerable differences exist between the effectiveness of differently formulated collocation functions for disambiguation .
+the experiments provide a basis for selecting among different collocational functions , and suggest that a collocation function must be evaluated in the context of other functions , rather than on its own , if the correct selection is to be made .
+it should be possible to extend this work fruitfully in several directions , including the following .
+training with a measure defined directly on semantic representations is likely to lead to a further reduction in the disambiguation error rate .
+the method for computing scaling factors described here has more recently been applied to optimising preference selection for the task of choosing between analyses arising from different word hypotheses in a speech recognition system ( rayner et al , 1994 ) , and is applicable to other problems , such as choosing between possible target representations in a machine translation system .
+finally it would be interesting to combine the work on semantic collocation functions with that on similarity-based clustering ( pereira , tishby and lee 1993 ; dagan , marcus and markovitch 1993 ) with the aim of overcoming the problem of sparse training data .
+if this is successful , it might make these functions suitable for disambiguation in domains with larger vocabularies than atis .

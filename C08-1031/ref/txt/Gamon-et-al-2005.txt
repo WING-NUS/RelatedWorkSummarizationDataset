@@ -1,0 +1,164 @@
+pulse : mining customer opinions from free text .
+abstract .
+we present a prototype system , code-named pulse , for mining topics and sentiment orientation jointly from free text customer feedback .
+we describe the application of the prototype system to a database of car reviews .
+pulse enables the exploration of large quantities of customer free text .
+the user can examine customer opinion � at a glance � or explore the data at a finer level of detail .
+we describe a simple but effective technique for clustering sentences , the application of a bootstrapping approach to sentiment classification , and a novel user-interface .
+introduction .
+the goal of customer satisfaction studies in business intelligence is to discover opinions about a company � s products , features , services , and businesses .
+customer satisfaction information is often elicited in a structured form : surveys and focus group studies present customers with carefully constructed questions designed to gather particular pieces of information a company is interested in .
+the resulting set of structured , controlled data can easily be analyzed statistically and can be conveniently aggregated according to the specific dimensions of the survey questions or focus group setup .
+the drawbacks of structured studies are the expense associated with the design and administration of the survey , the limit that is necessarily imposed on the free expression of opinions by customers , and the corresponding risk of missing trends and opinions that are not expressed in the controlled situation .
+additionally there is the risk of missing whole segments of the customer population that do not like to respond to a guided and structured set of questions .
+another potential source of information for business intelligence , which is becoming more and more pervasive and voluminous , is spontaneous customer feedback .
+this feedback can be gathered from blogs , newsgroups , feedback email from customers , and web sites that collect free-form product reviews .
+these can be rich sources of information , but these sources are much less structured than traditional surveys .
+the information is contained in free text , not in a set of answers elicited for a specific set of questions .
+with the advent of automatic techniques for text mining such as clustering and key term extraction , free-form customer opinions can be processed efficiently and distilled down to essential topics and recurring patterns of content .
+when trying to assess customer opinions , however , topic is only one of the dimensions that are of interest .
+as well as identifying what topics customers are talking about , it would be useful to characterize the opinions that they express about those topics .
+researchers have begun to focus on the analysis of opinion ( � sentiment classification � ) typically using supervised machine learning techniques . 2 the project that we describe in this paper , code-named pulse , combines the two dimensions of topic and sentiment and presents the results in an intuitive visualization .
+pulse combines a clustering technique with a machine-learned sentiment classifier , allowing for a visualization of topic and associated customer sentiment .
+pulse provides both a high-level overview of customer feedback and the ability to explore the data at a finer granularity .
+pulse requires that only a small amount of data be annotated to train a domain-specific sentiment classifier .
+both sentiment detection and topic detection in pulse are performed at the sentence level rather than at the document level .
+document-level assessment , which is the focus of most sentiment classification studies , is too coarse for our purposes .
+in a review document , for example , we often find mixed positive and negative assessments such as : � overall the car is a good car .
+very fast , the engine is great but ford transmissions suck . � of course , even sentence-level granularity is too coarse in some instances , for example : � its [ sic ] quick enough to get you and a few other people where you need to go although it isn � t too flashy as far as looks go . � 3 as we will discuss in further detail below , sentence-level granularity of analysis allows the discovery of new information even in those scenarios where an overall product rating is already provided at the document level .
+we first describe the data to which pulse has been applied ( section 2 ) .
+we then describe the prototype system , consisting of a visualization component ( section 3.1 ) , a simple but effective clustering algorithm ( section 3.2 ) , and a machine-learned classifier that can be rapidly trained for a new domain ( section 3.3 ) by bootstrapping from a relatively small set of labeled data .
+it is worth noting that business intelligence is not the only scenario where customer satisfaction is of interest : individual customers often use resources on the web to find other people � s reviews of products and companies to help them reach a decision on a purchase .
+two notable exceptions are [ 1,2 ] .
+in future work we intend to investigate sentences with mixed sentiment , analyzing them at the level of the clause or phrase .
+data .
+we applied pulse to a sample of the car reviews database [ 3 ] .
+this sample contains 406,818 customer car reviews written over a four year period , with no editing beyond simple filtering for profanity .
+the comments range in length from a single sentence ( 56 % of all comments ) to 50 sentences ( a single comment ) .
+less than 1 % of reviews contain ten or more sentences .
+there are almost 900,000 sentences in total .
+when customers submitted reviews to the website , they were asked for a recommendation on a scale of 1 ( negative ) to 10 ( positive ) .
+the average score was 8.3 suggesting that people are enamored of their cars , or that there is a self-selection in the reviewers .
+even reviews with positive scores contain useful negative opinions : after all a less-than-perfect score often indicates that the car may have a few shortcomings , despite a relatively high score .
+for this reason we ignore the document-level scores and annotated a randomly selected sample of 3,000 sentences for sentiment .
+each sentence was viewed in isolation and classified as � positive � , � negative � or � other � .
+the � other � category was applied to sentences with no discernible sentiment , as well as to sentences that expressed both positive and negative sentiment and sentences with sentiment that cannot be deduced without taking context and / or world knowledge into account .
+the annotated data was split : 2,500 sentences were used for the initial phase of training the sentiment classifier ( section 3.3 ) ; 500 sentences were used as a gold standard for evaluation .
+we measured pair-wise inter-annotator agreement on a separate randomly selected sample of 100 sentences using cohen � s kappa score . [ 4 ] the three annotators had pair-wise agreement scores of 70.10 % , 71.78 % and 79.93 % .this suggests that the task of sentiment classification is feasible but difficult even for people .
+system description .
+pulse first extracts a taxonomy of major categories ( makes ) and minor categories ( models ) of cars by simply querying the car reviews database .
+the sentences are then extracted from the reviews of each make and model and processed according to the two dimensions of information we want to expose in the final visualization stage : sentiment and topic .
+to train the sentiment classifier , a small random selection of sentences is labeled by hand as expressing positive , � other � , or negative sentiment .
+this small labeled set of data is used with the entirety of the unlabeled data to bootstrap a classifier ( section 3.3 ) .
+the clustering component forms clusters from the set of sentences that corresponds to a leaf node in the taxonomy ( i.e. a specific model of car ) .
+the clusters are labeled with the most prominent key term .
+for our prototype we implemented a simple key-word-based soft clustering algorithm with tf � idf weighting and phrase identification ( section 3.2 ) .
+once the sentences for a make and model of car have been assigned to clusters and have received a sentiment score from the sentiment classifier , the visualization component ( section 3.1 ) displays the clusters and the keyword labels that were produced for the sentences associated with that car .
+the sentences in a cluster can be displayed in a separate view .
+for each sentence in that view , the context ( the original review text from which the sentence originated ) can also be displayed .
+figure 1 gives an overview of the system .
+the visualization component .
+the visualization component needs to display the two dimensions of information , i.e. topic and sentiment , simultaneously .
+another requirement is that it allow the user to easily access the specifics of a given topic .
+pulse uses a tree map visualization [ 5 ] to display clusters and their associated sentiment .
+each cluster is rendered as one box in the tree map .
+the size of the box indicates the number of sentences in the cluster , and the color indicates the average sentiment of the sentences in the box .
+the color ranges from red to green , with red indicating negative clusters and green indicating positive ones .
+clusters containing an equal mixture of positive and negative sentiment or containing mostly sentences classified as belonging to the � other � category are colored white .
+each box is also labeled with the key word for that particular cluster .
+the tree map visualization allows the identification of the following information about the sentences associated with a given make / model at a glance : the user has selected the volkswagen golf .
+the two biggest clusters appear in the boxes at the left of the tree map : � drive � , and � vw , service � .
+the user has chosen to inspect the � vw , service � cluster by clicking on it and viewing the negative sentences in the tabbed display at the bottom of the screen .
+the threshold slider has been set approximately three quarters of the way along , restricting the display to only sentences with high class probability .
+this has the effect of increasing precision at the expense of recall .
+clicking on a sentence in the tabbed display brings up a window ( not shown ) that displays the entire review in which the selected sentence occurred , with each sentence colored according to sentiment .
+by choosing a menu option , the user can view a summary of the clusters in the form of simple � top five � lists , where for a given make / model the top five terms overall , the top five positive terms and the top five negative terms are displayed .
+the top five display is very simple , and is not shown in the interests of brevity .
+clustering algorithm .
+we experimented with several different clustering algorithms for finding salient patterns in the sentences : a k-means clustering algorithm using tf � idf vectors , as described in [ 6 ] , � an em implementation of soft , non-hierarchical clustering [ 7 ] , a hierarchical , entropy-based clustering algorithm [ 8 ] , and an algorithm that used character n-gram feature vectors .
+none of the approaches we tried produced clusters that we found satisfactory .
+each algorithm was designed for a different task .
+the first two were designed for clustering documents which are much larger units of text than sentences .
+the third and fourth approaches were designed for clustering units of text that are much smaller than sentences , namely words and internet search queries .
+we therefore formulated the following simple algorithm , which performs well .
+the input to the clustering algorithm is the set of sentences s for which clusters are to be extracted , a stop-list wstop of words around which clusters ought not to be created , and ( optionally ) a � go list � wgo of words known to be salient in the domain .
+the sentences , as well as the stop and go lists , are stemmed using the porter stemmer [ 9 ] .
+occurence counts cw are collected for each stem not appearing in wstop .
+the total count for stems occuring in wgo is multiplied by a configurable parameter ^ 1 .
+the total count for stems with a high tf � idf ( calculated over the whole data set ) is multiplied by a configurable parameter ^ 2 .
+the total count for stems with a high tf � idf ( calculated over the data in the given leaf node of the taxonomy ) is multiplied by a configurable parameter ^ 3 .
+the list of counts is sorted by size .
+to create a set of n clusters , one cluster is created for each of the most frequent n stems , with all of the sentences containing the stem forming the cluster .
+the clusters are labeled with the corresponding stem st 4 an optional additional constraint is to require a minimum number m of sentences in each cluster .
+an overview of the clustering approach is presented in figure 3 .
+the initial set of clusters is determined by term frequency alone .
+go words and the two tf � idf weighting schemes each re-rank the clusters , and finally some of the clusters are merged and a fixed number of clusters is selected off the top of the ranked list for display .
+the stop word list consists of two components .
+the first is a manually specified set of function words and high frequency , semantically empty content words such as � put � .
+the more interesting and essential part of the stop list , however , is the set of the top n features from the sentiment classifier , according to log likelihood ratio ( llr ) with the target feature [ 10 ] .
+by disallowing words known to be highly correlated with positive or negative sentiment we ensure that the topics represented in the clusters are orthogonal to the sentiment of the feedback .
+term frequency ( tf ) / inverse document frequency ( idf ) weighting is a common technique in clustering .
+terms with high tf � idf scores are terms that have a high degree of semantic focus , i.e. that tend to occur frequently in specific subsets of documents .
+the tf � idf weighting scheme that we employed is formulated as : we rather want to find out which of all the terms in all the reviews for one make / model leaf node should be given increased importance when clustering sentences in that leaf node .
+in order to assign a per-word weight that we can use in clustering , we calculate two different per-word scores : we can take dfi to be the number of reviews under a given leaf node which contain wi. tfi , j is taken to be the term frequency in the reviews in that leaf node .
+a high score in this scenario indicates high semantic focus within the specific leaf node .
+if dfi is defined to be the number of reviews in the whole collection which contain wi , and t fi , j is the term frequency in the whole collection , a high tf � idf score indicates a term with high semantic focus in the whole domain .
+these two scores allow the customization of the weighting of terms according to their leaf-node specific salience or their domain-specific salience .
+the more uniform a collection of data is , the more the two measures will coincide .
+in addition to weighting the terms for clustering according to these two scores , pulse also allows for the use of a go word list ( i.e. a domain dictionary ) where such a resource is available .
+finally , it must be noted that not all sentences are assigned to a cluster .
+unassigned sentences are assigned to a nonce cluster , which is not displayed unless the user explicitly chooses to see it .
+also , because more than one cluster keyword can appear in a given sentence , that sentence may correspondingly belong to more than one cluster ( soft clustering ) .
+sentiment analysis .
+as mentioned in the introduction , machine-learned approaches to sentiment analysis are a topic that has received considerable attention from researchers over the past few years .
+a number of different approaches have been applied to the problem .
+the annotated movie review data set made publicly available by pang and lee [ 11,12 ] has become a benchmark for many studies .
+the data consists of 2000 movie reviews , evenly split between positive and negative instances .
+the task is to determine which are positive and which are negative .
+classification accuracies approaching 90 % for this binary classification task are cited [ 11,12,13 ] .
+features for sentiment classification typically consist of simple unigram ( term ) presence .
+however , the following characteristics of the car reviews data set rendered techniques previously cited in the literature unsuited to our task : since we are aiming at sentence-level classification , we are dealing with much shorter textual units than the full movie reviews , which range from a few sentences to several paragraphs .
+the car reviews are not annotated at the sentence level .
+since one of the main purposes of pulse is to avoid the cost associated with manual examination of data , we would like to be able make do with as little annotated data as possible .
+the movie review data set is carefully selected to be balanced , and to contain only extremes , i.e. only very strong recommendations / disrecommendations .
+the car review data , on the other hand , are strongly imbalanced , with positive reviews predominating .
+while the movie reviews are generally well-written , the car review sentences are frequently ungrammatical , fragmentary and idiosyncratic .
+they contain numerous misspellings , acronyms , and a more telegraphic style .
+we ignored the recommendation scores at the review ( document ) level for two reasons .
+first , since we focus our classification on individual sentences , we cannot make the assumption that in a review all sentences express the same sentiment .
+if a reviewer decides to give 8 out of 10 stars , for example , the review is likely to contain a number of positive remarks about the car , with a few negative remarks � after all the reviewer had a reason to not assign a 10-out-of-10 score .
+secondly , we wanted to investigate the feasibility of our approach in the absence of labeled data , which makes pulse a much more generally applicable tool in other domains where customer feedback without any recommendations is common .
+because the sentences in the car reviews database are not annotated , we decided to implement a classification strategy that requires as little labeled data as possible .
+we implemented a modified version of nigam et al. � s algorithm for training a naive bayes classifier using expectation maximization ( em ) and bootstrapping from a small set of labeled data to a large set of unlabeled data [ 14 ] .
+the classification task in our domain is a three-way distinction between positive , negative , and � other � .
+the latter category includes sentences with no discernible sentiment ( a sentiment-neutral description of a model , for example ) , sentences with balanced sentiment ( where both a positive and a negative opinion are expressed within the same sentence ) , and sentences with a sentiment that can only be detected by taking the review context and / or world knowledge into account .
+this bootstrapping allowed us to make use of the large amount of unlabeled data in the car reviews database , almost 900,000 sentences .
+the algorithm requires two data sets as input , one labeled ( dl ) , the other unlabeled ( du ) .
+an initial naive bayes classifier with parameters ^ is trained on the documents in dl .
+steps 2 and 3 are repeated until convergence is achieved when the difference in the joint probability of the data and the parameters falls below the configurable threshhold c between iterations .
+we also implemented two additional modifications described by [ 14 ] : a free parameter , ^ , was used to vary the weight given to the unlabeled documents .
+mixtures were used to model each class .
+in order to prepare the data for classification , we normalized each sentence using some simple filters .
+all words were converted to lower-case , and numbers were collapsed to a single tokens .
+for each sentence , we produced a sparse binary feature vector , with one feature for each word or punctuation mark .
+our labeled data were the hand-annotated sentences described in section 2 . 2500 of these were used to train the classifier dl , and the remaining 500 were reserved as a test set .
+the classifier was trained and then evaluated on the test set .
+the data set shows a clear skew towards positive reviews : in the annotated data set , positive sentences comprise 62.33 % of the data , sentences of type � other � comprise 23.27 % , and negative sentences 14.4 % .
+because of this skew toward a positive label in the data set , overall accuracy numbers are not very illuminating � naively classifying every sentence as positive will result in a 62.33 % accuracy .
+instead we evaluate the classifier by considering the precision vs. recall graph for the negative and � other � classes , which are the classes with the fewest occurrences in the training data .
+we achieved some of the best results on the negative and � other � classes by using a s of 1.0 .
+figure 4 shows that the classifier is able to achieve reasonable precision on the negative and � other � classes at the expense of recall .
+in domains with very large amounts of free-form customer feedback ( typically so large that complete human analysis would not even be attempted ) low recall is acceptable .
+the � other � category is clearly the hardest to identify , which is not surprising given its very heterogeneous nature .
+recall on the positive class is nearly constant across precision values , ranging from 0.95 to 0.97 .
+conclusion .
+much has been written about the individual fields of clustering and sentiment analysis on their own .
+combined , however , and paired with an appropriate visualization they provide a powerful tool for exploring customer feedback .
+in future work we intend to apply this combination of techniques to the analysis of a range of data , including blogs , newsgroups , email and different customer feedback sites .
+we are currently working with various end-users who are interested in using a practical tool for performing data analysis .
+the end-user feedback that we have received to date suggests the need for improved text normalization to handle tokenization issues , and the use of a speller tool to identify and normalize spelling variants and misspellings .
+finally , our research will continue to focus on the identification of sentiment vocabulary and sentiment orientation with minimal customization cost for a new domain .
+we have begun experimenting with a variation of a technique for bootstrapping from seed words with known orientation [ 1,2 ] with promising initial results [ 15 ] .
+as opposed to the approach described here , the new approach only requires the user to identify a small ( about ten item ) seed word list with known strong and frequent sentiment terms and their orientation .
+the only additional task for the user would be to verify and edit an extended seed word list that the tool will automatically produce .
+once this extended list has been verified , a sentiment classifier can be produced without further labeling of data .

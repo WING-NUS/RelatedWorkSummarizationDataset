@@ -1,0 +1,156 @@
+minimum bayes-risk decoding for statistical machine translation abstract .
+we present minimum bayes-risk ( mbr ) decoding for statistical machine translation .
+this statistical approach aims to minimize expected loss of translation errors under loss functions that measure translation performance .
+we describe a hierarchy of loss functions that incorporate different levels of linguistic information from word strings , word-to-word alignments from an mt system , and syntactic structure from parse-trees of source and target language sentences .
+we report the performance of the mbr decoders on a chinese-to-english translation task .
+our results show that mbr decoding can be used to tune statistical mt performance for specific loss functions .
+introduction .
+statistical machine translation systems have achieved considerable progress in recent years as seen from their performance on international competitions in standard evaluation tasks ( nist , 2003 ) .
+this rapid progress has been greatly facilitated by the development of automatic translation evaluation metrics such as bleu score ( papineni et al. , 2001 ) , nist score ( doddington , 2002 ) and position independent word error rate ( per ) ( och , 2002 ) .
+however , given the many factors that influence translation quality , it is unlikely that we will find a single translation metric that will be able to judge all these factors .
+for example , the bleu , nist and the per metrics , though effective , do not take into account explicit syntactic information when measuring translation quality .
+given that different machine translation ( mt ) evaluation metrics are useful for capturing different aspects of translation quality , it becomes desirable to create mt systems tuned with respect to each individual criterion .
+in contrast , the maximum likelihood techniques that underlie the decision processes of most current mt systems do not take into account these application specific goals .
+we apply the minimum bayes-risk ( mbr ) techniques developed for automatic speech recognition ( goel and byrne , 2000 ) and bitext word alignment for statistical mt ( kumar and byrne , 2002 ) , to the problem of building automatic mt systems tuned for specific metrics .
+this is a framework that can be used with statistical models of speech and language to develop decision processes optimized for specific loss functions .
+we will show that mbr decoding can be applied to machine translation in two scenarios .
+given an automatic mt metric , we design a loss function based on the metric and use mbr decoding to tune mt performance under the metric .
+we also show how mbr decoding can be used to incorporate syntactic structure into a statistical mt system by building specialized loss functions .
+these loss functions can use information from word strings , word-to-word alignments and parse-trees of the source sentence and its translation .
+in particular we describe the design of a bilingual tree loss function that can explicitly use syntactic structure for measuring translation quality .
+mbr decoding under this loss function allows us to integrate syntactic knowledge into a statistical mt system without building detailed models of linguistic features , and retraining the system from scratch .
+we first present a hierarchy of loss functions for translation based on different levels of lexical and syntactic information from source and target language sentences .
+this hierarchy includes the loss functions useful in both situations where we intend to apply mbr decoding .
+we then present the mbr framework for statistical machine translation under the various translation loss functions .
+we finally report the performance of mbr decoders optimized for each loss function .
+translation loss functions .
+we now introduce translation loss functions to measure the quality of automatically generated translations .
+suppose we have a sentence in a source language for which we have generated an automatic translation with word-to-word alignment relative to .
+the wordto-word alignment specifies the words in the source sentence that are aligned to each word in the translation .
+we wish to compare this automatic translation with a reference translation with word-to-word alignment relative to .
+we will now present a three-tier hierarchy of translation loss functions of the form that measure against .
+these loss functions will make use of different levels of information from word strings , mt alignments and syntactic structure from parse-trees of both the source and target strings as illustrated in the following table .
+we start with an example of two competing english translations for a chinese sentence ( in pinyin without tones ) , with their word-to-word alignments in figure 1 .
+the reference translation for the chinese sentence with its word-to-word alignment is shown in figure 2 .
+in this section , we will show the computation of different loss functions for this example .
+lexical loss functions .
+the first class of loss functions uses no information about word alignments or parse-trees , so that can be reduced to .
+we consider three loss functions in this category : the bleu score ( papineni et al. , 2001 ) , word-error rate , and the position-independent word-error rate ( och , 2002 ) .
+another example of a loss function in this class is the mteval metric introduced in melamed et al. ( 2003 ) .
+a loss function of this type depends only on information from word strings .
+bleu score ( papineni et al. , 2001 ) computes the geometric mean of the precision of -grams of various lengths ( ) between a hypothesis and a reference translation , and includes a brevity penalty ( ) if the hypothesis is shorter than the refer ence .
+word error rate ( wer ) is the ratio of the string-edit distance between the reference and the hypothesis word strings to the number of words in the reference .
+string- edit distance is measured as the minimum number of edit operations needed to transform a word string to the other word string .
+position-independent word error rate ( per ) measures the minimum number of edit operations needed to transform a word string to any permutation of the other word string .
+the per score ( och , 2002 ) is then computed as a ratio of this distance to the number of words in the reference word string .
+target language parse-tree loss functions .
+the second class of translation loss functions uses information only from the parse-trees of the two translations , so that .
+this loss function has no access to any information from the source sentence or the word alignments .
+examples of such loss functions are tree-edit distances between parse-trees , string-edit distances between event representation of parse-trees ( tang et al. , 2002 ) , and tree kernels ( collins and duffy , 2002 ) .
+the computation of tree-edit distance involves an unconstrained alignment of the two english parse-trees .
+we can simplify this problem once we have a third parse tree ( for the chinese sentence ) with node-to-node alignment relative to the two english trees .
+we will introduce such a loss function in the next section .
+we did not perform experiments involving this class of loss functions , but mention them for completeness in the hierarchy of loss functions .
+bilingual parse-tree loss functions .
+the third class of loss functions uses information from word strings , alignments and parse-trees in both languages , and can be described by the first two months of this year guangdong � s high ^ tech products 3.76 billion us dollars .
+we first assume that a node in the source tree can be mapped to a node in ( and a node in ) using word alignment ( and respectively ) .
+we denote the subtree of rooted at node by and the subtree of rooted at node by .
+we will now describe a simple procedure that makes use of the word alignment to construct node-to-node alignment between nodes in the source tree and the target tree .
+alignment of parse-trees .
+loss computation between aligned parse-trees .
+we note that other tree-to-tree distance measures can also be used to compute , e.g. the distance function could compare if the subtrees and have the same headword / non-terminal tag .
+the bitree loss function measures the distance between two trees in terms of distances between their corresponding subtrees .
+in this way , we replace the stringto-string ( levenshtein ) alignments ( for wer ) or -gram matches ( for bleu / per ) with subtree-to-subtree alignments .
+the bitree error rate ( in % ) is computed as a ratio of the bi-tree loss function to the number of nodes in the set .
+the complete node-to-node alignment between the parse-tree of the source ( chinese ) sentence and the parse trees of its reference translation and the two hypothesis translations ( english ) is given in table 1 .
+each row in this table shows the alignment between a node in the chinese parse-tree and nodes in the reference and the two hypothesis parse-trees .
+the computation of the bitree loss function and the bitree error rate is presented in the last two rows of the table. sample alignment for one of the nodes in the chinese tree with its corresponding nodes in the three english trees .
+the complete node-to-node alignment between the parse-trees of the chinese sentence and the three english sentences is given in table 1 .
+comparison of loss functions .
+in table 2 we compare various translation loss functions for the example from figure 1 .
+the two hypothesis translations are very similar at the word level and therefore the bleu score , per and the wer are identical .
+however we observe that the sentences differ substantially in their syntactic structure ( as seen from parse-trees in figure 3 ) , and to a lesser extent in their word-to-word alignments ( figure 1 ) to the source sentence .
+the first hypothesis translation is parsed as a sentence while the second translation is parsed as a noun phrase .
+the bitree loss function which depends both on the parse-trees and the word-to-word alignments , is therefore very different for the two translations ( table 2 ) .
+while string based metrics such as bleu , wer and per are insensitive to the syntactic structure of the translations , bitree loss is able to measure this aspect of translation quality , and assigns different scores to the two translations .
+we provide this example to show how a loss function which makes use of syntactic structure from source and target parse trees , can capture properties of translations that string based loss functions are unable to measure .
+minimum bayes-risk decoding .
+statistical machine translation ( brown et al. , 1990 ) can be formulated as a mapping of a word sequence in a source language to word sequence in the target language that has a word-to-word alignment relative to .
+the expectation is taken under the true distribution that describes translations of human quality .
+given a loss function and a distribution , it is well known that the decision rule that minimizes the bayesrisk is given by ( bickel and doksum , 1977 ; goel and byrne , 2000 ) : we shall refer to the decoder given by this equation as the minimum bayes-risk ( mbr ) decoder .
+the mbr decoder can be thought of as selecting a consensus translation : for each sentence , equation 3 selects the translation that is closest on an average to all the likely translations and alignments .
+the closeness is measured under the loss function of interest .
+this optimal decoder has the difficulties of search ( minimization ) and computing the expectation under the true distribution .
+in practice , we will consider the space of translations to be an -best list of translation alternatives generated under a baseline translation model .
+of course , we do not have access to the true distribution over translations .
+we therefore use statistical translation models ( och , 2002 ) to approximate the distribution. searches for consensus under a given loss function .
+the posterior probability of each hypothesis in the -best list is derived from the joint probability assigned by the baseline translation model .
+this illustrates why we are interested in mbr decoders based on other loss functions : the map decoder is optimal with respect to a loss function that is very harsh .
+it does not distinguish between different types of translation errors and good translations receive the same penalty as poor translations .
+performance of mbr decoders .
+we performed our experiments on the large-data track of the nist chinese-to-english mt task ( nist , 2003 ) .
+the goal of this task is the translation of news stories from chinese to english .
+the test set has a total of 1791 sentences , consisting of 993 sentences from the nist 2001 mt-eval set and 878 sentences from the nist 2002 mt-eval set .
+each chinese sentence in this set has four reference translations .
+evaluation metrics .
+the performance of the baseline and the mbr decoders under the different loss functions was measured with respect to the four reference translations provided for the test set .
+four evaluation metrics were used .
+these were multi-reference word error rate ( mwer ) ( och , 2002 ) , multi-reference position-independent word error rate ( mper ) ( och , 2002 ) , bleu and multi-reference bitree error rate .
+among these evaluation metrics , the bleu score directly takes into account multiple reference translations ( papineni et al. , 2001 ) .
+in case of the other metrics , we consider multiple references in the following way .
+for each sentence , we compute the error rate of the hypothesis translation with respect to the most similar reference translation under the corresponding loss function .
+decoder performance .
+in our experiments , a baseline translation model ( jhu , 2003 ) , trained on a chinese-english parallel corpus ( nist , 2003 ) ( english words and chinese words ) , was used to generate 1000-best translation hypotheses for each chinese sentence in the test set .
+the 1000-best lists were then rescored using the different translation loss functions described in section 2 .
+the english sentences in the -best lists were parsed using the collins parser ( collins , 1999 ) , and the chinese sentences were parsed using a chinese parser provided to us by d. bikel ( bikel and chiang , 2000 ) .
+the english parser was trained on the penn treebank and the chinese parser on the penn chinese treebank .
+under each loss function , the mbr decoding was performed using equation 3 .
+we say we have a matched condition when the same loss function is used in both the error rate and the decoder design .
+the performance of the mbr decoders on the nist 2001 + 2002 test set is reported in table 3 .
+for all performance metrics , we show the 70 % confidence interval with respect to the map baseline computed using bootstrap resampling ( press et al. , 2002 ; och , 2003 ) .
+we note that this significance level if otherwise , does meet the customary criteria for minimum significance intervals of 68.3 % ( press et al. , 2002 ) .
+we observe in most cases that the mbr decoder under a loss function performs the best under the corresponding error metric i.e. matched conditions perform the best .
+the gains from mbr decoding under matched conditions are statistically significant in most cases .
+we note that the map decoder is not optimal in any of the cases .
+in particular , the translation performance under the bleu metric can be improved by using mbr relative to map decoding .
+this shows the value of finding decoding procedure matched to the performance criterion of interest .
+we also notice some affinity among the loss functions .
+the mbr decoding under the bitree loss function performs better under the wer relative to the map decoder , but perform poorly under the bleu metric .
+the mbr decoder under wer and per perform better than the map decoder under all error metrics .
+the mbr decoder under bleu loss function obtains a similar ( or worse ) performance relative to map decoder on all metrics other than bleu .
+discussion .
+we have described the formulation of minimum bayesrisk decoders for machine translation .
+this is a general framework that allows us to build special purpose decoders from general purpose models .
+the procedure aims at direct minimization of the expected risk of translation errors under a given loss function .
+in this paper we have focused on two situations where this framework could be applied .
+given an mt evaluation metric of interest such as bleu , per or wer , we can use this metric as a loss function within the mbr framework to design decoders optimized for the evaluation criterion .
+in particular , the mbr decoding under the bleu loss function can yield further improvements on top of map decoding .
+suppose we are interested in improving syntactic structure of automatic translations and would like to use an existing statistical mt system that is trained without any linguistic features .
+we have shown in such a situation how mbr decoding can be applied to the mt system .
+this can be done by the design of translation loss functions from varied linguistic analyzes .
+we have shown the construction of a bitree loss function to compare parse- trees of any two translations using alignments with respect to a parse-tree for the source sentence .
+the loss function therefore avoids the problem of unconstrained tree-to-tree alignment .
+using an example , we have shown that this loss function can measure qualities of translation that string ( and ngram ) based metrics cannot capture .
+the mbr decoder under this loss function gives improvements under an evaluation metric based on the loss function .
+we present results under the bitree loss function as an example of incorporating linguistic information into a loss function ; we have not yet measured its correlation with human assessments of translation quality .
+this loss function allows us to integrate syntactic structure into the statistical mt framework without building detailed models of syntactic features and retraining models from scratch .
+however , we emphasize that the mbr techniques do not preclude the construction of complex models of syntactic structure .
+translation models that have been trained with linguistic features could still benefit by the application of mbr decoding procedures .
+that machine translation evaluation continues to be an active area of research is evident from recent workshops ( amta , 2003 ) .
+we expect new automatic mt evaluation metrics to emerge frequently in the future .
+given any translation metric , the mbr decoding framework will allow us to optimize existing mt systems for the new criterion .
+this is intended to compensate for any mismatch between decoding strategy of mt systems and their evaluation criteria .
+while we have focused on developing mbr procedures for loss functions that measure various aspects of translation quality , this framework can also be used with loss functions which measure application-specific error criteria .
+we now describe related training and search procedures for nlp that explicitly take into consideration task- specific performance metrics .
+och ( 2003 ) developed a training procedure that incorporates various mt evaluation criteria in the training procedure of log-linear mt models .
+foster et al. ( 2002 ) developed a text-prediction system for translators that maximizes expected benefit to the translator under a statistical user model .
+in parsing , goodman ( 1996 ) developed parsing algorithms that are appropriate for specific parsing metrics .
+there has also been recent work that combines 1-best hypotheses from multiple translation systems ( bangalore et al. , 2002 ) ; this approach uses string-edit distance to align the hypotheses and rescores the resulting lattice with a language model .
+in future work we plan to extend the search space of mbr decoders to translation lattices produced by the baseline system .
+translation lattices ( ueffing et al. , 2002 ; kumar and byrne , 2003 ) are a compact representation of a large set of most likely translations generated by an mt system .
+while an -best list contains only a limited reordering of hypotheses , a translation lattice will contain hypotheses with a vastly greater number of re-orderings .
+we are developing efficient lattice search procedures for mbr decoders .
+by extending the search space of the decoder to a much larger space than the -best list , we expect further performance improvements .
+mbr is a promising modeling framework for statistical machine translation .
+it is a simple model rescoring framework that improves well-trained statistical models by tuning them for particular criteria .
+these criteria could come from evaluation metrics or from other desiderata ( such as syntactic well-formedness ) that we wish to see in automatic translations .

@@ -1,0 +1,104 @@
+recognizing textual entailment with lccs groundhog system .
+abstract .
+we introduce a new system for recognizing textual entailment ( known as groundhog ) which utilizes a classification-based approach to combine lexico-semantic information derived from text processing applications with a large collection of paraphrases acquired automatically from the www .
+trained on 200,000 examples of textual entailment extracted from newswire corpora , our system managed to classify more than 75 % of the pairs in the 2006 pascal rte test set correctly .
+introduction .
+processing textual entailment , or recognizing whether the information expressed in a textual hypothesis can be inferred from the information expressed in another text , can be performed in four ways .
+we can try to ( 1 ) derive linguistic information from the hypothesis-text pair , and cast the inference recognition as a classification problem ; or ( 2 ) evaluate the probability that an entailment can exist between the hypothesis-text pair ; ( 3 ) represent the knowledge from the hypothesis-text pair in some representation language that can be associated with an inferential mechanism ; or ( 4 ) use the classical ai definition of entailment and build models of the world in which the hypothesis and the text are respectively true , and then check whether the models associated with the hypothesis are included in the models associated with the text .
+it is not clear which methodology is superior , but we argue that the first two methods rely more heavily on the accuracy and robustness of processing information from text , whereas the other two methods make use of reasoning technologies or model checking methods that apply to any kind of knowledge , not only to linguistic knowledge derived from text .
+although we believe that each of these methods should be investigated fully , we decided to focus only on the first method , which allows us to make use of some of the natural language processing tools developed at lcc .
+for this purpose , we have developed a system called groundhog , which relies on our ability to derive a variety of lexico-semantic information from text , including information about named entities , coreference , and syntactic and semantic dependencies .
+in addition , since textual paraphrases are a special case of entailment , we expect techniques used successfully in paraphrase recognition should also be useful for textual entailment .
+even though the hypothesis often expresses less information than the text , it can generally be seen as a paraphrase of all or some portion of the text .
+in our system , textual alignment is used to capture the candidate portions from the text and the hypothesis that could be paraphrases .
+paraphrases for the candidate pair are acquired automatically from the world wide web .
+features from the alignment process and from the acquired paraphrases are used together with semantic features and dependency features for training a classifier that decides the textual entailment .
+we claim that the quality of the classifier that we have trained is also due to the new sources of data that we have exploited .
+the remainder of the paper is organized as follows .
+section 2 describes the architecture of groundhog , while section 3 details the linguistic processing that we have applied to each hypothesis- text pair .
+section 4 describes the new sources of training data whereas section 5 describes the lexical alignment methodology .
+section 6 details the paraphrase acquisition , and section 7 provides details of the textual entailment classifier and section 8 discusses evaluation results .
+finally , section 9 summarizes the conclusions .
+the groundhog system .
+this section provides an overview of lccs groundhog system for recognizing textual entailment that was evaluated in 2006 pascal rte challenge .
+in the rest of this section , we will present a brief overview of our systems pipeline ( using example 139 from the 2006 test set ) ; details of each individual module are presented later in the paper .
+in order to acquire the linguistic information needed to recognize textual entailment , text- hypothesis pairs are first sent to a text preprocessing module .
+here , texts are syntactically parsed , semantic dependencies are identified using a semantic parser trained on predicate-argument annotations derived from propbank ( palmer et al. , 2005 ) , entities are associated with named entity information from lccs cicerolite named entity recognition system , time and space expressions are normalized to their iso 9000 equivalents , coreferential entities are detected and resolved , and predicates are annotated with semantic features such as polarity and modality .
+examples of the annotations performed for example 139 presented in table 2 .
+once preprocessing is complete , text-hypothesis pairs are sent to a lexical alignment module which uses a maximum entropy-based classifier in order to determine the likelihood that either predicates or arguments selected from a text and a hypothesis lexically entail one another .
+since performing this alignment requires access to large amounts of training data , this classifier is trained using two large corpora of positive and negative examples of textual entailment that we extracted from newswire corpora .
+examples of predicates and arguments aligned by this module are presented below in figure 2 .
+the most likely pairs of aligned constituents identified by the lexical alignment module are then sent to a paraphrase acquisition module , which extracts paraphrases that contain pairs of aligned constituents from the www .
+the top 8 sentences containing the aligned terms from figure 2 are presented in table 3 .
+since not all acquired paraphrases will be synonymous with either the text or hypothesis , a complete-link clustering algorithm ( similar to ( barzilay and lee , 2003 ) ) was used to cluster paraphrases into sets that are presumed that convey the same content .
+semantic information is then combined into an entailment classier which determines the likelihood that a textual entailment relationship exists for a particular pair of texts .
+four classes of features are extracted : ( 1 ) alignment features , which compare properties of aligned constituents , ( 2 ) dependency features , which compare entities and predicates using dependencies identified by a semantic parser , ( 3 ) paraphrase features , which determine whether passages extracted from the text and hypothesis match acquired paraphrases , and ( 4 ) semanticfeatures , which contrast semantic values assigned to predicates in each example sentence .
+based on these features , the entailment classifier outputs both an entailment classification ( either yes or no ) and a confidence value , which is used to rank examples for the final rte submission .
+preprocessing .
+groundhog annotates each pair of examples in its training and testing corpora with four types of information : lexical information .
+after tokenization , sentences are sent to lccs cicerolite named entity recognition ( ner ) system to be associated with one of more than 150 different named entity classes .
+temporal expressions , ( including dates and times ) and spatial expressions ( including names of most political and geographic locations ) are then then sent to lccs taser temporal and spatial normalization system ( lehmann et al. , 2005 ) , which maps these expressions to their iso 9000 equivalents .
+syntactic and semantic parse information .
+sentences are then sent to groundhogs syntactic and semantic parsers .
+syntactic parsing is performed using lccs own implementation of the collins parser ( collins , 1996 ) , while semantic parsing is performed using a maximum entropy- based semantic role labeling system trained on the predicate-argument annotations found in propbank ( palmer et al. , 2005 ) .
+coreference information .
+we used a combination of heuristics and lexica from lccs cicerolite to identify coreferential named entities and to perform name aliasing for all of the entities found in each text-hypothesis pair .
+semantic information .
+we also employed a set of heuristics to annotate text passages with semantic features .
+first , predicates are annotated with polarity information : verbs and event-denoting nominals within the syntactic scope of a overt negative marker ( e.g. not , nt , never ) or a negation-denoting verb ( e.g. deny , refuse ) are assigned a false value .
+a second set of heuristics is also used to identify cases where a truth value for a proposition cannot be determined : predicates occurring in conditional constructions or with modal auxiliaries , speech act verbs , or psych-verbs are marked as unresolved .
+creating new sources of training data .
+in order to augment the training data provided by the challenge organizers , we experimented with techniques to extract positive and negative examples of textual entailment from large newswire corpora .
+we gathered more than 200,000 additional entailment pairs that we used to train groundhog .
+positive examples .
+following an idea proposed in ( burger and ferro , 2005 ) , we created a corpus of approximately 101,000 textual entailment examples by pairing the headline and first sentence from newswire documents .
+since the headlines and first sentences of newswire texts are often used to synopsize the content of a document , we found that most extracted pairs could be considered to be positive examples of textual entailment .
+in order to increase the likelihood of including only positive examples , pairs were filtered that did not share an entity ( or an np ) in common between the headline and the first sentence , as were pairs that discussed sports results or stock prices .
+in a sample of 2500 pairs selected at random , 2296 ( 91.8 % ) were judged by human annotators as positive .
+negative examples .
+two approaches were used to gather negative examples for our training set .
+first , we extracted pairs of sequential sentences that included mentions of the same named entity from a large newswire corpus .
+we gathered more than 98,000 examples of this type from nearly 700,000 documents ; human annotators deemed 97.5 % ( 2438 / 2500 ) of these examples to be negative examples .
+in order to gather more negative examples , we extracted approximately 21,000 pairs of sentences linked by discourse connectives such as even though , although , otherwise , in contrast and but .
+in an analysis of 1000 of these examples , annotators judged 942 ( 94.2 % ) to be negative for textual entailment .
+several previous approaches to the rte task have argued that term-based measures can be used to successfully identify instances of lexical entailment in texts .
+while these approaches performed reasonably well in the 2005 pascal rte challenge , we feel that even better results could be obtained by combining these linguistically-naive probabilistic approaches with richer forms of lexico-semantic information .
+in this section , we show that by using a machine learning-based classifier which combines lexico-semantic information from a wide range of sources , we are able to accurately identify lexical entailment relationships with over 90 % accuracy .
+we believe the identification of lexical entailment can be cast as a classification problem which uses lexico-semantic features in order to compute an alignment probability p ( a ) , which corresponds to the likelihood that a term selected from a text entails a term selected from a corresponding hypothesis .
+we used constituency information from a chunk parser to decompose texts and hypotheses into a set of disjoint segments known as alignable chunks .
+alignable chunks from the text ( ) and the hypothesis ( ) are then assembled into an alignment matrix ( ) .
+each pair of chunks ( ) is then submitted to a maximum entropy-based classifier which determines whether or not the pair of chunks represents a case of lexical entailment .
+three classes of features were used in the alignment classifier : ( 1 ) a set of statistical features ( including cosine similarity , and ( glickman and dagan , 2005 ) s lexical entailment probability ) , ( 2 ) a set of lexico-semantic features ( including wordnet similarity ( pedersen et al. , 2004 ) , named entity class equality , and part-of-speech equality ) , and ( 3 ) a set of string-based features ( such as levenshtein edit distance and morphological stem equality ) .
+we used a two-step approach to obtain sufficient training data for the alignment classifier .
+a total of 10,000 alignment pairs extracted from the 2006 development set were annotated by humans as either positive or negative examples of lexical entailment .
+these annotations were used to train a hill- climber that was used to annotate a larger set of 450,000 alignment pairs selected at random from the training corpora described in section 4 that was then used to train a maximum entropy-based classifier that was used on the 2006 test set .
+table 6 presents results from groundhogs hillclimberand maximum entropy-based alignment classifiers on a sample of 1000 alignment pairs selected at random from the 2006 test set .
+much recent work on automatic paraphrasing ( dolan et al. , 2004 ; barzilay and lee , 2003 ; shinyama et al. , 2002 ) has used relatively simple statistical techniques to identify text passages that contain the same information from parallel corpora .
+since sentence-level paraphrases are generally assumed to contain information about the same event , these approaches have generally assumed that that all of the available paraphrases for a given sentence will include at least one pair of entities which can be used to extract sets of paraphrases from text .
+groundhog uses a similar approach to gather phrase-level alternations for each entailment pair .
+in our system , the two highest-confidence entity alignments returned by the lexical alignment module was used to construct a query which was used to retrieve the top 500 documents from google , as well as all matching instances from the lcc training corpora described in section 4 .
+this method did not always extract patterns that were true paraphrases of either the text or the hypothesis .
+in order increase the likelihood that only true paraphrases were considered as phrase-level alternations for an example , extracted sentences were clustered using complete- link clustering using a technique proposed in ( barzilay and lee , 2003 ) .
+entailment classifier .
+groundhog uses an entailment classifier in order to determine whether an entailment relationship exists for a text-hypothesis pair .
+after experiment with machine learning techniques ( including maximum entropy and support vector machines ) , we found that decision trees ( as implemented in c5.0 ( quinlan , 2003 ) ) performed best on the 2006 test set . 1 confidence values returned by the c.5 classifier were normalized and used to rank examples for the final submission .
+in the rest of this section , we describe the four different types of features used in the entailment classifier .
+alignment features .
+we used three features based on lexical alignment : ( 1 ) a longest common string feature which computed the longest contiguous string common to both the text and hypothesis , ( 2 ) a unaligned chunk feature equal to the number of chunks in the hypothesis not aligned with a chunk from the text , and ( 3 ) a fea1 we used attribute winnowing and a pruning confidence level of 5 % in our final model. ture based on ( glickman and dagan , 2005 ) s lexical entailment probability which was calculated using frequency counts returned by the google api .
+dependency features .
+four features were computed from the propbankstyle annotations assigned by the semantic parser : ( 1 ) a boolean entity arg-match feature which fired when aligned entities were assigned the same argument role label , ( 2 ) a boolean entity near arg-match feature which collapsed arg and arg ( as well as the arg subtypes ) into single categories for the purpose of counting matches , and finally , ( 3 ) a predicate arg-match feature and ( 4 ) apredicate near argmatch feature which compared the role labels associated with aligned predicates .
+paraphrase features .
+three types of features were derived from the paraphrases acquired for each pair : ( 1 ) a single pattern match feature which fired when a paraphrase matched either the text or the hypothesis , ( 2 ) a both pattern match feature which fired when paraphrases matched both the text and the hypothesis , and ( 3 ) a category match feature which fired when paraphrases could be found from the same paraphrase cluster that matched both the text and the hypothesis .
+semantic features .
+two features were used that took advantage of the truth values that the preprocessor assigned to predicates : ( 1 ) a boolean truth-value mismatch feature which fired when two aligned predicates differed in any truth value , and ( 2 ) a boolean polarity mismatch feature which fired when predicates were assigned opposite polarity values .
+evaluation .
+our results for the 2006 rte challenge task are summarized in table 7 below .
+we found that groundhogs performance differed markedly across the 4 challenge subtasks .
+while the system was able to correctly identify entailment in nearly 85 % of the examples from the multi-document summarization ( sum ) sub- task , performance dipped below 70 % on the question answering ( qa ) set .
+while the best results were obtained by combining all four sets of features ( 75.38 % ) , the largest gains in accuracy were obtained by incorporating features based on paraphrases extracted by the paraphrase acquisition module .
+when used alone , paraphrase features performed well , making the correct entailment classification nearly 66 % of the time .
+we found that access to large amounts of training data significantly impacted our overall score .
+when trained only on the 800 text-hypothesis pairs in the pascal 2006 development set ( dev ) , groundhog correctly classified 65.25 % of the examples in the test set ; when the classifier was trained on the more than 200,000 examples in lccs training corpora , performance was increased by 10 % .
+conclusion .
+we have described our methodology for recognizing textual entailment that was utilized in the 2006 pascal rte challenge .
+we are satisfied with our results from this evaluation , which we feel illustrates the potential of one of the four textual entailment frameworks that we considered in section 1 .

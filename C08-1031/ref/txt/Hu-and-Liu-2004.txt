@@ -1,0 +1,375 @@
+mining and summarizing customer reviews abstract .
+merchants selling products on the web often ask their customers to review the products that they have purchased and the associated services .
+as e-commerce is becoming more and more popular , the number of customer reviews that a product receives grows rapidly .
+for a popular product , the number of reviews can be in hundreds or even thousands .
+this makes it difficult for a potential customer to read them to make an informed decision on whether to purchase the product .
+it also makes it difficult for the manufacturer of the product to keep track and to manage customer opinions .
+for the manufacturer , there are additional difficulties because many merchant sites may sell the same product and the manufacturer normally produces many kinds of products .
+in this research , we aim to mine and to summarize all the customer reviews of a product .
+this summarization task is different from traditional text summarization because we only mine the features of the product on which the customers have expressed their opinions and whether the opinions are positive or negative .
+we do not summarize the reviews by selecting a subset or rewrite some of the original sentences from the reviews to capture the main points as in the classic text summarization .
+our task is performed in three steps : ( 1 ) mining product features that have been commented on by customers ; ( 2 ) identifying opinion sentences in each review and deciding whether each opinion sentence is positive or negative ; ( 3 ) summarizing the results .
+this paper proposes several novel techniques to perform these tasks .
+our experimental results using reviews of a number of products sold online demonstrate the effectiveness of the techniques .
+introduction .
+with the rapid expansion of e-commerce , more and more products are sold on the web , and more and more people are also buying products online .
+in order to enhance customer satisfaction and shopping experience , it has become a common practice for online merchants to enable their customers to review or to express opinions on the products that they have purchased .
+with more and more common users becoming comfortable with the web , an increasing number of people are writing reviews .
+as a result , the number of reviews that a product receives grows rapidly .
+some popular products can get hundreds of reviews at some large merchant sites .
+furthermore , many reviews are long and have only a few sentences containing opinions on the product .
+this makes it hard for a potential customer to read them to make an informed decision on whether to purchase the product .
+if he / she only reads a few reviews , he / she may get a biased view .
+the large number of reviews also makes it hard for product manufacturers to keep track of customer opinions of their products .
+for a product manufacturer , there are additional difficulties because many merchant sites may sell its products , and the manufacturer may ( almost always ) produce many kinds of products .
+in this research , we study the problem of generating feature-based summaries of customer reviews of products sold online .
+here , features broadly mean product features ( or attributes ) and functions .
+given a set of customer reviews of a particular product , the task involves three subtasks : ( 1 ) identifying features of the product that customers have expressed their opinions on ( called product features ) ; ( 2 ) for each feature , identifying review sentences that give positive or negative opinions ; and ( 3 ) producing a summary using the discovered information .
+let us use an example to illustrate a feature-based summary .
+assume that we summarize the reviews of a particular digital camera , digital _ camera _ 1 .
+with such a feature-based summary , a potential customer can easily see how the existing customers feel about the digital camera .
+if he / she is very interested in a particular feature , he / she can drill down by following the < individual review sentences > link to see why existing customers like it and / or what they complain about .
+for a manufacturer , it is possible to combine summaries from multiple merchant sites to produce a single report for each of its products .
+our task is different from traditional text summarization [ 15 , 39 , 36 ] in a number of ways .
+first of all , a summary in our case is structured rather than another ( but shorter ) free text document as produced by most text summarization systems .
+second , we are only interested in features of the product that customers have opinions on and also whether the opinions are positive or negative .
+we do not summarize the reviews by selecting or rewriting a subset of the original sentences from the reviews to capture their main points as in traditional text summarization .
+as indicated above , our task is performed in three main steps : mining product features that have been commented on by customers .
+we make use of both data mining and natural language processing techniques to perform this task .
+this part of the study has been reported in [ 19 ] .
+however , for completeness , we will summarize its techniques in this paper and also present a comparative evaluation .
+identifying opinion sentences in each review and deciding whether each opinion sentence is positive or negative .
+note that these opinion sentences must contain one or more product features identified above .
+to decide the opinion orientation of each sentence ( whether the opinion expressed in the sentence is positive or negative ) , we perform three subtasks .
+first , a set of adjective words ( which are normally used to express opinions ) is identified using a natural language processing method .
+these words are also called opinion words in this paper .
+second , for each opinion word , we determine its semantic orientation , e.g. , positive or negative .
+a bootstrapping technique is proposed to perform this task using wordnet [ 29 , 12 ] .
+finally , we decide the opinion orientation of each sentence .
+an effective algorithm is also given for this purpose .
+summarizing the results .
+this step aggregates the results of previous steps and presents them in the format of figure 1 .
+section 3 presents the detailed techniques for performing these tasks .
+a system , called fbs ( feature-based summarization ) , has also been implemented .
+our experimental results with a large number of customer reviews of 5 products sold online show that fbs and its techniques are highly effectiveness .
+related work .
+our work is closely related to dave , lawrence and pennocks work in [ 9 ] on semantic classification of reviews .
+using available training corpus from some web sites , where each review already has a class ( e.g. , thumbs-up and thumbs-downs , or some other quantitative or binary ratings ) , they designed and experimented a number of methods for building sentiment classifiers .
+they show that such classifiers perform quite well with test reviews .
+they also used their classifiers to classify sentences obtained from web search results , which are obtained by a search engine using a product name as the search query .
+however , the performance was limited because a sentence contains much less information than a review .
+our work differs from theirs in three main aspects : ( 1 ) our focus is not on classifying each review as a whole but on classifying each sentence in a review .
+within a review some sentences may express positive opinions about certain product features while some other sentences may express negative opinions about some other product features .
+( 2 ) the work in [ 9 ] does not mine product features from reviews on which the reviewers have expressed their opinions .
+( 3 ) our method does not need a corpus to perform the task .
+in [ 30 ] , morinaga et al. compare reviews of different products in one category to find the reputation of the target product .
+however , it does not summarize reviews , and it does not mine product features on which the reviewers have expressed their opinions .
+although they do find some frequent phrases indicating reputations , these phrases may not be product features ( e.g. , doesnt work , benchmark result and no problem ( s ) ) .
+in [ 5 ] , cardie et al discuss opinion-oriented information extraction .
+they aim to create summary representations of opinions to perform question answering .
+they propose to use opinion-oriented scenario templates to act as summary representations of the opinions expressed in a document , or a set of documents .
+our task is different .
+we aim to identify product features and user opinions on these features to automatically produce a summary .
+also , no template is used in our summary generation .
+our work is also related to but different from subjective genre classification , sentiment classification , text summarization and terminology finding .
+we discuss each of them below .
+subjective genre classification .
+genre classification classifies texts into different styles , e.g. , editorial , novel , news , poem etc .
+although some techniques for genre classification can recognize documents that express opinions [ 23 , 24 , 14 ] , they do not tell whether the opinions are positive or negative .
+in our work , we need to determine whether an opinion is positive or negative and to perform opinion classification at the sentence level rather than at the document level .
+a more closely related work is [ 17 ] , in which the authors investigate sentence subjectivity classification and concludes that the presence and type of adjectives in a sentence is indicative of whether the sentence is subjective or objective .
+however , their work does not address our specific task of determining the semantic orientations of those subjective sentences .
+neither do they find features on which opinions have been expressed .
+sentiment classification .
+works of hearst [ 18 ] and sack [ 35 ] on sentiment-based classification of entire documents use models inspired by cognitive linguistics .
+das and chen [ 8 ] use a manually crafted lexicon in conjunction with several scoring methods to classify stock postings on an investor bulletin .
+huettner and subasic [ 20 ] also manually construct a discriminant-word lexicon and use fuzzy logic to classify sentiments .
+tong [ 41 ] generates sentiment timelines .
+it tracks online discussions about movies and displays a plot of the number of positive and negative sentiment messages over time .
+messages are classified by looking for specific phrases that indicate the authors sentiment towards the movie ( e.g. , great acting , wonderful visuals , uneven editing ) .
+each phrase must be manually added to a special lexicon and manually tagged as indicating positive or negative sentiment .
+the lexicon is domain dependent ( e.g. , movies ) and must be rebuilt for each new domain .
+in contrast , in our work , we only manually create a small list of seed adjectives tagged with positive or negative labels .
+our seed adjective list is also domain independent .
+an effective technique is proposed to grow this list using wordnet .
+turneys work in [ 42 ] applies a specific unsupervised learning technique based on the mutual information between document phrases and the words excellent and poor , where the mutual information is computed using statistics gathered by a search engine .
+pang et al. [ 33 ] examine several supervised machine learning methods for sentiment classification of movie reviews and conclude that machine learning techniques outperform the method that is based on human-tagged features although none of existing methods could handle the sentiment classification with a reasonable accuracy .
+our work differs from these works on sentiment classification in that we perform classification at the sentence level while they determine the sentiment of each document .
+they also do not find features on which opinions have been expressed , which is very important in practice .
+text summarization .
+existing text summarization techniques mainly fall in one of the two categories : template instantiation and passage extraction .
+work in the former framework includes [ 10 , 39 ] .
+they emphasize on identification and extraction of certain core entities and facts in a document , which are packaged in a template .
+this framework requires background knowledge in order to instantiate a template to a suitable level of detail .
+therefore , it is not domain or genre independent [ 37 , 38 ] .
+this is different from our work as our techniques do not fill any template and are domain independent .
+the passage extraction framework [ e.g. , 32 , 25 , 36 ] identifies certain segments of the text ( typically sentences ) that are the most representative of the documents content .
+our work is different in that we do not extract representative sentences , but identify and extract those specific product features and the opinions related to them .
+boguraev and kennedy [ 2 ] propose to find a few very prominent expressions , objects or events in a document and use them to help summarize the document .
+our work is again different as we find all product features in a set of customer reviews regardless whether they are prominent or not .
+thus , our summary is not a traditional text summary .
+most existing works on text summarization focus on a single document .
+some researchers also studied summarization of multiple documents covering similar information .
+their main purpose is to summarize the similarities and differences in the information content among these documents [ 27 ] .
+our work is related but quite different because we aim to find the key features that are talked about in multiple reviews .
+we do not summarize similarities and differences of reviews .
+terminology finding .
+in terminology finding , there are basically two techniques for discovering terms in corpora : symbolic approaches that rely on syntactic description of terms , namely noun phrases , and statistical approaches that exploit the fact that the words composing a term tend to be found close to each other and reoccurring [ 21 , 22 , 7 , 6 ] .
+however , using noun phrases tends to produce too many non-terms ( low precision ) , while using reoccurring phrases misses many low frequency terms , terms with variations , and terms with only one word .
+our association mining based technique does not have these problems , and we can also find infrequent features by exploiting the fact that we are only interested in features that the users have expressed opinions on .
+the proposed techniques .
+figure 2 gives the architectural overview of our opinion summarization system .
+summary figure 2 : feature-based opinion summarization the inputs to the system are a product name and an entry web page for all the reviews of the product .
+the output is the summary of the reviews as the one shown in the introduction section .
+the system performs the summarization in three main steps ( as discussed before ) : ( 1 ) mining product features that have been commented on by customers ; ( 2 ) identifying opinion sentences in each review and deciding whether each opinion sentence is positive or negative ; ( 3 ) summarizing the results .
+these steps are performed in multiple sub-steps .
+given the inputs , the system first downloads ( or crawls ) all the reviews , and put them in the review database .
+it then finds those hot ( or frequent ) features that many people have expressed their opinions on .
+after that , the opinion words are extracted using the resulting frequent features , and semantic orientations of the opinion words are identified with the help of wordnet .
+using the extracted opinion words , the system then finds those infrequent features .
+in the last two steps , the orientation of each opinion sentence is identified and a final summary is produced .
+note that pos tagging is the part-of-speech tagging [ 28 ] from natural language processing , which helps us to find opinion features .
+below , we discuss each of the sub-steps in turn .
+part-of-speech tagging ( pos ) .
+product features are usually nouns or noun phrases in review sentences .
+thus the part-of-speech tagging is crucial .
+we used the nlprocessor linguistic parser [ 31 ] to parse each review to split text into sentences and to produce the part-of-speech tag for each word ( whether the word is a noun , verb , adjective , etc ) .
+the process also identifies simple noun and verb groups ( syntactic chunking ) .
+the following shows a sentence with pos tags .
+each sentence is saved in the review database along with the pos tag information of each word in the sentence .
+a transaction file is then created for the generation of frequent features in the next step .
+in this file , each line contains words from one sentence , which includes only the identified nouns and noun phrases of the sentence .
+other components of the sentence are unlikely to be product features .
+some pre-processing of words is also performed , which includes removal of stopwords , stemming and fuzzy matching .
+fuzzy matching is used to deal with word variants and misspellings [ 19 ] .
+frequent features identification .
+this sub-step identifies product features on which many people have expressed their opinions .
+before discussing frequent feature identification , we first give some example sentences from some reviews to describe what kinds of opinions that we will be handling .
+since our system aims to find what people like and dislike about a given product , how to find the product features that people talk about is the crucial step .
+however , due to the difficulty of natural language understanding , some types of sentences are hard to deal with .
+let us see an easy and a hard sentence from the reviews of a digital camera : here , we focus on finding frequent features , i.e. , those features that are talked about by many customers ( finding infrequent features will be discussed later ) .
+for this purpose , we use association mining [ 1 ] to find all frequent itemsets .
+in our context , an itemset is simply a set of words or a phrase that occurs together in some sentences .
+the main reason for using association mining is because of the following observation .
+it is common that a customer review contains many things that are not directly related to product features .
+different customers usually have different stories .
+however , when they comment on product features , the words that they use converge .
+thus using association mining to find frequent itemsets is appropriate because those frequent itemsets are likely to be product features .
+those noun / noun phrases that are infrequent are likely to be non-product features .
+we run the association miner cba [ 26 ] , which is based on the apriori algorithm in [ 1 ] on the transaction set of noun / noun phrases produced in the previous step .
+each resulting frequent itemset is a possible feature .
+in our work , we define an itemset as frequent if it appears in more than 1 % ( minimum support ) of the review sentences .
+the generated frequent itemsets are also called candidate frequent features in this paper .
+however , not all candidate frequent features generated by association mining are genuine features .
+two types of pruning are used to remove those unlikely features .
+compactness pruning : this method checks features that contain at least two words , which we call feature phrases , and remove those that are likely to be meaningless .
+the association mining algorithm does not consider the position of an item ( or word ) in a sentence .
+however , in a sentence , words that appear together in a specific order are more likely to be meaningful phrases .
+therefore , some of the frequent feature phrases generated by association mining may not be genuine features .
+compactness pruning aims to prune those candidate features whose words do not appear together in a specific order .
+see [ 19 ] for the detailed definition of compactness and also the pruning procedure .
+redundancy pruning : in this step , we focus on removing redundant features that contain single words .
+to describe the meaning of redundant features , we use the concept of p-support ( pure support ) . p-support of feature ftr is the number of sentences that ftr appears in as a noun or noun phrase , and these sentences must contain no feature phrase that is a superset of ftr .
+we use a minimum p-support value to prune those redundant features .
+if a feature has a p-support lower than the minimum p- support ( in our system , we set it to 3 ) and the feature is a subset of another feature phrase ( which suggests that the feature alone may not be interesting ) , it is pruned .
+for instance , life by itself is not a useful feature while battery life is a meaningful feature phrase .
+see [ 19 ] for more explanations .
+opinion words extraction .
+we now identify opinion words .
+these are words that are primarily used to express subjective opinions .
+clearly , this is related to existing work on distinguishing sentences used to express subjective opinions from sentences used to objectively describe some factual information [ 43 ] .
+previous work on subjectivity [ 44 , 4 ] has established a positive statistically significant correlation with the presence of adjectives .
+thus the presence of adjectives is useful for predicting whether a sentence is subjective , i.e. , expressing an opinion .
+this paper uses adjectives as opinion words .
+we also limit the opinion words extraction to those sentences that contain one or more product features , as we are only interested in customers opinions on these product features .
+let us first define an opinion sentence .
+if a sentence contains one or more product features and one or more opinion words , then the sentence is called an opinion sentence .
+we extract opinion words in the following manner ( figure 3 ) : for example , horrible is the effective opinion of strap in the strap is horrible and gets in the way of parts of the camera you need access to .
+effective opinions will be useful when we predict the orientation of opinion sentences .
+orientation identification for opinion words .
+for each opinion word , we need to identify its semantic orientation , which will be used to predict the semantic orientation of each opinion sentence .
+the semantic orientation of a word indicates the direction that the word deviates from the norm for its semantic group .
+words that encode a desirable state ( e.g. , beautiful , awesome ) have a positive orientation , while words that represent undesirable states have a negative orientation ( e.g. , disappointing ) .
+while orientations apply to many adjectives , there are also those adjectives that have no orientation ( e.g. , external , digital ) [ 17 ] .
+in this work , we are interested in only positive and negative orientations .
+unfortunately , dictionaries and similar sources , i.e. , wordnet [ 29 ] do not include semantic orientation information for each word .
+hatzivassiloglou and mckeown [ 16 ] use a supervised learning algorithm to infer the semantic orientation of adjectives from constraints on conjunctions .
+although their method achieves high precision , it relies on a large corpus , and needs a large amount of manually tagged training data .
+in turneys work [ 42 ] , the semantic orientation of a phrase is calculated as the mutual information between the given phrase and the word excellent minus the mutual information between the given phrase and the word poor .
+the mutual information is estimated by issuing queries to a search engine and noting the number of hits .
+the paper [ 42 ] , however , does not report the results of semantic orientations of individual words / phrases .
+instead it only gives the classification results of reviews .
+we do not use these techniques in this paper as both works rely on statistical information from a rather big corpus .
+their methods are also inefficient .
+for example , in [ 42 ] , for each word or phrase , a web search and a substantial processing of the returned results are needed .
+in this research , we propose a simple and yet effective method by utilizing the adjective synonym set and antonym set in wordnet [ 29 ] to predict the semantic orientations of adjectives .
+in wordnet , adjectives are organized into bipolar clusters , as illustrated in figure 4 .
+the cluster for fast / slow , consists of two half clusters , one for senses of fast and one for senses of slow .
+each half cluster is headed by a head synset , in this case fast and its antonym slow .
+following the head synset is the satellite synsets , which represent senses that are similar to the sense of the head adjective .
+the other half cluster is headed by the reverse antonymous pair slow / fast , followed by satellite synsets for senses of slow [ 12 ] .
+in general , adjectives share the same orientation as their synonyms and opposite orientations as their antonyms .
+we use this idea to predict the orientation of an adjective .
+to do this , the synset of the given adjective and the antonym set are searched .
+if a synonym / antonym has known orientation , then the orientation of the given adjective could be set correspondingly .
+as the synset of an adjective always contains a sense that links to head synset , the search range is rather large .
+given enough seed adjectives with known orientations , we can almost predict the orientations of all the adjective words in the review collection .
+thus , our strategy is to use a set of seed adjectives , which we know their orientations and then grow this set by searching in the wordnet .
+to have a reasonably broad range of adjectives , we first manually come up a set of very common adjectives ( in our experiment , we used 30 ) as the seed list , e.g. positive adjectives : great , fantastic , nice , cool and negative adjectives : bad , dull .
+then we resort to wordnet to predict the orientations of all the adjectives in the opinion word list .
+once an adjectives orientation is predicted , it is added to the seed list .
+therefore , the list grows in the process .
+the complete procedure for predicting semantic orientations for all the adjectives in the opinion list is shown in figure 5 .
+procedure orientationprediction takes the adjective seed list and a set of opinion words whose orientations need to be determined .
+it calls procedure orientationsearch iteratively until no new opinion word is added to the seed list .
+every time an adjective with its orientation is added to the seed list , the seed list is updated ; therefore calling orientationsearch repeatedly is necessary in order to exploit the newly added information .
+search searches wordnet and the seed list for each target adjective word to predict its orientation ( line 3 to line 11 ) .
+in line 5 , it searches synset of the target adjective in wordnet and checks if any synonym has known orientation .
+if so , the target orientation is set to the same orientation as the synonym ( line 6 ) and the target adjective along with the orientation is inserted into the seed list ( line 7 ) .
+otherwise , the function continues to search antonym set of the target word in wordnet and checks if any antonym has known orientation ( line 8 ) .
+if so , the target orientation is set to the opposite of the antonym ( line 9 ) and the target adjective with its orientation is inserted into the seed list ( line 10 ) .
+if neither synonyms nor antonyms of the target word have known orientation , the function just continues the same process for the next adjective since the words orientation may be found in a later call of the procedure with an updated seed list .
+for those adjectives that wordnet cannot recognize , they are discarded as they may not be valid words .
+for those that we cannot find orientations , they will also be removed from the opinion words list and the user will be notified for attention .
+if the user feels that the word is an opinion word and knows its sentiment , he / she can update the seed list .
+in our experiments , there is no user involvement ( those removed opinion words are dropped ) .
+for the case that the synonyms / antonyms of an adjective have different known semantic orientations , we use the first found orientation as the orientation for the given adjective .
+infrequent feature identification .
+frequent features are the hot features that people comment most about the given product .
+however , there are some features that only a small number of people talked about .
+these features can also be interesting to some potential customers and the manufacturer of the product .
+the question is how to extract these infrequent features ( association mining is unable to identify such features ) ?
+considering the following sentences : we use the nearest noun / noun phrase as the noun / noun phrase that the opinion word modifies because that is what happens most of the time .
+this simple heuristic seems to work well in practice .
+a problem with the infrequent feature identification using opinion words is that it could also find nouns / noun phrases that are irrelevant to the given product .
+the reason for this is that people can use common adjectives to describe a lot of objects , including both interesting features that we want and irrelevant ones .
+this , however , is not a serious problem because the number of infrequent features , compared with the number of frequent features , is small .
+they account for around 15-20 % of the total number of features as obtained in our experimental results .
+infrequent features are generated for completeness .
+moreover , frequent features are more important than infrequent ones .
+since we rank features according to their p-supports , those wrong infrequent features will be ranked very low and thus will not affect most of the users .
+predicting the orientations of opinion sentences .
+we now reach the step of predicting the orientation of an opinion sentence , i.e. , positive or negative .
+in general , we use the dominant orientation of the opinion words in the sentence to determine the orientation of the sentence .
+that is , if positive / negative opinion prevails , the opinion sentence is regarded as a positive / negative one .
+in the case where there is the same number of positive and negative opinion words in the sentence , we predict the orientation using the average orientation of effective opinions or the orientation of the previous opinion sentence ( recall that effective opinion is the closest opinion word for a feature in an opinion sentence ) .
+this is an effective method as our experimental results show .
+the detailed procedure is described in figure 7 .
+the user likes or dislikes most or all the features in one sentence .
+the opinion words are mostly either positive or negative , e.g. , there are two positive opinion words , good and exceptional in overall this is a good camera with a really good picture clarity & an exceptional close-up shooting capability .
+the user likes or dislikes most of the features in one sentence , but there is an equal number of positive and negative opinion words , e.g. , the auto and manual along with movie modes are very easy to use , but the software is not intuitive .
+there is one positive opinion easy and one negative opinion not intuitive , although the user likes two features and dislikes one .
+all the other cases .
+for case 1 , the dominant orientation can be easily identified ( line 5 to 10 in the first procedure , sentenceorietation ) .
+this is the most common case when people express their opinions .
+for case 2 , we use the average orientation of effective opinions of features instead ( line 12 to 18 ) .
+effective opinion is assumed to be the most related opinion for a feature .
+for case 3 , we set the orientation of the opinion sentence to be the same as the orientation of previous opinion sentence ( line 19 ) .
+we use the context information to predict the sentence orientation because in most cases , people express their positive / negative opinions together in one text segment , i.e. , a few consecutive sentences .
+for a sentence that contains a but clause ( sub-sentence that starts with but , however , etc . ) , which indicates sentimental change for the features in the clause , we first use the effective opinion in the clause to decide the orientation of the features .
+if no opinion appears in the clause , the opposite orientation of the sentence will be used .
+note that in the procedure wordorientation , we do not simply take the semantic orientation of the opinion word from the set of opinion words as its orientation in the specific sentence .
+we also consider whether there is a negation word such as no , not , yet , appearing closely around the opinion word .
+if so , the opinion orientation of the sentence is the opposite of its original orientation ( lines 4 and 5 ) .
+by closely we mean that the word distance between a negation word and the opinion word should not exceed a threshold ( in our experiment , we set it to 5 ) .
+this simple method deals with the sentences like the camera is not easy to use , and it would be nicer not to see little zoom sign on the side .
+this method is quite effective in most cases .
+summary generation .
+after all the previous steps , we are ready to generate the final feature-based review summary , which is straightforward and consists of the following steps : for each discovered feature , related opinion sentences are put into positive and negative categories according to the opinion sentences orientations .
+a count is computed to show how many reviews give positive / negative opinions to the feature .
+all features are ranked according to the frequency of their appearances in the reviews .
+feature phrases appear before single word features as phrases normally are more interesting to users .
+other types of rankings are also possible .
+for example , we can also rank features according the number of reviews that express positive or negative opinions .
+the following shows an example summary for the feature picture of a digital camera .
+note that the individual opinion sentences ( and their corresponding reviews , which are not shown here ) can be hidden using a hyperlink in order to enable the user to see a global view of the summary easily .
+experimental evaluation .
+a system , called fbs ( feature-based summarization ) , based on the proposed techniques has been implemented in c + + .
+we now evaluate fbs from three perspectives : the effectiveness of feature extraction , the effectiveness of opinion sentence extraction , the accuracy of orientation prediction of opinion sentences .
+we conducted our experiments using the customer reviews of five electronics products : 2 digital cameras , 1 dvd player , 1 mp3 player , and 1 cellular phone .
+the reviews were collected from amazon.com and c | net.com.
+products in these sites have a large number of reviews .
+each of the reviews includes a text review and a title .
+additional information available but not used in this project includes date , time , author name and location ( for amazon reviews ) , and ratings .
+for each product , we first crawled and downloaded the first 100 reviews .
+these review documents were then cleaned to remove html tags .
+after that , nlprocessor [ 31 ] is used to generate partof-speech tags .
+our system is then applied to perform summarization .
+for evaluation , we manually read all the reviews .
+for each sentence in a review , if it shows users opinions , all the features on which the reviewer has expressed his / her opinion are tagged .
+whether the opinion is positive or negative ( i.e. , the orientation ) is also identified .
+if the user gives no opinion in a sentence , the sentence is not tagged as we are only interested in sentences with opinions in this work .
+for each product , we produced a manual feature list .
+column no. of manual features in table 1 shows the number of manual features for each product .
+all the results generated by our system are compared with the manually tagged results .
+tagging is fairly straightforward for both product features and opinions .
+a minor complication regarding feature tagging is that features can be explicit or implicit in a sentence .
+most features appear explicitly in opinion sentences , e.g. , pictures in the pictures are absolutely amazing .
+some features may not appear in sentences .
+we call such features implicit features , e.g. , size in it fits in a pocket nicely .
+both explicit and implicit features are easy to identify by the human tagger .
+another issue is that judging opinions in reviews can be somewhat subjective .
+it is usually easy to judge whether an opinion is positive or negative if a sentence clearly expresses an opinion .
+however , deciding whether a sentence offers an opinion or not can be debatable .
+for those difficult cases , a consensus was reached between the primary human tagger ( the first author of the paper ) and the secondary tagger ( the second author of the paper ) .
+table 1 gives the precision and recall results of the feature generation function of fbs .
+we evaluated the results at each step of our algorithm .
+in the table , column 1 lists each product .
+columns 3 and 4 give the recall and precision of frequent feature generation for each product , which uses association mining .
+the results indicate that the frequent features contain a lot of errors .
+using this step alone gives poor results , i.e. , low precision .
+columns 5 and 6 show the corresponding results after compactness pruning is performed .
+we can see that the precision is improved significantly by this pruning .
+the recall stays steady .
+columns 7 and 8 give the results after pruning using p-support .
+there is another dramatic improvement in the precision .
+the recall level almost does not change .
+the results from columns 4-8 clearly demonstrate the effectiveness of these two pruning techniques .
+columns 9 and 10 give the results after infrequent feature identification is done .
+the recall is improved dramatically .
+the precision drops a few percents on average .
+however , this is not a major problem because the infrequent features are ranked rather low , and thus will not affect most users .
+to further illustrate the effectiveness of our feature extraction step , we compared the features generated using our method with terms found by the well known and publicly available term extraction and indexing system , fastr [ 11 ] of christian jacquemin .
+table 2 shows the recall and precision of fastr .
+we observe that both the average recall and precision of fastr are significantly lower than those of our method .
+after a close inspection of the terms generated by fastr , we see that there are two major reasons that lead to its poor results .
+first of all , fastr generates a large number of terms , as shown in the fourth column no. terms of table 2 .
+the average number of terms found by fastr is 377 .
+most of these terms are not product features at all ( although many of them may be noun phrases ) .
+secondly , fastr does not find one-word terms , but only term phrases that consist of two or more words .
+our feature extraction method finds both one-word terms and term phrases .
+comparing the results in table 1 and table 2 , we can clearly see that the proposed method is much more effective for our task .
+table 3 shows the evaluation results of the other two procedures : opinion sentence extraction and sentence orientation prediction .
+the average recall of opinion sentence extraction is nearly 70 % .
+the average precision of opinion sentence extraction is 64 % .
+note that as indicated earlier determining whether a sentence expresses an opinion is subjective .
+our result analysis indicates that people like to describe their stories with the product lively : they often mention the situation that they used the product , the detailed product features used , and also the results they got .
+while human taggers do not regard these sentences as opinion sentences as there is no indication of whether the user likes the features or not , our system labels these sentences as opinion sentences because they contain both product features and some opinion adjectives .
+this decreases precision .
+although these sentences may not show strong user opinions towards the product features , they may still be beneficial and useful .
+our system has a good accuracy in predicting sentence orientations : the average accuracy for the five products is 84 % .
+this shows that our method of using wordnet to predict adjective semantic orientations and orientations of opinion sentences are highly effective .
+in summary , we can see that our techniques are very promising , especially for sentence orientation prediction .
+we believe that they may be used in practical settings .
+we also note three main limitations of our system : ( 1 ) we have not dealt with opinion sentences that need pronoun resolution [ 40 ] .
+for instance , it is quiet but powerful .
+to understand what it represents , pronoun resolution needs to be performed .
+pronoun resolution is a complex and computational expensive problem in natural language processing ( nlp ) .
+we plan to adapt some existing techniques from nlp to suit our needs .
+( 2 ) we only used adjectives as indicators of opinion orientations of sentences .
+however , verbs and nouns can also be used for the purpose , e.g. , i like the feeling of the camera , i highly recommend the camera .
+we plan to address this issue in the future .
+( 3 ) it is also important to study the strength of opinions .
+some opinions are very strong and some are quite mild .
+highlighting strong opinions ( strongly like or dislike ) can be very useful for both individual shoppers and product manufacturers .
+conclusions .
+in this paper , we proposed a set of techniques for mining and summarizing product reviews based on data mining and natural language processing methods .
+the objective is to provide a feature-based summary of a large number of customer reviews of a product sold online .
+our experimental results indicate that the proposed techniques are very promising in performing their tasks .
+we believe that this problem will become increasingly important as more people are buying and expressing their opinions on the web .
+summarizing the reviews is not only useful to common shoppers , but also crucial to product manufacturers .
+in our future work , we plan to further improve and refine our techniques , and to deal with the outstanding problems identified above , i.e. , pronoun resolution , determining the strength of opinions , and investigating opinions expressed with adverbs , verbs and nouns .
+finally , we will also look into monitoring of customer reviews .
+we believe that monitoring will be particularly useful to product manufacturers because they want to know any new positive or negative comments on their products whenever they are available .
+the keyword here is new .
+although a new review may be added , it may not contain any new information .

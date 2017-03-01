@@ -1,0 +1,60 @@
+No consensus has been reached with respect to the
+proper methodology to use when evaluating paraphrase
+quality. This section reviews past methods
+for paraphrase evaluation.
+Researchers usually present the quality of their
+automatic paraphrasing technique in terms of a
+subjective manual evaluation. These have used
+a variety of criteria. For example, (Barzilay and McKeown 2001) evaluated their paraphrases
+by asking judges whether paraphrases were “approximately
+conceptually equivalent.” (Ibrahim et al. 2003) asked judges whether their paraphrases
+were “roughly interchangeable given the
+genre.” (Bannard and Callison-Burch 2005) replaced
+phrases with paraphrases in a number of sentences and asked judges whether the substitutions
+“preserved meaning and remained grammatical.”
+These subjective evaluations are rather
+vaguely defined and not easy to reproduce.
+Others evaluate paraphrases in terms of whether
+they improve performance on particular tasks.
+(Callison-Burch et al. 2006b) measure improvements
+in translation quality in terms of Bleu score
+(Papineni et al., 2002) and in terms of subjective
+human evaluation when paraphrases are integrated
+into a statistical machine translation system. (Lin and Pantel 2001) manually judge whether a paraphrase
+might be used to answer questions from the
+TREC question-answering track. To date, no one
+has used task-based evaluation to compare different
+paraphrasing methods. Even if such an evaluation
+were performed, it is unclear whether the
+results would hold for a different task. Because of
+this, we strive for a general evaluation rather than
+a task-specific one.
+(Dolan et al. 2004) create a set of manual word
+alignments between pairs of English sentences.
+We create a similar type of data, as described in
+Section 4. Dolan et al. use heuristics to draw pairs
+of English sentences from a comparable corpus
+of newswire articles, and treat these as potential
+paraphrases. In some cases these sentence pairs
+are good examples of paraphrases, and in some
+cases they are not. Our data differs because it
+is drawn from multiple translations of the same
+foreign sentences. (Barzilay 2003) suggested that
+multiple translations of the same foreign source
+text were a perfect source for “naturally occurring
+paraphrases” because they are samples of text
+which convey the same meaning but are produced
+by different writers. That being said, it may be
+possible to use Dolan et al’s data toward a similar
+end. (Cohn et al. to appear) compares the use of
+the multiple translation corpus with the MSR corpus
+for this task.
+The work described here is similar to work in
+summarization evaluation. For example, in the
+Pyramid Method (Nenkova et al., 2007) content
+units that are similar across human-generated summaries
+are hand-aligned. These can have alternative
+wordings, and are manually grouped. The
+idea of capturing these and building a resource for
+evaluating summaries is in the same spirit as our
+methodology.

@@ -1,0 +1,103 @@
+weka : practical machine learning tools and techniques with java implementations .
+introduction .
+the waikato environment for knowledge analysis ( weka ) is a comprehensive suite of java class libraries that implement many state-of-the-art machine learning and data mining algorithms .
+weka is freely available on the world-wide web and accompanies a new text on data mining [ 1 ] which documents and fully explains all the algorithms it contains .
+applications written using the weka class libraries can be run on any computer with a web browsing capability ; this allows users to apply machine learning techniques to their own data regardless of computer platform .
+tools are provided for pre-processing data , feeding it into a variety of learning schemes , and analyzing the resulting classifiers and their performance .
+an important resource for navigating through weka is its on-line documentation , which is automatically generated from the source .
+the primary learning methods in weka are classifiers , and they induce a rule set or decision tree that models the data .
+weka also includes algorithms for learning association rules and clustering data .
+all implementations have a uniform command-line interface .
+a common evaluation module measures the relative performance of several learning algorithms over a given data set .
+tools for pre-processing the data , or filters , are another important resource .
+like the learning schemes , filters have a standardized command-line interface with a set of common command-line options .
+the weka software is written entirely in java to facilitate the availability of data mining tools regardless of computer platform .
+the system is , in sum , a suite of java packages , each documented to provide developers with state-of-the-art facilities .
+javadoc and the class library one advantage of developing a system in java is its automatic support for documentation .
+descriptions of each of the class libraries are automatically compiled into html , providing an invaluable resource for programmers and application developers alike .
+the java class libraries are organized into logical packagesdirectories containing a collection of related classes .
+the set of packages is illustrated in figure 1 .
+they provide interfaces to pre-processing routines including feature selection , classifiers for both categorical and numeric learning tasks , meta- classifiers for enhancing the performance of classifiers ( for example , boosting and bagging ) , evaluation according to different criteria ( for example , accuracy , entropy , root-squared mean error , cost-sensitive classification , etc . ) and experimental support for verifying the robustness of models ( cross-validation , bias-variance decomposition , and calculation of the margin ) .
+wekas core .
+the core package contains classes that are accessed from almost every other class in weka .
+the most important classes in it are attribute , instance , and instances .
+an object of class attribute represents an attributeit contains the attributes name , its type , and , in case of a nominal attribute , its possible values .
+an object of class instance contains the attribute values of a particular instance ; and an object of class instances contains an ordered set of instancesin other words , a dataset .
+data pre-processing .
+wekas pre-processing capability is encapsulated in an extensive set of routines , called filters , that enable data to be processed at the instance and attribute value levels .
+table 1 lists the most important filter algorithms that are included .
+many of the filter algorithms provide facilities for general manipulation of attributes .
+for example , the first two items in table 1 , addfilter and deletefilter , insert and delete attributes .
+makeindicatorfilter transforms a nominal attribute into a binary indicator attribute .
+this is useful when a multi-class attribute should be represented as a two-class attribute .
+in some cases it is desirable to merge two values of a nominal attribute into a single value .
+this can be done in a straightforward way using mergeattributevaluesfilter .
+the name of the new value is a concatenation of the two original ones .
+some learning schemesfor example , support vector machinescan only handle binary attributes .
+the advantage of binary attributes is that they can be treated as either being nominal or numeric .
+nominaltobinaryfilter transforms multi- valued nominal attributes into binary attributes .
+selectfilter is used to delete all instances from a dataset that exhibit one of a particular set of nominal attribute values , or a numeric value below or above a certain threshold .
+one possibility of dealing with missing values is to globally replace them before the learning scheme is applied .
+replacemissingvaluesfilter substitutes the mean ( for numeric attributes ) or the mode ( for nominal attributes ) for each missing value .
+transforming numeric attributes some filters pertain specifically to numeric attributes .
+for example , an important filter for practical applications is the discretisefilter .
+it implements an unsupervised and a supervised discretization method .
+the unsupervised method implements equal width binning .
+if the index of a class attribute is set , the method will perform supervised discretization using mdl [ 2 ] .
+in some applications , it is appropriate to transform a numeric attribute before a learning scheme is applied , for example , to replace each value by its square root .
+numerictransformfilter transforms all numeric attributes among the selected attributes using a user-specified transformation function .
+feature selection another essential data engineering component of any applied machine learning system is the ability to select potentially relevant features for inclusion in model induction .
+the weka system provides three feature selection systems : a locally produced correlation based technique [ 3 ] , the wrapper method and relief [ 4 ] .
+learning schemes weka contains implementations of many algorithms for classification and numeric prediction , the most important of which are listed in table 2 .
+numeric prediction is interpreted as prediction of a continuous class .
+the classifier class defines the general structure of any scheme for classification or numeric prediction .
+the most primitive learning scheme in weka , zeror , predicts the majority class in the training data for problems with a categorical class value , and the average class value for numeric prediction problems .
+it is useful for generating a baseline performance that other learning schemes are compared to .
+in some cases , it is possible that other learning schemes perform worse than zeror , an indicator of substantial overfitting .
+the next scheme , oner , produces very simple rules based on a single attribute [ 5 ] .
+naivebayes implements the probabilistic nave bayesian classifier .
+decisiontable employs the wrapper method to find a good subset of attributes for inclusion in the table .
+this is done using a best-first search .
+ibk is an implementation of the k-nearestneighbours classifier [ 6 ] .
+the number of nearest neighbours ( k ) can be set manually , or determined automatically using cross-validation. j48 is an implementation of c4.5 release 8 [ 7 ] that produces decision trees .
+this is a standard algorithm that is widely used for practical machine learning .
+part is a more recent scheme for producing sets of rules called decision lists ; it works by forming partial decision trees and immediately converting them into the corresponding rule .
+smo implements the sequential minimal optimization algorithm for support vector machines , which are an important new paradigm in machine learning [ 8 ] .
+the next three learning schemes in table 2 represent methods for numeric prediction .
+the simplest is linear regression .
+m5prime is a rational reconstruction of quinlans m5 model tree inducer [ 9 ] .
+l wr is an implementation of a more sophisticated learning scheme for numeric prediction , using locally weighted regression [ 10 ] .
+decisionstump builds simple binary decision " stumps " ( 1-level decision trees ) for both numeric and nominal classification problems .
+it copes with missing values by extending a third branch from the stumpin other words , by treating missing as a separate attribute value .
+decisionstump is mainly used in conjunction with the logitboost boosting method , discussed in the next section .
+meta-classifiers .
+recent developments in computational learning theory have led to methods that enhance the performance or extend the capabilities of these basic learning schemes .
+we call these performance enhancers meta-learning schemes or meta- classifiers because they operate on the output of other learners .
+table 3 summarizes the most important meta-classifiers in weka .
+the first of these schemes is an implementation of the bagging procedure [ 11 ] .
+this implementation allows a user to set the number of bagging iterations to be performed .
+adaboost.m1 [ 12 ] similarly gives the user control over the boosting iterations performed .
+another boosting procedure is implemented by logitboost [ 13 ] , which is suited to problems involving two-class situationsfor example , the smo class from above .
+in order to apply these schemes to multi- class datasets it is necessary to transform the multi-class problem into several two-class ones , and combine the results .
+multiclassclassifier does exactly that .
+weka is not limited to supporting classification schemes ; the class library includes representative implementations from other learning paradigms .
+association rules .
+weka contains an implementation of the apriori learner for generating association rules , a commonly used technique in market basket analysis [ 14 ] .
+this algorithm does not seek rules that predict a particular class attribute , but rather looks for any rules that capture strong associations between different attributes .
+clustering .
+methods of clustering also do not seek rules that predict a particular class , but rather try to divide the data into natural groups or clusters .
+weka includes an implementation of the em algorithm , which can be used for unsupervised learning .
+like nave bayes , it makes the assumption that all attributes are independent random variables .
+evaluation and benchmarking .
+one of the key aspects of the weka suite is the ability it provides to evaluate learning schemes consistently .
+table 4 contains a condensed summary of the current league table in terms of applying the machine learning schemes to all of the datasets we have collected ( 37 from the uci repository [ 14 ] ) .
+all schemes are tested by ten by ten stratified cross-validation .
+building applications with weka .
+in most data mining applications the machine learning component is just a small part of a far larger software system .
+to accommodate this , it is possible to access the programs in weka from inside ones own code .
+this allows the machine learning subproblem to be solved with a minimum of additional programming .
+for example , figure 2 shows a weka applet written to test the usability of machine learning techniques in the objective measurement of mushroom quality .
+image processing a picture of a mushroom cap ( at left in figure 2 ) provides data for the machine learning scheme to differentiate between a , b and c grade mushrooms [ 15 ] .
+as the technology of machine learning continues to develop and mature , learning algorithms need to be brought to the desktops of people who work with data and understand the application domain from which it arises .
+it is necessary to get the algorithms out of the laboratory and into the work environment of those who can use them .
+weka is a significant step in the transfer of machine learning technology into the workplace .

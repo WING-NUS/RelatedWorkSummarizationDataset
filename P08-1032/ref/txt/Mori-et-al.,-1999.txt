@@ -1,0 +1,98 @@
+image-to-word transformation based on dividing and vector quantizing images with words .
+abstract .
+we propose a method to make a relationship between images and words .
+we adopt two processes in the method , one is a process to uniformly divide each image into sub-images with key words , and the other is a process to carry out vector quantization of the sub-images .
+these processes lead to results which show that each sub-image can be correlated to a set of words each of which is selected from words assigned to whole images .
+original aspects of the method are , ( 1 ) all words assigned to a whole image are inherited to each divided sub-image , ( 2 ) the voting probability of each word for a set of divided images is estimated by the result of a vector quantization of the feature vector of sub-images .
+some experiments show the effectiveness of the proposed method .
+introduction .
+to permit complete access to the information available through the www , media-independent access methods must be developed .
+for instance , a method enabling use of an image is needed as a possible query to retrieve images [ 1 ] and texts .
+so far , various approaches regarding image-to-word transformation are being studied [ 2 ] - [ 4 ] .
+but they are very limited in terms of vocabulary or domain of images .
+in real data , it is not possible to segment objects in advance , assume the number of categories , nor avoid the presence of noise which is hard to erase .
+in this paper , a method of image-to-word transformation is proposed based on statistical learning from images to which words are attached .
+the key concept of the method is as follows : ( 1 ) each image is divided into many parts and at the same time all attached words for each image are inherited to each part ; ( 2 ) parts of all images are vector quantized to make clusters ; ( 3 ) the likelihood for each word in each cluster is estimated statistically .
+procedure of the proposed method .
+motivation and outline .
+to find the detailed correlation between text and image ( not simply discriminating an image into a few categories ) , each portion of the image should be correlated to words instead of the whole image to words .
+assigning keywords to images portion by portion would be an ideal way to prepare learning data .
+however , with the exception of a very small vocabulary , we cannot find such learning data nor can we prepare them .
+the more the size of the data increases , the more difficult assigning keywords to images portion by portion becomes .
+so we have to develop an another method to avoid this fundamental problem .
+to avoid this problem , we propose a simple method to correlate each portion of an image to key words only using key words for the whole image .
+the main point of this method is to reduce noise ( i.e. unsuitable correlating ) by accumulating similar partial patterns from many images with key words .
+for example , suppose an image has two words , ' sky ' and ' mountain ' . after dividing the image , the part which has only the sky pattern also has ' sky ' and ' mountain ' due to the inheriting of all words .
+the word ' mountain ' is inappropriate for the part .
+however if an another image has two words , ' sky ' and ' river ' , accumulating these two images , the sky pattern has two ' sky " s , one ' mountain ' and one ' river ' . in such way , we can hope that the rate of inappropriate words are gradually decreased by accumulating similar patterns .
+dividing image , feature extraction , and inheriting key words .
+each image is divided equally into rectangular parts because it is the simplest and fastest way to divide images .
+the number of divisions ranges from 3 x 3 to 7x7 .
+in this paper , the dividing method driven by the contents of images such as region extraction has not been tried .
+in parallel with the dividing , all words given for an image are inherited into each of the divided parts .
+this is a straightforward way to give words to each part because there is no informations to select words at this stage .
+extracted features for the divided images are ( 1 ) a 4x4x4 cubic rgb color histogram and ( 2 ) an 8- directions x 4-resolutions histogram of intensity after sobel filtering , which can be calculated by general fast and common operations .
+vector quantization .
+the feature vectors extracted from the divided parts of all learning images are clustered by vector quantization in a 96-dimensional space .
+in this paper , data incremental vector quantization is used .
+in this method centroids ( representative vectors for each cluster ) are created incrementally for data input .
+each cluster has one centroid and each data belongs to a cluster uniquely .
+there is only one control parameter in this method , that is , the threshold of error for quantization ( referred to later as scale ) .
+the less a scale is , the more centroids are created .
+determining correlated words from an unknown image .
+using estimated likelihood p ( wi i cj ) , correlated words are determined for an unknown image as follows : first , an unknown image is divided into parts and its features are extracted in the same way as for the learning data .
+second , the nearest centroids are found for all divided parts in the feature space .
+third , an average of the likelihoods of the nearest centroids is made .
+then , words which have the largest average value of the likelihoods are output .
+figure 2 shows the concept of determining correlated words from an unknown image .
+experiment and results 3.1 data used in the experiment .
+in the experiment , a multimedia encyclopedia is used as an original database .
+the encyclopedia contains about 60,000 items and about 10,000 images in total .
+about 10,000 items which have citations to images are selected from all items .
+therefore , the data for the experiment consists of about 10,000 pairs of images and corresponding documents ( in japanese ) .
+there are 9,681 images in the data .
+there are various kinds of images for the experiments ; landscapes , architecture , historical materials , plants ( photographs and sketches ) , portraits , paintings , etc .
+about 80 % of the images are in color .
+they have 256 grades of brightness and their sizes average 400x280 pixels .
+next , a set of words is extracted from the documents using the following procedure : divide documents in all items into words 4 and determine each word 's part-of-speech ( noun , verb , adjective , etc . ) using a morpheme analysis program called ~ chasen " ( resulting in about 100,000 vocabularies ) , select only ( common and proper ) nouns and adjectives ( resulting in about 51,708 vocabularies ) , eliminate rare words ( those which less than frequency of 64 ) , finally 1,585 words are remain ( their frequencies range from 5,150 to 64 ) after the extraction on average 32 words are attached to each image in average .
+as a result of the operation , 9,681 pairs of images and several words are prepared for the experiment .
+procedure used in the experiment .
+two-fold cross validation is used in the experiment .
+the data is randomly divided into two groups ( 4,841 and 4,840 ) .
+one group is used for learning ( i.e. estimating the likelihood for words ) , and the other group is used for recognition ( i.e. for the output of words ) , and the same process is performed once again after swapping the two groups .
+a unit of the scale for vector quantization is defined as the standard deviation of ' one-dimensional pull- downed data ' .
+the ' one-dimensional pull-downed data ' is a set of scalar data which is composed of all component of feature vectors in the original set of data .
+results .
+tables 1 and 2 show the examples of output words ( the top 3 words ) for images in the recognition group ( i.e.
+' unknown ' images ) .
+in tables 1 and 2 , bold words indicate ' hit ' words ( i.e. originally attached words for the image ) .
+tables 1 and 2 show that words output change depending on images input .
+however it is difficult with our method to output suitable words in the same manner humans do because of too large a variety of images in this data .
+in table 1 and 2 , hit words appear more than in the case of random selection ( if it is a random selection from a set of words with uniform frequencies , the probability is about 3 / 1585 ) .
+however the frequencies of words in our data is not uniform , the words which have high frequencies tend to appear many times ( ex .
+' year ' , ' japan ' ) . table 3 shows the numerical results of the experiment for various scales in vector quantization .
+in table 3 , the hit rate means the rate of originally attached words in output words .
+this table shows that scale 4 has the best hit rate .
+the difference between the hit rate in scale 4 and the hit rate in scale 0 shows that vector quantization is effective .
+as the scale increases above 4 , the hit rate decreases gradually .
+the scale 22 in table 3 has only one centroid .
+in this case , features from images are not considered at all .
+in other words , this case corresponds to the random selection from the set of words which has a biased frequencies .
+therefore , the difference between scale 22 and other smaller scales shows the effect when features from images are considered .
+compared to the case for scale 4 , there is a 7 % advantage .
+table 4 shows the result of the experiment for various number of divisions .
+table 4 shows that the more the image is divided , the better the hit rate is .
+this result cannot verify the optimal number of divisions for the data .
+however this result at least shows that the hit rate for not dividing ( 1 x 1 ) is inferior to the other .
+discussion .
+the results of the experiment show that the contribution of vector quantization is about 9 % .
+and they also show that the effect of considering images comparing to random selection is about 7 % .
+these percentages cannot be said to be ' significant or not ' unconditionally because it depends on the data used in experiments .
+as one can see from table 1 , a considerably wide domain of images and vocabulary are used in the experiment .
+it is easy to improve these percentages by restricting the domain of images and / or vocabulary .
+however it is desirable to make this method useful even though the domain of data is wide to make real-world data tractable .
+we hope that the results achieved by this method become useful when it is combined with a good human-interface system to help users in mining data .
+conclusion .
+in this paper , we have proposed a new method for correlating images with key words based on two kinds of processes , that is , dividing images and vector quantization .
+the result of experiments using encyclopedia data confirmed the contribution of these two processes .
+future work is needed to select a set of words depending on a given task and to determine the optimum size for dividing the images depending on the characteristics of image-word databases .

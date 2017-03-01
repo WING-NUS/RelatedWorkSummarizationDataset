@@ -1,0 +1,180 @@
+cross-lingual text categorization .
+abstract .
+this article deals with the problem of cross-lingual text categorization ( cltc ) , which arises when documents in different languages must be classified according to the same classification tree .
+we describe practical and cost-effective solutions for automatic cross-lingual text categorization , both in case a sufficient number of training examples is available for each new language and in the case that for some language no training examples are available .
+experimental results of the bi-lingual classification of the ilo corpus ( with documents in english and spanish ) are obtained using bi-lingual training , terminology translation and profile-based translation .
+introduction .
+text categorization is an important but usually rather inconspicuous part of document management and ( more generally ) knowledge management .
+it is used in many information-providing institutions , either in the form of a hierarchical mono-classification ( where does this document belong in our topic hierarchy ) or as a multi-classification , assigning zero or more keywords to the document , with the purpose of enhancing and simplifying retrieval .
+automatic text categorization techniques based on manually constructed class profiles have shown that a high accuracy can be achieved , but the cost of manual profile construction and maintenance is quite high .
+automatic text categorization systems based on supervised learning [ 16 ] can reach a similar accuracy , so that the ( semi ) automatic classification of monolingual documents is becoming standard practice .
+now the question arises how to deal efficiently with collections of documents in more than one language , that are to be classified according to the same classification tree .
+this article describes the cross-lingual classification techniques developed in the peking project 1 and presents the results achieved in classifying the ilo corpus using the lcs classification engine .
+in the following two sections we relate our research to previous research in cross-language information retrieval , describe the ilo corpus and our experimental approach .
+in section 4 we establish a baseline for mono-lingual classification of the ilo corpus , using different classification algorithms ( winnow and rocchio ) .
+in sections 5 and 6 we propose three different solutions for cross- language classification , implying increasingly smaller ( and therefore less costly ) translation tasks .
+then we describe our main experiments in multi-lingual classification , and compare the results to the baseline .
+previous research .
+when we embarked on this line of research , we did not find any publications addressing the area of cross-lingual text categorization as such .
+on the other hand , there is a rich literature addressing the related problem of cross-lingual information retrieval ( clir ) .
+both clir and cltc are based on some computation of the similarity between texts , comparing documents with queries or class profiles .
+the most important difference between them is the fact that clir is based on queries , consisting of a few words only , whereas in cltc each class is defined by an extensive profile ( which may be seen as a weighted collection of documents ) .
+in developing techniques for cltc , we want to keep in mind the lessons learned in clir .
+cross-lingual information retrieval .
+clir is concerned with the problem of a user formulating a query in one language in order to retrieve documents in several ( other ) languages .
+two approaches can be distinguished : translation-based systems either translate queries into the document language or languages , or they translate documents into the query language intermediate representation systems transfer both queries and documents into some language-independent representation , be it a thesaurus , some ontological representation or a language-independent vector space model .
+it is important to notice that all current approaches have inherent problems .
+translation of documents into a given language for a large number of documents is a rather expensive approach , especially in terms of time demands .
+using thesauri or ontological taxonomies requires the availability of parallel or comparable corpora , and the same is required by interlingual vector space techniques .
+to collect and process this material is time consuming , but more crucially , these techniques based on statistical approaches reduce accuracy when not enough material is available .
+the less expensive approach is to translate the queries .
+the most widely used techniques for translating queries proceed by first identifying content words ( simple or multi-word units such as compounds ) and then supplying all possible translations .
+these translations can be used in normal search engines , reducing the development costs .
+in [ 12 ] , the effect of the quality of the translation resource is investigated .
+furthermore it compares the effects of pre- and post-expansion : a query consisting of a number of words is expanded , either before or after translation ( or both ) , with related words from the lexicon or from some corpus .
+the expansion technique in the paper is a form of pseudo relevance feedback : using either the original query or its translated version and retrieving documents in the same language , the top 25 retrieved documents were taken as positive examples .
+from those , a set of 60 weighted query terms was composed including the original terms .
+this amounts to a combination of query expansion and term re-weighting .
+the effect of degrading the quality of the linguistic resources turned out to be gradual .
+therefore , it is to be expected that the effect of upgrading the resources should be gradual too .
+weakness of the translation resources can be compensated for by query expansion .
+in another recent paper [ 10 ] the use of language modeling in ir ( [ 2,7 ] ) is extended to bi-lingual clir .
+for each query q a relevance model is estimated consisting of a set of probabilities p ( wirq ) ( the probability that a word sampled at random from a relevant document would be the word w ) .
+in monolingual ir this relevance model is estimated by taking a set of documents relevant to the query .
+in clir , we need a relevance model for both the source language and the target language .
+the second can be obtained using either a parallel corpus or a bi-lingual lexicon giving translation probabilities .
+the paper provides strong support for the language modeling approach in ir , in spite of the simplicity of the language models used ( unigram ) .
+in using more informative representations ( linguistically motivated terms ) the effect should possibly be even larger .
+cross-lingual text categorization .
+cross-lingual text categorization ( cltc ) or cross-lingual classification is a new research subject , about which no previous literature appears to be available .
+still , it concerns a practical problem , which is increasingly felt in e.g. the documentation departments of multinationals and international organizations as they come to rely on automatic document classification .
+it is also manifest in many search engines on the web , which rely on a hierarchical classification of web pages to reduce search complexity and to raise accuracy : how should they combine this hierarchy with a classification on languages ?
+we shall distinguish two practical cases of cltc : one classifier is trained on labeled documents written in different languages ( or possible using different languages within one document ) .
+most practical situations will be between these two extremes .
+our experiments will show that the following is a feasible scenario : an organization , which already has an automatic classification system installed , wishes to extend this system to classify also documents in other languages .
+in order to ease the transition , some documents in those other languages are provided , either in untranslated form but manually supplied with a class label , or in translated form and without such a label .
+with limited manual intervention , a bootstrap of the system can be performed , so that documents in all those languages can be classified automatically in their original form by a single poly-lingual classifier .
+by means of a number of experiments , we shall test the following hypotheses : poly-lingual training : simultaneous training on labeled documents in languages a and b will allow us to classify both a and b documents with the same classifier cross-lingual training : a monolingually trained classifier for language a plus a translation of the most important terms from language b to a allows to classify documents written in b. lessons from clir for cltc ?
+in cltc , for performing translations we shall have to use similar linguistic resources as in clir .
+since our resources are less than ideal , should we compensate by implementing pre- and post-expansion ?
+in cltc , the role of the queries ( with which test documents are compared ) is played by the class profiles , which are composed from many documents ; this may well have the same effect as explicit expansion of the documents or the profiles with morphological variants and synonyms .
+in fact , a class profile can be seen as an approximative ( unigram ) language model for the documents in that particular class .
+the experimental procedure .
+all experiments were performed with version 2.0 of the linguistic classification system lcs developed in the peking project2 , which implements the winnow and rocchio algorithms .
+it makes sense to compare those two algorithms , because we expect them to show qualitative differences in behaviour for some tasks .
+in rocchio a class profile is essentially computed as a centroid , a weighted sum of the train documents , whereas winnow [ 5,6 ] by heuristic techniques computes ( just like svm ) an optimal linear separator in the term space between positive and negative examples .
+in the experiments we have used either a 25 / 75 or a 50 / 50 split of the data for training and testing , as stated in the text , with 12-fold or 16-fold cross- validation .
+our goal is to compare the effect of different representations of the data rather than to reach the highest accuracy , and keeping the train sets small is good for performance ( the cross-validation experiments are computationally very heavy ) .
+as a measure of accuracy we have used the micro-averaged f1 value .
+although the ilo corpus is mono-classified ( precisely one class per document ) we allowed the classifiers to give 0-3 classes per document ( which gives an indication of the accuracy in multi-classification ) .
+multi-classification gives more room for errors , and therefore has a somewhat lower accuracy than mono- classification .
+for each representation , we first determined the optimal tuning and term selection parameters on the train set .
+the optimal parameter values depend on the corpus and on the document representation ; their tuning is known to have an important effect on the accuracy ( see e.g. [ 8 ] ) , and without it the results from different experiments are hard to compare .
+the ilo corpus .
+the ilo corpus is a collection of full-text documents , each labeled with one classname ( mono-classification ) which we have downloaded from the ilolex website of the international labour organisation3 .
+ilolex describes itself as a trilingual database containing ilo conventions and recommendations , ratification information , comments of the committee of experts and the committee on freedom of association , representations , complaints , interpretations , general surveys , and numerous related documents .
+the languages concerned are english , spanish and french .
+from ilolex we extracted a bi-lingual corpus ( only english and spanish ) of documents labeled for classification .
+although in the actual database every document has a translation , in constructing our corpus the documents were selected according to rough balance , avoiding total symmetry of documents in terms of language , that is , we have included some documents both in english and spanish , and some in only one language .
+some statistics of the ilo corpus : the english version consists of 2165 documents .
+it comprises ( after the removal of html tags ) 4.2 million words , totalling 27 mbytes .
+the average length of a document is 1942 words , and the document length varies widely , between 39 and 38646 words. the spanish version consists of 1590 documents .
+it comprises ( after the removal of html tags ) 4.7 million words , 30 mbytes .
+the document length ranges from 117 to 7500 words .
+most of the documents are around 2000 words .
+the corpus is mono-classified into 12 categories , with a rather varying number of documents per category : the mono-lingual baseline .
+in order to establish a baseline with which to compare the results of cross- lingual classification , we first measured the accuracy achieved in mono-lingual classification of the spanish and english documents in the ilo corpus .
+we also compared the traditional keyword representation with one in which multi-word terms were contracted into a single term ( normalized keywords ) .
+monolingual keywords .
+the original documents were minimally preprocessed : de-capitalization , segmentation into words and elimination of certain special characters .
+in particular , no lemmatization was performed .
+the results ( 25 / 75 shuffle , 12-fold cross- validation ) are as follows : the accuracy on the spanish documents is significantly lower than on the english documents ( according to steiner s theorem for a pierson-iii distribution with bounds zero and one , a b and c d are different with risc < 3 % when | a ^ c | > ^ b2 + d2 , see page 929 of [ 1 ] ) , which is due not only to language characteristics but also to the fact that fewer train documents are available .
+in mono-classifying the english documents , winnow is significantly more accurate than rocchio .
+figure 1 shows learning curves for the english documents , one for winnow and one for rocchio . ( the learning curves for the spanish documents are not given here , because they look quite similar . )
+using a 50 / 50 split of the english corpus , a classifier was trained in 10 epochs ( = stepwise increasing subsets of the train set ) and tested with the test set of 50 % of the documents .
+this process was repeated for 16 different shuffles of the documents and the results averaged ( 16-fold cross-evaluation ) .
+the graphs show the accuracy as a function of the number of documents trained , with error bars .
+notice that winnow is on the whole more accurate than rocchio , but that the variance is much larger for winnow than for rocchio .
+lemmatized keywords .
+using the same pre-processing but in addition lemmatizing the noun and verb forms in the documents , the results are as follows : in distinction to the situation in query-based retrieval , in text categorization the lemmatization of terms does not seem to improve the accuracy : although lemmatization enhances the recall of terms , it may well hurt precision more ( see also [ 15 ] ) .
+in text categorization the positive effect of the conflation of morphological variants of a word is small : if two forms of a word are both important terms for a class , then they will both obtain an appropriate positive weight for that class provided they occur often enough , and if they don t occur often enough , their contribution is not important anyway .
+linguistically motivated terms .
+the use of n-grams instead of single words ( unigrams ) as terms has been advocated for automatic text classification .
+experiments like those of [ 11,4 ] , where only statistically relevant n-grams were used , did not show better results than the use of single keywords .
+for our experiment in cltc the extraction of multi-word terms was required in order to be able to find proper translation equivalents , i.e. trade union vs. sindicato in spanish .
+in addition , for the monolingual experiments , we wanted to test to what extent linguistically motivated multi-word terms ( for a survey on methods for automatic extraction of technical terms see [ 3 ] ) , rather than just statistically motivated ones , could make any improvement .
+for spanish , we extracted these linguistically motivated terms ( lmt ) using both quantitative and linguistic strategies : a first list of candidates was extracted using mutual information and likelihood ratio measures over the available corpus .
+the list of candidates was filtered by checking it against the list of well formed noun phrases that followed the patterns n + n , n + adj and n + prep + n.
+this process ensured that all spanish multi-words were both linguistically and statistically motivated and resulted in 303 bigrams ( n + adj ) , and 288 trigrams ( n + de + n mainly ) .
+for want of a better term , we shall use the term normalized for a text in which important multi-word expressions have been contracted into one term ( e.g. software engineering or trabajadores migrantes ) .
+the list of english multi-word expressions was built from the multi-words present in the bilingual database ( see section 6.1 ) , that is , those resulting from the translation of spanish terms and lmt s .
+training and testing on normalized documents gave the following results : for english , the normalization has no effect , for rocchio on spanish there is a barely significant improvement .
+for winnow there is no effect .
+even when using linguistic phrases rather than statistical phrases , document normalization seems to make no significant improvement to automatic classification ( see also [ 9,8 ] ) .
+comparing the learning curves .
+in order to faciltiate their comparison , figure 2 shows , for each combination of language and classification algorithm , the learning curves ( 50 / 50 split , 10 epochs , 16-fold cross-validation ) for each of the three document representations .
+for winnow , the representation chosen makes no difference .
+rocchio gains somewhat by normalisation , especially for english , whereas lemmatization has a small negative impact .
+observe also that lemmatization and normalization do not improve the classification accuracy for small numbers of training documents , where it might be expected that term conflation would be more effective .
+since winnow is the most accurate algorithm , we are more interested in its behaviour than in that of rocchio , and therefore we may ignore the influence of lemmatization and normalization implied in the translation processes in the following sections .
+poly-lingual training and testing .
+in this section we shall investigate the effect of training on labeled documents written in a mix of languages .
+since we have a bi-lingual corpus , we shall restrict ourselves ( without loss of generality ) to the bi-lingual case .
+the bi-lingual training approach amounts to building a single classifier from a set of labeled train documents in both languages , which will classify documents in any of the two trained languages , without translating anything and even without trying to find out what language the documents are in .
+we exploit the strong statistical properties of the classification algorithms , and use no linguistic resources .
+the 2167 english and 1590 spanish ilo documents ( labeled with the same class-labels ) were combined at random into one corpus .
+then this corpus was randomly split into 4 train sets each containing 15 % ( 563 ) of the documents and a fixed test set of 40 % of the documents , a train set of size comparable to the above experiments , and tested with the remaining 40 % as test set , with the following results : using the winnow classifier , the accuracy achieved for the mixture of spanish and english documents lies after 563 train documents above that for spanish documents alone .
+but at this point only about 225 spanish documents have been trained , so that it is quite surprising that the accuracy is so high .
+in graph 3 the learning curve for bi-lingual training ( 50 / 50 split , 16-fold cross- validation ) is compared with those for the spanish and english mono-lingual corpora .
+again , keeping in mind the number of documents trained in each language , the curve for bi-lingual classification with winnow is nicely in the middle .
+although the vocabularies of the two languages are very different , winnow trains a classifier which is good at either .
+rocchio on the other hand is quite negatively impacted .
+it attempts to construct a centroid out of all documents in a class , and is confused by a document set that has two very different centroids .
+as an afterthought , we tested how well an english classifier understands spanish , by training winnow mono on 2164 english documents and testing on 1590 spanish documents , without any translation whatsoever .
+we found an accuracy of 10.75 % !
+in spite of the difference in vocabulary , there are still some terms shared , probably mostly non-linguistic elements ( proper names , abbreviations like ceacr , maybe even numbers ) which are the same in both languages .
+cross-lingual training and testing .
+for cross-lingual text categorization , three translation strategies may be distinguished .
+the first two are familiar from cross language information retrieval ( clir ) : document translation : although translating the complete document is workable , it is not popular in clir , because automatic translations are not satisfactory and manual translations are too expensive terminology translation : constructing a terminology for each of the relevant domains ( classes ) , and translating all domain terms .
+it is expected that these include all or most of the terms which are relevant for classification. profile-based translation : translate only the terms actually occurring in the class profiles ( most important terms or mit s ) .
+translation of the complete document ( either manually or automatically ) has not been evaluated by us , since it costs much more effort than the other approaches possibility , without promising better results .
+our experiments with the other techniques are described below .
+the linguistic resources .
+we know from cross-lingual information retrieval applications that existing translation lexica are very limited .
+in order to enlarge their coverage it is also possible to extract translation equivalences from aligned corpora. but both approaches show some drawbacks [ 14 ] .
+while bi-lingual dictionaries and glossaries provide reliable information , they propose more than one translation per term without preference information .
+aligned corpora for very innovative domains , such as technical ones , offer contextualized translations , but the errors introduced by statistical processing of texts in order to align them are considerable .
+our translation resources were built using a corpus-driven approach , following a frequency criterion to include nouns , adjectives and verbs with a frequency higher than 30 occurrences in the bilingual lexicon .
+the resulting list consisted of 4462 wordforms ( out of 4.619.681 tokens ) for spanish and 5258 ( out of 4.609.670 tokens ) for english .
+terminology translation .
+in the approach based on terminology translation , these resources were used as follows : training a classifier on all 2167 normalized english documents using this classifier to classify the 1590 pseudo-english ( spanish ) documents .
+our experiments ( training on subsets of 25 % of the english documents , testing on all pseudo-english documents , 12-fold cross-validation , and similarly for spanish ) gave the following results : winnow s mono-classification of pseudo-english documents after training on english documents is quite good ( as good as when training and testing on spanish keywords ) , but when translating english documents to pseudo-spanish the result is not good ( which is only partly explained by the lower number of train examples ) .
+rocchio is in all cases much worse than for monolingual classification .
+both algorithms are much worse in multi-classification .
+a closer look at the classification process shows why : the test documents obtain very low and widely varying thresholds .
+without forcing each document to obtain one class , 25 % of the pseudo-english documents and nearly 50 % of the pseudo-spanish documents are not accepted by winnow for any class .
+we have violated the fundamental assumption that train- and test-documents must be sampled from the same distribution , on which the threshold computation ( and indeed the whole classification approach ) is based .
+in the pseudo-english documents most english words from the train set are missing , and therefore the thresholds are too high .
+furthermore , the many synonyms generated as a translation for a single term in the original distort their frequency distribution .
+this thresholding problem can be solved by filtering the words in the english train set and using a validation set to set the thresholds ( not tried here ) .
+in spite of the thresholding problem , terminology translation is a viable approach for cross-lingual mono-classification .
+profile-based translation .
+why don t we ask the classifier what terms it would like to find ?
+when using an english classifier on spanish terms , we should need for each english term in the profile a list of only those terms in spanish that can be translated to that english term including morphological variation , spelling variation and synonymy .
+we need a translation for only the terms actually occurring in the profile , and not for any other term ( because it would not contribute anything ) .
+our previous research [ 13 ] has shown that , using a suitable term selection algorithm , a surprisingly small number of terms per class ( 40-150 ) gives optimal accuracy .
+all other terms can safely and even profitably be eliminated .
+based on this observation , we have investigated the effect of translating only towards the words occurring in the class profiles , performing the following experiment : we determined the best 150 terms in classifying all english documents with winnow , and combined the results into a vocabulary of 923 different words ( out of 22000 ) a translation table from spanish to english was constructed , comprising for each english word in the vocabulary those spanish words that may be translated to it .
+this classifier was tested on all spanish documents , translating only the spanish terms having a translation towards a word in the vocabulary .
+the resulting accuracy when using profile-translation ( training a classifier on english documents and classifying with it spanish documents in which just the profile words have been translated ) gave the following results : taking into account that the best accuracy achieved in the mono-classification of spanish documents was .775 , that no labeled spanish documents were needed and that the required translation effort is very small , an accuracy of .724 in cross- lingual classification is not bad .
+on this corpus , rocchio does as well as winnow in mono-classification and even significantly better in multi-classification .
+conclusion .
+cross-lingual text categorization is actually easier than cross-lingual information retrieval , for the same reason that lemmatization and term normalization have much less effect in cltc than in clir : the law of large numbers is with us .
+given an abundance of training documents , our statistical classification algorithms will function well , even in the absence of term conflation , which is the cltc equivalent of expansion in clir .
+we do not have to work hard to ensure that all linguistically related forms or synonyms of a word are conflated : if two equivalent forms of a word occur frequently enough to have an impact on classification , they will also do so as independent terms .
+we have found viable solutions for two extreme cases of cross-lingual text categorization , between which all practical cases can be situated .
+on the one hand we found that poly-lingual training , training one single classifier to classify documents in a number of languages , is the simplest approach to cross-lingual text categorization , provided that enough training examples are available in the respective languages ( tens to hundreds ) , and the classification algorithm used is immune to the evident disjointedness of the resulting class profile ( as is the case for winnow but not for rocchio ) .
+at the other extreme , when for the new language no labeled train documents are available it is possible to use terminology translation : find , buy or construct a translation resource from the new language to the language in which the classifier has been trained , and translate just the typical terms of the documents .
+finally , it is possible to translate only the terms in the class profile .
+although the accuracy is somewhat lower , this profile-based translation provides a very cost-effective way to perform cross-lingual classification : in our experiment an average of 60 terms per class had to be translated .
+in a practical classification system , the above techniques can be combined , by using terminology translation or profile-based translation to generate examples for poly-lingual training and then bootstrap the poly-lingual classifier ( with some manual checking of uncertain classifications ) .

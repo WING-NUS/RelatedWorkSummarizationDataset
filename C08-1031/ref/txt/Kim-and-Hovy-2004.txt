@@ -1,0 +1,122 @@
+determining the sentiment of opinions .
+abstract .
+identifying sentiments ( the affective parts of opinions ) is a challenging problem .
+we present a system that , given a topic , automatically finds the people who hold opinions about that topic and the sentiment of each opinion .
+the system contains a module for determining word sentiment and another for combining sentiments within a sentence .
+we experiment with various models of classifying and combining sentiment at word and sentence levels , with promising results .
+introduction .
+what is an opinion ?
+the many opinions on opinions are reflected in a considerable literature ( aristotle 1954 ; perelman 1970 ; toulmin et al. 1979 ; wallace 1975 ; toulmin 2003 ) .
+recent computational work either focuses on sentence subjectivity ( wiebe et al. 2002 ; riloff et al. 2003 ) , concentrates just on explicit statements of evaluation , such as of films ( turney 2002 ; pang et al. 2002 ) , or focuses on just one aspect of opinion , e.g. , ( hatzivassiloglou and mckeown 1997 ) on adjectives .
+we wish to study opinion in general ; our work most closely resembles that of ( yu and hatzivassiloglou 2003 ) .
+since an analytic definition of opinion is probably impossible anyway , we will not summarize past discussion or try to define formally what is and what is not an opinion .
+for our purposes , we describe an opinion as a quadruple [ topic , holder , claim , sentiment ] in which the holder believes a claim about the topic , and in many cases associates a sentiment , such as good or bad , with the belief .
+for example , the following opinions contain claims but no sentiments : like yu and hatzivassiloglou ( 2003 ) , we want to automatically identify sentiments , which in this work we define as an explicit or implicit expression in text of the holders positive , negative , or neutral regard toward the claim about the topic . ( other sentiments we plan to study later . )
+sentiments always involve the holders emotions or desires , and may be present explicitly or only implicitly : in this paper we address the following challenge problem .
+given a topic ( e.g. , should abortion be banned ? ) and a set of texts about the topic , find the sentiments expressed about ( claims about ) the topic ( but not its supporting subtopics ) in each text , and identify the people who hold each sentiment .
+to avoid the problem of differentiating between shades of sentiments , we simplify the problem to : identify just expressions of positive , negative , or neutral sentiments , together with their holders .
+in addition , for sentences that do not express a sentiment but simply state that some sentiment ( s ) exist ( s ) , return these sentences in a separate set .
+we approach the problem in stages , starting with words and moving on to sentences .
+we take as unit sentiment carrier a single word , and first classify each adjective , verb , and noun by its sentiment .
+we experimented with several classifier models .
+but combining sentiments requires additional care , as table 1 shows .
+a sentence might even express opinions of different people .
+when combining word-level sentiments , we therefore first determine for each holder a relevant region within the sentence and then experiment with various models for combining word sentiments .
+we describe our models and algorithm in section 2 , system experiments and discussion in section 3 , and conclude in section 4 .
+algorithm .
+given a topic and a set of texts , the system operates in four steps .
+first it selects sentences that contain both the topic phrase and holder candidates .
+next , the holder-based regions of opinion are delimited .
+then the sentence sentiment classifier calculates the polarity of all sentiment-bearing words individually .
+finally , the system combines them to produce the holders sentiment for the whole sentence .
+figure 1 shows the overall system architecture .
+section 2.1 describes the word sentiment classifier and section 2.2 describes the sentence sentiment classifier .
+word sentiment classifier .
+word classification models .
+for word sentiment classification we developed two models .
+the basic approach is to assemble a small amount of seed words by hand , sorted by polarity into two listspositive and negativeand then to grow this by adding words obtained from wordnet ( miller et al. 1993 ; fellbaum et al. 1993 ) .
+we assume synonyms of positive words are mostly positive and antonyms mostly negative , e.g. , the positive word good has synonyms virtuous , honorable , righteous and antonyms evil , disreputable , unrighteous .
+antonyms of negative words are added to the positive list , and synonyms to the negative one .
+to start the seed lists we selected verbs ( 23 positive and 21 negative ) and adjectives ( 15 positive and 19 negative ) , adding nouns later .
+since adjectives and verbs are structured differently in wordnet , we obtained from it synonyms and antonyms for adjectives but only synonyms for verbs .
+for each seed word , we extracted from wordnet its expansions and added them back into the appropriate seed lists .
+using these expanded lists , we extracted an additional cycle of words from wordnet , to obtain finally 5880 positive adjectives , 6233 negative adjectives , 2840 positive verbs , and 3239 negative verbs .
+however , not all synonyms and antonyms could be used : some had opposite sentiment or were neutral .
+in addition , some common words such as great , strong , take , and get occurred many times in both positive and negative categories .
+this indicated the need to develop a measure of strength of sentiment polarity ( the alternative was simply to discard such ambiguous words ) to determine how strongly a word is positive and also how strongly it is negative .
+this would enable us to discard sentiment-ambiguous words but retain those with strengths over some threshold .
+armed with such a measure , we can also assign strength of sentiment polarity to as yet unseen words .
+given a new word , we use wordnet again to obtain a synonym set of the unseen word to determine how it interacts with our sentiment seed lists .
+sentence sentiment classifier .
+as shows in table 1 , combining sentiments inasentence canbe tricky .
+we are interested inthe sentiments ofthe holder about the claim .
+manual analysis showed that such sentiments can be found most reliably close to the holder ; without either holder or topic / claim nearby as anchor points , even humans sometimes have trouble reliably determining the source of a sentiment .
+holder identification .
+we used bbns named entity tagger identifinder to identify potential holders of an opinion .
+we considered person and organization as the only possible opinion holders .
+for sentences with more than one holder , we chose the one closest to the topic phrase , for simplicity .
+this is a very crude step .
+a more sophisticated approach would employ a parser to identify syntactic relationships between each holder and all dependent expressions of sentiment .
+sentiment region .
+lacking a parse of the sentence , we were faced with a dilemma : how large should a region be ?
+we therefore defined the sentiment region in various ways ( see table 3 ) and experimented with their effectiveness , as reported in section 3 .
+we built three models to assign a sentiment category to a given sentence , each combining the individual sentiments of sentiment-bearing words , as described above , in a different way .
+the intuition here is something like negatives cancel one another out .
+here the system assigns the same sentiment to both the california supreme court agreed that the states new term-limit law was constitutional and the california supreme court disagreed that the states new term-limit law was unconstitutional .
+for this model , we also included negation words such as not and never to reverse the sentiment polarity .
+model 1 is the harmonic mean ( average ) of the sentiment strengths in the region : experiments .
+the first experiment examines the two word sentiment classifier models and the second the three sentence sentiment classifier models .
+word sentiment classifier .
+for test material , we asked three humans to classify data .
+we started with a basic english word list for foreign students preparing for the toefl test an adjectives and verbs .
+from this we randomly selected 462 adjectives and 502 verbs for human classification .
+human1 and human2 each classified 462 adjectives , and human2 and human3 502 verbs .
+the classification task is defined as assigning each word to one of three categories : positive , negative , and neutral .
+human-human agreement .
+human-machine agreement .
+of the test data , the algorithm classified 93.07 % of adjectives and 83.27 % of verbs as either positive and negative .
+the remainder of adjectives and verbs failed to be classified , since they did not overlap with the synonym set of adjectives and verbs .
+in table 5 , the seed list included just a few manually selected seed words ( 23 positive and 21 negative verbs and 15 and 19 adjectives , repectively ) .
+we decided to investigate the effect of more seed words .
+after collecting the annotated data , we added half of it ( 231 adjectives and 251 verbs ) to the training set , retaining the other half for the test .
+data . 100 sentences were selected from the duc 2001 corpus with the topics illegal alien , term limits , gun control , and nafta .
+two humans annotated the 100 sentences with three categories ( positive , negative , and n / a ) .
+to measure the agreement between humans , we used the kappa statistic ( siegel and castellan jr . 1988 ) .
+the kappa value for the annotation task of 100 sentences was 0.91 , which is considered to be reliable .
+test on human annotated data .
+we experimented on section 2.2.3 3 models of sentiment classifiers , using the 4 different window definitions and 4 variations of word-level classifiers ( the two word sentiment equations introduced in section 2.1.1 , first with and then without normalization , to compare performance ) .
+since model 0 considers not probabilities of words but only their polarities , the two word- level classifier equations yield the same results .
+consequently , model 0 has 8 combinations and models 1 and 2 have 16 each .
+to test the identification of opinion holder , we first ran models with holders that were annotated by humans then ran the same models with the automatic holder finding strategies .
+the results appear in figures 2 and 3 .
+correctness of an opinion is determined when the system finds both a correct holder and the appropriate sentiment within the sentence .
+since human1 classified 33 sentences positive and 33 negative , random classification gives 33 out of 66 sentences .
+similarly , since human2 classified 29 positive and 34 negative , random classification gives 34 out of 63 when the system blindly marks all sentences as negative and 29 out of 63 when it marks all as positive .
+the systems best model performed at 81 % accuracy with the manually provided holder and at 67 % accuracy with automatic holder detection .
+problems .
+word sentiment classification .
+as mentioned , some words have both strong positive and negative sentiment .
+for these words , it is difficult to pick one sentiment category without considering context .
+second , a unigram model is not sufficient : common words without much sentiment alone can combine to produce reliable sentiment .
+for example , in term limits really hit at democracy , says prof. fenno , the common and multi-meaning word hit was used to express a negative point of view about term limits .
+if such combinations occur adjacently , we can use bigrams or trigrams in the seed word list .
+when they occur at a distance , however , it is more difficult to identify the sentiment correctly , especially if one of the words falls outside the sentiment region .
+sentence sentiment classification .
+even in a single sentence , a holder might express two different opinions .
+our system only detects the closest one .
+another difficult problem is that the models cannot infer sentiments from facts in a sentence .
+she thinks term limits will give women more opportunities in politics expresses a positive opinion about term limits but the absence of adjective , verb , and noun sentiment-words prevents a classification .
+although relatively easy task for people , detecting an opinion holder is not simple either .
+as a result , our system sometimes picks a wrong holder when there are multiple plausible opinion holder candidates present .
+employing a parser to delimit opinion regions and more accurately associate them with potential holders should help .
+discussion .
+how does adding the neutral sentiment as a separate category affect the score ?
+it is very confusing even for humans to distinguish between a neutral opinion and non- opinion bearing sentences .
+in previous research , we built a sentence subjectivity classifier .
+unfortunately , in most cases it classifies neutral and weak sentiment sentences as non-opinion bearing sentences .
+conclusion .
+sentiment recognition is a challenging and difficult part of understanding opinions .
+we plan to extend our work to more difficult cases such as sentences with weak-opinion-bearing words or sentences with multiple opinions about a topic .
+to improve identification of the holder , we plan to use a parser to associate regions more reliably with holders .
+we plan to explore other learning techniques , such as decision lists or svms .
+nonetheless , as the experiments show , encouraging results can be obtained even with relatively simple models and only a small amount of manual seeding effort .

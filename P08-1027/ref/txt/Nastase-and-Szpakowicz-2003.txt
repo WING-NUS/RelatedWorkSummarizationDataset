@@ -1,0 +1,227 @@
+exploring noun-modifier semantic relations .
+abstract .
+we explore the semantic similarity between base noun phrases in clusters determined by a comprehensive set of semantic relations .
+the attributes that characterize modifiers and nouns are extracted from wordnet and from roget 's thesaurus .
+we use various machine learning tools to find combinations of attributes that explain the similarities in each category .
+the experiments gave promising results , with a good level of generalization and interesting sets of rules .
+introduction .
+we consider the nature of semantic relations in base noun phrases ( base nps ) consisting of a head noun and one modifier ( adverb , adjective , noun ) .
+such relations capture the interaction between the two elements .
+base nps in the same semantic relation should , intuitively , share some characteristics .
+finding features that make base nps in the same semantic relation close to one another should also indirectly validate the list of semantic relations .
+the list with which we work consists of 50 semantic relations , and was developed by unifying three separate lists of relations , for the syntactic levels of multi-clause sentences , clauses and noun phrases ( nastase and szpakowicz , 2001a ) .
+each of the three initial lists was tested and validated ( barker , 1998 ) .
+the list with examples is presented in the appendix .
+we look at descriptions of modifiers and head nouns in lexical resources to find the attributes that make them similar with respect to our semantic relations .
+we explore available lexical resources ( wordnet and roget 's thesaurus ) to provide the attributes , and machine learning ( ml ) tools to find the most salient combinations of attributes .
+the choice of ml tools is driven by the type of output we want - symbolic rules , easy to understand - and the type of processing of the attributes imposed by our task .
+in principle we look for a generalization in the ontology that underlies wordnet or roget 's .
+we experiment with memory-based learning ( mbl ) , decision tree induction ( c5.0 ) , rule induction ( ripper ) and relational learners ( foil ) .
+the most common methods of assessing word similarity compute a distance ( budanitsky and hirst , 2001 ) , or find the information content of the most specific subsuming concept in the is-a hierarchy in a lexical resource ( resnik , 1999 ) similarity between noun-modifier pairs is more complex .
+the distance between the two heads or two modifiers in a pair of base nps can be zero , yet there may be no similarity between them , with respect to semantic relations .
+there may be a way of combining the semantic distance between the heads with those between the modifiers .
+we are not looking for such a formula .
+instead , we use the same lexical resources that are employed in finding distance metrics , and we extract features that characterize the words in base nps .
+there may be several reasons why base nps are similar the similarity may be between the components of the base nps , for example : agent � student protest and animal attack - the modifiers are sentient beings , the head nouns express actions .
+otherwise , there may be a relational similarity , for example : type � oak tree and cumulus cloud - in both nps the head noun is a hypernym of the modifier .
+each relation may have its own signature , as far as such characteristics as described above are concerned .
+we will therefore let the machine learning tool find the appropriate combination of attributes for the purpose of characterization .
+a review of related work presented in section 2 is followed by an overview of the data used in these experiments in section 3 .
+a discussion of the attributes that characterize the data , collected from wordnet1.6 and roget 's is presented in section 5 .
+as an intermediate step we need a mapping between word senses in these two lexical resources .
+the algorithm that disambiguates senses in roget 's based on information extracted from wordnet is presented in section 4 .
+the learning experiments are the core of this work ; their results are discussed in section 6 .
+related work .
+several attempts have been made to learn the assignment of semantic relations to modifier-noun pairs , without necessarily seeking insight into their nature .
+the domains , the lists of relations and the methods all vary .
+rosario and hearst ( 2001 ) perform ml using neural networks .
+they learn semantic relations between a noun and its modifier in a medical domain , to which the list of semantic relations and the lexical resource have been tailored .
+rosario et al. ( 2002 ) presents a continuation of that research .
+the authors look manually for rules that classify correctly noun compounds in the medical domain , based on the mesh lexical hierarchy ( medical subject headings ) .
+the noun compounds are extracted automatically , and sampled for manual analysis .
+the hierarchy is traversed in a top to bottom manner to find a level at which the noun compounds displaying different relations are properly separated .
+analysis has shown that finding the appropriate level of generalization depends on the relation involved ; some are easier to capture in rules than others .
+vanderwende ( 1994 ) uses a dictionary built from texts to find clues about possible semantic relations in which the word might be involved ( for example , finding for in some definition indicates that , in combination with another word , it could display the purpose relation ) .
+in this work words are taken one by one , with no interest in generalization .
+for general nps , barker and szpakowicz ( 1998 ) use a simplified case of memory based learning .
+they store noun-modifier-indicator-relation tuples ( the indicator is usually a preposition ) , and match a new np with previously stored patterns .
+no lexical resource is used .
+in an experiment that does not involve modifier-noun pairs , li and abe ( 1998 ) generalize case frames of specific verbs to concepts using wordnet 's ontology .
+the experiment aims to find generalizations for the fillers of each syntactic argument of a specific verb , by finding an appropriate cut in the tree structure ( defined by the hypernym / hyponym relations in the resource ) that covers the examples extracted from a corpus .
+the best of several possible cuts in the tree is chosen according to the mdl principle .
+clark and weir ( 2001 ) present a similar approach in choosing the sense of a noun in wordnet .
+the choice is constrained by the predicate whose argument the noun is , and by the probability of the semantic class to which the noun can belong according to its senses in wordnet .
+lauer ( 1995 ) maps words in noun compounds onto categories in roget 's thesaurus , in order to find probabilities of occurrence of certain noun compounds and their paraphrases .
+there is no automatic process in finding the best level of generalization .
+all these approaches consider the generalization level of one concept .
+in this process , only words are used .
+our approach is different .
+we look at generalizations of two connected concepts .
+there are several features which preliminary analysis has shown to be relevant to recognizing the relation between the concepts : is any of the words the result of nominalization or adjectivalization , is it an -er nominal , is it a noun , adjective or adverb .
+the aim is to find rules which justify the existence of certain type of interaction between the two elements of the base np , through the analysis of information extracted from publicly available resources for a general domain , more general semantic relations , and ml methods that present an insightful look into the nature of the data .
+the data .
+for the experiments described in this paper we will use a data set consisting of 600 modifier-noun pairs .
+the modifiers are nouns , adjectives or adverbs .
+these examples were gathered manually from ( levi , 1978 ) , automatically from ( larrick , 1961 ) , semiautomatically from semcor ( the version annotated with wordnet 1.6 senses ) .
+some examples were constructed and added for relations for which few or no examples were found in these texts .
+the examples that were not extracted from semcor were manually annotated with wordnet 1.6 senses .
+all the pairs were manually annotated with 30 semantic relations from our set of 50 .
+this is a rather small data set , especially compared with the richness of noun phrases in language .
+using a larger set brings about a very labour-intensive task of annotating data with semantic relations , and maybe wordnet senses .
+what we look for is a set of rules to constitute the core of a semi-automatic learning system , which will use these rules to tag other examples with semantic relations .
+the analysis we perform using this small set of data will reveal which relations are harder to characterize and need more data , and which of them have indicators that are easier to capture in rules .
+the distribution of semantic relations in this data set is presented in table 1 .
+word sense disambiguation in roget 's using wordnet .
+including roget 's in our experiments introduces a subsidiary task - disambiguating word senses in roget 's .
+doing it all manually is unrealistic , so we have to look for a method of bootstrapping the disambiguation process .
+we turn to a resource that contains analogous information .
+we propose an algorithm that suggests a sense using the information in wordnet .
+suggestions are then manually corrected ; the idea is for the algorithm to reduce significantly the effort of manual annotation .
+we also had the option of using contextual information ( adjacent words , for example ) from the corpora we experiment with , but we have decided against that , as an algorithm which uses only wordnet information would be more general .
+the results obtained encouraged us to keep our simple algorithm .
+yarowsky ( 1995 ) selected roget 's senses for words using collocation information from corpora .
+we wanted to use only information about the word itself and its sense in wordnet .
+kwong ( 1998 ) has shown that it is possible to determine the sense of a word in roget 's .
+she manually applied a simple algorithm that uses synsets , hypernyms and wordnet glosses , to a small set of words ( 36 , divided into 3 test groups ) .
+her experiment was carried out for nouns only .
+word sense disambiguation that we propose is automatic .
+it handles nouns , adjectives and adverbs extracted from the base noun phrases in the data set with which we work .
+word senses in roget 's were disambiguated using information about the word in wordnet .
+specifically , the paragraph corresponding to each possible sense in roget 's was intersected with the mutt-net ( the ordered set of hypernyms , hyponyms , meronyms and holonyms ) of the word sense in wordnet ; the paragraph with the best overlap was taken to provide the context for the correct sense of the word under analysis .
+the results obtained show that the correct roget 's sense can be selected from the first two senses indicated by our simple algorithm in 86.02 % of the cases .
+the percentages shown are computed using as a base 880 � the number of unique words / senses from our data set that appear in roget 's thesaurus .
+the average number of senses in roget 's for the words in the data set is 7.4 .
+the results and the disambiguating algorithm are presented in detail in ( nastase and szpakowicz , 2001b ) .
+because of the words that do not have a corresponding sense in roget 's , our data set is reduced to 555 base noun phrases , with the distribution presented in table 2 .
+the attributes .
+roget 's thesaurus .
+roget 's thesaurus has a strict organization .
+it is grouped into 6 classes , two of which are further divided into two subclasses .
+since no information is lost by disregarding the class name given the more specific subclass name , we promoted 4 subclasses to classes ( jarmasz and szpakowicz , 2000 ) .
+a class has sections , a section has subsections .
+subsections consists of heads which contain paragraphs for different parts of speech .
+a paragraph groups words and phrases .
+the words and the phrase heads have the same part of speech .
+roget 's hierarchy is very regular , as opposed to wordnet 's .
+all the words and phrases are located at the same level .
+therefore all vectors of attributes that describe each of the words in the data set have the same length .
+as input data for ml , we extract paths from each roget 's sense to the root of the ontology .
+for each modifier and noun in a base np , we extract the following attributes , illustrated with an example for the adjective parental : wordnet .
+for each modifier and noun in a base np we extract from wordnet the same information as from roget 's thesaurus .
+the only part that is changed is the information extracted from wordnet 's ontology .
+we have two vectors because the noun parent to which parental pertains is a hyponym of the noun person , which has two hypernym sets : both these vectors will be used in learning .
+wordnet 's hierarchy is not regular , and vectors as those above can have varying lengths .
+c5.0 , one of the tools used , requires input vectors to have the same length .
+the formatting process is described at length in ( nastase , 2001 ) .
+the input for ripper and foil is obtained by reformatting the input files for c5.0.
+learning noun-modifier relations .
+the purpose of these experiments , more than trying to obtain good precision and recall , is to show potential in extracting from this data rules that give an interesting and intuitive characterization of the semantic relations .
+when attempting to learn all semantic relations in the same experiment , c5.0 does not give good results .
+we have therefore decided to split this problem into 30 binary learning problems for all the learning tools used ( c5.0 , ripper , foil ) , in order to be able to compare them .
+for each relation , the data is split into positive and negative examples � positive are the base nps in the semantic relation that we want to learn , negative are all the others .
+a parameter that influences the results of ml experiments is the balance between the number of examples for the different classes in the data set .
+our experiments have shown that c5.0 is quite sensitive to balance , whereas ripper and foil are not .
+there is no standard in the literature for balancing an imbalanced set .
+in a comparative study , japkowicz ( 2000 ) observes that both down-sizing and resampling the data set may have a positive effect on the outcome of learning , but all this depends both on the problem and the tool used .
+when balance is a factor , misclassification costs will be one as well .
+we might choose a misclassification cost to compensate for the ratio of negative / positive examples .
+this cost will further balance the influence that the ratio has on the outcome of the experiment , by giving more importance to the less numerous class .
+in experiments with c5.0 both the ratio and the misclassification costs were varied .
+for reasons of space we only report on the best performance observed .
+in the case of ripper and foil , introducing misclassification costs will generate a more detailed and precise set of rules by adding new rules to the set generated with no misclassification costs .
+the two sets of input data , one corresponding to roget 's thesaurus , the other to wordnet , are used in separate learning processes .
+decision trees - c5.0 c5.0 is an ml tool that builds decision trees or rules .
+data has two parts : values and attributes , each included in a separate file .
+all possible values for each attribute must be specified ( rulequest , 2000 ) .
+the data is split into a training set and a test set ( if desired ) .
+c5.0 uses the training part of the data to build a decision tree or rule set model of the data , which is then applied to the test set .
+cross-validation is also an option .
+one can set a parameter to the number n of cross-validation sessions to be performed .
+the data set will be split into a number n of subsets .
+at each turn one of the subsets will serve as a test set ; the rest will be used for training .
+the system will preserve the ratio of positive / negative examples ( or in the general case , the ratio between examples in each class ) in each subset .
+at every step , the system picks the attribute which best discriminates between positive and negative examples ( or in a general case , that best discriminates between examples in different classes / categories ) .
+each partition of the training set thus obtained is further split according to the same principle , until a predefined depth is reached , the data overfits the model built , or the final sets are pure enough , according to some parameter .
+we perform machine learning that builds decision trees and rule sets , because of the insight that these methods give into the nature of the data .
+we can look at the attributes , and combinations of attributes , picked by the system as best discriminating between positive and negative examples , and understand the connection between data clumped together by decision trees or rules .
+we have run the learning algorithm for several partitions of the data set , with the following ratios of negative to positive examples : 1 : 1 , 2 : 1 , 5 : 1 .
+to obtain these ratios we balance the data set by randomly down-sizing the class of negative examples .
+for each such partition we perform two experiments , one with no misclassification cost , the other a classifier system .
+we expect them to change as more data is processed , and we will monitor these changes .
+this is part of future work .
+ripper was used in experiments which had three parameters - lexical resource ( possible values : wordnet1 roget 's ) , misclassification costs ( possible values : used / not used ) , nominalization / adjectivalization information ( possible values : used / not used ) .
+all possible combinations of values for these parameters were tried .
+we will present a sample of the results .
+in all cases , misclassification costs only increased the number of rules , without modifying the ones obtained without misclassification costs .
+this parameter had no influence on the rules presented .
+cause and effect .
+best results were obtained with wordnet .
+we present them partially here .
+information about the source of the words was used .
+it might seem a mistake to have in the same rule several hypernyms of the head word or of the modifier .
+the structure defined by is-a links in wordnet is a graph .
+a synset may have several hypernyms and hyponyms .
+specifying two hypernyms at different levels in the hierarchy for the same word sense serves as disambiguation among the possible senses ( represented as paths in this graph ) .
+the same is true of roget 's .
+a word can appear in different paragraphs , and a paragraph keyword is not unique .
+agent .
+information about the source of the words improved quite dramatically the precision and quality of the rule set .
+considering that syntactic indicators play a major role in the identification of this relation , it is surprising to see a big difference in the performance of the system depending on the lexical resource used � wordnet performed much better , and quite well even without word-source information .
+the information that the head is a deverbal noun seems to subsume the fact that its hypernym is the synset { act , human action , ... } , which is the criterion used by hull and gomez ( 1996 ) in deciding whether a noun is a deverbal noun .
+ripper has found rule sets that characterize well all temporal relations , especially frequency ( daily news ) .
+the rules are mostly based on attributes that establish the modifier as a temporal indicator .
+in the case of property ( blue book - h has the property m ) , rules in the set obtained using either lexical resource characterize different property aspects - colour , size , weight , etc . - according to the sense of the modifier .
+relational learner - foil .
+ripper cannot extract relations between attributes , but takes their values and uses each of them separately .
+our intuition is that certain relations , for example type ( oak tree - m is a type of h ) , equality ( composer arranger - m is also h ) , part ( board member - h is a part of m ) and whole ( molecular chain - m is a part of h ) , will be better explained by a system that can extract relations between attributes .
+foil is such a relational learner ( quinlan , 1989 ) .
+because of the inconsistency in the position of the attributes that should be compared , foil could not produce the set of rules we expected .
+memory based learning ( mbl ) .
+the mbl process starts with the data described in section 4.1 .
+learning consists in recording the available instances .
+testing will assign relations to unseen data .
+this is accomplished by computing distances between the test data and the recorded instances .
+the relation of the example closest to our test instance will be the assigned relation ( cover and hart , 1967 ) .
+in our first attempt at mbl , the distance between examples was computed using a very simple formula .
+the results obtained are quite ambiguous .
+this learning process will assign a list of possible relations to each test example , according to the examples in the data set that are at the same distance from the test example .
+the mbl process does not perform well on our examples because some attributes are more significant than others .
+we do not know which of them are , so we cannot adapt the distance formula to give more important attributes more weight .
+we prefer a learning tool such as ripper , which identifies the more relevant attributes .
+conclusions .
+although the amount of data is not sufficient to find a proper set of rules that will characterize noun phrases , the results obtained by the rule induction system show that generalization is possible .
+interesting sets of rules were produced for the relations which are characterized by fewer and more consistent attributes of the head and the modifier .
+the purpose of this experiment was twofold .
+first of all , we wanted to know if it is possible to automate the assignment of semantic relations between a noun and its modifier .
+for this we have used different lexical resources and ml tools .
+the results obtained show that examples for some relations have certain attributes in common that are easily identified .
+the relation with nearly perfect scores , object-property ( ex : sunken shv - h acquired the property m , as a result of an action described by m ) , is identified by just one characteristic that distinguishes it from the other relations - the modifier is the past participle of a verb .
+this semantic relation is situated at one end of the spectrum .
+certain relations , such as agent , object and instrument are characterized by a combination of syntactic and semantic attributes .
+some relations , including cause and effect , seem to rely almost exclusively on the semantics of the words in a base np .
+some of the relations that require only semantic information are nonetheless more easily identified .
+this is because either the modifier or the noun belongs to a certain semantic class ( for example measure - the modifiers are mostly adjectives that denote size ) .
+second , we wanted to see how the two ontologies compare in the same learning task .
+wordnet performs better in almost all cases .
+its more fine-grained hierarchy seems more appropriate for this generalization task .
+for the semantic relations that rely mostly on syntactic indicators , the lexical resource used does not influence the results much .
+wordnet is one of the most commonly used lexical resources in the nlp community .
+wordnet and roget 's thesaurus are lexical resources and not ontologies per se .
+their is-a hierarchy can be used as an ontology , which is what we did in this experiment .
+these resources were constructed starting from words , and arranging and linking them according to certain principles .
+however , our experiment is looking for concepts .
+concepts that may be closely related semantically and that we can mentally group together for a certain reason are not found together in wordnet and roget 's .
+as ( barriere and popowich , 2000 ) show , there are nameless concepts , which generalize concepts that would otherwise be unrelated in an is-a hierarchy .
+other resources will be tried in this task , closer to an ontology of concepts rather than words .
+the ml tools used showed that a rule induction system ( in our case ripper ) performs best .
+contrary to our expectations the relational learner did not bring any improvement , especially on the semantic relations on which , intuitively , it should have performed better .
+we have noticed that due to the granularity of the lexical resource , the distance between the two components is not constant .
+a side effect of this experiment is word-sense disambiguation in roget 's using wordnet .
+we saw that a quite simple algorithm can significantly reduce the work load in annotating a corpus with roget 's senses .
+we have used information about the source of the words in our experiments .
+denominal adjective information is given by the pertaznym link in wordnet .
+the rest of the information - deverbal adjective ( past participle ) , deverbal noun - was added by the data processing scripts from a small manually built data base .
+we are looking at a process of automatically detecting deverbal nouns and denominal verbs using word definitions in ldoce .
+having rules that characterize the entities involved in semantic relations is interesting for several reasons .
+firstly , it gives an insight into the nature of the relation , and the categories of entities that can interact in the manner described by the relation .
+secondly , it has potential use for word sense disambiguation , by choosing from possible senses for each word in the pair the combination whose interaction can be described by a semantic relation .

@@ -1,0 +1,155 @@
+unsupervised learning of name structure from coreference data .
+abstract .
+we present two methods for learning the structure of personal names from unlabeled data .
+the first simply uses a few implicit constraints governing this structure to gain a toehold on the problem e.g. , descriptors come before first names , which come before middle names , etc .
+the second model also uses possible coreference information .
+we found that coreference constraints on names improve the performance of the model from 92.6 % to 97.0 % .
+we are interested in this problem in its own right , but also as a possible way to improve named entity recognition ( by recognizing the structure of different kinds of names ) and as a way to improve noun-phrase coreference determination .
+introduction .
+we present two methods for the unsupervised learning of the structure of personal names as found in wall street journal text .
+more specifically , we consider a name to be a sequence of proper nouns from a single noun-phrase ( as indicated by penn treebank-style parse trees ) .
+for example , defense secretary george w. smith would be a name and we would analyze it into the components defense secretary ( a descriptor ) , george ( a first name ) , w. ( a middle name , we do not distinguish between initials and true names ) , and smith ( a last name ) .
+we consider two unsupervised models for learning this information .
+the first simply uses a few implicit constraints governing this structure to gain a toehold on the problem e.g. , descriptors come before first names , which come before middle names , etc .
+we henceforth call this the name model .
+the second model also uses possible coreference information .
+typically the same individual is mentioned several times in the same article ( e.g. , we might later encounter mr. smith ) , and the pattern of such references , and the mutual constraints among them , could very well help our unsupervised methods determine the correct structure .
+we call this the coreference model .
+we were attracted to this second model as it might offer a small example of how semantic information like coreference could help in learning structural information .
+to the best of our knowledge there has not been any previous work on learning personal structure .
+we are aware of one previous case of unsupervised learning of lexical information from possible coreference , namely that of ge et. al. [ 5 ] where possible pronoun coreference was used to learn the gender of nouns .
+in this case a program with an approximately 65 % accuracy in determining the correct antecedent was used to collect information on pronouns and their possible antecedents .
+the gender of the pronoun was then used to suggest the gender of the noun-phrase that was proposed as the antecedent .
+the current work is quite different in both goal and methods , but similar in spirit .
+more generally this work is part of a growing body of work on learning language-related information from unlabeled corpora [ 1,2,3,8,9,10 , 11 ] .
+problem definition and data preparation .
+we assume that peoples names have six ( optional ) components as exemplified in the following somewhat contrived example : our models make the following assumptions about personal names : all words of label l ( the label number ) must occur before all words of label l + 1 , with the exception of descriptors , a maximum of one word may appear for each label , every name must include either a first name or a last name , in a loose sense , honorifics and closes are closed classes , even if we do not know which words are in the classes .
+we implement this by requiring that words given these labels must appear in our dictionary only as proper names , and that they must have appeared at least three times in the training set used for the lexicon ( sections 2-21 of the penn wall street journal treebank ) .
+section 5 discusses these constraints and assumptions .
+the input to the name model is a noisy list of personal names .
+this list is approximately 85 % correct ; that is , about 15 % of the word sequences are not personal names , but rather non-names , or the names of other types of entities .
+we obtained these names by running a program inspired by that of collins and singer [ 4 ] for unsupervised learning of named entity recognition .
+this program takes as input possible names plus contextual information about their occurrences .
+it then categorizes each name as one of person , place , or organization .
+a possible name is considered to be a sequence of one or more proper nouns immediately dominated by a noun-phrase where the last of the proper nouns is the head ( rightmost noun ) of the noun phrase .
+we used as input to this program the parsed text found in the bllip wsj 1987-89 wsj corpus release 1 [ 6 ] .
+because of a minor error , the parser used in producing this corpus had a unwarranted propensity to label uncapitalized words as proper nouns .
+to correct for this we only allowed capitalized words to be considered proper nouns .
+in section 5 we note an unintended consequence of this decision .
+the coreference model for our tasks is also given a list of all personal names ( as defined above ) in each wall street journal article .
+although the bllip corpus has machine- generated coreference markers , these are ignored .
+the output of both programs is an assignment from each name to a sequence of labels , one for each word in the name .
+performance is measured by the percent of words labeled correctly and percent of names for which all of the labels are correct .
+the probability models .
+we now consider the probability models that underlie our learning mechanisms .
+both models are generative in that they assign probabilities to all possible labelings of the names . ( for the coreference model the model generates all possible labelings given the proposed antecedent . )
+let l ~ be a sequence of label assignments to the name n ~ ( a sequence of words ) .
+we estimate this latter probability by assuming that the number of words assigned label l , n ( l ) , is independent of which other labels have appeared .
+our assumptions imply that with the exception of descriptor , all labels may occur zero or one times .
+we arbitrarily assume that there may be zero to fourteen descriptors .
+we then assume that the words in the name are independent of one another given their label .
+thus we get the following equation : here w ( i ) is the ith word from n ~ assigned the label l in l ~ and jv ( l ) is a random variable whose value is the number of words in the name with label l .
+to put this slightly differently , we first guess the number of words with each label l according to the distribution p ( jv ( l ) = n ( l ) ) .
+given the ordering constraints , this completely determines which words in n ~ get which label .
+we then guess each of the words according to the distribution p ( w ( i ) i l ) .
+the name model does not use information concerning how often each name occurs . ( that is , it implicitly assumes that all names occur equally often . )
+that is , for each name the program identifies zero or one possible antecedent name .
+it does this using a very crude filter .
+the last word of the proposed antecedent ( unless that word is jr . , in which case it looks at the second to last word ) must also appear in n ~ as well .
+if no such name exists , then c ~ = a and we estimate the distribution according to equation 2 .
+if more than one such name exists , we choose the first one appearing in the article .
+even if there is such a name , the program does not assume that the two names are , in fact , coreferent .
+rather , a hidden random variable r determines how the two names relate .
+there are three possibilities : in equation 4 the r = a case is reasonably straight-forward : we simply use equation 2 as the non-coreferent distribution .
+for r = f , as we noted earlier , we want to claim that the new name is a member of the same family as that of the earlier name .
+thus , as we said earlier , we get credit for the repeated family name .
+this is why we take the non-coreferent probability and divide by the probability of what we take to be the family name .
+this leaves the coreferent case .
+the basic idea is that we view the labeling of new name ( ~ l ) as a transformation of the labeling of the old one ( ~ l ~ ) .
+however , we do not know ~ l ~ so we have to sum over all possible former labelings l ' .
+the first term , p ( ~ l ~ i ~ c ) , is easy to compute from equation 2 using bayes law .
+we now turn our attention to the second term .
+to establish a more detailed relationship between the old and new names we compute possible correspondences between the two names , where a correspondence specifies for each word in the old name if it is retained in the new name , and if so , the word in the new name to which it corresponds .
+two words may correspond only if they are the same lexical item . ( the converse does not hold . )
+since in principle there can be multiple correspondences , we introduce the correspondences ^ by summing the probability over all of them : in the second equation we simplify by making the assumption that the sum will be dominated by one of the correspondences , a very good assumption .
+furthermore , as is intuitively plausible , one can identify the maximum r. without actually computing the probabilities : it is the r. with the maximum number of words retained from ~ c .
+henceforth we use r. to denote this maximum-probability correspondence .
+by specifying r. we divide the words of the old name into two groups , those ( r ) that are retained in the new name and those ( s ) that are subtracted when going to the new name .
+similarly we have divided the words of the new name into two classes , those retained and those added ( a ) .
+we then assume that the probability of a word being subtracted or retained is independent of the word and depends only on its label ( e.g. , the probability of a subtraction given the label l is p ( s il ) ) .
+furthermore , we assume that the labels of words in r do not change between ~ l ' and ~ l .
+once we have pinned down r and s , any words left in l ~ must be added .
+however , we do not yet know the labels of those , so we need a probability term p ( l i a ) .
+lastly , for words that are added in the new name , we need to guess the particular word corresponding to the label type .
+this gives us the following distribution : .
+experiments .
+from the work on named entity recognition we obtained a list of 145,670 names , of which 87,809 were marked as personal names .
+a second program creates an ordered list of names that appear in each article in the corpus .
+the two files , names and article-name occurrences , are the input to our procedures .
+with one exception , all the probabilities required by the two models are initialized with flat distributions i.e. , if a random variable can take n possible values , each value is 1 / n .
+the probabilites so set are : we then used the expectation-maximization ( em ) algorithm to re-estimate the values .
+we initially decided to run em for 100 iterations as our benchmark .
+in practice no change in performance was observed after about 15 iterations .
+the one exception to the flat probability distribution rule is the probability distribution p ( r ) , the probability of an antecedent being coreferent , a family relation , or non-coreferent .
+this distribution was set at .993 , .002 , and .005 respectively for the three alternatives and the values were not re-estimated by em.1 figure 1 show some of the probabilities for individual words given the possible labels .
+the result shown in figure 1 are basically correct , with director having a high probability as a descriptor , ( 0.0059 ) , ms. having a high probability as honorific ( 0.058 ) , etc .
+some of the small non-zero probabilities are due to genuine ambiguity ( e.g. , fisher does occur as a first name as well as a last name ) but more of it is due to small confusions in particular cases ( e.g. , director as a last-name , or john as descriptor ) .
+after em training we evaluated the program on 309 personal names from our names list that we had annotated by hand .
+these names were obtained by random selection of names labeled worked satisfactorily , we simply left them alone .
+if the named entity recognizer had mistakenly classified something as a personal name it was not used in our test data .
+for the name model we straightforwardly used equation 2 to determine the most probable label sequence l ~ for each name .
+note , however , that the testing data does not itself include any information on whether or not the test name was a first or subsequent occurrence of an individual in the text .
+to evaluate the coreference model we looked at the possible coreference data to find if the test-data name was most common as a first occurrence , or if not , which possible antecedent was the most common .
+if first occurrence prevailed , l ~ was determined from equation 2 , and otherwise it was determined using equation 3 with c ~ set to the most common possible coreferent for this name .
+we compare the most probable labels l ~ for a test example with the hand-labeled test data .
+we report percentage of words that are given the correct label and percentage of names that are completely correct .
+the results of our experiments are as follows : error analysis .
+the errors tend to arise from three situations : the name disobeys the name structure assumptions upon which the program is based , the name is anomalous in some way , or sparse data .
+we consider each of these in turn .
+many of the names we encounter do not obey our assumptions .
+probably the most common situation is last names that , contrary to our assumption , are composed of more than word e.g. , van dam .
+actually , a detail of our processing has caused this case to be under-represented in our data and testing examples .
+as noted in section 2 , uncapitalized proper nouns were not allowed .
+the most common extra last name is probably van , but all of these names were either truncated or ignored because of our processing step .
+in principle , it should be possible to allow for multiple last names , or alternatively have a new label for first of two last names .
+in practice , it is of course the case that the more parameters we give em to fiddle with , the more mischief it can get into .
+however , for a practical program this is probably the most important extension we envision .
+names may be anomalous while obeying our restrictions at least in the letter if not the spirit .
+chinese names have something very much like the first-middle-last name structure we assume , but the family name comes first .
+this is particularly relevant for the coreferent model , since it will be the family name that is repeated .
+there is nothing in our model that prevents this , but it is sufficiently rare that the program gets confused .
+in a similar way , we marked both dr. and sir as honorifics in our test data .
+however , the wall street journal treats them very differently from mr. in that the former tend to be included even in the first mention of a name , while the latter is not .
+thus in some cases our program labeled dr. and sir as descriptors .
+lastly , there are situations where we imagine that if the program had more data ( or if the learning mechanisms were somehow better ) it would get the example right .
+for example , the name mikio suzuki appears only once in our corpus , as does the word mikio .
+suzuki appears two times , the first being in yotaro suzuki who is mentioned earlier in the same article .
+unfortunately , because mikio does not appear elsewhere , the program is at a loss to decide which label to give it .
+however , because yotaro is assumed to be a first name , the program makes mikio suzuki coreferent with yotaro suzuki by labeling mikio descriptor .
+as noted briefly in section 3 , we have considered more complicated probabilities models to replace equation 2 .
+the most obvious of these is to allow the distribution over numbers of words for each label to be conditioned on the previous label e.g. , a bi-label model .
+this model generally performed poorly , although the coreference versions often performed as well as the coreference model reported here .
+our hypothesis is that we are seeing problems similar to those that have bedeviled applying em to tasks like part-of-speech tagging [ 7 ] .
+in such cases em typically tries to lower probabilities of the corpus by using the tags to encode common word- word combinations .
+as the models corresponding to equations 2 and 8 do not include any label-label probabilities , this problem does not appear in these models .
+other applications .
+it is probably clear to most readers that the structure and probabilities learned by these models , particularly the coreferent model , could be used for tasks other than assigning structure to names .
+for starters , we would imagine that a named entity recognition program that used information about name structure could do a better job .
+the named entity recognition program used to create the input looks at only a few features of the context in which the name appears , the complete name , and the individual words that appear in the name irrespective of the other words .
+since the different kinds of names ( person , company and location ) differ in structure from one another , a program that simultaneously establishes both structure and type would have an extra source of information , thus enabling it to do a better job .
+our name-structure coreferent model is also learning a lot of information that would be use ful for a program whose primary purpose is to detect coreference .
+one way to see this is to look at some of the probabilities that the program learned .
+consider the probability that we will have an honorific in a first occurrence of a name : this is very low .
+contrast this with the probability that we add an honorific in the second occurrence : these dramatic probabilities are not , in fact , accurate , as em tends to exaggerate the effects by moving words that do not obey the trend out of the honorific category .
+they are , however , indicative of the fact that in the wall street journal names are introduced without honorifics , but subsequent occurrences tend to have them ( a fact we were not aware of at the start of this research ) .
+another way to suggest the usefulness of this research for coreference and named-entity recognition is to consider the cases where our programs crude filter suggests a possible antecedent , but the probabilistic model of equation 4 rejects this analysis .
+the first 15 cases are given in figure 2 .
+as can be seen , except for mr. president and president reagan , all of the examples are either not coreferent or are not people at all .
+conclusion .
+we have presented two methods for the unsupervised discovery of personal-name structure .
+the two methods differ in that the second uses multiple , possibly coreferent , occurrences of names to constrain the problem .
+the methods perform at a level of 92.6 and 97.0 percent accuracy respectively .
+the methods are of potential interest in their own right , e.g. , to improve the level of detail provided by penn treebank style parses .
+as we have also noted , we should also be able to use this research in the quest for better unsupervised learning of named-entity recognition , and the model that attends to coreference information can potentially be useful for programs aimed directly at this latter problem .
+finally , many of us believe that the power of unsupervised learning methods for linguistic is information will be proportional to the depth of semantic or pragmatic analysis that goes into the features they consider .
+the vastly superior performance of the coreference model over the basic name model moves this believe some small distance from hope to hypothesis .

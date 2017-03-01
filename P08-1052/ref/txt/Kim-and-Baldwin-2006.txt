@@ -1,0 +1,162 @@
+interpreting semantic relations in noun compounds via verb semantics .
+abstract .
+we propose a novel method for automatically interpreting compound nouns based on a predefined set of semantic relations .
+first we map verb tokens in sentential contexts to a fixed set of seed verbs using wordnet : : similarity and moby � s thesaurus .
+we then match the sentences with semantic relations based on the semantics of the seed verbs and grammatical roles of the head noun and modifier .
+based on the semantics of the matched sentences , we then build a classifier using timbl .
+the performance of our final system at interpreting ncs is 52.6 % .
+introduction .
+the interpretation of noun compounds ( hereafter , ncs ) such as apple pie or family car is a well- established sub-task of language understanding .
+conventionally , the nc interpretation task is defined in terms of unearthing the underspecified semantic relation between the head noun and modifier ( s ) , e.g. pie and apple respectively in the case of apple pie .
+nc interpretation has been studied in the context of applications including question-answering and machine translation ( moldovan et al. , 2004 ; cao and li , 2002 ; baldwin and tanaka , 2004 ; lauer , 1995 ) .
+recent work on the automatic / semiautomatic interpretation of ncs ( e.g. , lapata ( 2002 ) , rosario and marti ( 2001 ) , moldovan et al. ( 2004 ) and kim and baldwin ( 2005 ) ) has made assumptions about the scope of semantic relations or restricted the domain of interpretation .
+this makes it difficult to gauge the general-purpose utility of the different methods .
+our method avoids any such assumptions while outperforming previous methods .
+in seminal work on nc interpretation , finin ( 1980 ) tried to interpret ncs based on hand-coded rules .
+vanderwende ( 1994 ) attempted the automatic interpretation of ncs using hand-written rules , with the obvious cost of manual intervention .
+fan et al. ( 2003 ) estimated the knowledge required to interpret ncs and claimed that performance was closely tied to the volume of data acquired .
+in more recent work , barker and szpakowicz ( 1998 ) used a semi-automatic method for nc interpretation in a fixed domain .
+lapata ( 2002 ) developed a fully automatic method but focused on nominalizations , a proper subclass of ncs.l rosario and marti ( 2001 ) classified the nouns in medical texts by tagging hierarchical information using neural networks .
+moldovan et al. ( 2004 ) used the word senses of nouns based on the domain or range of interpretation of an nc , leading to questions of scalability and portability to novel domains / nc types .
+kim and baldwin ( 2005 ) proposed a simplistic general-purpose method based on the lexical similarity of unseen ncs with training instances .
+the aim of this paper is to develop an automatic method for interpreting ncs based on semantic relations .
+we interpret semantic relations relative to a fixed set of constructions involving the modifier and head noun and a set of seed verbs for each semantic relation : e.g. ( the ) family owns ( a ) car is taken as evidence for family car being an instance of the possessor relation .
+we then attempt to map all instances of the modifier and head noun as the heads of nps in a transitive sentential context onto our set of constructions via lexical similarity over the verb , to arrive at an interpretation : e.g. we would hope to predict that possess is sufficiently similar to own that ( the ) family possesses ( a ) car would be recognised as supporting evidence for the possessor relation .
+we use a supervised classifier to combine together the evidence contributed by individual sentential contexts of a given modifier � head noun combination , and arrive at a final interpretation for a given nc .
+mapping the actual verbs in sentences to appropriate seed verbs is obviously crucial to the success of our method .
+this is particularly important as there is no guarantee that we will find large numbers of modifier � head noun pairings in the sorts of sentential contexts required by our method , nor that we will find attested instances based on the seed verbs .
+thus an error in mapping an attested verb to the seed verbs could result in a wrong interpretation or no classification at all .
+in this paper , we experiment with the use of word- net ( fellbaum , 1998 ) and word clusters ( based on moby � s thesaurus ) in mapping attested verbs to the seed verbs .
+we also make use of corelex in dealing with the semantic relation time and the rasp parser ( briscoe and carroll , 2002 ) to determine the dependency structure of corpus data .
+the data source for our set of ncs is binary ncs ( i.e.
+ncs with a single modifier ) from the wall street journal component of the penn tree- bank .
+we deliberately choose to ignore ncs with multiple modifiers on the grounds that : ( a ) 88.4 % of nc types in the wall street journal component of the penn treebank and 90.6 % of nc types in the british national corpus are binary ; and ( b ) we expect to be able to interpret ncs with multiple modifiers by decomposing them into binary ncs .
+another simplifying assumption we make is to remove ncs incorporating proper nouns since : ( a ) the lexical resources we employ in this research do not contain them in large numbers ; and ( b ) there is some doubt as to whether the set of semantic relations required to interpret ncs incorporating proper nouns is that same as that for common nouns .
+the paper is structured as follows .
+section 2 takes a brief look at the semantics of ncs and the basic idea behind the work .
+section 3 details the set of nc semantic relations that is used in our research , section 4 presents an extended discussion of our approach , section 5 briefly explains the tools we use , section 6.1 describes how we gather and process the data , section 6.2 explains how we map the verbs to seed verbs , and section 7 and section 8 present the results and analysis of our approach .
+finally we conclude our work in sec- tion 9 .
+motivation .
+the semantic relation in ncs is the relation between the head noun ( denoted � h � ) and the modifier ( s ) ( denoted � m � ) .
+we can find this semantic relation expressed in certain sentential constructions involving the head noun and modifier .
+in the examples above , the semantic relation ( e.g.
+possessor ) provides an interpretation of how the head noun and modifiers relate to each other , and the seed verb ( e.g. own ) provides a paraphrase evidencing that relation .
+for example , in the case of family car , the family is the possessor of the car , and in student protest , student ( s ) are the agent of the protest .
+note that voice is important in aligning sentential contexts with semantic relations .
+for instance , family car can be represented as car is owned by family ( passive ) and student protest as student performs protest ( active ) .
+the exact nature of the sentential context varies with different synonyms of the seed verbs .
+the verb own in the possessor relation has the synonyms have , possess and belong to .
+in the context of have and possess , the form of relation would be same as the form with verb , own .
+however , in the context of belong to , family car would mean that the car belongs to family .
+thus , even when the voice of the verb is the same ( voice = active ) , the grammatical role of the head noun and modifier can change .
+in our approach we map the actual verbs in sentences containing the head noun and modifiers to seed verbs corresponding to the relation forms .
+the set of seed verbs contains verbs representative of each semantic relation form .
+we chose two sets of seed verbs of size 57 and 84 , to examine how the coverage of actual verbs by seed verbs affects the performance of our method .
+initially , we manually chose a set of 60 seed verbs .
+we then added synonyms from moby � s thesaurus for some of the 60 verbs .
+finally , we filtered verbs from the two expanded sets , since these verbs occur very frequently in the corpus ( as this might skew the results ) .
+the set of seed verbs { have , own , possess , belong to } are in the set of 57 seed verbs , and { acquire , grab , occupy } are added to the set of 84 seed verbs ; all correspond to the possessor relation .
+for each relation , we generate a set of constructional templates associating a subset of seed verbs with appropriate grammatical relations for the head noun and modifier .
+two relations which do not map readily onto seed verbs are time ( e.g. winter semester ) and equative ( e.g. composer arranger ) .
+here , we rely on an independent set of contextual evidence , as outlined in section 6.1 .
+through matching actual verbs attested in corpus data onto seed verbs , we can match sentences with relations ( see section 6.2 ) .
+using this method we can identify the matching relation forms of semantic relations to decide the semantic relation for ncs .
+semantic relations in compound nouns .
+while there has been wide recognition of the need for a system of semantic relations with which to classify ncs , there is still active debate as to what the composition of that set should be , or indeed whether it is reasonable to expect that all ncs should be interpretable with a fixed set of semantic relations .
+based on the pioneering work on levi ( 1979 ) and finin ( 1980 ) , there have been efforts in computational linguistics to arrive at largely task- specific sets of semantic relations , driven by the annotation of a representative sample of ncs from a given corpus type ( vanderwende , 1994 ; barker and szpakowicz , 1998 ; rosario and marti , 2001 ; moldovan et al. , 2004 ) .
+in this paper , we use the set of 20 semantic relations defined by barker and szpakowicz ( 1998 ) , rather than defining a new set of relations .
+the main reasons we chose this set are : ( a ) that it clearly distinguishes between the head noun and modifiers , and ( b ) there is clear documentation of each relation , which is vital for nc annotation effort .
+the one change we make to the original set of 20 semantic relations is to exclude the property relation since it is too general and a more general form of several other relations including material ( e.g. apple pie ) .
+method .
+figure 1 outlines the system architecture of our approach .
+we used three corpora : the brown corpus ( as contained in the penn treebank ) , the wall street journal corpus ( also taken from the penn treebank ) , and the written component of the british national corpus ( bnc ) .
+we first parsed each of these corpora using rasp ( briscoe and carroll , 2002 ) , and identified for each verb token the voice , head nouns of the subject and object , and also , for each pp attached to that verb , the head preposition and head noun of the np ( hereafter , ppn ) .
+next , for our test ncs , we identified all verbs for which the modifier and head noun co-occur as subject , object , or ppn .
+we then mapped these verbs to seed verbs using wordnet : : similarity and moby � s thesaurus ( see section 5 for details ) .
+finally , we identified the corresponding relation for each seed verb and selected the best-fitting semantic relation using a classifier .
+to evaluate our approach , we built a classifier using timbl ( daelemans et al. , 2004 ) .
+resources .
+in this section , we outline the tools and resources employed in our method .
+as our parser , we used rasp , generating a dependency representation for the most probable parse for each sentence .
+note that rasp also lemmatises all words in a pos-sensitive manner .
+to map actual verbs onto seed verbs , we experimented with two resources : wordnet : : similarity and moby � s thesaurus .
+wordnet : : similarity2 is an open source software package that allows the user to measure the semantic similarity or relatedness between two words ( patwardhan et al. , 2003 ) .
+of the many methods implemented in wordnet : : similarity , we report on results for one path-based method ( wup , wu and palmer ( 1994 ) ) , one content-information based method ( jcn , jiang and conrath ( 1998 ) ) and two semantic relatedness methods ( lesk , banerjee and pedersen ( 2003 ) , and vector , ( patwardhan , 2003 ) ) .
+we also used a random similarity-generating method as a baseline ( random ) .
+the second semantic resource we use for verb- mapping method is moby � s thesaurus .
+moby � s thesaurus is based on roget � s thesaurus , and contains 30k root words , and 2.5m synonyms and related words .
+since the direct synonyms of seed verbs have limited coverage over the set of sentences used in our experiment , we also experimented with using second-level indirect synonyms of seed verbs .
+in order to deal with the time relation , we used corelex ( buitelaar , 1998 ) .
+corelex is based on a unified approach to systematic polysemy and the semantic underspecification of nouns , and derives from wordnet 1.5 .
+it contains 45 basic corelex types , systematic polysemous classes and 39,937 nouns with tags .
+as mentioned earlier , we built our supervised classifier using timbl .
+data collection .
+data processing .
+to test our method , we extracted 2,166 nc types from the wall street journal ( wsj ) component of the penn treebank .
+we additionally extracted sentences containing the head noun and modifier in pre-defined constructional contexts from the amalgam of : ( 1 ) the brown corpus subset contained in the penn treebank , ( 2 ) the wsj portion of the penn treebank , and ( 3 ) the british national corpus ( bnc ) .
+note that while these pre-defined constructional contexts are based on the contexts in which our seed verbs are predicted to correlate with a given semantic relation , we instances of all verbs occurring in those contexts .
+two annotators tagged the 2,166 nc types independently at 52.3 % inter-annotator agreement , and then met to discus all contentious annotations and arrive at a mutually-acceptable gold-standard annotation for each nc .
+the brown , wsj and bnc data was pre-parsed with rasp , and sentences were extracted which contained the head noun and modifier of one of our 2,166 ncs in subject or object position , or as ( head ) noun within the np of an pp .
+after extracting these sentences , we counted the frequencies of the different modifier � head noun pairs , and filtered out : ( a ) all constructional contexts not involving a verb contained in wordnet 2.0 , and ( b ) all ncs for which the modifier and head noun did not co-occur in at least five sentential contexts .
+this left us with a total of 453 ncs for training and testing .
+the combined total number of sentential contexts for our 453 ncs was 7,714 , containing 1,165 distinct main verbs .
+we next randomly split the nc data into 80 % training data and 20 % test data .
+the final number of test ncs is 88 ; the final number of training ncs varies depending on the verb-mapping method .
+as noted in section 2 , the relations time and equative are not associated with seed verbs .
+for time , rather than using contextual evidence , we simply flag the possibility of a time if the modifier is found to occur in the time class of corelex .
+in the case of time , we consider coordinated occurrences of the modifier and head noun ( e.g. coach and player for player coach ) as evidence for the relation .
+finally , we calculate a normalised weight for each seed verb by determining the proportion of head verbs each seed verb occurs with .
+verb mapping .
+the sentential contexts gathered from corpus data contain a wide range of verbs , not just the seed verbs .
+to map the verbs onto seed verbs , and hence estimate which semantic relation ( s ) each is a predictor of , we experimented with two different methods .
+first we used the wordnet : : similarity package to calculate the similarity between a given verb and each of the seed verbs , experimenting with the 5 methods mentioned in section 5 .
+second , we used moby � s thesaurus to extract both direct synonyms ( d-synonym ) and a combination of direct and second-level indirect synonyms of verbs ( i- synonym ) , and from this , calculate the closest- matching seed verb ( s ) for a given verb .
+figure 2 depicts the procedure for mapping verbs in constructional contexts onto the seed verbs .
+verbs found in the various contexts in the 3note the order of the modifier and head in coordinated nps is considered to be irrelevant , i.e. player and coach and coach and player are equally evidence for an equative interpretation for player coach ( and coach player ) .
+evaluation .
+we evaluated our method over both 17 semantic relations ( without equative and time ) and the full 19 semantic relations , due to the low frequency and lack of verb-based constructional contexts for equative and time , as indicated in table 2 .
+note that the test data set is the same for both sets of semantic relations , but that the training data in the case of 17 semantic relations will not contain any instances for the equative and time relations , meaning that all such test instances will be misclassified .
+the baseline for all verb mapping methods is a simple majority-class classifier , which leads to an accuracy of 42.4 % for the topic relation .
+in evaluation , we use two different values for our method : count and weight .
+count is based on the raw number of corpus instances , while weight employs the seed verb weight described in section 6.1 .
+as noted above , we excluded all ncs for which we were unable to find at least 5 instances of the modifier and head noun in an appropriate sentential context .
+this exclusion reduced the original set of 2,166 ncs to only 453 , meaning that the proposed method is unable to classify up to 80 % of ncs .
+for real-world applications , a method which is only able to arrive at a classification for 20 % of instances is clearly of limited utility , and we need some way of expanding the coverage of the proposed method .
+this is achieved by adapting the similarity method proposed by kim and baldwin ( 2005 ) to our task , wherein we use lexical similarity to identify the nearest-neighbour nc for a given nc , and classify the given nc according to the classification for the nearest-neighbour .
+the results for the combined method are presented in table 3 .
+discussion .
+for the basic method , as presented in table 2 , the classifier produced similar results over the 17 semantic relations to the 19 semantic relations .
+using data from weight and count for both 17 and 19 semantic relations , the classifier achieved the best performance with vector ( context vector- based distributional similarity ) , followed by jcn and lesk .
+the main reason is that vector is more conservative than the other methods at mapping ( original ) verbs onto seed verbs , i.e. the average number of seed verbs a given verb maps onto is small .
+for the other methods , the semantics of the original sentences are often not preserved under verb mapping , introducing noise to the classification task .
+comparing the two sets of semantic relations ( 17 vs. 19 ) , the set with more semantic relations achieved slightly better performance in most cases .
+a detailed breakdown of the results revealed that time both has an above-average classification accuracy and is associated with a relatively large number of test ncs , while equative has a below-average classification accuracy but is associated with relatively few instances .
+while an increased number of seed verbs generates more training instances under verb mapping , it is imperative that the choice of seed verbs be made carefully so that they not introduce noise into the classifier and reducing overall performance .
+figure 4 is an alternate representation of the numbers from table 2 , with results for each individual method over 57 and 84 seed verbs juxtaposed for each of count and weight .
+from this , we get the intriguing result that count generally performs better over fewer seed verbs , while weight performs better over more seed verbs .
+for the experiment where we combine our method with that of kim and baldwin ( 2005 ) , as presented in table 3 , we find a similar pattern of results to the proposed method .
+namely , vector and lesk achieve the best performance , with minor variations in the absolute performance relative to the original method but the best results for each relation set actually dropping marginally over the original method .
+this drop is not surprising when we consider that we use an imperfect method to identify the nearest neighbour for an nc for which we are unable to find corpus instances in sufficient numbers , and then a second imperfect method to classify the instance .
+compared to previous work , our method produces reasonably stable performance when operated over the open-domain data with small amounts of training data .
+rosario and marti ( 2001 ) achieved about 60 % using a neural network in a closed domain , moldovan et al. ( 2004 ) achieved 43 % using word sense disambiguation of the head noun and modifier over open domain data , and kim and baldwin ( 2005 ) produced 53 % using lexical similarities of the head noun and modifier ( using the same relation set , but evaluated over a different dataset ) .
+the best result achieved by our system was 52.6 % over open-domain data , using a general-purpose relation set .
+to get a better understanding of how our method compares with that of kim and baldwin ( 2005 ) , we evaluated the method of kim and baldwin ( 2005 ) over the same data set as used in this research , the results of which are presented in table 4 .
+the relative results for the different similarity metrics mirror those reported in kim and baldwin ( 2005 ) .
+wup produced the best performance at 47-48 % for the two relation sets , significantly below the accuracy of our method at 53.3 % .
+perhaps more encouraging is the result that the combined method � where we classify attested instances according to the proposed method , and classify unattested instances according to the nearest-neighbour method of kim and baldwin ( 2005 ) and the classifications from the proposed method � outperforms the method of kim and baldwin ( 2005 ) .
+that is , the combined method has the coverage of the method of kim and baldwin ( 2005 ) , but inherits the higher accuracy of the method proposed herein .
+having said this , the performance of the kim and baldwin ( 2005 ) method over product , topic , location and source is superior to that of our method .
+in this sense , we believe that alternate methods of hybridisation may lead to even better results .
+finally , we wish to point out that the method as presented here is still relatively immature , with considerable scope for improvement .
+in its current form , we do not weight the different seed verbs based on their relative similarity to the original verb .
+we also use the same weight and frequency for each seed verb relative to a given relation , despite seed verbs being more indicative of a given relation and also potentially occurring more often in the corpus .
+for instance , possess is more related to possessor than occupy .
+also possess occurs more often in the corpus than belong to .
+as future work , we intend to investigate whether allowances for these considerations can improve the performance of our method .
+conclusion .
+in this paper , we proposed a method for automatically interpreting noun compounds based on seed verbs indicative of each semantic relation .
+for a given modifier and head noun , our method extracted corpus instances of the two nouns in a range of constructional contexts , and then mapped the original verbs onto seed verbs based on lexical similarity derived from wordnet : : similarity , and moby � s thesaurus .
+these instances were then fed into the timbl learner to build a classifier .
+the best-performing method was vector , which is a context vector distributional similarity method .
+we also experimented with varying numbers of seed verbs , and found that generally the more seed verbs , the better the performance .
+overall , the best-performing system achieved an accuracy of 52.6 % with 84 seed verbs and the vector verb- mapping method .

@@ -1,0 +1,11 @@
+<topic index> 0 </topic index>
+<title> evaluation of syntactic parsers </title>
+<keywords> evaluation;syntactic;parsers;parsing;accuracy; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> parsing accuracy in terms of certain intermediate parse representation </title>
+<keywords> parse representation; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> parsing accuracy on statistical machine translation </title>
+<keywords> statistical machine translation;SMT;translation; </keywords>

@@ -1,0 +1,134 @@
+utilizing wikipedia categories for document classification .
+abstract .
+this paper introduces our technique for integrating wikipedia as a broad-coverage knowledge base for use in document classification .
+we outline an algorithm for integrating the wikipedia categories found from named entities in the articles .
+we then demonstrate this algorithm on a toy corpus , where we are able to successfully classify our documents .
+introduction .
+traditionally , document classification has been based on a variation of the bag of words ( bow ) approach .
+bow treats all the words in a document as elements in a classification vector .
+these words can be a boolean decision ( found or not ) or weighted based on some measure ( usually term frequency- inverse document frequency .
+a new document is judged to be a member of a class based on how similar it is to the training documents .
+the underlying assumption to this classification method is that similar documents will exhibit similar words .
+more advanced clustering methods ( svms ) and applying linguistic information ( stop- word removal , stemming , pos-tagging ) can get better results , but these approaches are all more-or-less limited to the surface forms of the documents .
+document classification is not about the words classes are organized around common concepts .
+that related documents will have similar word occurrences is merely a byproduct of the related concepts .
+gabrilovich ( gm05 ) highlights this idea by using document # 15264 in the reuters-21578 corpus , belonging to the category copper .
+this is a long article , discussing other mining activities and information about the companies involved in mining .
+copper is mentioned only briefly .
+thus , the article is typically mis-classified when it considers only surface words .
+if one were able to capture the common concepts behind the words , they should be able to more successfully classify the article .
+a more specific problem is that the bow approach oftentimes overlooks the information contained in named entities .
+named entities carry a lot of informational content about the concepts in a document .
+going back to the copper example , if the article mentions bhp billiton and european minerals ( both mining companies ) several times , then we should have greater evidence that this is an article about mining , rather than about a particular company due to the overlap in concepts among the entities mentioned .
+taken more generally , an article that discusses angelina jolie is probably different than one that discusses the cleveland browns in ways beyond the surface words in the document .
+however , if we want to make an even finer distinction , say among closely related concepts ( whose surface words will overlap ) , then more information is needed .
+ideally , documents focusing on one class of entities { harrison ford , brad pitt , julia roberts } ( all actors ) should be distinguishable from classes of documents that discuss other , closely related topics { steven spielberg , george lucas , peter jackson } ( all directors ) .
+up until recently , there hasnt been an available resource to capture the underlying information conveyed by these named entities .
+hand-crafted resources ( wordnet , cyc , openmind ) were expensive to construct and limited in scope .
+the development of wikipedia has , however , given us a cheap , broad-scoped resource to capture some of the concepts associated with these entities .
+in this paper , we propose to use wikipedia to extract the hidden information in entities for more accurate classification than would be able if we used surface features alone .
+the organization of our paper is as follows : in section 2 , we discuss similar attempts to use wikipedia as a knowledge source .
+we outline our algorithm in section 3 before introducing our data set and evaluating our algorithms performance in section 4 .
+we conclude in section 5 and discuss future work in this area .
+prior work .
+wikipedia has just begun to be used as a supplemental text resource , similar to wordnet or framenet .
+wikipedia has been used to both compete with and also bootstrap wordnet .
+in their 2006 paper ( sp06 ) , strube and ponzetto use wikipedia to extract semantic relatedness between pairs of words .
+to do this , they utilize wikipedia categories to compute path based and text overlap based measures of relatedness between two words .
+in the end , the resulting relatedness measures are comparable to wordnet .
+this work has been extended by gabrilovich and markovitch ( gm07 ) to process semantic similarity among non-title text , text longer than one word and with a more sophisticated similarity vector .
+on the other end , wikipedia has also been used to effectively extract semantic relationships in order to extend wordnet ( rcac05 ) .
+wikipedia has been used to train gazetteers for named entity recognition ( tm06 ) .
+toral and munoz utilize wikipedia to speed up gazetteer creation , which can be a long and tedious process .
+additionally , they observe that since their algorithm is language independent , additional languages can be added by simply running their algorithm over the appropriate wikipedia language set .
+additional wikipedia research has looked at its internal link structure .
+in their 2005 paper , adafre and de rijke ( adr05 ) , they tackle the problem of missing inter-article hyperlinks .
+to do this , they propose a two-step ranking mechanism , ltrank , in order to cluster similar pages ( which should have similar link structures ) and then use these clusters to identify missing links among the documents .
+finally , this work is closest in manner to that of gabrilovich and markovitch ( gm06 ) .
+in their 2006 paper , they demonstrate a system for text categorization and use wikipedia to overcome the bottleneck generated by limitations of the open directory project .
+their system uses a multi-resolution feature generator to classify documents using information at the word , sentence , paragraph and document level .
+their final classifications are significantly better than previously published results .
+feature construction .
+our features are constructed by extracting all named entities from our corpus .
+these entities are then matched ( if possible ) to a wikipedia article , where the category information is used to generate the document features .
+named entity extraction .
+as we have argued before , one of the major strengths of wikipedia is that it contains information about a specific entity in the world , not available through other resources .
+therefore , the first step in our algorithm is to extract entities from the documents .
+to do this , we run an named entity recognizer over each document in the corpus and extract the named entities to be used for article matching .
+the final output of this step is a list of entities found in each individual document .
+article matching .
+we then extract category information from the article about the named entity .
+this category information forms the basis for our classification vector .
+unlike other categorization resources ( such as the open directory project ) , wikipedia categories are not rigidly assigned to an overall hierarchy .
+so , an entity can belong to multiple categories , each found within its own hierarchy and corresponding to a different piece of information about the entity .
+for example , bill belichick belongs to categories relating to his high school , career as an nfl coach and birth year .
+this allows us to capture a wide variety of high-level information about an entity cheaply .
+in our implementation , entries that returned zero queries were discarded , as they were usually misnamed entities .
+if a disambiguation page was reached , the named entity was also discarded .
+this is a limitation of our current system , and will be discussed in section 5 .
+at the end of this step , we have a list of categories present in the document .
+these will then be turned into our vector for classification .
+evaluation .
+the evaluation was done with the wikipedia data dump from november 11 , 20061 .
+after decompression , the resulting xml file was 6.6gb in size .
+we used mediawikis import routines to populate a mysql database , which we used to process our named entity queries .
+data set .
+the evaluation of our method was done on a toy corpus consisting of 40 training documents ( 30 positive / 10 negative ) and 4 testing documents ( 2 positive / 2 negative ) gathered from google news .
+we have a very hard corpus all documents pertain to the 2006 nfl season and therefore share many words and have a high concept overlap .
+positive examples are those in which the article mentions a current or former coach of the cleveland browns .
+negative examples are those that fail to mention a browns coach .
+category discovery .
+we ran the lingpipe named entity recognizer2 over our data set in order to get our named entities , an off-the-shelf named entity recognizer .
+the named entity model was obtained from their muc6 training model .
+after running our named entity recognizer over the dataset , we noticed that some of the training documents failed to capture the desired entities .
+we then reconfigured our training examples based on the results of the entity recognition process , resulting in a 28 positive / 12 negative training split .
+the resulting named entities were queried against our mysql database containing the wikipedia entries .
+in the case of multiple result queries , only the highest-numbered result query was used ( corresponding to the latest version of the topic ) .
+the resulting classification vectors are based on all categories found somewhere in our training set ( rather than all possible categories ) .
+any additional categories found in the testing set are discarded .
+since the number of categories is enumerable through a search of the wikipedia dataset , we may wish to expand our vector to include all possible categories in the future .
+classifiers .
+in our evaluation , we decided to try two different types of classifiers : support vector machines and decision trees .
+svms are linear classifiers that attempt to split the input space into a hyperplane delineating all positive examples from negative examples .
+vectors are considered as a whole .
+in svms , we are looking for hyperplanes with a maximum margin between the positive and negative examples .
+for our evaluation , we utilize the svmlight classifier3 and the c4.5 decision tree algorithm .
+decision trees are models that make incremental checks on vector elements to decide the class of an object .
+the algorithm finds the most distinguishing element from the vector and splits based on that element .
+then , it recursively finds the most distinguishing element of its subsets , until a sufficient level of generalization is found .
+decision trees have many benefits the results are easy to interpret , easily human-reproducible and can provide generalizations with little hard data .
+however , they can be prone to over-fitting .
+we use the c4.5 decision tree algorithm , which is based on the id3 decision tree generator .
+results .
+in our experiment , we compared the output of three things : an un-optimized bag-of-words model , a bagof-named-entities model and bag-of-categories .
+as expected , the bow classification and the named entity classification struggle with the concept overlap in the data set .
+in all of these cases , the classifiers tried to include all the testing examples .
+with the category-based svm vectors , the classifier was able to disregard one of the testing examples .
+our negative example set was simply too small for it to pick out the appropriate features for classification .
+with more negative training examples , we should see improved performance from the svm .
+c4.5 was able to distinguish the appropriate category with ease and generated a one-level decision tree .
+if cleveland browns coaches category was found , then the document was classified as a positive example .
+this is expected , given the corpus involved .
+conclusions and future work .
+in this paper , we have introduced a method for document categorization using wikipedia as a large- scale knowledge base for information about named entities .
+we have also demonstrated this algorithm on a toy dataset , where it successfully performs the expected categorization .
+there is a lot of work to be done in this domain .
+our first step is to rebuild the wikipedia database .
+while mediawiki was able to successfully populate our mysql database , the provided database structure is not optimal for our needs .
+article links , wikipedia categories and other pertinent information should be pre-computed and available within our sql queries .
+disambiguation needs to be handled .
+in our current system , we discard entities that need disambiguation .
+obviously , this needs to be handled .
+perhaps a two-pass method that gathers all non- ambiguous entities first , and then does disambiguation based on the article text and the disambiguated article pages .
+additionally , we wish to run our algorithm on additional data sources .
+our toy corpus was used to demonstrate the initial concept , but we need to see how this might work in a more general classification context .
+to this end , we have obtained the rcv 1 corpus , and will be running experiments to see how our algorithm works on this corpus .
+finally , we should investigate additional weighting algorithms .
+the boolean classifier was sufficient for the toy corpus , but established methods such as tf / idf may show some improvement , especially on a corpus such as rcv 1 .
+further out , there is a lot of potential work .
+article consistency needs to be checked to ensure that appropriate inter-article links are maintained .
+for example , the article on bill belichick lists him as a living person .
+yet , the article for the current browns coach ( as of this writing ) romeo crennel does not .
+such consistency needs to be maintained .
+then , we should be able to use the link structure to find a the relatedness of different articles , based on what we have seen before .
+also , we would like to implement the gabrilovich and markovitch ( 2006 ) algorithm , which would provide us with the closest comparison to state-of-the-art in this field .

@@ -1,0 +1,17 @@
+<topic index> 0 </topic index>
+<title> transliteration methods </title>
+<keywords> transliteration;methods; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> generative approaches </title>
+<keywords> approaches;models;generative;generalized;source-channel;statistical; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> discriminative approaches </title>
+<keywords> discriminative;approaches;NE;named entities; </keywords>
+
+<topic index> 0.3 </topic index>
+<title> training transliteration models </title>
+<keywords> training;supervised;unsupervised;models;constraints;feature representation; </keywords>
+
+

@@ -1,0 +1,198 @@
+learning noun-modifier semantic relations with corpus-based and wordnet-based features .
+abstract .
+we study the performance of two representations of word meaning in learning noun-modifier semantic relations .
+one representation is based on lexical resources , in particular wordnet , the other on a corpus .
+we experimented with decision trees , instance-based learning and support vector machines .
+all these methods work well in this learning task .
+we report high precision , recall and f-score , and small variation in performance across several 10-fold cross-validation runs .
+the corpus-based method has the advantage of working with data without word-sense annotations and performs well over the baseline .
+the wordnet-based method , requiring word- sense annotated data , has higher precision .
+introduction .
+in understanding a text , it is essential to recognize relations among occurrences , entities and their attributes , represented at the surface as verbs , nouns and their modifiers .
+semantic relations describe interactions between a noun and its modifiers ( noun-modifier relations ) , a verb and its arguments ( case relations / semantic roles ) , and two clauses .
+in the past few years we have seen the nlp community 's renewed interest in analyzing semantic relations especially between verbs and their arguments ( baker , fillmore , & lowe 1998 ) , ( kipper , dang , & palmer 2000 ) , nouns and their modifiers ( rosario & hearst 2001 ) .
+semantic role labelling competitions2 also seem to increase the attractiveness of this topic .
+in this paper we consider a specific supervised learning task : assign semantic relations to noun-modifier pairs in base noun phrases ( base nps ) , composed only of a noun and its modifier .
+to identify such noun-modifier relations we can rely only on semantic and morphological information about words themselves .
+for example , in the base nps iron gate , brick house , plastic container : iron , brick , plastic are substances , and gate , house , container are artifacts ; this suggests a material relation in these pairs .
+on the other hand , analyzing case relation or clause-level relations is assisted by prepositions , subordinators , coordinators and maybe more elaborate syntactic structures .
+we experiment with two methods of representing the words in a base np , to be used in ml experiments for learning semantic relations between nouns and their modifiers .
+one method is based on features extracted from wordnet , which was designed to capture , describe , and relate word senses .
+in brief , we use hypernyms to describe in more and more general terms the sense of a word in a pair .
+the other method is based on contextual information extracted from corpora .
+contexts are useful for determining word senses , as reflected in research on word-sense disambiguation using a window of words surrounding the target word ( starting with ( yarowsky 1995 ) , and more recently ( purandare & pedersen 2004 ) ) .
+we use grammatical collocations3 ( as opposed to proximity-based co-occurrences ) extracted from the british national corpus , to describe each word in a pair .
+we compare the learning results produced by using these two types of word sense descriptions with the results obtained by ( turney & littman 2003 ) and ( turney 2005 ) , who used a paraphrase method to describe the pair as a whole .
+the data we work with consist of noun-modifier pairs labeled with 30 fine-grained semantic relations , grouped into five relation classes .
+experiments presented in this paper are based on the five-class coarse-grained grouping .
+the corpus-based method gives precision , recall and f- scores well above the baseline , and it works on data without word-sense annotations .
+the method based on wordnet gives results with higher precision , but requires word-sense annotated data .
+the paper consists of an overview of earlier research on learning noun-modifier semantic relations , a description of the data and the representations , a presentation of the experimental setup and the results , and finally a discussion and conclusions .
+related work .
+we focus on methods that analyze and learn semantic relations in noun-phrases .
+levi ( 1978 ) analyzes the formation of nominal compounds .
+she identifies 9 recoverable deletable predicates ( rdps ) : be , cause , have , make , use , about , for , from , in , which , when erased from a more complex expression , generate a noun phrase .
+levi writes that relations expressed by the rdps may be universal , because from a semantic point of view they appear to be quite primitive .
+different semantic relations may be associated with each rdp .
+berland & charniak ( 1999 ) and hearst ( 1992 ) work with specific relations , part of and type of respectively .
+the automatic content extraction project is a research program in information extraction that focuses on detecting specific relations ( such as employer-organization , agent-artifact ) between seven types of entities ( such as person , organization , facility ) in texts ( zhao & grishman 2005 ) .
+several types of information lexical , grammatical and contextual are combined using kernel methods .
+vanderwende ( 1994 ) uses hand-crafted rules and a dictionary built from texts to find clues about the semantic relations in which a word may be involved .
+this was tested with 97 pairs extracted from the brown corpus , with an accuracy of 52 % .
+several systems use lexical resources ( domain-specific like mesh or general like wordnet or roget 's thesaurus ) to find the appropriate level of generalization for words in a pair , so that words linked by different relations are properly separated .
+rosario & hearst ( 2001 ) learn noun-modifier semantic relations in a medical domain , using neural networks .
+the list of 13 relations is tailored to the application domain .
+rosario , hearst , & fillmore ( 2002 ) , continuing that research , look manually for rules which classify correctly noun compounds in the medical domain , based on the mesh lexical hierarchy .
+the data are extracted automatically from biomedical journal articles , and sampled for manual analysis .
+mesh is traversed top-down to find a level at which the noun compounds in different relations are properly separated .
+lauer ( 1995 ) maps words in noun compounds onto categories in roget 's thesaurus , in order to find probabilities of occurrence of certain noun compounds and their paraphrases .
+there is no automatic process to find the best level of generalization .
+nastase & szpakowicz ( 2003 ) use the hypernym / hyponym structure of wordnet , and roget 's thesaurus , to automatically find the generalization level in these resources that best describe each semantic relation .
+several machine learning methods are used in analyzing 30 semantic relations .
+girju et al. ( 2005 ) also use wordnet and the generalization / specialization of word senses , in the task of noun compound interpretation .
+barker & szpakowicz ( 1998 ) use a memory-based process to assign semantic relations to a new noun phrase , based on previously stored examples .
+the distance metric employs identity of one or both of the words , and the connective between them ( usually a preposition ) .
+turney & littman ( 2003 ) and turney ( 2005 ) use paraphrases as features to analyze noun-modifier relations .
+paraphrases express more overtly the semantic relation between a noun and its modifier .
+the hypothesis , corroborated by the reported experiments , is that pairs which share the same paraphrases belong to the same semantic relation .
+turney & littman ( 2003 ) use a set of 64 joining terms which may appear between the two words in a noun phrase ( in the , at the , because , such that , ... ) .
+for each head noun-modifier ( h-m ) pair in the dataset , and for each joining term , a query to alta vista gave the frequency of the phrases .
+the 128 frequency counts were grouped together with the associated semantic relation in a vector that described each noun-modifier pair , and then an ml experiment identified the joining terms that indicate a particular semantic relation , using a 2-nearest-neighbour algorithm .
+this has been generalized in turney ( 2005 ) using what he calls latent relational analysis ( lra ) .
+for each word in a dataset of pairs , lin 's thesaurus ( lin 1998 ) gives a set of possible synonyms .
+all original pairs and pairs generated from synonyms are used to mine a corpus for paraphrases .
+all paraphrases are gathered and a few thousand of the most frequent ones are selected .
+the selected paraphrases , the original word pairs and the synonym pairs are used to build an incidence matrix , whose dimensionality is reduced using singular value decomposition ( landauer & dumais 1997 ) .
+similarity between pairs combines scores for similarity between the original word pair and pairs built using synonyms .
+because we use the same data as turney & littman ( 2003 ) and turney ( 2005 ) , we compare the results of learning noun-modifier relations using wordnet-based and corpus-based representations , with the results obtained using paraphrase-based information .
+data and representations .
+lists of semantic relations in use range from general , as the lists in propbank ( palmer , gildea , & kingsbury 2005 ) and nombank ( myers et al. 2004 ) , to more and more specific , as in verbnet ( kipper , dang , & palmer 2000 ) and framenet ( baker , fillmore , & lowe 1998 ) , to domain- specific ( rosario & hearst 2001 ) .
+the data we use consist of 600 noun-modifier pairs , tagged with 30 semantic relations , grouped into 5 classes of relations by general similarity ( barker 1998 ) , ( nastase & szpakowicz 2003 ) , ( turney & littman 2003 ) : the words in the pairs from the dataset are also annotated with part of speech and wordnet 1.6 word senses .
+we describe two methods of representing these data .
+they are evaluated in learning experiments .
+one representation is based on word hypernym information extracted from word- net .
+the second representation relies on grammatical collocation information extracted from a corpus .
+wordnet-based representation .
+wordnet was designed to capture and describe word senses , and inter-connect them through a variety of lexical and semantic relations .
+we make use of the hypernym / hyponym links , to represent each head word and modifier in a pair through their hypernyms ( ancestors ) in wordnet .
+the data representation we build is used in a different manner by each ml tool we experiment with .
+certain ml algorithms , such as decision trees , have a built-in feature selection process .
+the model of the data is built from a subset of features that is general enough to make good predictions on unseen data but specific enough to classify the training data as correctly as possible .
+other ml algorithms , such as memory- or kernel- based , use all the features , possibly with different weights .
+a representation for the words in our dataset , based on information from wordnet , must meet the following constraints : it must be so general that the memory- and kernel-based methods , which do not perform feature selection , will be able to perform well on unseen data , and yet cover a wide enough range of levels to allow the decision tree method to build an accurate model .
+wordnet 's hypernym / hyponym structure is not uniform .
+some domains are presented in greater detail , with a finer distinction in the hierarchy .
+below a certain level , however , regardless of the domain represented , the synsets become quite specific and rather technical , and are not helpful in generalization .
+the maximum depth in wordnet reached by words in our data is 14 .
+in an earlier research using this dataset ( nastase & szpakowicz 2003 ) we observed that rule- based classifiers pick synsets at levels above 7 .
+we therefore choose level 7 as the cut-off point .
+this serves as a form of feature selection , which provides more general features to the memory- and kernel-based systems , and enough generalization levels for the decision tree to find the ones that work best for the classes we learn .
+this choice is supported by high precision , recall and f-measure scores , reported in the � experimental results � section .
+we use a binary feature representation .
+to represent a word , using the word sense information in the data , we extract all ancestors located at the cut-off level and higher for the corresponding word sense .
+this produces 959 features to represent the head nouns , and 913 features for the modifiers , to which we add the part of speech .
+each noun-modifier pair in the dataset is represented as a vector : can be 1 or 0 : this synset either does or does not appear as an ancestor of the head or the modifier , respectively .
+this representation will naturally address the problem of multiple inheritance in wordnet , since we can represent any number of ancestors of a node , just by setting the corresponding element to 1 .
+we attempt to connect adjective and adverb modifiers to the noun hierarchy using pertains to and derivedfrom links .
+if this is possible , the representation of such a word will consist ( mostly ) of the representation of the noun synset to which it was linked .
+if such a connection cannot be made , the representation will be less informative , because the adjective and adverb synsets are not organized in a hierarchy as complex as the nouns ' .
+we also perform experiments using information from wordnet when word-sense information is ignored .
+in this case , a word 's representation contains the ancetors at and above the cut-off level for all its possible senses .
+the pur pose of these experiments is to measure the impact of knowing the sense of words in a pair for determining the semantic relation between them .
+the representation is similar to the one described above .
+the length of the vector representing a pair increases : there are now 1918 ( hypernym ) features to represent the head nouns , and 1741 for the modifier .
+corpus-based representation using grammatical collocations contexts provide strong and consistent clues to the sense of a word ( yarowsky 1993 ) .
+if a corpus captures a large sample of language use , it allows us to describe the senses of a word through collocated words .
+suppose that noun , denoting entity , is the subject of a sentence .
+verbs that co-occur with characterize occurrences in which can participate , for example a child can grow , eat , sleep , play , cry , laugh ....
+adjectives that modify tell us about ' s attributes , so for example a child can be good , happy , sad , small , tall , chubby , playful , ... , and so on .
+we test such a context-based word-sense description for the task of learning noun-modifier relations .
+the word sketch engine ( wse ) ( kilgarriff et al. 2004 ) gives us collocation information organized by grammatical relations .
+it runs on a corpus in our case , the british national corpus and extracts , for a given word , collocation information based and organized on grammatical categories .
+thus , for a noun the engine builds a list containing : verbs with which the noun appears as a subject , verbs with which it appears as an object , the prepositional phrases attached to it ( grouped by prepositions ) , the head nouns it modifies , its adjectival and nominal modifiers , and so on .
+the advantage of having such a resource is that it eliminates most , if not all , of the noise that we would encounter had we used a simple proximity-based process to gather co-occurrences n-grams that are not proper phrases , are not connected to the words we consider , or do not span the entire phrase .
+we produce a word sketch for each word in each noun- modifier pair in the data .
+from each word sketch we obtain a list of strings by concatenating each grammatical relation with each word in this relation .
+for example , for the noun , we will generate the list and / or mist , and / or rain , ... , object of watch , object of swirl , ...
+from the strings generated for all words that appear in our data , we keep the most frequent ones to obtain a binary feature set to represent each word .
+the corresponding value for a feature will be 1 for word if appears in grammatical relation in the corpus .
+this feature construction and selection process produces a vector of 4969 grammatical relation word strings .
+the final set of features that represents the noun-modifier pair has 2 * 4969 + 1 features ; the added feature is the class ( semantic relation ) to which the pair belongs .
+we have chosen a binary representation rather than a representation which includes frequency information .
+we have two reasons : ( i ) the fact that two words appear together , connected by a grammatical relation , indicates that they are related ; ( ii ) the number of co-occurrences is corpus-specific , so including frequency information may skew results .
+the results will show that this representation gives good learning results .
+frequency information can be used to filter out noise ( with the potential of deleting important , but infrequent , collocations ) or , with a higher threshold , for feature selection .
+one advantage of using grammatical collocations extracted from a corpus is that we do not need data annotated with word senses .
+on the other hand , the representation obtained will group together contextual information for all possible senses of a word .
+the empirical results show that , despite this , we can still find common characteristics among words involved in the same semantic relation .
+having word- sense disambiguated associations may , however , lead to better results .
+we will test this hypothesis in future work .
+experiments .
+as we write in the � related work � section , turney & littman ( 2003 ) and turney ( 2005 ) applied the nearest neighbour method to the task of learning semantic relations on the same dataset that we use .
+they used the leave-one-out method to measure the performance of their predictions , and the class ( semantic relation ) of a test example is predicted based on its two nearest neighbours .
+table 1 shows the reported results when using 64 joining terms and when using lra .
+here , p , r and f-score stand for precision , recall and f ( 1 ) measure ( which gives the same weight to recall and precision ) .
+to compare these paraphrase- based representations with the corpus-based and wordnetbased ones , table 1 includes the results obtained using wordnet with word sense information and without and word sketches in methodologically similar experiments using an instance-based learner ( timbl v. 5.1.0 ( daelemans et al. 2004 ) ) , with 2 nearest neighbour and leave-one-out testing .
+the paraphrase-based representation which uses latent relational analysis performs better .
+lra performs more poorly in terms of precision in 4 of 5 relation classes , with large differences in 3 of those 4 cases ( 30.76 % for causal , 42.61 % for spatial , and 12.17 % for temporal ) compared to wordnet with word-sense information .
+on the other hand , its recall and f-score are higher than all the other representations .
+the experiments that follow use a different methodology .
+several 10-fold cross-validation runs verify that the learners have a consistent performance on different random data splits .
+the results of these experiments are not directly comparable with the ones in table 1 , because they are produced with different training-testing methods .
+we apply memory-based learning ( timbl v. 5.1.0 ( daelemans et al. 2004 ) ) , decision tree induction ( c5.0 v.1.16 ( quinlan ) ) and support vector machine ( svmlight v. 6.01 ( joachims ) ) to compare word representation methods , discussed above , for the task of learning noun-modifier semantic relations .
+to give more reliable results , we perform five runs .
+for each run we split the data into 10 random splits which preserve the class distribution of the original data set .
+we perform 10-fold cross-validation experiments on these splits with the three machine learning algorithms , adjusting the formatting of the files to fit each tool .
+these are binary experiments , in which examples of each relation class in turn become the positive instances , and the rest of the examples become the negative instances .
+preliminary runs found a configuration for each classifier .
+the results presented in this section were obtained with the following configurations : timbl uses the igtree classification algorithm ( decision-tree-based optimization ) and the feature-weighing scheme ; c5.0 runs with the default configuration ; svmlight uses the linear kernel .
+empirical results and discussion .
+table 2 shows the results of learning the assignment of five classes of semantic relations in binary classification experiments for each relation class .
+the f-score baseline for each binary classification experiment combines ( with equal weights ) the precision when all examples are classified as positive which is equal to the percentage of examples in the positive class and the corresponding 100 % recall .
+this baseline is independent of the learning method used , and is also higher for most classes than other baselines tried ( based on a representation consisting of only the words in the pair , in both bag of words binary representation , and 2 multi- valued attribute representation ) .
+the precision , recall and equally-weighted f-score results for each representation are averages over the five runs of 10- fold cross-validation experiments , plus-minus the standard deviation for each average .
+because of class imbalance ( averaging 1 : 5 for the five-class problem ) , accuracy is not as informative as precision , recall and f-score , and is not reported .
+the data representation is very high-dimensional , as it often happens in nlp problems .
+not all features have the same effect on the learning of noun-modifier relations .
+using feature weighting schemes in timbl and c5.0 's built-in feature selection gives better learning results than svmlight in terms of f-score .
+a low standard deviation indicates that the performance in the real world will be close to the estimated average .
+a combination of high precision and recall values and low standard deviation shows classes of relations that are learned well in a particular experimental configuration .
+this is the case for the temporal class learned using c5.0 or timbl with both the wordnet-based and the word sketch-based representations .
+in situations where the standard deviation is high , we cannot make confident predictions about future performance .
+figure 2 plots the f-scores for the word representation explored , when timbl was the learning method .
+we plot timbl 's results , because according to the standard deviation it was the most stable learner .
+we observe that the performance of the representation based on word sketches , which does not distinguish word senses , performs better than wordnet without word sense information .
+it is also close to wordnet with sense information .
+the advantage of using corpora is that no knowledge- intensive preprocessing is necessary , and the method does not rely on other lexical resources .
+the process may therefore be ported to other languages .
+in order to use paraphrases effectively , a larger corpus is needed so sufficiently many paraphrases can be found .
+the same is true of building descriptions of word meaning based on grammatical collocations in a corpus : the larger the corpus , the higher the chances that we find the most informative collocations .
+here are some collocation features picked by c5.0 during the learning phase : happen modifier , occur during modifier , wait until modifier 5 indicate a temporal relation ; predict head-noun , head-noun and / orfear6 indicate a causal relation .
+we observe the impact of having word-sense information when we compare the results of learning experiments with the wordnet-based representation with and without word- sense annotation .
+the difference in results is quite dramatic .
+the f-scores drop for all relation classes and all ml methods used .
+moreover , the difference in results when using word sketches and when using non-annotated data in favour of word sketches indicate that when no word-sense information is available , corpus-based word descriptions are more informative and useful for the task of learning semantic relations .
+the interesting exceptions are the recall for the participant class in 2-nearest neighbour experiments 92.46 % compared to the next best one of 88.41 % and the precision for the temporal class in cross-validation runs with timbl 97.1 % , compared to the 92.63 % precision when word senses are used .
+the fact that an increase in precision is accompanied by a sharp drop in recall ( from 76.4 to 57.6 ) means that the learner reduces the number of examples incorrectly assigned to the temporal class , but at the same time more temporal examples are assigned to an incorrect class .
+the effect of including all word hypernyms is that it introduces ambiguity between previously well separated words ( when sense information was used ) through shared hypernyms that do not pertain to the word sense in the pair .
+this causes more of the pairs to become ambiguous from the semantic relation point of view , and these will be misclassified .
+the pairs with stronger commonalities or non-ambiguous hypernyms will be fewer , but will be classified better .
+a reverse effect explains the increase in recall for participant , accompanied by a drop in precision ( from 52.16 % to 47.16 % ) when more examples of the class are caught , but are classified less correctly .
+participant contains the most instances , 43.22 % of the dataset .
+previously discriminating hypernyms will now cover a more heterogeneous mixture of instances .
+using wordnet with word-sense information gives very high results 82.47 % f-score especially in terms of precision 92.63 % .
+this shows that indeed there are inherited characteristics of word senses which determine the semantic relations in which these words are involved .
+here are some features chosen by the decision tree method : clock time , time , measure , quantity , amount , quantum for the modifier indicate a temporal relation ; ill health , unhealthiness , health problem for the modifier indicate a causal relation ; causal agent , cause , causal agency for the head indicate a participant relation .
+the fact that recall is lower may suggest that some word senses could not be connected , probably because what they share cannot be captured by the hypernym / hyponym relation .
+the word representation can be extended to make use of other relations in wordnet , such as meronym / holonym .
+conclusions and future work .
+we have compared different methods of representing data for learning to identify semantic relations between nouns and modifiers in base noun phrases .
+looking at the results obtained with the different representation methods , we can conclude that we can detect successfully the temporal relation between words by looking at either of the following : individual word senses as described by wordnet , word meaning as described by its contexts , or the prepositions or paraphrases that connect the words in the pair .
+for the other four relation classes , describing a word using sense specific wordnet information allows for high precision in identifying the correct relation class , but in order to increase the number of relation instances recognized , using corpus-based features helps .
+when no word- sense information is available , corpora-based features will lead to better results than using all word senses in wordnet .
+as we said previously , using the word meaning representation methods described generates very high dimensional data .
+while we do obtain results well above the baseline , it is quite likely that the ml tools are overwhelmed by the large number of attributes .
+we will experiment with different feature selection methods to find a small set of word meaning descriptors that may produce even better results .
+because we use sets of features from different sources , which achieve high precision on different classes , we could use co-training to bootstrap the automatic tagging of a new set of pairs ( balcan , blum , & yang 2005 ) .
+this would allow us to incrementally increase a starting ( small ) dataset with examples classified at high precision .
+obtaining a larger dataset would help address the problem of data sparseness .

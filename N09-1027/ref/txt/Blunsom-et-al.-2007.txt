@@ -1,0 +1,188 @@
+a discriminative latent variable model for statistical machine translation .
+abstract .
+large-scale discriminative machine translation promises to further the state-of-the-art , but has failed to deliver convincing gains over current heuristic frequency count systems .
+we argue that a principle reason for this failure is not dealing with multiple , equivalent translations .
+we present a translation model which models derivations as a latent variable , in both training and decoding , and is fully discriminative and globally optimised .
+results show that accounting for multiple derivations does indeed improve performance .
+additionally , we show that regularisation is essential for maximum conditional likelihood models in order to avoid degenerate solutions .
+introduction .
+statistical machine translation ( smt ) has seen a resurgence in popularity in recent years , with progress being driven by a move to phrase-based and syntax-inspired approaches .
+progress within these approaches however has been less dramatic .
+we believe this is because these frequency count based ' models cannot easily incorporate non-independent and overlapping features , which are extremely useful in describing the translation process .
+discriminative models of translation can include such features without making assumptions of independence or explicitly modelling their interdependence .
+however , while discriminative models promise much , they have not been shown to deliver significant gains over their simpler cousins .
+we argue that this is due to a number of inherent problems that discriminative models for smt must address , in particular the problems of spurious ambiguity and degenerate solutions .
+these occur when there are many ways to translate a source sentence to the same target sentence by applying a sequence of steps ( a derivation ) of either phrase translations or synchronous grammar rules , depending on the type of system .
+existing discriminative models require a reference derivation to optimise against , however no parallel corpora annotated for derivations exist .
+ideally , a model would account for this ambiguity by marginalising out the derivations , thus predicting the best translation rather than the best derivation .
+however , doing so exactly is np-complete .
+for this reason , to our knowledge , all discriminative models proposed to date either side-step the problem by choosing simple model and feature structures , such that spurious ambiguity is lessened or removed entirely ( ittycheriah and roukos , 2007 ; watanabe et al. , 2007 ) , or else ignore the problem and treat derivations as translations ( liang et al. , 2006 ; tillmann and zhang , 2007 ) .
+in this paper we directly address the problem of spurious ambiguity in discriminative models .
+we use a synchronous context free grammar ( scfg ) translation system ( chiang , 2007 ) , a model which has yielded state-of-the-art results on many translation tasks .
+we present two main contributions .
+first , we develop a log-linear model of translation which is globally trained on a significant number of parallel sentences .
+this model maximises the conditional likelihood of the data , p ( elf ) , where e and f are the english and foreign sentences , respectively .
+our estimation method is theoretically sound , avoiding the biases of the heuristic relative frequency estimates between sentence length and the number of derivations .
+training is difficult without a clear target , and predicting only one derivation at test time is fraught with danger .
+parallel translation data is often very noisy , with such problems as non-literal translations , poor sentence- and word-alignments .
+a model which exactly translates the training data will inevitably perform poorly on held-out data .
+this problem of over-fitting is exacerbated in discriminative models with large , expressive , feature sets .
+regularisation is essential for models with more than a handful of features .
+second , within this framework , we model the derivation , d , as a latent variable , p ( e , d1f ) , which is marginalised out in training and decoding .
+we show empirically that this treatment results in significant improvements over a maximum-derivation model .
+the paper is structured as follows .
+in section 2 we list the challenges that discriminative smt must face above and beyond the current systems .
+we situate our work , and previous work , on discriminative systems in this context .
+we present our model in section 3 , including our means of training and decoding .
+section 4 reports our experimental setup and results , and finally we conclude in section 5 .
+challenges for discriminative smt .
+discriminative models allow for the use of expressive features , in the order of thousands or millions , which can reference arbitrary aspects of the source sentence .
+given most successful smt models have a highly lexicalised grammar ( or grammar equivalent ) , these features can be used to smuggle in linguistic information , such as syntax and document context .
+with this undoubted advantage come four major challenges when compared to standard frequency count smt models : there is no one reference derivation .
+often there are thousands of ways of translating a source sentence into the reference translation .
+figure 1 illustrates the exponential relationship learning with a large feature set requires many training examples and typically many iterations of a solver during training .
+while current models focus solely on efficient decoding , discriminative models must also allow for efficient training .
+past work on discriminative smt only address some of these problems .
+to our knowledge no systems directly address problem 1 , instead choosing to ignore the problem by using one or a small handful of reference derivations in an n-best list ( liang et al. , 2006 ; watanabe et al. , 2007 ) , or else making local independence assumptions which side-step the issue ( ittycheriah and roukos , 2007 ; tillmann and zhang , 2007 ; wellington et al. , 2006 ) .
+these systems all include regularisation , thereby addressing problem 2 .
+an interesting counterpoint is the work of denero et al. ( 2006 ) , who show that their unregularised model finds degenerate solutions .
+some of these discriminative systems have been trained on large training sets ( problem 3 ) ; these systems are the local models , for which training is much simpler .
+both the global models ( liang et al. , 2006 ; watanabe et al. , 2007 ) use fairly small training sets , and there is no evidence that their techniques will scale to larger data sets .
+our model addresses all three of the above problems within a global model , without resorting to n- best lists or local independence assumptions .
+furthermore , our model explicitly accounts for spurious ambiguity without altering the model structure or arbitrarily selecting one derivation .
+instead we model the translation distribution with a latent variable for the derivation , which we marginalise out in training and decoding .
+figure 3 .
+a simple scfg , with non-terminal symbols s and x , which performs the transduction : il ne vas pas = : > . he does not go this itself provides robustness to noisy data , in addition to the explicit regularisation from a prior over the model parameters .
+for example , in many cases there is no one perfect derivation , but rather many imperfect ones which each include some good translation fragments .
+the model can learn from many of these derivations and thereby learn from all these translation fragments .
+this situation is illustrated in figure 2 where the non-translated adjective red means neither segmentation is correct , although both together present positive evidence for the two lexical translations .
+we present efficient methods for training and prediction , demonstrating their scaling properties by training on more than a hundred thousand training sentences .
+finally , we stress that our main findings are general ones .
+these results could and should be applied to other models , discriminative and generative , phrase- and syntax-based , to further progress the state-of-the-art in machine translation .
+discriminative synchronous transduction .
+a synchronous context free grammar ( scfg ) consists of paired cfg rules with co-indexed non- terminals ( lewis ii and stearns , 1968 ) .
+by assigning the source and target languages to the respective sides of a scfg it is possible to describe translation as the process of parsing the source sentence using a cfg , while generating the target translation from the other ( chiang , 2007 ) .
+all the models we present use the grammar extraction technique described in chiang ( 2007 ) , and are bench-marked against our own implementation of this hierarchical model ( hiero ) .
+figure 3 shows a simple instance of a hierarchical grammar with two non-terminals .
+note that our approach is general and could be used with other synchronous grammar transducers ( e.g. , galley et al. ( 2006 ) ) .
+a global log-linear model .
+our log-linear translation model defines a conditional probability distribution over the target translations of a given source sentence .
+a particular sequence of scfg rule applications which produces a translation from a source sentence is referred to as a derivation , and each translation may be produced by many different derivations .
+as the training data only provides source and target sentences , the derivations are modelled as a latent variable .
+the conditional probability of a derivation , d , for a target translation , e , conditioned on the source , f , is given by : here k ranges over the models features , and a = iaki are the model parameters ( weights for their corresponding features ) .
+the feature functions hk are predefined real-valued functions over the source and target sentences , and can include overlapping and non-independent features of the data .
+the features must decompose with the derivation , as shown in ( 2 ) .
+the features can reference the entire source sentence coupled with each rule , r , in a derivation .
+the distribution is globally normalised by the partition function , za ( f ) , which sums out the numerator in ( 1 ) for every derivation ( and therefore every translation ) of f : given ( 1 ) , the conditional probability of a target translation given the source is the sum over all of its derivations : most prior work in smt , both generative and discriminative , has approximated the sum over derivations by choosing a single best derivation using a viterbi or beam search algorithm .
+in this work we show that it is both tractable and desirable to directly account for derivational ambiguity .
+our findings echo those observed for latent variable log-linear models successfully used in monolingual parsing ( clark and curran , 2007 ; petrov et al. , 2007 ) .
+these models marginalise over derivations leading to a dependency structure and splits of non-terminal categories in a pcfg , respectively .
+training .
+the parameters of our model are estimated from our training sample using a maximum a posteriori ( map ) estimator .
+we use a zero-mean gaussian prior with the probability density function p0 ( ~ k ) a exp ( ~ 2k / 2 ~ 2 ) .2 this results in the following log-likelihood objective and corresponding gradient : in order to train the model , we maximise equation ( 4 ) using l-bfgs ( malouf , 2002 ; sha and pereira , 2003 ) .
+this method has been demonstrated to be effective for ( non-convex ) log-linear models with latent variables ( clark and curran , 2004 ; petrov et al. , 2007 ) .
+each l-bfgs iteration requires the objective value and its gradient with respect to the model parameters .
+these are calculated using inside-outside inference over the feature forest defined by the scfg parse chart of f yielding the partition function , za ( f ) , required for the log-likelihood , and the marginals , required for its derivatives .
+efficiently calculating the objective and its gradient requires two separate packed charts , each representing a derivation forest .
+the first one is the full chart over the space of possible derivations given the source sentence .
+the inside-outside algorithm over this chart gives the marginal probabilities for each chart cell , from which we can find the feature expectations .
+the second chart contains the space of derivations which produce the reference translation from the source .
+the derivations in this chart are a subset of those in the full derivation chart .
+again , we use the inside-outside algorithm to find the reference feature expectations from this chart .
+these expectations are analogous to the empirical observation of maximum entropy classifiers .
+given these two charts we can calculate the log- likelihood of the reference translation as the inside- score from the sentence spanning cell of the reference chart , normalised by the inside-score of the spanning cell from the full chart .
+the gradient is calculated as the difference of the feature expectations of the two charts .
+clark and curran ( 2004 ) provides a more complete discussion of parsing with a log- linear model and latent variables .
+the full derivation chart is produced using a cyk parser in the same manner as chiang ( 2005 ) , and has complexity o ( 1e13 ) .
+we produce the reference chart by synchronously parsing the source and reference sentences using a variant of cyk algorithm over two dimensions , with a time complexity of o ( 1 e 13 1 f 13 ) .
+this is an instance of the itg alignment algorithm ( wu , 1997 ) .
+this step requires the reference translation for each training instance to be contained in the models hypothesis space .
+achieving full coverage implies inducing a grammar which generates all observed source-target pairs , which is difficult in practise .
+instead we discard the unreachable portion of the training sample ( 24 % in our experiments ) .
+the proportion of discarded sentences is a function of the grammar used .
+extraction heuristics other than the method used herein ( chiang , 2007 ) could allow complete coverage ( e.g. , galley et al. ( 2004 ) ) .
+decoding .
+accounting for all derivations of a given translation should benefit not only training , but also decoding .
+unfortunately marginalising over derivations in decoding is np-complete .
+the standard solution is to approximate the maximum probability translation using a single derivation ( koehn et al. , 2003 ) .
+here we approximate the sum over derivations directly using a beam search in which we produce a beam of high probability translation sub-strings for each cell in the parse chart .
+this algorithm is similar to the methods for decoding with a scfg intersected with an n-gram language model , which require language model contexts to be stored in each chart cell .
+however , while chiang ( 2005 ) stores an abbreviated context composed of the n-1 target words on the left and right edge of the target substring , here we store the entire target string .
+additionally , instead of maximising scores in each beam cell , we sum the inside scores for each derivation that produces a given string for that cell .
+when the beam search is complete we have a list of translations in the top beam cell spanning the entire source sentence along with their approximated inside derivation scores .
+thus we can assign each translation string a probability by normalising its inside score by the sum of the inside scores of all the translations spanning the entire sentence .
+figure 4 illustrates the search process for the simple grammar from table 2 .
+each graph node represents a hypothesis translation substring covering a sub-span of the source string .
+the space of translation sub-strings is exponential in each cells span , and our algorithm can only sum over a small fraction of the possible strings .
+therefore the resulting probabilities are only estimates .
+however , as demonstrated in section 4 , this algorithm is considerably more effective than maximum derivation ( viterbi ) decoding .
+evaluation .
+our model evaluation was motivated by the following questions : ( 1 ) the effect of maximising translations rather than derivations in training and decoding ; ( 2 ) whether a regularised model performs better than a maximum likelihood model ; ( 3 ) how the performance of our model compares with a frequency count based hierarchical system ; and ( 4 ) how translation performance scales with the number of training examples .
+we performed all of our experiments on the europarl v2 french-english parallel corpus.3 the training data was created by filtering the full corpus for all the french sentences between five and fifteen words in length , resulting in 170k sentence pairs .
+these limits were chosen as a compromise between experiment turnaround time and leaving a large enough corpus to obtain indicative results .
+the development and test data was taken from the 2006 naacl and 2007 acl workshops on machine translation , also filtered for sentence length .
+here we focus on evaluating our models basic ability to learn a conditional distribution from simple binary features , directly comparable to those currently employed in frequency count models .
+as such , our base model includes a single binary identity feature per-rule , equivalent to the p ( eif ) parameters defined on each rule in standard models .
+as previously noted , our model must be able to derive the reference sentence from the source for it to be included in training .
+for both our discriminative and benchmark ( hiero ) we extracted our grammar on the 170k sentence corpus using the approach described in chiang ( 2007 ) , resulting in 7.8 million rules .
+the discriminative model was then trained on the training partition , however only 130k of the sentences were used as the model could not produce a derivation of the reference for the remaining sentences .
+there were many grammar rules that the discriminative model did not observe in a reference derivation , and thus could not assign their feature a positive weight .
+while the benchmark model has a positive count for every rule ( 7.8m ) , the discriminative model only observes 1.7m rules in actual reference derivations .
+figure 1 illustrates the massive ambiguity present in the training data , with fifteen word sentences averaging over 70m reference derivations .
+performance is evaluated using cased bleu4 score on the test set .
+although there is no direct relationship between bleu and likelihood , it provides a rough measure for comparing performance .
+derivational ambiguity table 1 shows the impact of accounting for derivational ambiguity in training and decoding.5 there are two options for training , we could use our latent variable model and optimise the probability of all derivations of the reference translation , or choose a single derivation that yields the reference and optimise its probability alone .
+the second option raises the difficult question of which one , of the thousands available , we should choose ?
+we use the derivation which contains the most rules .
+the intuition is that small rules are likely to appear more frequently , and thus generalise better to a test set .
+in decoding we can search for the maximum probability derivation , which is the standard practice in smt , or for the maximum probability translation which is what we actually want from our model , i.e. the best translation .
+the results clearly indicate the value in optimising translations , rather than derivations .
+max- translation decoding for the model trained on single derivations has only a small positive effect , while for the latent variable model the impact is much larger.6 for example , our max-derivation model trained on the europarl data translates carte sur la table as on the table card .
+this error in the reordering of card ( which is an acceptable translation of carte ) is due to the rule ( x ) * ( carte x1 ~ x 1 card ) being the highest scoring rule for carte .
+this is reasonable , as carte is a noun , which in the training data , is often observed with a trailing adjective which needs to be reordered when translating into english .
+in the example there is no adjective , but the simple hierarchical grammar cannot detect this .
+the max-translation model finds a good translation card on the table .
+this is due to the many rules that enforce monotone ordering around sur la , ( x ) * ( x1 sur , x1 in ) ( x ) * ( x1 sur la x21 x1 in the x2 ) etc .
+the scores of these many monotone rules sum to be greater than the reordering rule , thus allowing the model to use the weight of evidence to settle on the correct ordering .
+having established that the search for the best translation is effective , the question remains as to how the beam width over partial translations affects performance .
+figure 5 shows the relationship between beam width and development bleu .
+even with a very tight beam of 100 , max-translation decoding outperforms maximum-derivation decoding , and performance is increasing even at a width of 10k .
+in subsequent experiments we use a beam of 5k which provides a good trade-off between performance and speed .
+regularisation table 1 shows that the performance of an unregularised maximum likelihood model lags well behind the regularised max- translation model .
+from this we can conclude that the maximum likelihood model is overfitting the training set .
+we suggest that is a result of the degenerate solutions of the conditional maximum likelihood estimate , as described in denero et al. ( 2006 ) .
+here we assert that our regularised maximum a posteriori model avoids such solutions .
+this is illustrated in table 2 , which shows the conditional probabilities for rules , obtained by locally normalising the rule feature weights for a simple grammar extracted from the ambiguous pair of sentences presented in denero et al. ( 2006 ) .
+the first column of conditional probabilities corresponds to a maximum likelihood estimate , i.e. , without regularisation .
+as expected , the model finds a degenerate solution in which overlapping rules are exploited in order to minimise the entropy of the rule translation distributions .
+the second column shows the solution found by our model when regularised by a gaussian prior with unit variance .
+here we see that the model finds the desired solution in which the true ambiguity of the translation rules is preserved .
+the intuition is that in order to find a degenerate solution , dispreferred rules must be given large negative weights .
+however the prior penalises large weights , and therefore the best strategy for the regularised model is to evenly distribute probability mass .
+translation comparison having demonstrated. that accounting for derivational ambiguity leads to improvements for our discriminative model , we now place the performance of our system in the context of the standard approach to hierarchical translation .
+to do this we use our own implementation of hiero ( chiang , 2007 ) , with the same grammar but with the traditional generative feature set trained in a linear model with minimum bleu training .
+the feature set includes : a trigram language model ( lm ) trained on the english side of the unfiltered europarl corpus ; direct and reverse translation scores estimated as relative frequencies ( pd , pr ) ; lexical translation scores ( pd y , prey ) , a binary flag for the glue rule which allows the model to ( dis ) favour monotone translation ( gr ) ; and rule and target word counts ( rc , wc ) .
+table 3 shows the results of our system on the test set .
+firstly we show the relative scores of our model against hiero without using reverse translation or lexical features.7 this allows us to directly study the differences between the two translation models without the added complication of the other features .
+as well as both modelling the same distribution , when our model is trained with a single parameter per-rule these systems have the same parameter space , differing only in the manner of estimation .
+additionally we show the scores achieved by mert training the full set of features for hiero , with and without a language model.8 we provide these results for reference .
+to compare our model directly with these systems we would need to incorporate additional features and a language model , work which we have left for a later date .
+the relative scores confirm that our model , with its minimalist feature set , achieves comparable performance to the standard feature set without the language model .
+this is encouraging as our model was trained to optimise likelihood rather than bleu , yet it is still competitive on that metric .
+as expected , the language model makes a significant difference to bleu , however we believe that this effect is orthogonal to the choice of base translation model , thus we would expect a similar gain when integrating a language model into the discriminative system .
+an informal comparison of the outputs on the development set , presented in table 4 , suggests that the translation optimising discriminative model more often produces quite fluent translations , yet not in ways that would lead to an increase in bleu score.9 this could be considered a side-effect of optimising likelihood rather than bleu .
+scaling in figure 6 we plot the scaling characteristics of our models .
+the systems shown in the graph use the full grammar extracted on the 170k sentence corpus .
+the number of sentences upon which the iterative training algorithm is used to estimate the parameters is varied from 10k to the maximum 130k for which our model can reproduce the reference translation .
+as expected , the more data used to train the system , the better the performance .
+however , as the performance is still increasing significantly when all the parseable sentences are used , it is clear that the systems performance is suffering from the large number ( 40k ) of sentences that are discarded before training .
+discussion and further work .
+we have shown that explicitly accounting for competing derivations yields translation improvements .
+our model avoids the estimation biases associated with heuristic frequency count approaches and uses standard regularisation techniques to avoid degenerate maximum likelihood solutions .
+having demonstrated the efficacy of our model with very simple features , the logical next step is to investigate more expressive features .
+promising features might include those over source side reordering rules ( wang et al. , 2007 ) or source context features ( carpuat and wu , 2007 ) .
+rule frequency features extracted from large training corpora would help the model to overcome the issue of unreachable reference sentences .
+such approaches have been shown to be effective in log-linear word- alignment models where only a small supervised corpus is available ( blunsom and cohn , 2006 ) .
+finally , while in this paper we have focussed on the science of discriminative machine translation , we believe that with suitable engineering this model will advance the state-of-the-art .
+to do so would require integrating a language model feature into the max-translation decoding algorithm .
+the use of richer , more linguistic grammars ( e.g. , galley et al. ( 2004 ) ) may also improve the system .

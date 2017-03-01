@@ -1,0 +1,515 @@
+automatic discovery of part-whole relations .
+abstract .
+an important problem in knowledge discovery from text is the automatic extraction of semantic relations .
+this paper presents a supervised , semantically intensive , domain independent approach for the automatic detection of part -whole relations in text .
+first an algorithm is described that identifies lexico-syntactic patterns that encode part-whole relations .
+a difficulty is that these patterns also encode other semantic relations , and a learning method is necessary to discriminate whether or not a pattern contains a part-whole relation .
+a large set of training examples have been annotated and fed into a specialized learning system that learns classification rules .
+the rules are learned through an iterative semantic specialization ( iss ) method applied to noun phrase constituents .
+classification rules have been generated this way for different patterns such as genitives , noun compounds , and noun phrases containing prepositional phrases to extract part -whole relations from them .
+the applicability of these rules has been tested on a test corpus obtaining an overall average precision of 80.95 % and recall of 75.91 % .
+the results demonstrate the importance of word sense disambiguation for this task .
+they also demonstrate that different lexico-syntactic patterns encode different semantic information and should be treated separately in the sense that different clarification rules apply to different patterns .
+introduction .
+the identification of semantic relations in text is at the core of natural language processing and many of its applications .
+detecting semantic relations between various text segments , such as phrases , sentences , and discourse spans , is important for automatic text understanding ( rosario , hearst , and fillmore 2002 ; lapata 2002 ; morris and hirst 2004 ) .
+furthermore , semantic relations represent the core elements in the organization of lexical semantic knowledge bases intended for inference purposes .
+recently , there has been a renewed interest in text semantics as evidenced by the international participation in the senseval 3 semantic roles competition , 1 the associated workshops , 2 and numerous other workshops .
+an important semantic relation for many applications is the part-whole relation , or meronymy .
+let us notate the part-whole relation as part ( x , y ) , where x is part of y. for example , the compound nominal door knob contains the part-whole relation part ( knob , door ) .
+part-whole relations occur frequently in text and are expressed by a variety of lexical constructions as illustrated in the text below .
+this paper provides a supervised , knowledge-intensive method for the automatic detection of part-whole relations in english texts .
+based on a set of positive ( encoding meronymy ) and negative ( not encoding meronymy ) training examples provided and annotated by us , the algorithm creates a decision tree and a set of rules that classify new data .
+the rules produce semantic conditions that the noun constituents matched by the patterns must satisfy in order to exhibit a part-whole relation .
+for the discovery of classification rules we used c4.5 decision tree learning ( quinlan 1993 ) .
+the learned function is represented by a decision tree transformed into a set of if-then rules .
+the decision tree learning searches a complete hypothesis space from simple to complex hypotheses until it finds a hypothesis consistent with the data .
+its bias is a preference for the shorter tree that places high information gain attributes closer to the root .
+for training purposes we used wordnet , and the la times ( trec9 ) 4 and semcor 1.75 text collections .
+from these we formed a large corpus of 27,963 negative examples and 29,134 positive examples of well distributed subtypes of part-whole relationships which provided a comprehensive set of classification rules .
+the rules were tested on two different text collections ( la times and wall street journal ) obtaining an overall average precision of 80.95 % and recall of 75.91 % .
+in this paper we do not distinguish between situations when whole objects consist of parts that are always present , or parts that are only sometimes present .
+for example , it might be relatively easy to pin down the parts of a car ( e.g. , four wheels , one engine , as ever present parts of a car irrespective of its type ) as compared to enumerating all the components of a sandwich ( e.g. , two layers of cheese and / or salami , two slices of bread , that depend on the type of sandwich ) .
+in our experiments we focus only on part-whole instances that are mentioned in the corpus employed and on those provided by general- purpose lexical knowledge bases such as wordnet , 6 whether the parts are just sometimes constituents of the entity considered or are always present .
+we do not check for the validity of these instances ( e.g. , whether the instance -wood is part of a sandwich- is true or not ) .
+based on a large training corpus of positive and negative part-whole examples , our system infers what type of objects are parts and wholes .
+also , our system does not take into consideration modality information such as knowledge about the possibility , certainty , or probability of existence of part-whole relations .
+the paper is organized as follows .
+section 2 presents a summary of previous work on meronymy from several perspectives .
+section 3 gives a detailed classification of the lexico-syntactic patterns used to express meronymy in english texts and a procedure for finding these patterns .
+section 4 describes a method for learning semantic classification rules , while section 5 shows the results obtained for discovering the part-whole relations by applying the classification rules on two distinct test corpora .
+section 6 comments on the method-s limitations and extensions , and section 7 discusses the relevance of the task to nlp applications .
+conclusions are offered in section 8 .
+previous work on meronymy .
+historically , part-whole or meronymy relations have played an important role in linguistics , philosophy , and psychology mainly because a clear understanding of part- whole relations requires a deep interaction of logic , semantics , and pragmatics as they provide the tools needed for our understanding of the world .
+the part-whole relation has been considered a fundamental ontological relation since the atomists ( plato , aristotle , and the scholastics ) .
+they were the first to give a systematic characterization of parts and wholes , the relation between them , and the inheritance properties of this relation .
+however , most of the investigations of part-whole relations have been made since the beginning of the 20th century .
+the logical / philosophical studies of meronymy were concerned with formal theories of parts ( mereologies ) , wholes , and their relation in the context of formal ontology .
+this school of thought advocates a single , universal , and transitive part-of relation used for modeling various domains such as time and space .
+simons ( 1986 ) criticized this standard extensional view and proposed a more adequate account that offers an axiomatic representation of the part-of relation as a strict partial-ordering relation .
+the axioms considered were : existence ( if a is a part of b then both a and b exist ) , asymmetry ( if a is a part of b then b is not a part of a ) , supplementarity ( if a is a part of b then b has a part c disjoint of a ) , and transitivity ( if 6 for example , in wordnet 1.7 the only part listed for the concept sandwich is bread .
+a is a part of b and b is a part of c then a is a part of c ) .
+in 1991 , simons ( 1991 ) added two more axioms : extensionality ( objects with the same parts are identical ) and existence of mereological sum ( for any number of objects there exists a whole that consists exactly of those objects ) .
+linguistics and cognitive psychology researchers focused on different part-whole relations and their role as semantic primitives .
+since there are different ways in which something can be expressed as part of something else , many researchers have claimed that meronymy is a complex relation that -should be treated as a collection of relations , not as a single relation- ( iris , litowitz , and evens 1988 ) .
+based on psycholinguistic experiments and the way in which the parts contribute to the structure of the wholes , winston , chaffin , and hermann ( 1987 ) determined six types of part-whole relations : ( 1 ) component-integral object , ( 2 ) member-collection , ( 3 ) portion-mass , ( 4 ) stuff-object , ( 5 ) feature-activity , and ( 6 ) place-area .
+they also proposed three relation elements ( functional , homeomerous , and separable ) to further classify the six types of meronymy relations .
+the functional relational element indicates that the part has a function with respect to its whole , whereas homeomerous means that the part is identical to the other parts making up the whole .
+the separable relational element shows that the part can be separated from the whole .
+for example , the relation wheel-car is a component-integral part-whole relation that is functional , non-homeomerous and separable .
+this means that the wheel has a specific function with respect to the car , does not resemble the other parts of the car , and can be separated from the car .
+the component-integral relation is the relation between components and the objects to which they belong .
+integral objects have a structure , their components are separable and have a functional relation with their wholes .
+for example , kitchen-apartment and aria-opera are component-integral relations .
+the member-collection relation represents membership in a collection .
+members are parts , but they cannot be separated from their collections and do not play any functional role with respect to their whole .
+for example , soldier-army , professor -faculty , and tree -forest are member-collection relations .
+portion-mass captures the relations between portions and masses , extensive objects , and physical dimensions .
+the parts are separable and similar to each other and to the wholes which they comprise , and do not play any functional role with respect to their whole .
+for example , slice-pie and meter-kilometer are portion-mass relations .
+the stuff-object category encodes the relations between an object and the stuff of which it is partly or entirely made .
+the parts are not similar to the wholes that they comprise , cannot be separated from the whole , and have no functional role .
+for example , steel-car and alcohol -wine are stuff-object relations .
+the feature-activity relation captures the semantic links within features or phases of various activities or processes .
+the parts have a functional role , but they are not similar or separable from the whole .
+for example , paying-shopping and chewing- eating are feature-activity relations .
+place-area captures the relation between areas and special places and locations within them .
+the parts are similar to their wholes , but they are not separable from them .
+for example , oasis-desert and guadalupe mountains national park-texas are place-area relations .
+in this paper we use the winston , chaffin , and hermann classification as a criterion for building the training corpus to provide a wide coverage of such subtypes of part- whole relations .
+in computational linguistics , although a considerable amount of work has been done on semantic relation detection , 7 the work most similar to the task of identifying part-whole semantic relations is that of hearst ( 1992 ) and berland and charniak ( 1999 ) .
+hearst developed a method for the automatic acquisition of hypernymy relations by identifying a set of frequently used and mostly unambiguous lexico-syntactic patterns .
+for example , countries , such as england indicates a hypernymy relation between the words countries and england .
+in her paper , she mentions that she tried applying the same method to meronymy , but without much success , as the patterns detected also expressed other semantic relations .
+this is consistent with our study of part-whole lexico-syntactic patterns presented in this paper .
+in 1999 , berland and charniak applied statistical methods to a very large corpus8 to find part-whole relations .
+using hearst-s method , they focused on a small set of genitive patterns and a list of six seeds representing whole objects ( book , building , car , hospital , plant , and school ) .
+their system-s output was an ordered list of possible parts according to some statistical metrics ( e.g. , the log-likelihood metric ( dunning 1993 ) ) .
+although the training corpus used is very large , the coverage of the algorithm is small due to the limited number of patterns used and the small number of wholes allowed .
+moreover , certain words , such as those ending in -ing , -ness , or -ity , were ruled out .
+their accuracy is 55 % for the first 50 ranked parts and 70 % for the first 20 ranked parts .
+as a baseline , they considered as potential parts the head nouns immediately surrounding the target whole object and ranked them based on the same statistical metric .
+the baseline accuracy was 8 % .
+while berland and charniak-s method focuses solely on identifying parts given a whole , our task targets the identification of both parts and wholes .
+hearst , and berland and charniak observed that for ambiguous whole words , such as plant , the method produces the weakest part list of the six seeds considered .
+although they don-t provide a one-to-one comparison , berland and charniak mention that their method outperforms hearst-s pattern matching algorithm mainly due to the very large corpus used .
+however , neither approach addresses the pattern ambiguity problem , i.e. , patterns such as genitives that can express different semantic relations in different contexts ( the dress of silk encodes a part-whole relation , but the dress of my girl does not ) .
+the ambiguity of these patterns explains our rationale for choosing an approach based on a machine learning method to discover discriminating rules automatically . 3 .
+lexico-syntactic patterns that express meronymy the automatic discovery of any semantic relation must start with a thorough understanding of the lexical and syntactic forms used to express that relation .
+since there are many ways in which something can be part of something else , there is a variety of lexico-syntactic structures that can express a meronymy semantic relation . 7 besides the work on semantic roles ( charniak 2000 ; gildea and jurafsky 2002 ; thompson , levy , and manning 2003 ) , considerable interest has been shown in the automatic interpretation of various noun phrase-level constructions , such as noun compounds .
+the focus here is to determine the semantic relations that link the two noun constituents .
+the best-performing noun compound interpretation systems have employed either symbolic ( finin 1980 ; vanderwende 1994 ) or statistical techniques ( pustejovsky , bergler , and anick 1993 ; lauer and dras 1994 ; lapata 2002 ) relying on rather ad hoc , domain-specific , hand-coded semantic taxonomies , or on statistical patterns in a large corpus of examples , respectively .
+there are unambiguous lexical expressions that always convey a part-whole relation .
+in these cases the simple detection of the patterns leads to the discovery of part-whole relations .
+on the other hand , there are many ambiguous expressions that are explicit but convey part-whole relations only in some contexts .
+the detection of meronymy in these cases is based on extracting semantic features of constituents and checking whether or not these features match the classification rules .
+for example , the horn is part of the car is meronymic whereas he is part of the game is not .
+in the case of meronymy , since there are numerous unambiguous and ambiguous patterns , we devised a method to find these patterns and rank them in the order of their frequency of use .
+our intention is to detect the most frequently occurring patterns that express meronymy and provide an algorithm for their automatic detection and disambiguation in text .
+an algorithm for finding lexico-syntactic patterns .
+in order to identify lexico-syntactic forms that express part-whole relations and determine their distribution over a very large corpus , we used the following algorithm inspired by hearst-s ( 1998 ) work : step 1 .
+pick pairs of concepts ci , cj among which there is a part-whole relation .
+for this task , we used the information provided by wordnet 1.7 ( fellbaum 1998 ) .
+in wordnet , the nouns are organized into nine hierarchies , each hierarchy being identified by its corresponding root concept : { abstraction } , { act } , { entity } , { event } , { group } , { phenomenon } , { possession } , { psychological feature } , and { state } .
+the nouns are grouped in concepts or synsets ; a concept consisting of a list of synonymous word senses .
+for example , { mother # 1 , female parent # 1 } is a wordnet concept .
+besides concepts , wordnet contains 11 semantic relations : hyponymy ( is-a ) , hypernymy ( reverse is-a ) , meronymy ( part-whole ) , holonymy ( reverse part-whole ) , entail , cause-to , attribute , pertainymy , antonymy , synset ( synonymy ) , and similarity .
+the part-whole relations in wordnet are further classified into three basic types : member-of ( e.g. , uk # 1 is-member-of nato # 1 ) , stuff-of ( e.g. , carbon # 1 is-stuff-of coal # 1 ) , and part-of ( e.g. , leg # 3 is-part-of table # 2 ) which includes all the other part-whole relations described in the winston , chaffin and hermann ( wch ) classification .
+since the part and whole concepts provided by wordnet can belong to almost any wordnet noun hierarchy , we randomly selected 100 pairs of part-whole concepts that were well distributed over all nine wordnet noun hierarchies , the three wordnet meronymic relations , and the six types of part-whole relations of wch .
+two annotators with computational linguistic knowledge classified the wordnet meronymic relations into the wch-s six part-whole types .
+the annotators obtained a 100 % agreement in mapping the member-of to member-collection , stuff-of to stuff-object .
+the part-of relations were mapped to the other four types of wch relations with an average agreement of 98 % .
+a third judge ( one of the authors ) checked the correctness of all the mappings and decided on the non-agreed instances .
+this mapping ensures that the 100 general-purpose wordnet pairs cover most of the possible types of part-whole relations in text .
+table 1 shows only 50 pairs from the set of 100 wordnet part-whole pairs and their distribution among the wordnet hierarchies and the part-whole types provided by wordnet and the wch taxonomy .
+for example , the pair bucharest # 1-romania # 1 is a part-of relation in wordnet , but based on the winston , chaffin , and hermann classification it can be further classified as a more specific meronymy relation , place-area .
+for the purpose of this research , we lumped together all part-whole types in the classification of winston et al.9 however , the method presented in the paper is applicable to extracting subtypes of part-whole relations ; separate annotations for each type would be necessary .
+step 2 .
+search a corpus and extract lexico-syntactic patterns that link a pair of part- whole concepts .
+for each pair of part-whole noun concepts determined above , search the internet or any other large collection of documents and retain only the sentences containing that pair .
+since our intention is to demonstrate that the automatic procedure proposed here is domain independent , we chose two distinct text collections : semcor 1.7 and the la times from trec-9 .
+from each collection we randomly selected 10,000 sentences , which were searched for the pair of concepts selected .
+since the la times collection is not word-sense disambiguated , we searched for sentences containing the pair of nouns without considering their senses .
+out of these sentences , only some contained the part- whole pairs selected in step 1 .
+we manually inspected these sentences and picked only those in which the pairs involved meronymy .
+for example , the sentence i can feel my fingers and close my hand contains the meronymic pair finger-hand , but in this context the relationship is not expressed .
+from these sentences we manually extracted meronymic lexico-syntactic patterns .
+table 2 shows for each collection the number of sentences used , the number of sentences that contain the studied concept pairs , the number of sentences that contain part-whole relations , and the number of unique patterns discovered from those sentences .
+seven of the unique patterns occurred in both semcor and the la times .
+in order to extract the patterns from the semcor collection we used its gold standard word sense annotations to our advantage and looked for the occurrences of concepts ( word with the sense ) in the corpus .
+this explains the large difference between the number of sentences discovered in the two corpora .
+the semcor patterns thus extracted did not need manual validation , since the noun concept pairs were always in a part-whole relation .
+taxonomy of part-whole patterns .
+from the 535 part-whole relations detected from the 20,000 semcor and la times sentences , 493 ( 92.15 % ) were expressed by phrase-level patterns and 42 ( 7.85 % ) by sentence-level patterns .
+overall , there were 42 unique meronymic lexico-syntactic patterns , of which 31 were phrase-level patterns and 11 sentence-level patterns .
+recall our notation for the part-whole relation part ( x , y ) , where x is part of y. phrase-level patterns .
+here , the part and whole concepts are included in the same phrase .
+for example , for the pattern npx ppy the noun phrase that contains the part and the prepositional phrase that contains the whole are found in the same noun phrase .
+the engine in the car is an instance of this pattern where x is the part ( engine ) and y is the whole ( car ) .
+sentence-level patterns .
+in these constructions , the part-whole relation is intrasentential .
+the patterns contain specific verbs and the part and the whole can be found inside noun phrases or prepositional phrases that contain specific prepositions .
+a frequent such pattern is npy verb npx , where npx is the noun phrase that contains the part , npy is the noun phrase that contains the whole and the verb is restricted ( see table 2 of appendix a ) .
+for instance , the cars have doors is an instance of this pattern .
+an extension of this pattern is npx verb npz ppy , with npz containing the words part or member .
+an example is : the engine is a part of the car ; npx - the engine , ppy - of the car , and the verb - to be .
+in some instances the meronymic constructions contained combinations , conjunctions and / or disjunctions , of parts and wholes .
+for example , npx1x2 ppy ( e.g. , wheels and engine of a car ) is a form of the pattern npx ppy .
+this observation enabled us to generalize the list of patterns .
+a summary of phrase-level and sentence-level meronymic patterns along with their extensions and generalizations is provided in appendix a. based on our observations of the corpus used for the pattern identification procedure and based on the results obtained by others ( evens et al.1980 ) , we have concluded that the lexico-syntactic patterns encoding meronymy can be classified according to their semantic similarity and frequency of occurrence into the clusters presented in table 3 .
+the clusters contain lexico-syntactic patterns that have similar semantic behavior .
+we also noticed that more than a half of cluster 4-s patterns are very rare ; for example , x branch of y ; in y , x1 verb x2 ; or in y packed to x. overall , this cluster covers less than 7 % of the part-whole patterns discovered .
+thus , for the purpose of this research we considered only the first three clusters of lexico-syntactic patterns expressing meronymy .
+clusters of lexico-syntactic patterns classified based on their semantic similarity and their frequency of occurrence in the 20,000 sentence corpus used in the part-whole pattern identification procedure .
+this pattern classification criterion is justified , in part , by our desire to verify whether or not the automatic approach proposed here is generally applicable not only for the genitive cluster patterns ( cluster 1 ) ( girju , badulescu , and moldovan 2003 ) , but also for more complex types , such as noun compounds ( cluster 2 ) and prepositional constructions ( cluster 3 ) .
+our intuition that the proposed patterns have different semantic behavior , and thus have to be treated separately in distinct clusters , is partially justified by a linguistic analysis summarized in section 3.3 and supported by our empirical results from section 5.3 .
+in the remainder of the paper , we refer to these clusters as the genitives ( cluster 1 ) , noun compounds ( cluster 2 ) , preposition ( cluster 3 ) , and other ( cluster 4 ) clusters .
+we also noticed that some patterns , such as the genitive and preposition clusters , prefer the part and the whole in a certain position .
+for example , in of-genitives the part is mostly in the first position ( modifier ) , and the whole in the second ( head ) ( e.g. , door of the car ) , while in s-genitives the positions are reversed ( e.g. , car-s door ) .
+the verb to have requires parts in the second position , while noun compounds have a preference for them in the second position ( e.g. , car has door and car door , respectively ) .
+in the preposition cluster patterns , for the preposition in the part is usually in the first position ( e.g. , door in the car ) and for the preposition with the positions are reversed ( e.g. , car with four doors ) .
+however , there are also exceptions .
+for instance , in some of-genitives the part can occupy the second position ( e.g. , flock of birds ) and in some noun compounds it can be present in the first position ( e.g. , ham sandwich ) .
+in the corpus used for pattern identification these exceptions are rare .
+therefore , we will not consider the patterns npy of npx and npxy in our experiments .
+if such examples are encountered , the part and the whole concepts are wrongly identified , representing one source of errors .
+berland and charniak ( 1999 ) also used hearst-s algorithm to find part-whole patterns .
+however , they focused only on the first five patterns that occur frequently in their corpus .
+these patterns are subsumed by our clusters as shown in table 4 .
+they noticed that the last three patterns are ambiguous and decided to use only the first two in their experiments .
+the ambiguity of part-whole lexico-syntactic patterns .
+from the list of lexico-syntactic patterns thus extracted , we noticed that some of these part-whole constructions always refer to meronymy , but most of them are ambiguous , in the sense that they express a part-whole relation only in some particular contexts and only between specific pairs of nouns .
+for example , np1 is member of np2 always refers to meronymy , but this is not true for np1 has np2 .
+in most cases , the verb to have has the sense of to possess , and only in some particular contexts refers to meronymy .
+table 5 presents a summary of some of the most frequent part-whole lexicosyntactic patterns we observed , classified based on their ambiguity .
+below we discuss further the ambiguities encountered in the patterns of the first three clusters .
+the semantic ambiguity of genitive constructions .
+thus , any attempt to interpret genitive constructions has to deal with the semantic analysis of the two noun constituents .
+sometimes world knowledge or more contextual information is necessary to identify the correct semantic relation ( e.g. , mary-s novel might mean the novel written by mary , read by mary , or dreamed about by mary ) .
+the semantic ambiguity of the verb to have .
+according to wordnet 1.7 , the verb to have in transitive constructions has 21 different senses , such as to possess , feature , need , get , undergo , be confronted with , accept , suffer from , and many others .
+although the senses enumerated in wordnet represent a rather disparate set with no well defined semantic connection among them , the verb to have can participate in many different semantic structures and has been studied extensively in the linguistics community ( freeze 1992 ; schafer 1995 ; jensen and vikner 1996 ) .
+the semantic relations encoded by the verb to have are quite similar to those realized by genitive constructions .
+some researchers ( jensen and vikner 1996 ) offered a detailed analysis for the purpose of capturing the most important semantic features of the verb to have .
+their hypothesis is based on the idea that , semantically , the verb to have has a sense of its own derived from the semantic interpretation of the close context or the sentence in which it occurs .
+let-s consider the following sentences : ( a ) kate has a sister ( kinship ) , ( b ) kate has a cat ( possession ) , and ( c ) kate has green eyes ( part-whole ) .
+the meaning of the verb to have in these situations is derived from the semantic information encoded in both the subject and the object .
+the semantic ambiguity of noun compounds .
+noun compounds ( ncs ) are noun sequences of the type n1 n2 ..
+nn that have a particular meaning as a whole .
+ncs have been studied intensively in linguistics ( levi 1978 ) , psycholinguistics ( downing 1977 ) , and computational linguistics ( sp-arck jones 1983 ; lauer and dras 1994 ; rosario and hearst 2001 ) for a long time .
+the interpretation of ncs focuses on the detection and classification of a comprehensive set of semantic relations between the noun constituents .
+this task has proved to be very difficult due to the complex semantic aspect of noun compounds : there can be many possible semantic relations between a given pair of word constituents .
+for example , linen bag can mean bag made of linen ( part-whole ) , as well as bag for linen ( purpose ) .
+interpretation of ncs can be highly context-dependent .
+for example , apple juice seat can be defined as -seat with apple juice on the table in front of it- ( downing 1977 ) .
+the semantic ambiguity of prepositional constructions .
+in english and various other natural languages , prepositions play a very important role both syntactically and semantically in the phrases , clauses , and sentences in which they occur .
+semantically speaking , prepositional constructions can encode various semantic relations , their interpretations being provided most of the time by the underlying context .
+for instance , in the following examples the preposition with encodes different semantic relations : ( a ) it was the girl with blue eyes ( meronymy ) , ( b ) the baby with the red ribbon is cute ( possession ) , and ( c ) the woman with triplets received a lot of attention ( kinship ) .
+the variety and ambiguity of these constructions show the complexity and importance of our task .
+we have seen that the interpretation of these constructions depends heavily on the meaning of the two noun constituents .
+to get the meaning of the nouns we rely on a word sense disambiguation system that takes into consideration surrounding contexts of the words .
+machine learning algorithm for automatic discovery of classification rules .
+approach .
+in this section we propose a method for the automatic discovery of rules that discriminate whether or not a selected pattern instance is meronymic .
+first a corpus is prepared and patterns from clusters c1-c3 are identified .
+the approach relies on the assumption that the semantic relation between two noun constituents representing the part and the whole can be detected based on nouns-semantic features .
+this procedure applies to ambiguous constructions .
+the unambiguous constructions don-t have to be processed since they lead unmistakably to part-whole relations .
+the system learns automatically classification rules that check semantic features of noun constituents .
+the classification rules are learned through an iterative semantic specialization ( iss ) procedure applied on the noun constituents- semantic features provided by the wordnet lexical knowledge base ( fellbaum 1998 ) .
+iss starts by mapping the training noun pairs to the corresponding top wordnet noun concepts using hypernymy chains .
+then , it builds a learning tree by recursively splitting the training corpus into unambiguous and ambiguous examples based on the semantic information provided by the wordnet noun hierarchies .
+the learning tree is built top-down , one level at a time , each level corresponding to a specialization iteration .
+the internal nodes represent sets of ambiguous examples at various levels of specialization , while the leaves contain unambiguous examples .
+the ambiguous examples are further specialized with next- level wordnet concepts .
+the process is repeated recursively until there are no more ambiguous examples .
+for each set of unambiguous positive and negative examples at each level in the downward descent , we apply quinlan-s c4.5 algorithm and learn classification rules of the form if x is / is not of a wordnet semantic class a and y is / is not of wordnet semantic class b , then the instance is / is not a part-whole relation .
+preprocessing part-whole lexico-syntactic patterns .
+since our discovery procedure is based on the semantic information provided by word- net , we need to preprocess the noun phrases ( nps ) extracted by the three clusters considered and identify the potential part and the whole concepts .
+for each np we keep only the largest sequence of words ( from left to right ) defined in wordnet .
+for example , from the noun phrase brown carving knife the procedure retains only carving knife , since this concept is defined in wordnet .
+for each such sequence of words , we manually annotate it with its wordnet sense in context .
+for the example above we annotated the noun phrase with sense # 1 ( carving knife # 1 ) , since in that context it had sense # 1 in wordnet ( for this concept wordnet lists only one sense , defined as -a large knife used to carve cooked meat- ) .
+table 6 shows a few examples of patterns from different clusters and the results of this preprocessing step .
+building the training corpus .
+in order to learn the classification rules , we used the semcor 1.7 and trec 9 text collections , and the part-whole information provided by wordnet .
+from the semcor collection we selected 19,000 sentences .
+another 100,000 sentences were randomly extracted from the la times articles of trec 9 .
+as semcor 1.7 is already annotated with part-of-speech tags and wordnet senses , we part-of-speech tagged only the la times collection using brill-s tagger ( 1995 ) .
+a corpus -a- was thus created from the selected sentences of each text collection .
+each sentence in this corpus was then parsed using the syntactic parser developed by charniak ( 2000 ) .
+focusing only on sentences containing the lexico-syntactic patterns in each cluster c1-c3 , we manually annotated nouns in the patterns with their corresponding wordnet senses ( with the exception of those from semcor ) , as shown in section 4.2 , and marked all candidate instances that encoded a part-whole relation as positives , and negatives otherwise .
+in the corpus , 66 % of the annotated instances were part-of relations , 14 % stuff-of , and 20 % member-of .
+moreover , wordnet 1.7 contains 27,636 part-whole relations linking various noun concepts .
+as this information is very valuable for training purposes , we tried to see which of the selected patterns match these pairs .
+for each wordnet part-whole pair , we formed inflected queries ( to capture singular and plural instances ) and searched the web , the largest on-line general purpose text collection , using altavista .
+from the first 100 retrieved documents , we selected and syntactically parsed only those sentences containing pairs within cluster patterns .
+we manually validated those instances and registered which cluster ( s ) of patterns could extract the pair .
+all these sentences formed a second corpus , corpus -b- .
+for instance , for the pair door # 4-car # 1 we searched altavista for documents containing both words car and door .
+then , we retrieved all the sentences that contained the two words in at least one of the target patterns .
+as a result , we obtained sentences containing the pair of words linked by patterns such as door of car , car-s door , car has door , car with four doors , car door , etc .
+overall , the 27,636 wordnet pairs were linked by the genitive cluster patterns , while the noun compound and preposition clusters extracted only some subsets of these pairs .
+some part-whole pairs were linked by patterns that belong to more than one cluster .
+for instance , door knob is a pair that usually belongs to the noun compound cluster , but it can also be selected by the genitive cluster ( e.g. , knob of the door ) and the preposition cluster ( e.g. , the door with the iron knob ) .
+table 7 shows the statistics for the positive and negative training examples for each cluster .
+in the genitive cluster , for example , there were 18,936 such pattern instances , of which 325 encoded part-whole relations , while 18,611 did not .
+thus , for the genitive cluster we used a training corpus of 27,961 positive examples ( 325 pairs of concepts in a part-whole relation extracted from corpus -a- and 27,636 extracted from wordnet as selected pairs ) and 18,611 negative examples ( the non-part-whole relations extracted from corpus -a- ) .
+inter-annotator agreement .
+the part-whole relation discovery procedure proposed in this paper was trained and tested on a large corpus of human annotated examples ( a part of the la times collection for both training and testing , and a part of the wall street journal ( wsj ) collection for testing ) .
+the annotators , two researchers in computational semantics , decided whether an example pair encoded a part-whole relation or not .
+the examples were disambiguated in context : the annotators were given the pairs and the sentence in which they occurred .
+the two annotators- task was to determine the correct senses of the two noun constituents and then decide if the relation is meronymic or not .
+a third researcher decided on the non-agreed word senses and relations .
+the annotators were also provided with the list of subtypes of meronymy relations proposed by ( winston , chaffin , and hermann 1987 ) as a guideline for detecting part-whole relations .
+if an example contained one of the six meronymy subtypes , the annotators tagged that example as positive ( part-whole ) ; otherwise they tagged it as a negative example .
+the k coefficient is 1 if there is total agreement among the annotators , and 0 if there is no agreement other than that expected to occur by chance .
+this coefficient measures how well annotators agree at identifying both positive and negative instances of meronymic relations .
+table 8 shows the inter-annotator agreement on the part-whole classification task for each of the three clusters considered in both training and test phases of the part-whole relation discovery procedure .
+on average , the k coefficient is close to 0.85 , showing a good level of agreement , for all clusters in the training and test data .
+this can be explained by the instructions the annotators received prior to annotation and by their expertise in lexical semantics .
+the results also show that even for more productive genitive and noun compound examples , the sentence-level context was enough to disambiguate the examples most of the time .
+iterative semantic specialization ( iss ) learning .
+iterative semantic specialization learning is an iterative process that learns a decision tree and classification rules by mapping the semantic features of the noun pairs to the wordnet noun hierarchies .
+the procedure starts with a generalized version of the training examples as pairs of top wordnet noun concepts using hypernymy chains .
+the examples are then split into unambiguous and ambiguous .
+the ambiguous examples are further specialized with next-level wordnet concepts .
+the process is repeated recursively until there are no more ambiguous examples .
+for each set of unambiguous positive and negative examples at each level in the downward descent , we apply quinlan-s c4.5 algorithm and learn classification rules .
+as will be shown in section 5.3 , the algorithm is applied separately to each of the three clusters considered for optimal results .
+the iterative semantic specialization ( iss ) learning algorithm .
+input : positive and negative meronymic examples of pairs of concepts .
+the concepts are wordnet words semantically disambiguated in context ( tagged with their corresponding wordnet senses ) .
+output : classification rules in the form of semantic selectional restrictions on the modifier and head concepts using wordnet is-a hierarchy information .
+initially , the training corpus consists of examples that have the format ( part # sense ; whole # sense ; target ) , where target can be either yes or no , depending whether the relation between the part and whole is meronymy or not : for example , ( aria # 1 , opera # 1 , yes ) .
+from this initial set of examples an intermediate corpus was created by expanding each example using the following format : from this intermediate corpus a generalized set of training examples is built , retaining only the semantic classes and the target value .
+at this point , the generalized training corpus contains three types of examples : for the unambiguous examples in the generalized training corpus ( those that are either positive or negative ) , rules are determined using c4.5.
+in this context , the features are the components of the relation ( the part and , respectively the whole ) and the values of the features are the corresponding wordnet semantic classes ( the furthest ancestor in wordnet of the corresponding concept ) .
+with the first two types of examples , the unambiguous ones , a new training corpus was created on which we applied c4.5 using a 10-fold cross validation .
+the corpus is split in ten permutations , 9 / 10 training and 1 / 10 testing , and the output is represented by 10 sets of rules and default values generated from these unambiguous examples .
+the rules obtained are if-then rules with the part and whole noun semantic senses as preconditions .
+the default value is the most probable value for the target value and is used to classify unseen instances of that type when no other rule applies .
+it can be either yes or no , corresponding to the possible values of the target attribute ( part-whole relation or not ) .
+the rules were ranked according to their frequency of occurrence and average accuracy obtained for each particular set .
+in order to use the best rules , we decided to keep only those that had a frequency above a threshold ( occurring in at least 7 of the 10 sets of rules ) and an average accuracy greater than or equal to 50 % .
+in order to minimize the redundancies that may occur during the learning process , rules with the same classification value as the default value are ignored .
+the idea is that the default rule incorporates all the rules with the same target value .
+for instance , after running c4.5 on the unambiguous set for the abstraction # 6- abstraction # 6 example , we obtained a list of five rules and a default value no , as shown in table 9 .
+rules 1 and 5 were discarded as they were incorporated into the default class .
+rules 3 and 4 were also discarded as their frequency did not pass the threshold of 7 .
+thus , rule 2 remains the only applicable rule .
+after filtering the rules that have the default value or do not pass the frequency and accuracy thresholds , there might be cases in which the set of remaining rules is empty .
+step 3 .
+specializing ambiguous examples .
+since c4.5 cannot be applied to ambiguous examples , we recursively specialize them to eliminate the ambiguity .
+the specialization procedure is based on the is-a information provided by wordnet .
+initially , each semantic class represented the root of one of the noun hierarchies in wordnet .
+by specialization , the semantic class is replaced with the corresponding hyponym for that particular sense , i.e. , the concept immediately below in the hierarchy .
+for this task , we again considered the intermediate training corpus of examples .
+this way , we specialize the ambiguous examples with more specific values for the attributes .
+the specialization process for this particular example is shown in figure 1 .
+although this specialization procedure eliminates a proportion of the ambiguous examples , there is no guarantee it will work for all the ambiguous examples of this type .
+this is because the specialization splits the initial hierarchy into smaller distinct subhierarchies , with the examples distributed over this new set of subhierarchies .
+the list of rules for the iteration generated by the unambiguous subset of the ambiguous example ( abstraction # 6 , abstraction # 6 , yes / no ) . -yes- means part-whole relation , while -no- means non-part-whole relation .
+the global default target value of this unambiguous node is no .
+note that rules 3 and 4 are discarded as their frequency is below 7 , and rules 1 and 5 were also discarded as incorporated in the default class no .
+the specialization of examples ( leg # 2 , entity # 1 , bee # 1 , entity # 1 , yes ) , ( beehive # 1 , entity # 1 , bee # 1 , entity # 1 , no ) , and ( world # 7 , entity # 1 , bee # 1 , entity # 1 , no ) with the corresponding wordnet semantic classes .
+we observed that after the first generalization , 99.72 % of the examples were ambiguous .
+after each specialization , the percentage decreases .
+for instance , after one level of specialization , 97.36 % of the examples for entity # 1-entity # 1 , 96.05 % for abstraction # 6- abstraction # 6 , and 97.56 % for entity # 1-group # 1 were ambiguous .
+table 10 presents a sample of the iterations produced by the program to specialize the genitive cluster ambiguous example abstraction # 6-abstraction # 6 .
+each indentation corresponds to a specialization iteration .
+the training corpus considered for this research required on average 2.5 and at most five levels of specialization .
+the next section describes the construction of classification rules , the experiments , and the results obtained .
+a sample iteration produced by the iss procedure for the genitive cluster abstraction # 6-abstraction # 6 ambiguous example .
+the italicized examples are unambiguous .
+formulating classification rules and applying them to discover part-whole relations .
+building the learning tree .
+the iss learning procedure presented in the previous section builds a learning tree by recursively splitting the training corpus into unambiguous and ambiguous examples , based on the semantic information provided by the wordnet noun hierarchies .
+the learning tree is built top-down , one level at a time , each level corresponding to a specialization iteration .
+the internal nodes represent ambiguous examples at various levels of specialization , while the leaves contain sets of unambiguous examples .
+for instance , figure 3 shows the learning tree corresponding to the specialization from table 10 .
+initially , the learning tree contains only a dummy root node that provides no information .
+after the generalization done in step 1 of the iss learning procedure , all the initial examples are mapped into corresponding pairs of top noun semantic classes in wordnet and split into unambiguous and ambiguous sets based on their target function .
+all these new sets of examples form the first level of the learning tree .
+the learning tree has two types of nodes : unambiguous nodes , corresponding to the sets of unambiguous examples from each iteration ( e.g. , nodes 1.1 , 1.3.1 , and 1.4.1 from figure 3 ) and ambiguous nodes , corresponding to each ambiguous example from each iteration ( e.g. , nodes 1.2,1.3,1.4 , and 1.4.2 from figure 3 ) .
+each node has associated with it a pair { r , d } representing a set of rules and a default value .
+the set of rules represents the rules to be used for classifying the new instances and the default value represents the target value ( yes if an instance is a part-whole relation and no if the instance is not a part-whole relation ) that should be returned if none of the rules classify the new instances .
+after learning the classification rules in step 2 of the iss procedure , all the unambiguous nodes have default values and some have rules .
+formulating the classification rules .
+in order to generate an overall set of classification rules , we traverse the learning tree in a bottom-up fashion , applying the rules generated at each level in this order .
+the rationale of this approach is that the rules closer to the bottom are more specific , and thus more accurate .
+at each level , the idea is to combine the rules associated with each sibling node and propagate the result to the parent .
+the combination and propagation steps are applied recursively until the root is reached .
+the combination phase guarantees that the rules to be combined are applied in a particular order at each level .
+figure 4 shows a typical tree corresponding to one iteration of the iss procedure on which we will explain the combination and propagation algorithm .
+node l represents an internal node containing an ambiguous example .
+through specialization , the learning procedure generated a set of unambiguous examples represented by the leaf lu , and a sequence of n ambiguous examples represented by the internal nodes la1 , la2 , ..
+lan .
+the rules and default value learned for the genitive cluster for the abstraction # 6-abstraction # 6 ambiguous example . -val.- is the target value , -acc.- is the rules- accuracy , and -fr.- is their occurrence frequency .
+the numbering style used in the -no.- column is intended to indicate rules at different specialization levels .
+the values associated with the ambiguous nodes ( rules and default values ) are generated through propagation from lower levels .
+the default value of the unambiguous examples ( du ) will be directly propagated to the parent as the global default value of the subtree l ( dl ) .
+for example , the default value for the unambiguous node 1.1 from figure 3 is no and it will propagate to the parent node abstraction # 6-abstraction # 6 ( node 1 in figure 3 ) .
+if there is no unambiguous node lu ( and therefore default value du ) , the default value for the first ambiguous example is propagated to l. for instance , for the ambiguous node 1.4.2 ( social relation # 1-social relation # 1 ) , there were no unambiguous examples ; and therefore the default value from the node 1.4.2.1 ( written communication # 2- written communication # 2 ) will be used .
+step 2 .
+propagating the rules from an ambiguous node with the same default value to the parent node : rl ^ { rai | dai = dl , 1 ^ i ^ n } the ambiguous nodes are the first to be tested .
+all the rules associated with the ambiguous nodes having the same default value as the global one are applied with the highest priority .
+for instance , all the ambiguous nodes for abstraction # 6-abstraction # 6 ( nodes 1.2-1.8 in figure 3 ) received a default value of no through propagation from their descendents .
+since the default value for this node is no , it will receive all their rules ( rules 1 and 2 from table 12 ) .
+step 3 .
+propagating the rules from an ambiguous node with the opposite default value to the parent node : rl ^ rl ^ { if aj then raj ^ daj | daj = ~ dl , 1 ^ j ^ n } the remaining ambiguous nodes have associated with them a different default value ( a non-default value ) .
+since the two nodes have opposite default values , the default value ( daj ) needs to be used when the rules for the child node ( aj ) do not hold .
+therefore , a new rule , specific to the example aj , needs to be created , for handling all the instances of aj : if aj then raj u daj .
+last , the rules learned from the unambiguous examples propagate to the parent node .
+they are applied last , since they are more general than the other rules .
+for example , after running c4.5 on the unambiguous set for the abstraction # 6-abstraction # 6 ambiguous example ( node 1 in figure 3 ) , and eliminating the non-satisfactory rules ( see table 9 ) , we obtained only rule 3 : if part is time # 5 and whole is abstraction # 6 then yes and the default value no ( see table 11 ) .
+the rule is propagated to the parent node abstraction # 6- abstraction # 6 and applied last .
+in the end , the rules learned from the unambiguous examples are propagated to the parent node l. the procedure repeats until the top node of the tree is reached .
+after the combination and propagation procedure finishes , the root node contains the complete set of rules .
+the default value is added as a last rule , for classifying the instances that are not captured by the rules .
+the meaning of a rule part class whole class val is if part is part class and whole is whole class , then it is a part-whole relation ( val . = yes ) or not ( val . = no ) .
+for example , rule 1 is if part is a linear measure # 3 and whole is a measure # 3 , then it is a part-whole relation .
+classification rules for each cluster .
+in this section we present the classification rules learned for each cluster using the iss learning procedure .
+we also performed various experiments to study the similarities and differences among clusters , especially to determine whether or not the classification rules learned for a particular cluster can be applied with high accuracy to other clusters .
+experiments with the genitive cluster .
+the most frequently used set of part-whole lexico-syntactic patterns is represented by the genitive cluster .
+tables 13 shows some of the classification rules learned for this cluster by the iss learning procedure in the order provided by the combination and propagation algorithm .
+the full list of classification rules is shown in tables 1 and 2 from appendix b. the unambiguous set at level 1 of the learning tree did not generate any rules .
+the rule labeled default in table 13 shows the learning tree global default value ( no ) .
+the tables of classification rules show only the frequency and accuracy of the rules generated at the unambiguous nodes .
+overall , for the genitive cluster the iss procedure obtained 27 complex sets of classification rules .
+experiments with the noun compound cluster .
+taking into consideration the results already obtained for the genitive cluster , there are three possible approaches for detecting part-whole relations using the y x and x y patterns : table 14 shows the results obtained for the noun compound cluster using these three approaches .
+as one can observe , the best approach is to use only the classification rules generated by the noun compound cluster training examples .
+the recall increases significantly when new classification rules are learned for both the genitive and noun compound clusters , while the precision jumps considerably when the classification rules are learned only from the noun compound cluster examples .
+these statistics indicate that the genitive and noun compound clusters encode different semantic information , and consequently should be treated separately .
+table 15 shows the classification rules learned only for the noun compound cluster .
+experiments with the preposition cluster .
+taking into consideration the results obtained for the previous two clusters , there are five possible approaches for detecting part-whole relations using x prep y and y prep x patterns : the results obtained for each of the three approaches for the y x ; x y patterns applied on the la times test corpus .
+the results obtained for each of the five approaches for the y prep x and x prep y patterns in the preposition cluster applied on the la times test corpus .
+c1 refers to the genitive cluster , c2 to the noun compound cluster , and c3 to the preposition cluster .
+table 16 shows the results obtained for the preposition cluster patterns in each of the five approaches used .
+one can observe that the preposition cluster alone provides the best results over all other combinations .
+these statistics are also consistent with the results obtained for the noun compound cluster experiments .
+the best approach is to use only the classification rules generated by the preposition cluster training examples .
+table 17 shows the classification rules learned only for the preposition cluster patterns .
+results for discovering part-whole relations .
+in order to test the classification rules for the extraction of part-whole relations , we selected two different text collections : the la times news articles from trec 9 and the wall street journal ( wsj ) articles from treebank2.10 from each collection we randomly selected 10,000 sentences that formed two distinct test corpora .
+this corpus was parsed and disambiguated using a state-of-the-art domain independent word sense disambiguation system that has an accuracy of 71 % when disambiguating nouns in texts ( novischi et al. 2004 ) .
+in cases in which the noun constituents were not in wordnet , we used an in-house named entity recognizer ( nerd ) that has a 96 % f-measure on muc6 data .
+the part-whole relations extracted by the iss system were validated by comparing them with the gold standard for the test set obtained through inter-annotator agreement .
+we define the precision , recall , and f-measure performance metrics in this context : tables 18 and 19 show the overall results obtained by the iss system on the wall street journal ( wsj ) and on the la times collections of news articles , respectively .
+the results obtained for each cluster are summarized in tables 1 and 2 in appendix c. overall , on the wsj test set the system obtained 82.87 % precision and 79.09 % recall on these three clusters .
+besides the 373 relations corresponding to the three clusters , 33 other meronymy relations ( 406 - 373 ) were found in the corpus corresponding to part- whole lexico-syntactic patterns that were not studied in this paper , giving us a global part-whole relation coverage ( recall ) of 72.66 % .
+the iss system-s results were compared to four baseline measures .
+baseline1 shows the results obtained by the system with no word sense disambiguation ( wsd ) , using only sense # 1 ( the most frequent sense in wordnet ) for the pair of concepts .
+in baseline2 , the system considered wsd and applied the specialization algorithm , but ran c4.5 only once on all the unambiguous sets of specialized training examples representing all the leaves of the learning tree .
+baseline3 shows the results obtained without generalizing the concepts ; and baseline4 shows the results obtained with automatic word sense disambiguation ( wsd ) on the training corpus as opposed to the manual word sense disambiguation used for iss training .
+from the baselines- results for both the wsj and la times text collections , one can see the importance of the wsd and is-a generalization / specialization features to the extraction of the part-whole relations .
+figure 5 shows the learning curve where the classifier is trained on an incrementally increasing number of training data instances .
+the learning curve was determined by applying the training rules obtained through specialization on the la times test corpus annotated with automatic wsd .
+if for 1,000 positive and 1,000 negative examples the f-measure is only 35 % , for 5,000 it increases to 70 % , for 10,000 to 74 % , for 15,000 to 77 % , and it stabilizes at 87 % for 20,000 examples .
+the learning curve shows that the iss system obtains an f-measure of about 75 % with only 16.8 % of the training data .
+comparison with previous work .
+in this section we compare our work with two other approaches most similar to our task of part-whole semantic relation detection .
+berland and charniak ( 1999 ) limit their approach to single words denoting some entities that have recognizable parts , such as car and building .
+as they also observe , this approach causes errors , such as the detection of conditioner is part of car instead of air conditioner is part of car .
+our system is considerably more knowledge intensive , but more general in the sense that it relies on wordnet and nerd to detect both single word and multiple word concepts in context .
+moreover , their system was tested only on a working list of predefined highly probable wholes for their corpus based on the genitive syntactic patterns .
+in contrast , the iss system can disambiguate any pair of concepts , provided they are in wordnet or can be classified by nerd .
+in order to eliminate a part of the data ambiguities , berland and charniak apply an ad hoc filtering procedure to eliminate those instances that represent properties or qualities of objects , such as those ending in -ing , -ity , and -ness .
+our procedure is general enough to treat both positive and negative example instances .
+using the genitive patterns they find parts of a predefined list of wholes from a large text collection .
+our method , however , determines if two noun concepts are in a part-whole relation or not .
+by generalizing the method to all the parts and wholes from our testing corpus , the accuracy of the system will fall .
+on the other hand , to be able to test the system on their six whole concepts we would need thousands of positive and negative examples for each such word .
+unfortunately , in our la times testing corpus we couldn-t find more than ten parts for each of their proposed whole objects .
+therefore , we are unable to replicate their work using our text collection .
+iss algorithm is based on an iterative semantic specialization method that allows us to go deeper into the semantic complexity problem of the patterns considered .
+to the best of our knowledge , iss is the only noun-phrase interpretation system that uses word sense disambiguation .
+one other noun compound interpretation system , sens ( vanderwende 1995 ) , used is-a generalizations , and considered only the first sense of the noun constituents .
+the current state-of-the-art approaches in automatic detection of semantic roles ( gildea and jurafsky 2002 ) have tried to use lexicosemantic hierarchies , such as wordnet , to generalize from lexical noun features .
+however , they also rely on the first sense listed for each noun occurring in the training data .
+our experiments indicate the importance of wsd in extracting part-whole semantic relations .
+limitations and extensions .
+the difficulty of detecting part-whole relations is due to a variety of factors ranging from syntactic analysis , to semantic and pragmatic information .
+in this section we analyze the sources of errors occurring in our experiments and present some possible improvements .
+to arrive at an interpretation of the pair of words selected by the cluster patterns , it is first necessary to identify that both words are nouns , and not other parts of speech .
+for example , if brill-s tagger mis-tags an adjective or verb as a noun , then the iss system will also be affected .
+our classification rule learning approach is based on the wordnet semantic classes of the two concepts that represent the part and the whole , respectively .
+thus , if the wsd system fails to annotate the concepts with the correct senses , the iss system can generate wrong semantic classes , which leads to wrong conclusions .
+for example , the wordnet concept end has 14 senses corresponding to 6 semantic classes ( entity , abstraction , event , psychological feature , state , and act ) ( see table 20 ) .
+however , not all the senses refer to a part-whole relation ( e.g. , senses 4 , 6 , 8 , 9 , 11 , and 14 do not ) .
+some senses corresponding to both positive and negative examples are mapped into the same semantic class ( e.g. , senses 7 and 8 ) .
+in this case , the classification error will not affect the final result as it is eliminated in the specialization phase .
+however , when a part-whole sense of end is mapped erroneously into a semantic class that is representative of negative examples , then the error might propagate to the final classification rule .
+for some words , wordnet does not have all their senses .
+for example , the concepts import and export are not listed in wordnet as denoting the act of importing / exporting commodities from a foreign country .
+thus , relations such as import of sweater and export of milk are mis-classified .
+similar examples are participant and beneficiary for which wordnet lists only the senses corresponding to people and not to other entities , such as countries ( e.g. , a country can be one of the participants at a nato meeting ) .
+when a noun is too specific to be found in wordnet , we rely on a named entity recognizer ( nerd ) .
+nerd identifies people , organizations , and other information extraction categories and annotates them accordingly .
+however , nerd doesn-t always provide the correct annotation .
+the wsd tool identifies noun compounds and annotates them with the corresponding wordnet sense .
+for instance in the sentence - ... by / in simply / rb / 1 redesigning / vbg / 1 how / wrb / 1 a / dt car door / nn / 1 is / vbz assembled / vbn / 1- the system annotated the concept car door with its wordnet sense ( sense 1 ) .
+this way , the iss system considers the two words as a concept and not as a noun compound encoding a part-whole relation .
+the majority of noun compounds from the test corpus are names of people ( e.g. , andrea west , mr. moore ) , dates ( e.g. , oct 12 , monday afternoon ) , names of institutions ( e.g. , bank of america , planters corp. , research inc . , johnson & johnson ) , or numbers ( e.g. , six days , five years ) .
+after analyzing the ambiguous pairs of nouns in noun compound instances , we noticed that only a few of them were positive examples .
+this error can be easily fixed by disabling the labeling of noun compounds with word senses .
+another class of errors involves the position of part and whole concepts .
+for example , the part-whole instance band # 1 of people # 1 is detected by the pattern npx of npy and the system classifies erroneously band as part , and people as whole .
+one way to overcome this is to further classify the patterns based on selectional restrictions on their constituent nouns ( e.g. , group nouns in of-genitives have different positions for the part and whole concepts ) .
+we present in table 21 the types of errors and their frequency of occurrence for each cluster and overall .
+although our approach takes context into account through the use of word sense disambiguation , it does so in a limited way , without access to the general discourse and pragmatic context within which a pair of nouns is embedded .
+various researchers ( sp-arck jones 1983 ; lascarides and copestake 1998 ; lapata 2002 ) showed that the interpretation of noun compounds , for example , may be influenced by discourse and pragmatic knowledge .
+for instance , the discourse context provided by the following sentences prefers the purpose interpretation ( bag for cotton clothes ) of the noun compound cotton bag over the part-whole meaning ( bag made of cotton ) ( cf . ( lapata 2002 ) ) : encoding discourse knowledge is thus necessary .
+however , this is an open research problem and involves considerable manual annotation effort .
+furthermore , our experiments focused on the detection of part-whole relations in compositional constructions .
+a more general approach would consider lexicalized instances as well .
+pragmatic knowledge is particularly important for the interpretation of lexicalized constructions , such as soap opera .
+the meaning of lexicalized instances is usually captured by semantic lexicons and dictionaries .
+finally , the approach presented here can be extended to other semantic relations encoded by the cluster patterns considered .
+the only part-whole elements used in this algorithm were the patterns and the examples .
+thus the learning and the validation procedures are generally applicable and we intend to generalize the method for the detection of other semantic relations , such as kinship and purpose .
+so far , we have obtained encouraging results for a list of 35 general-purpose semantic relations encoded by genitives ( moldovan and badulescu 2005 ) , by noun compounds ( girju et al. 2005 ) , and different noun phrase-level patterns including genitives , noun compounds , and the preposition patterns ( moldovan et al. 2004 ) .
+the drawback of the method presented here , as for other very precise learning methods , is that the number of training examples needs to be very large .
+if a certain class of negative or positive examples is not seen in the training data ( and therefore it is not captured by the classification rules ) , the system cannot classify its instances .
+thus , the larger and more diverse the training data , the better the classification rules .
+importance to nlp applications .
+since part-whole semantic relations occur frequently in text and have been recognized as fundamental ontological relations since ancient times , their discovery is paramount for applications such as question answering , automatic ontology construction , textual inferencing , and others .
+for questions like what parts does general electric manufacture ? , what are the components of x , what is y made of ? , and many more , the discovery of part- whole relations is necessary to assemble the right answer .
+the concepts and part-whole relations acquired from a collection of documents can be useful in answering difficult questions that normally can not be handled based solely on keyword matching and proximity .
+as the level of difficulty increases , question answering systems need richer semantic resources , including ontologies and larger knowledge bases .
+consider the question what does the ah-64a apache helicopter consist of ?
+for questions like this , the system must extract all the components the war helicopter has .
+unless an ontology of such army attack helicopter parts exists in the knowledge base , which in an open domain situation is highly unlikely , the system must first acquire from the document collection all the pieces the helicopter is made of .
+these parts can be scattered all over the text collection , so the question answering system has to gather together these partial answers into a single and concise hierarchy of parts .
+this technique is called answer fusion ( girju 2001 ) .
+using a state-of-the-art question answering system ( moldovan et al. 2002 ) adapted for answer fusion and including the iss system as a module , the question presented above was answered by searching the internet ( the website for the defence industries army at www.army-technology.com ) .
+the qa system started with the question focus helicopter and extracted and disambiguated all the meronymy relations using the iss module .
+table 22 shows the taxonomic ontology created for this question ( presenting all the parts of a whole ) .
+ontologies are used more and more as means to boost the accuracy of natural language application systems ( moldovan and girju 2001 ) .
+semantically richer ontologies can be built by incorporating more semantic relations in addition to the traditional is-a relation .
+part-whole is an excellent example of such relations .
+recently , tatu and moldovan ( 2005 ) have shown that semantic relations such as part-whole can be combined with other relations using a semantic calculus for the purpose of improving the performance of a textual inference system .
+conclusions .
+in this paper we presented a supervised , knowledge-intensive approach to the automatic detection of part-whole relations encoded by the three most frequent clusters of syntactic constructions : ( 1 ) genitives and np have np clauses , ( 2 ) noun compounds , and ( 3 ) other np pp phrases .
+the detection of the part-whole relations is difficult due to the highly ambiguous nature of the syntactic constructions , as they can encode other relations than meronymy .
+our method for detection of part-whole relations discovers semi-automatically the part-whole lexico-syntactic patterns and learns automatically the semantic classification rules needed for the disambiguation of these patterns .
+we defined the task as a binary classification problem and used an approach that relies on the assumption that the semantic relation between two constituent nouns representing the part and the whole can be detected based on the components- semantic classification rules .
+the classification rules are learned automatically through an iterative semantic specialization ( iss ) procedure applied on the noun constituents- semantic classes provided by wordnet .
+we successfully combined the results of decision tree learning with the wordnet is-a hierarchy specialization for more accurate learning .
+we proved the method is domain independent .
+the classification rules learned by our method and listed in several tables can be easily implemented to extract part-whole relations from text .
+however , to apply these rules a word sense disambiguation system for nouns is necessary .
+our experiments revealed the importance of word sense disambiguation and word- net is-a specialization .
+we have directly compared and contrasted the results of our system with a variety of baselines and have shown impressive results .
+combination of word sense disambiguation information with is-a semantic information in wordnet yields better performance over either wsd or is-a specialization alone .
+our experiments also showed that the three cluster patterns considered are not alternative ways of encoding part-whole information .
+this observation is very important for various text understanding applications .
+moreover , the approach presented can be extended to other semantic relations since the learning procedures are generally applicable and yield good results for sufficiently large training corpora .

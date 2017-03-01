@@ -1,0 +1,11 @@
+<topic index> 0 </topic index>
+<title> sentiment analysis </title>
+<keywords> sentiment;analysis;analyze;analyse; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> sentiment classification </title>
+<keywords> classification;document-level;sentence-level; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> feature based opinion mining </title>
+<keywords> feature;opinion;mining;extract;entity;orientations;rules;words;sentences;comparative;superlative; </keywords>

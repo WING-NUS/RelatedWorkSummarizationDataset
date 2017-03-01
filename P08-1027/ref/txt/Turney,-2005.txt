@@ -1,0 +1,225 @@
+measuring semantic similarity by latent relational analysis .
+abstract .
+this paper introduces latent relational analysis ( lra ) , a method for measuring semantic similarity .
+lra measures similarity in the semantic relations between two pairs of words .
+when two pairs have a high degree of relational similarity , they are analogous .
+for example , the pair cat : meow is analogous to the pair dog : bark .
+there is evidence from cognitive science that relational similarity is fundamental to many cognitive and linguistic tasks ( e.g. , analogical reasoning ) .
+in the vector space model ( vsm ) approach to measuring relational similarity , the similarity between two pairs is calculated by the cosine of the angle between the vectors that represent the two pairs .
+the elements in the vectors are based on the frequencies of manually constructed patterns in a large corpus .
+lra extends the vsm approach in three ways : ( 1 ) patterns are derived automatically from the corpus , ( 2 ) singular value decomposition is used to smooth the frequency data , and ( 3 ) synonyms are used to reformulate word pairs .
+this paper describes the lra algorithm and experimentally compares lra to vsm on two tasks , answering college-level multiple-choice word analogy questions and classifying semantic relations in noun-modifier expressions .
+lra achieves state-of-the-art results , reaching human-level performance on the analogy questions and significantly exceeding vsm performance on both tasks .
+introduction .
+this paper introduces latent relational analysis ( lra ) , a method for measuring relational similarity .
+lra has potential applications in many areas , including information extraction , word sense disambiguation , machine translation , and information retrieval .
+relational similarity is correspondence between relations , in contrast with attributional similarity , which is correspondence between attributes [ medin et al. , 1990 ] .
+when two words have a high degree of attributional similarity , we say they are synonymous .
+when two pairs of words have a high degree of relational similarity , we say they are analogous .
+past work on semantic similarity measures has mainly been concerned with attributional similarity .
+for instance , latent semantic analysis ( lsa ) can measure the degree of similarity between two words , but not between two relations [ landauer and dumais , 1997 ] .
+recently the vector space model ( vsm ) of information retrieval has been adapted to the task of measuring relational similarity , achieving a score of 47 % on a collection of 374 college-level multiple-choice word analogy questions [ turney and littman , 2005 ] .
+the vsm approach represents the relation between a pair of words by a vector of frequencies of predefined patterns in a large corpus .
+lra extends the vsm approach in three ways : ( 1 ) the patterns are derived automatically from the corpus ( they are not predefined ) , ( 2 ) the singular value decomposition ( svd ) is used to smooth the frequency data ( it is also used this way in lsa ) , and ( 3 ) automatically generated synonyms are used to explore reformulations of the word pairs .
+lra achieves 56 % on the 374 analogy questions , statistically equivalent to the average human score of 57 % .
+on the related problem of classifying noun-modifier relations , lra achieves similar gains over the vsm .
+for both problems , lras performance is state-of-the-art .
+to motivate this research , section 2 briefly outlines some possible applications for a measure of relational similarity .
+related work with the vsm approach to relational similarity is described in section 3 .
+the lra algorithm is presented in section 4 .
+lra and vsm are experimentally evaluated by their performance on word analogy questions in section 5 and on classifying semantic relations in noun- modifier expressions in section 6 .
+we discuss the interpretation of the results , limitations of lra , and future work in section 7 .
+the paper concludes in section 8 .
+applications of relational similarity .
+many problems in text processing would be solved ( or at least greatly simplified ) if we had a black box that could take as input two chunks of text and produce as output a measure of the degree of similarity in the meanings of the two chunks .
+we could use it for information retrieval , question answering , machine translation using parallel corpora , information extraction , word sense disambiguation , text summarization , measuring lexical cohesion , identifying sentiment and affect in text , and many other tasks in natural language processing .
+this is the vision that motivates research in paraphrasing [ barzilay and mckeown , 2001 ] and textual entailment [ dagan and glickman , 2004 ] , two topics that have lately attracted much interest .
+in the absence of such a black box , current approaches to these problems typically use measures of attributional similarity .
+for example , the standard bag-of-words approach to information retrieval is based on attributional similarity [ salton and mcgill , 1983 ] .
+given a query , a search engine produces a ranked list of documents , where the rank of a document depends on the attributional similarity of the document to the query .
+the attributes are based on word frequencies ; relations between words are ignored .
+although attributional similarity measures are very useful , we believe that they are limited and should be supplemented by relational similarity measures .
+cognitive psychologists have also argued that human similarity judgements involve both attributional and relational similarity [ medin et al. , 1990 ] .
+consider word sense disambiguation for example .
+in isolation , the word plant could refer to an industrial plant or a living organism .
+suppose the word plant appears in some text near the word food .
+a typical approach to disambiguating plant would compare the attributional similarity of food and industrial plant to the attributional similarity of food and living organism [ lesk , 1986 ; banerjee and pedersen , 2003 ] .
+in this case , the decision may not be clear , since industrial plants often produce food and living organisms often serve as food .
+it would be very helpful to know the relation between food and plant in this example .
+in the text food for the plant , the relation between food and plant strongly suggests that the plant is a living organism , since industrial plants do not need food .
+in the text food at the plant , the relation strongly suggests that the plant is an industrial plant , since living organisms are not usually considered as locations .
+a measure of relational similarity could potentially improve the performance of any text processing application that currently uses a measure of attributional similarity .
+we believe relational similarity is the next step , after attributional similarity , towards the black box envisioned above .
+related work .
+let r1 be the semantic relation between a pair of words , a and b , and let r2 be the semantic relation between another pair , c and d. we wish to measure the relational similarity between r1 and r2 .
+the relations r1 and r2 are not given to us ; our task is to infer these hidden ( latent ) relations and then compare them .
+we make a vector , r , to characterize the relationship between two words , x and y , by counting the frequencies of various short phrases containing x and y. turney and littman [ 2005 ] use a list of 64 joining terms , such as of , for , and to , to form 128 phrases that contain x and y , such as x of y , y of x , x for y , y for x , x to y , and y to x. these phrases are then used as queries for a search engine and the number of hits ( matching documents ) is recorded for each query .
+this process yields a vector of 128 numbers .
+if the number of hits for a query is x , then the corresponding element in the vector r is log ( x + 1 ) .
+turney and littman [ 2005 ] evaluated the vsm approach by its performance on 374 college-level multiple-choice sat analogy questions , achieving a score of 47 % .
+a sat analogy question consists of a target word pair , called the stem , and five choice word pairs .
+to answer an analogy question , vectors are created for the stem pair and each choice pair , and then cosines are calculated for the angles between the stem vector and each choice vector .
+the best guess is the choice pair with the highest cosine .
+we use the same set of analogy questions to evaluate lra in section 5 .
+the best previous performance on the sat questions was achieved by combining thirteen separate modules [ turney et al. , 2003 ] .
+the performance of lra significantly surpasses this combined system , but there is no real contest between these approaches , because we can simply add lra to the combination , as a fourteenth module .
+since the vsm module had the best performance of the thirteen modules [ turney et al. , 2003 ] , the following experiments focus on comparing vsm and lra .
+the vsm was also evaluated by its performance as a distance measure in a supervised nearest neighbour classifier for noun-modifier semantic relations [ turney and littman , 2005 ] .
+the problem is to classify a noun-modifier pair , such as laser printer , according to the semantic relation between the head noun ( printer ) and the modifier ( laser ) .
+the evaluation used 600 noun-modifier pairs that have been manually labeled with 30 classes of semantic relations [ nastase and szpakowicz , 2003 ] .
+for example , laser printer is classified as instrument ; the printer uses the laser as an instrument for printing .
+a testing pair is classified by searching for its single nearest neighbour in the labeled training data .
+the best guess is the label for the training pair with the highest cosine ; that is , the training pair that is most analogous to the testing pair , according to vsm .
+lra is evaluated with the same set of noun-modifier pairs in section 6 .
+latent relational analysis .
+lra takes as input a set of word pairs and produces as output a measure of the relational similarity between any two of the input pairs .
+lra relies on three resources , ( 1 ) a search engine with a very large corpus of text , ( 2 ) a broad- coverage thesaurus of synonyms , and ( 3 ) an efficient implementation of svd .
+lra does not use labeled data , structured data , or supervised learning .
+lra proceeds as follows : find alternates : for each word pair a : b in the input set , look in the thesaurus for the top num _ sim words ( in the following experiments , num _ sim = 10 ) that are most similar to a. for each a ^ that is similar to a , make a new word pair a ^ : b.
+likewise , look for the top num _ sim words that are most similar to b , and for each b ^ , make a new word pair a : b ^ .
+a : b is called the original pair and each a ^ : b or a : b ^ is an alternate pair .
+the intent is for alternates to have almost the same semantic relations as the original .
+filter alternates : for each original pair a : b , filter the 2 num _ sim alternates as follows .
+for each alternate pair , send a query to the search engine , to find the frequency of phrases that begin with one member of the pair and end with the other .
+the phrases cannot have more than max _ phrase words ( we use max _ phrase = 5 ) .
+sort the alternate pairs by the frequency of their phrases .
+select the top num _ filter most frequent alternates and discard the remainder ( we use num _ filter = 3 , so 17 alternates are dropped ) .
+this step tends to eliminate alternates that have no clear semantic relation .
+find phrases : for each pair ( originals and alternates ) , make a list of phrases in the corpus that contain the pair .
+query the search engine for all phrases that begin with one member of the pair and end with the other , with a minimum of min _ inter intervening words and a maximum of max _ inter intervening words ( we use min _ inter = 1 , max _ inter = 3 = max _ phrase 2 ) .
+we ignore suffixes when searching for phrases that match a given pair .
+these phrases reflect the semantic relations between the words in each pair .
+find patterns : for each phrase found in the previous step , build patterns from the intervening words .
+a pattern is constructed by replacing any or all or none of the intervening words with wild cards ( one wild card can only replace one word ) .
+for each pattern , count the number of pairs ( originals and alternates ) with phrases that match the pattern ( a wild card must match exactly one word ) .
+keep the top num _ patterns most frequent patterns and discard the rest ( we use num _ patterns = 4,000 ) .
+typically there will be millions of patterns , so it is not feasible to keep them all .
+map pairs to rows : in preparation for building a matrix .
+x , suitable for svd , create a mapping of word pairs to row numbers .
+for each pair a : b , create a row for a : b and another row for b : a.
+this will make the matrix more symmetrical , reflecting our knowledge that the relational similarity between a : b and c : d should be the same as the relational similarity between b : a and d : c. ( mason is to stone as carpenter is to wood .
+stone is to mason as wood is to carpenter . )
+the intent is to assist svd by enforcing this symmetry in the matrix .
+map patterns to columns : create a mapping of the top num _ patterns patterns to column numbers .
+for each pattern p , create a column for word1 p word2 and another column for word2 p word1 .
+thus there will be 2 num _ patterns columns in x. generate a sparse matrix : generate a matrix x in sparse matrix format .
+the value for the cell in row i and column j is the frequency of the j-th pattern ( see step 6 ) in phrases that contain the i-th word pair ( see step 5 ) . alculate entropy : apply log and entropy transformations to the sparse matrix [ landauer and dumais , 1997 ] .
+each cell is replaced with its logarithm , multiplied by a weight based on the negative entropy of the corresponding column vector in the matrix .
+this gives more weight to patterns that vary substantially in frequency for each pair .
+apply svd : after log and entropy transformations , apply svd to x. svd decomposes x into a product of three matrices uevt , where u and v are in column orthonormal form ( i.e. , the columns are orthogonal and have unit length ) and e is a diagonal matrix of singular values ( hence svd ) [ golub and van loan , 1996 ] .
+if x is of rank r , then e is also of rank r .
+let ek , where k < r , be the diagonal matrix formed from the top k singular values , and let uk and vk be the matrices produced by selecting the corresponding columns from u and v. the matrix ukekv , is the matrix of rank k that best approximates the original matrix x , in the sense that it minimizes the approximation errors [ golub and van loan , 1996 ] .
+we may think of this matrix ukekv , as a smoothed or com pressed version of the original matrix .
+svd is used to reduce noise and compensate for sparseness .
+projection : calculate ukek ( we use k = 300 , as recommended by landauer and dumais [ 1997 ] ) .
+this matrix has the same number of rows as x , but only k columns ( instead of 2 num _ patterns columns ; in our experiments , that is 300 columns instead of 8,000 ) .
+we do not use v , because we want to calculate the cosines between row vectors , and it can be proven that the cosine between any two row vectors in ukek is the same as the cosine between the corresponding two row vectors in ukekvk .
+calculate relational similarity : the relational similarity between a : b and c : d is the average of the cosines , among the ( num _ filter + 1 ) 2 cosines from step 11 , that are greater than or equal to the cosine of the original pairs , a : b and c : d.
+the requirement that the cosine must be greater than or equal to the original cosine is a way of filtering out poor analogies , which may be introduced in step 1 and may have slipped through the filtering in step 2 .
+averaging the cosines , as opposed to taking their maximum , is intended to provide some resistance to noise .
+in our experiments , the input set contains from 600 to 2,244 word pairs .
+steps 11 and 12 can be repeated for each two input pairs that are to be compared .
+in the following experiments , we use a local copy of the waterloo multitext system ( wmts ) as the search engine , with a corpus of about 5 1010 english words .
+the corpus was gathered by a web crawler from us academic web sites [ clarke et al. , 1998 ] .
+the wmts is a distributed ( multiprocessor ) search engine , designed primarily for passage retrieval ( although document retrieval is possible , as a special case of passage retrieval ) .
+our local copy runs on a 16-cpu beowulf cluster .
+the wmts is well suited to lra , because it scales well to large corpora ( one terabyte , in our case ) , it gives exact frequency counts ( unlike most web search engines ) , it is designed for passage retrieval ( rather than document retrieval ) , and it has a powerful query syntax .
+as a source of synonyms , we use lins [ 1998 ] automatically generated thesaurus .
+lins thesaurus was generated by parsing a corpus of about 5 107 english words , consisting of text from the wall street journal , san jose mercury , and ap newswire [ lin , 1998 ] .
+the parser was used to extract pairs of words and their grammatical relations .
+words were then clustered into synonym sets , based on the similarity of their grammatical relations .
+two words were judged to be highly similar when they tended to have the same kinds of grammatical relations with the same sets of words .
+given a word and its part of speech , lins thesaurus provides a list of words , sorted in order of decreasing attributional similarity .
+this sorting is convenient for lra , since it makes it possible to focus on words with higher attributional similarity and ignore the rest .
+we use rohdes svdlibc implementation of the singular value decomposition , which is based on svdpackc [ berry , 1992 ] .
+experiments with word analogy questions .
+table 1 shows one of the 374 sat analogy questions , along with the relational similarities between the stem and each choice , as calculated by lra .
+the choice with the highest relational similarity is also the correct answer for this question ( quart is to volume as mile is to distance ) .
+table 1 .
+relation similarity measures for a sample sat question .
+lra correctly answered 210 of the 374 analogy questions and incorrectly answered 160 questions .
+four questions were skipped , because the stem pair and its alternates did not appear together in any phrases in the corpus , so all choices had a relational similarity of zero .
+since there are five choices for each question , we would expect to answer 20 % of the questions correctly by random guessing .
+therefore we score the performance by giving one point for each correct answer and 0.2 points for each skipped question .
+lra attained a score of 56.4 % on the 374 sat questions .
+the average performance of college-bound senior high school students on verbal sat questions corresponds to a score of about 57 % [ turney and littman , 2005 ] .
+the differ ence between the average human score and the score of lra is not statistically significant .
+with 374 questions and 6 word pairs per question ( one stem and five choices ) , there are 2,244 pairs in the input set .
+in step 2 , introducing alternate pairs multiplies the number of pairs by four , resulting in 8,976 pairs .
+in step 5 , for each pair a : b , we add b : a , yielding 17,952 pairs .
+however , some pairs are dropped because they correspond to zero vectors ( they do not appear together in a window of five words in the wmts corpus ) .
+also , a few words do not appear in lins thesaurus , and some word pairs appear twice in the sat questions ( e.g. , lion : cat ) .
+the sparse matrix ( step 7 ) has 17,232 rows ( word pairs ) and 8,000 columns ( patterns ) , with a density of 5.8 % ( percentage of nonzero values ) .
+table 2 compares lra to vsm with the 374 analogy questions .
+vsm-av refers to the vsm using altavistas database as a corpus .
+the vsm-av results are taken from turney and littman [ 2005 ] .
+we estimate the altavista search index contained about 5 1011 english words at the time the vsm-av experiments took place .
+turney and littman [ 2005 ] gave an estimate of 1 1011 english words , but we believe this estimate was slightly conservative .
+vsm-wmts refers to the vsm using the wmts , which contains about 5 1010 english words .
+we generated the vsm-wmts results by adapting the vsm to the wmts .
+all three pairwise differences in the three scores in table 2 are statistically significant with 95 % confidence , using the fisher exact test .
+using the same corpus as the vsm , lra achieves a score of 56 % whereas the vsm achieves a score of 40 % , an absolute difference of 16 % and a relative improvement of 40 % .
+when vsm has a corpus ten times larger than lras corpus , lra is still ahead , with an absolute difference of 9 % and a relative improvement of 19 % .
+comparing vsm-av to vsm-wmts , the smaller corpus has reduced the score of the vsm , but much of the drop is due to the larger number of questions that were skipped ( 34 for vsm-wmts versus 5 for vsm-av ) .
+with the smaller corpus , many more of the input word pairs simply do not appear together in short phrases in the corpus .
+lra is able to answer as many questions as vsm-av , although it uses the same corpus as vsm-wmts , because lins [ 1998 ] thesaurus allows lra to substitute synonyms for words that are not in the corpus .
+vsm-av required 17 days to process the 374 analogy questions [ turney and littman , 2005 ] , compared to 9 days for lra .
+as a courtesy to altavista , turney and littman [ 2005 ] inserted a five second delay between each query .
+since the wmts is running locally , there is no need for delays .
+vsm-wmts processed the questions in one day .
+experiments with noun-modifier relations .
+this section describes experiments with 600 noun-modifier pairs , hand-labeled with 30 classes of semantic relations [ nastase and szpakowicz , 2003 ] .
+we experiment with both a 30-class problem and a 5-class problem .
+the 30 classes of semantic relations include cause ( e.g. , in flu virus , the head noun virus is the cause of the modifier flu ) , location ( e.g. , in home town , the head noun town is the location of the modifier home ) , part ( e.g. , in printer tray , the head noun tray is part of the modifier printer ) , and topic ( e.g. , in weather report , the head noun report is about the topic weather ) .
+for a full list of classes , see nastase and szpakowicz [ 2003 ] or turney and littman [ 2005 ] .
+the 30 classes belong to 5 general groups of relations , causal relations , temporal relations , spatial relations , participatory relations ( e.g. , in student protest , the student is the agent who performs the protest ; agent is a participatory relation ) , and qualitative relations ( e.g. , in oak tree , oak is a type of tree ; type is a qualitative relation ) .
+the following experiments use single nearest neighbour classification with leave-one-out cross-validation .
+for leave-one-out cross-validation , the testing set consists of a single noun-modifier pair and the training set consists of the 599 remaining noun-modifiers .
+the data set is split 600 times , so that each noun-modifier gets a turn as the testing word pair .
+the predicted class of the testing pair is the class of the single nearest neighbour in the training set .
+as the measure of nearness , we use lra to calculate the relational similarity between the testing pair and the training pairs .
+following turney and littman [ 2005 ] , we evaluate the performance by accuracy and also by the macroaveraged f measure [ lewis , 1991 ] .
+the f measure is the harmonic mean of precision and recall .
+macroaveraging calculates the precision , recall , and f for each class separately , and then calculates the average across all classes .
+there are 600 word pairs in the input set for lra .
+in step 2 , introducing alternate pairs multiplies the number of pairs by four , resulting in 2,400 pairs .
+in step 5 , for each pair a : b , we add b : a , yielding 4,800 pairs .
+some pairs are dropped because they correspond to zero vectors and a few words do not appear in lins thesaurus .
+the sparse matrix ( step 7 ) has 4,748 rows and 8,000 columns , with a density of 8.4 % .
+table 3 shows the performance of lra and vsm on the 30-class problem .
+vsm-av is vsm with the altavista corpus and vsm-wmts is vsm with the wmts corpus .
+the results for vsm-av are taken from turney and littman [ 2005 ] .
+all three pairwise differences in the three f measures are statistically significant at the 95 % level , according to the paired t-test .
+the accuracy of lra is significantly higher than the accuracies of vsm-av and vsm-wmts , according to the fisher exact test , but the difference between the two vsm accuracies is not significant .
+using the same corpus as the vsm , lras accuracy is 15 % higher in absolute terms and 61 % higher in relative terms .
+table 4 compares the performance of lra and vsm on the 5-class problem .
+the accuracy and f measure of lra are significantly higher than the accuracies and f measures of vsm-av and vsm-wmts , but the differences between the two vsm accuracies and f measures are not significant .
+using the same corpus as the vsm , lras accuracy is 14 % higher in absolute terms and 32 % higher in relative terms .
+discussion .
+the experimental results in sections 5 and 6 demonstrate that lra performs significantly better than the vsm , but it is also clear that there is room for improvement .
+the accuracy might not yet be adequate for practical applications , although past work has shown that it is possible to adjust the tradeoff of precision versus recall [ turney and littman , 2005 ] .
+for some of the applications , such as information extraction , lra might be suitable if it is adjusted for high precision , at the expense of low recall .
+another limitation is speed ; it took almost nine days for lra to answer 374 analogy questions .
+however , with progress in computer hardware , speed will gradually become less of a concern .
+also , the software has not been optimized for speed ; there are several places where the efficiency could be increased and many operations are parallelizable .
+it may also be possible to precompute much of the information for lra , although this would require substantial changes to the algorithm .
+the difference in performance between vsm-av and vsm-wmts shows that vsm is sensitive to the size of the corpus .
+although lra is able to surpass vsm-av when the wmts corpus is only about one tenth the size of the av corpus , it seems likely that lra would perform better with a larger corpus .
+the wmts corpus requires one terabyte of hard disk space , but progress in hardware will likely make ten or even one hundred terabytes affordable in the relatively near future .
+for noun-modifier classification , more labeled data should yield performance improvements .
+with 600 noun- modifier pairs and 30 classes , the average class has only 20 examples .
+we expect that the accuracy would improve substantially with five or ten times more examples , but it is time consuming and expensive to acquire hand-labeled data .
+another issue with noun-modifier classification is the choice of classification scheme for the semantic relations .
+the 30 classes of nastase and szpakowicz [ 2003 ] might not be the best scheme .
+other researchers have proposed different schemes [ rosario and hearst , 2001 ] .
+it seems likely that some schemes are easier for machine learning than others .
+conclusion .
+this paper has introduced a new method for calculating relational similarity , latent relational analysis .
+the experiments demonstrate that lra performs better than the vsm approach , when evaluated with sat word analogy questions and with the task of classifying noun-modifier expressions .
+the vsm approach represents the relation between a pair of words with a vector , in which the elements are based on the frequencies of 64 hand-built patterns in a large corpus .
+lra extends this approach in three ways : ( 1 ) the patterns are generated dynamically from the corpus , ( 2 ) svd is used to smooth the data , and ( 3 ) a thesaurus is used to explore reformulations of the word pairs .
+just as attributional similarity measures have proven to have many practical uses , we expect that relational similarity measures will soon become widely used .
+relational similarity plays a fundamental role in the mind and therefore relational similarity measures could be crucial for artificial intelligence [ medin et al. , 1990 ] .
+lra may be a step towards the black box that we imagined in section 2 , with many potential applications in text processing .
+in future work , we plan to investigate some potential applications for lra .
+it is possible that the error rate of lra is still too high for practical applications , but the fact that lra matches average human performance on sat analogy questions is encouraging .

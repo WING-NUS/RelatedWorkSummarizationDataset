@@ -1,0 +1,58 @@
+Supervised named entity recognition now performs
+almost as well as human annotation in English
+(Chinchor, 1998) and has excellent performance on
+other languages (Tjong Kim Sang and De Meulder, 2003). For a survey of the state of the art, see (Nadeau and Sekine 2007). Of the features
+we explore here, all but the pronoun information
+were introduced in supervised work. Supervised approaches
+such as (Black et al. 1998) have used clustering
+to group together different nominals referring
+to the same entity in ways similar to the “consistency”
+approach outlined below in section 3.2.
+Semi-supervised approaches have also achieved
+notable success on the task. Co-training (Riloff and Jones, 1999; Collins and Singer, 1999) begins with
+a small set of labeling heuristics and gradually adds
+examples to the training data. Various co-training
+approaches presented in (Collins and Singer, 1999)
+all score about 91% on a dataset of named entities;
+the inital labels were assigned using 7 hand-written
+seed rules. However, (Collins and Singer, 1999)
+show that a mixture-of-naive-Bayes generative clustering
+model (which they call an EM model), initialized
+with the same seed rules, performs much more
+poorly at 83%.
+Much later work (Evans, 2003; Etzioni et al., 2005; Cucerzan, 2007; Pasca, 2004) relies on the
+use of extremely large corpora which allow very
+precise, but sparse features. For instance (Etzioni et al., 2005) and (Pasca 2004) use web queries to
+count occurrences of “cities such as X” and similar
+phrases. Although our research makes use of a
+fairly large amount of data, our method is designed
+to make better use of relatively common contextual
+features, rather than searching for high-quality semantic
+features elsewhere.
+Models of the internal structure of names have
+been used for cross-document coreference (Li et al., 2004; Bhattacharya and Getoor, 2006) and a goal in
+their own right (Charniak, 2001). (Li et al., 2004)
+take named entity classes as a given, and develops
+both generative and discriminative models to detect
+coreference between members of each class. Their
+generative model designates a particular mention of
+a name as a “representative” and generates all other
+mentions from it according to an editing process.
+(Bhattacharya and Getoor, 2006) operates only on
+authors of scientific papers. Their model accounts
+for a wider variety of name variants than ours, including
+misspellings and initials. In addition, they
+confirm our intuition that Gibbs sampling for inference
+has insufficient mobility; rather than using a
+heuristic algorithm as we do (see section 3.5), they
+use a data-driven block sampler. (Charniak, 2001)
+uses a Markov chain to generate 6 different components
+of people’s names, again assuming that the
+class of personal names can be pre-distinguished using
+a name list. He infers coreference relationships
+between similar names appearing in the same document,
+using the same notion of consistency between
+names as our model. As with our model, the clusters
+found are relatively good, although with some mistakes
+even on frequent items (for example, “John” is
+sometimes treated as a descriptor like “Secretary”).

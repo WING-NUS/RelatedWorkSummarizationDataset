@@ -1,0 +1,168 @@
+an empirical approach to the interpretation of superlatives .
+abstract .
+in this paper we introduce an empirical approach to the semantic interpretation of superlative adjectives .
+we present a corpus annotated for superlatives and propose an interpretation algorithm that uses a wide-coverage parser and produces semantic representations .
+we achieve f- scores between 0.84 and 0.91 for detecting attributive superlatives and an accuracy in the range of 0.690.84 for determining the correct comparison set .
+as far as we are aware , this is the first automated approach to superlatives for open-domain texts and questions .
+introduction .
+although superlative noun phrases ( the nations largest milk producer , the most complex arms- control talks ever attempted , etc . ) received considerable attention in formal linguistics ( szabolcsi , 1986 ; gawron , 1995 ; heim , 1999 ; farkas and kiss , 2000 ) , this interest is not mirrored in computational linguistics and nlp .
+on the one hand , this seems remarkable , since superlatives are fairly frequently found in natural language .
+on the other hand , this is probably not that surprising , given that their semantic complexity requires deep linguistic analysis that most wide-coverage nlp systems do not provide .
+but even if nlp systems incorporated linguistic insights for the automatic processing of superlatives , it might not be of help : the formal semantics literature on superlatives focuses on linguistically challenging examples ( many of them artificially constructed ) which might however rarely occur in real data and would therefore have little impact on the performance of nlp systems .
+indeed , no corpus-based studies have been conducted to get a comprehensive picture of the variety of configurations superlatives exhibit , and their distribution in real occurring data .
+in this paper we describe our work on the analysis of superlative adjectives , which is empirically grounded and is implemented into an existing wide-coverage text understanding system .
+to get an overview of the behaviour of superlatives in text , we annotated newswire data , as well as queries obtained from search engines logs .
+on the basis of this corpus study , we propose , implement and evaluate a syntactic and semantic analysis for superlatives .
+to the best of our knowledge , this is the first automated approach to the interpretation of superlatives for open-domain texts that is grounded on actual corpus-evidence and thoroughly evaluated .
+some obvious applications that would benefit from this work are question answering , recognition of entailment , and more generally relation extraction systems .
+in english , superlative adjectives appear in a large variety of syntactic and morphological forms .
+one-syllable adjectives and some two-syllable adjectives are directly inflected with the suffix -est .
+some words of two syllables and all words of three or more syllables are instead introduced by most ( or least ) .
+superlatives can be modified by ordinals , cardinals or adverbs , such as intensifiers or modals , and are normally preceeded by the definite article or a possessive .
+the examples below illustrate the wide variety and uses of superlative adjectives .
+superlative adjectives can manifest themselves in predicative ( mia is the tallest . ) or attributive form ( the tallest woman ) .
+furthermore , there are superlative adverbs , such as most recently , and idiomatic usages .
+the comparison set .
+it is well known that superlatives can be analysed in terms of comparative constructions ( szabolcsi , 1986 ; alshawi , 1992 ; gawron , 1995 ; heim , 1999 ; farkas and kiss , 2000 ) .
+accordingly , the oldest character can be interpreted as the character such that there is no older character , in the given context .
+therefore , a correct semantic interpretation of the superlative depends on the correct characterisation of the comparison set .
+the comparison set denotes the set of entities that are compared to each other with respect to a certain dimension ( see section 2.3 ) .
+in the oldest character in the book , the members of the comparison set are characters in the book , and the dimension of comparison is age .
+the computation of the comparison set is complicated by complex syntactic structure involving the superlative .
+the presence of possessives for example , as in as romas quickest player , extends the comparison set to players of as roma .
+prepositional phrases ( pps ) , gerunds , and relative clauses introduce additional complexity .
+pps that are attached to the head noun of the superlative are part of the comparison set those that modify the entire np are not .
+similarly , restrictive relative clause are included in the comparison set , non-restrictive arent .
+we illustrate this complexity in the following examples , taken from the wall street journal , where the comparison set is underlined : besides syntactic ambiguities , the determination of the comparison set can be further complicated by semantic ambiguities .
+some occurrences of superlatives licence a so-called comparitive reading , as in the following example discussed in the formal semantics literature ( heim , 1999 ; szabolcsi , 1986 ) : john climbed the highest mountain .
+here , in the standard interpretion , the mountain referred to is the highest available in the context .
+however , another interpretation might arise in a situation where several people climbed several mountains , and john climbed a mountain higher than anyone else did , but not necessarily the highest of all mountains in the context .
+our corpus study reveals that these readings are rare , although they tend to be more frequent in questions than in newspaper texts .
+dimension .
+part of the task of semantically interpretating superlative adjectives is the selection of the dimension on which entities are compared .
+in the highest mountain we compare mountains with respect to the dimension height , in the best paper we compare papers with respect to the dimension quality , and so on .
+a well-known problem is that some adjectives can be ambiguous or vague in choosing their dimension .
+detecting the appropriate dimension is not covered in this paper , but is orthogonal to the analysis we provide .
+superlatives and entailment .
+superlatives exhibit a non-trivial semantics .
+some examples of textual entailment make this very evident .
+consider the contrasts in the following entailment tests with indefinite and universally quantified noun phrases : observe that the directions of entailments are mirrorred .
+now consider a similar test with superlatives , where the entailments fail in both directions : a semantic represention capturing the meaning of a superlative requires a more sophisticated analysis .
+in particular , it is important to explicitly represent the comparison set of a superlative .
+in the cheapest car , the comparison set is formed by the set of cars , whereas in the cheapest blue car , the comparison set is the set of blue cars .
+semantically , we can represent cheapest blue car as follows , where the comparison set is made explicit in the antecedent of the conditional : paraphrased in english , this stipulates that some blue car is cheaper than any other blue car .
+a meaning representation like this will logically predict the correct entailment relations for superlatives .
+annotated corpus of superlatives .
+in order to develop and evaluate our system we manually annotated a collection of newspaper article and questions with occurrences of superlatives .
+the design of the corpus and its characteristics are described in this section .
+classification and annotation scheme .
+instances of superlatives are identified in text and classified into one of four possible classes : attributive , predicative , adverbial , or idiomatic : for all cases , we annotate the span of the superlative adjective in terms of the position of the tokens in the sentence .
+for instance , in its1 rates2 will3 be4 among5 the6 highest7 , the superlative span would be 77 .
+additional information is encoded for the attributive case : type of determiner ( possessive , definite , bare , demonstrative , quantifier ) , number ( sg , pl , mass ) , cardinality ( yes , no ) , modification ( adjective , ordinal , intensifier , none ) .
+table 1 shows some examples from the wsj with annotation values .
+not included in this study are adjectives such as next , past , last , nor the ordinal first , although they somewhat resemble superlatives in their semantics .
+also excluded are adjectives that lexicalise a superlative meaning but are not superlatives morphologically , like main , principal , and the like .
+for etymological reasons we however include foremost and uttermost .
+data and annotation .
+our corpus consists of a collection of newswire articles from the wall street journal ( sections 00 , 01 , 02 , 03 , 04 , 10 , and 15 ) and the glasgow herald ( gh950110 from the clef evaluation forum ) , and a large set of questions from the trec qa evaluation exercise ( years 2002 and 2003 ) and natural language queries submitted to the excite search engine ( jansen and spink , 2000 ) .
+the data was automatically tokenised , but all typos and extra-grammaticalities were preserved .
+the corpus was split into a development set used for tuning the system and a test set for evaluation .
+the size of each sub-corpus is shown in table 2 .
+the annotation was performed by two trained linguists .
+one section of the wsj was annotated by both annotators independently to calculate inter-annotator agreement .
+all other documents were first annotated by one judge and then checked by the second , in order to ensure maximum correctness .
+all disagreements were discussed and resolved for the creation of a gold standard corpus .
+inter-annotator agreement was assessed mainly using f-score and percentage agreement as well as the kappa statistics ( k ) , where applicable ( carletta , 1996 ) .
+in using f-score , we arbitrarily take one of the annotators decisions ( a ) as gold standard and compare them with the other annotators decisions ( b ) .
+note that here f-score is symmetric , since precision ( a , b ) = recall ( b , a ) , and ( balanced ) f-score is the harmonic mean of precision and recall ( tjong kim sang , 2002 ; hachey et al. , 2005 , see also section 5 ) .
+we evaluated three levels of agreement on a sample of 1967 sentences ( one full wsj section ) .
+the first level concerns superlative detection : to what extent different human judges can agree on what constitutes a superlative .
+for this task , f- score was measured at 0.963 with a total of 79 superlative phrases agreed upon .
+the second level of agreement is relative to type identification ( attributive , predicative , adverbial , idiomatic ) , and is only calculated on the subset of cases both annotators recognised as superlatives ( 79 instances , as mentioned ) .
+the overall f-score for the classification task is 0.974 , with 77 cases where both annotators assigned the same type to a superlative phrase .
+we also assessed agreement for each class , and the attributive type resulted the most reliable with an f-score of 1 ( total agreement on 64 cases ) , whereas there was some disagreement in classifying predicative and adverbial cases ( 0.9 and 0.8 f-score , respectively ) .
+idiomatic uses where not detected in this portion of the data .
+to assess this classification task we also used the kappa statistics which yielded kco = 0.922 ( following ( eugenio and glass , 2004 ) we report k as kco , indicating that we calculate k a ~ la cohen ( cohen , 1960 ) .
+kco over 0.9 is considered to signal very good agreement ( krippendorff , 1980 ) .
+the third and last level of agreement deals with the span of the comparison set and only concerns attributive cases ( 64 out of 79 ) .
+percentage agreement was used since this is not a classification task and was measured at 95.31 % .
+the agreement results show that the task appears quite easy to perform for linguists .
+despite the limited number of instances compared , this has also emerged from the annotators perception of the difficulty of the task for humans .
+distribution .
+the gold standard corpus comprises a total of 3,045 superlatives , which roughly amounts to one superlative in every 25 sentences / questions .
+the overwhelming majority of superlatives are attributive ( 89.1 % ) , and only a few are used in a predicative way ( 6.9 % ) , adverbially ( 3.0 % ) , or in idiomatic expressions ( 0.9 % ) .1 table 3 shows the detailed distribution according to data source and experimental sets .
+although the corpus also includes annotation about determination , modification , grammatical number , and cardinality of attributive superlatives ( see section 3 . 1 ) , this information is not used by the system described in this paper .
+the system that we use to analyse superlatives is based on two linguistic formalisms : combinatory categorial grammar ( ccg ) , for a theory of syntax ; and discourse representation theory ( drt ) for a theory of semantics .
+in this section we will illustrate how we extend these theories to deal with superlatives and how we implemented this into a working system .
+combinatory categorial grammar ( ccg ) .
+ccg is a lexicalised theory of grammar ( steed- man , 2001 ) .
+we used clark & currans wide- coverage statistical parser ( clark and curran , 2004 ) trained on ccg-bank , which in turn is derived from the penn-treebank ( hockenmaier and steedman , 2002 ) .
+in ccg-bank , the majority of superlative adjective of cases are analysed as follows : clark & currans parser outputs besides a ccg derivation of the input sentence also a part-ofspeech ( pos ) tag and a lemmatised form for each input token .
+to recognise attributive superlatives in the output of the parser , we look both at the pos tag and the ccg-category assigned to a word .
+words with pos-tag jjs and ccgcategory n / n , ( n / n ) / ( n / n ) , or ( n / n ) \ ( n / n ) are considered attributive superlatives adjectives , and so are the words most and least with ccg category ( n / n ) / ( n / n ) .
+however , most hyphenated superlatives are not recognised by the parser as jj instead of jjs , and are corrected in a post-processing step.2 examples that fall in this category are most-recent wave and third-highest .
+discourse representation theory ( drt ) .
+the output of the parser , a ccg derivation of the input sentence , is used to construct a discourse representation structure ( drs , the semantic representation proposed by drt ( kamp and reyle , 2this is due to the fact that the penn-treebank annotation guidelines prescribe that all hyphenated adjectives ought to be tagged as jj . 1993 ) ) .
+we follow ( bos et al. , 2004 ; bos , 2005 ) in automatically building semantic representation on the basis of ccg derivations in a compositional fashion .
+we briefly summarise the approach here .
+the semantic representation for a word is determined by its ccg category , pos-tag , and lemma .
+as is often the case , the output of the parser is not always what one needs to construct a meaningful semantic representation .
+there are two cases where we alter the ccg derivation output by the parser in order to improve the resulting drss .
+the first case concerns modifiers following a superlative construction , that are attached to the np node rather than n. for both cases , we apply some simple post-processing rules to the output of the parser to obtain the required derivations .
+the effect of these rules is reported in the next section , where we assess the accuracy of the semantic representations produced for superlatives by comparing the automatic analysis with the gold standard .
+evaluation .
+the automatic analysis of superlatives we present in the following experiments consists of two sequential tasks : superlative detection , and comparison set determination .
+the first task is concerned with finding a superlative in text and its exact span ( largest , most beautiful , 10 biggest ) .
+for a found string to to be judged as correct , its whole span must correspond to the gold standard .
+the task is evaluated using precision ( p ) , recall ( r ) , and f-score ( f ) , calculated as follows : the second task is conditional on the first : once a superlative is found , its comparison set must also be identified ( rarest flower in new zealand , new yorks tallest building , see section 2.2 ) .
+a selected comparison set is evaluated as correct if it corresponds exactly to the gold standard annotation : partial matches are counted as wrong .
+assignments are evaluated using accuracy ( number of correct decisions made ) only on the subset of previously correctly identified superlatives .
+for both tasks we developed simple baseline systems based on part-of-speech tags , and a more sophisticated linguistic analysis based on ccg and drt ( i.e. the system described in section 4 ) .
+in the remainder of the paper we refer to the latter system as dla ( deep linguistic analysis ) .
+superlative detection .
+baseline system for superlative detection we generated a baseline that solely relies on part-ofspeech information .
+the data was tagged using tnt ( brants , 2000 ) , using a model trained on the wall street journal .
+in the wsj tagset , superlatives can be marked in two different ways , depending on whether the adjective is inflected or modified by most / least .
+so , largest , for instance , is tagged as jjs , whereas most beautiful is a sequence of rbs ( most ) and jj ( beautiful ) .
+we also checked that they are followed by a common or proper noun ( nn . * ) , allowing one word to occur in between .
+to cover more complex cases , we also considered pre-modification by adjectives ( jj ) , and cardinals ( cd ) .
+in summary , we matched on sequences found by the following pattern : this rather simple baseline is capable of detecting superlatives such as 100 biggest banks , fourth largest investors , and most important element , but will fail on expressions such as fastest growing segments or scotlands lowest permitted 1995-96 increase .
+dla system for evaluation , we extrapolated superlatives from the drss output by the system .
+each superlative introduces an implicational drs condition , but not all implicational drs conditions are introduced by superlatives .
+hence , for the purposes of this experiment superlative drs conditions were assigned a special mark .
+while traversing the drs , we use this mark to retrieve superlative instances .
+in order to retrieve the original string that gave rise to the superlative interpretation , we exploit the meta information encoded in each drs about the relation between input tokens and semantic information .
+the obtained string position can in turn be evaluated against the gold standard .
+table 4 lists the results achieved by the baseline system and the dla system on the detection task .
+the dla system outperforms the baseline system on precision in all sub-corpora .
+however , the baseline achieves a higher recall on the excite queries .
+this is not entirely surprising given that the coverage of the parser is between 9095 % on unseen data .
+moreover , excite queries are often ungrammatical , thus further affecting the performance of parsing .
+table 4 : detection of attributive superlatives , reporting p ( precision ) , r ( recall ) and f-score , for wsj sections , extracts of the glasgow herald , trec questions , and excite queries .
+d indicates development data , t test data .
+comparison set determination .
+baseline for comparison set determination we developed two baseline systems .
+both use the same match on sequences of part-of-speech tags described above .
+for baseline 1 , the beginning of the comparison set is the first word following the superlative .
+the end of the comparison set is the first word tagged as nn . * in that sequence ( the same word could be the beginning and end of the comparison set , as it often happens ) .
+the second baseline takes the first word after the superlative as the beginning of the comparison set , and the end of the sentence ( or question ) as the end ( excluding the final punctuation mark ) .
+we expect this strategy to perform well on questions , as the following examples show .
+however , the baseline system , by definition , does not output semantic representations , so that its outcome is of little use for further reasoning , as required by question answering or general information extraction systems .
+conclusions .
+we have presented the first empirically grounded study of superlatives , and shown the feasibility of their semantic interpretation in an automatic fashion .
+using combinatory categorial grammar and discourse representation theory we have implemented a system that is able to recognise a superlative expression and its comparison set with high accuracy .
+for developing and testing our system , we have created a collection of over 3,000 instances of superlatives , both in newswire text and in natural language questions .
+this very first corpus of superlatives allows us to get a comprehensive picture of the behaviour and distribution of superlatives in real occurring data .
+thanks to such broad view of the phenomenon , we were able discover issues previously unnoted in the formal semantics literature , such as the interaction of prenominal possessives and superlatives , which cause problems at the syntax-semantics interface in the determination of the comparison set .
+similarly problematic are hyphenated superlatives , which are tagged as normal adjectives in the penn treebank .
+moreover , this work provides a concrete way of evaluating the output of a stochastic wide- coverage parser trained on the ccgbank ( hockenmaier and steedman , 2002 ) .
+with respect to superlatives , our experiments show that the qual ity of the raw output is not entirely satisfactory .
+however , we have also shown that some simple post-processing rules can increase the performance considerably .
+this might indicate that the way superlatives are annotated in the ccgbank , although consistent , is not fully adequate for the purpose of generating meaningful semantic representations , but probably easy to amend .
+future work .
+given the syntactic and semantic complexity of superlative expressions , there is still wide scope for improving the coverage and accuracy of our system .
+one obvious improvement is to amend ccgbank in order to avoid the need for postprocessing rules , thereby also allowing the creation of more accurate language models .
+another aspect which we have neglected in this study but want to consider in future work is the interaction between superlatives and focus ( heim , 1999 ; gawron , 1995 ) .
+also , only one of the possible types of superlative was considered , namely the attributive case .
+in future work we will consider the interpretation of predicative and adverbial superlatives , as well as comparative expressions .
+finally , we would like to investigate the extent to which existing nlp systems ( such as open-domain qa systems ) can benefit from a detailed analysis of superlatives .

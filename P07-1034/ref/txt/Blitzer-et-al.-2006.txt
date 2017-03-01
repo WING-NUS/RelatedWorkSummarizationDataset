@@ -1,0 +1,235 @@
+domain adaptation with structural correspondence learning .
+abstract .
+discriminative learning methods are widely used in natural language processing .
+these methods work best when their training and test data are drawn from the same distribution .
+for many nlp tasks , however , we are confronted with new domains in which labeled data is scarce or non-existent .
+in such cases , we seek to adapt existing models from a resource- rich source domain to a resource-poor target domain .
+we introduce structural correspondence learning to automatically induce correspondences among features from different domains .
+we test our technique on part of speech tagging and show performance gains for varying amounts of source and target training data , as well as improvements in target domain parsing accuracy using our improved tagger .
+introduction .
+discriminative learning methods are ubiquitous in natural language processing .
+discriminative taggers and chunkers have been the state-of-the-art for more than a decade ( ratnaparkhi , 1996 ; sha and pereira , 2003 ) .
+furthermore , end-to-end systems like speech recognizers ( roark et al. , 2004 ) and automatic translators ( och , 2003 ) use increasingly sophisticated discriminative models , which generalize well to new data that is drawn from the same distribution as the training data .
+however , in many situations we may have a source domain with plentiful labeled training data , but we need to process material from a target domain with a different distribution from the source domain and no labeled data .
+in such cases , we must take steps to adapt a model trained on the source domain for use in the target domain ( roark and bacchiani , 2003 ; florian et al. , 2004 ; chelba and acero , 2004 ; ando , 2004 ; lease and charniak , 2005 ; daume iii and marcu , 2006 ) .
+this work focuses on using unlabeled data from both the source and target domains to learn a common feature representation that is meaningful across both domains .
+we hypothesize that a discriminative model trained in the source domain using this common feature representation will generalize better to the target domain .
+this representation is learned using a method we call structural correspondence learning ( scl ) .
+the key idea of scl is to identify correspondences among features from different domains by modeling their correlations with pivot features .
+pivot features are features which behave in the same way for discriminative learning in both domains .
+non-pivot features from different domains which are correlated with many of the same pivot features are assumed to correspond , and we treat them similarly in a discriminative learner .
+even on the unlabeled data , the co-occurrence statistics of pivot and non-pivot features are likely to be sparse , and we must model them in a compact way .
+there are many choices for modeling co-occurrence data ( brown et al. , 1992 ; pereira et al. , 1993 ; blei et al. , 2003 ) .
+in this work we choose to use the technique of structural learning ( ando and zhang , 2005a ; ando and zhang , 2005b ) .
+structural learning models the correlations which are most useful for semi-supervised learning .
+we demonstrate how to adapt it for transfer learning , and consequently the structural part of structural correspondence learning is borrowed from it.l scl is a general technique , which one can apply to feature based classifiers for any task .
+here , ' structural learning is different from learning with structured outputs , a common paradigm for discriminative natural language processing models .
+to avoid terminological confusion , we refer throughout the paper to a specific structural learning method , alternating structural optimization ( aso ) ( ando and zhang , 2005a ) .
+we investigate its use in part of speech ( pos ) tagging ( ratnaparkhi , 1996 ; toutanova et al. , 2003 ) .
+while pos tagging has been heavily studied , many domains lack appropriate training corpora for pos tagging .
+nevertheless , pos tagging is an important stage in pipelined language processing systems , from information extractors to speech synthesizers .
+we show how to use scl to transfer a pos tagger from the wall street journal ( financial news ) to medline ( biomedical abstracts ) , which use very different vocabularies , and we demonstrate not only improved pos accuracy but also improved end-to-end parsing accuracy while using the improved tagger .
+an important but rarely-explored setting in domain adaptation is when we have no labeled training data for the target domain .
+we first demonstrate that in this situation scl significantly improves performance over both supervised and semi-supervised taggers .
+in the case when some in-domain labeled training data is available , we show how to use scl together with the classifier combination techniques of florian et al. ( 2004 ) to achieve even greater performance .
+in the next section , we describe a motivating example involving financial news and biomedical data .
+section 3 describes the structural correspondence learning algorithm .
+sections 6 and 7 report results on adapting from the wall street journal to medline .
+we discuss related work on domain adaptation in section 8 and conclude in section 9 .
+a motivating example .
+we now search for occurrences of the pivot features in the wsj .
+figure 2 ( c ) shows some words that occur together with the pivot features in the wsj unlabeled data .
+note that investment , buy-outs , and jail are all common nouns in the financial domain .
+furthermore , since we have labeled wsj data , we expect to be able to label at least some of these nouns correctly .
+this example captures the intuition behind structural correspondence learning .
+we want to use pivot features from our unlabeled data to put domain-specific words in correspondence .
+that is , we want the pivot features to model the fact that in the biomedical domain , the word signal behaves similarly to the words investments , buyouts and jail in the financial news domain .
+in practice , we use this technique to find correspondences among all features , not just word features .
+structural correspondence learning .
+structural correspondence learning involves a source domain and a target domain .
+both domains have ample unlabeled data , but only the source domain has labeled training data .
+we refer to the task for which we have labeled training data as the supervised task .
+in our experiments , the supervised task is part of speech tagging .
+we require that the input x in both domains be a vector of binary features from a finite feature space .
+the first step of scl is to define a set of pivot features on the unlabeled data from both domains .
+we then use these pivot features to learn a mapping 0 from the original feature spaces of both domains to a shared , low-dimensional real-valued feature space .
+a high inner product in this new space indicates a high degree of correspondence .
+during supervised task training , we use both the transformed and original features from the source domain .
+during supervised task testing , we use the both the transformed and original features from the target domain .
+if we learned a good mapping 0 , then the classifier we learn on the source domain will also be effective on the target domain .
+the scl algorithm is given in figure 3 , and the remainder of this section describes it in detail . 3.1 pivot features pivot features should occur frequently in the unlabeled data of both domains , since we must estimate their covariance with non-pivot features accurately , but they must also be diverse enough to adequately characterize the nuances of the supervised task .
+a good example of this tradeoff are determiners in pos tagging .
+determiners are good pivot features , since they occur frequently in any domain of written english , but choosing only determiners will not help us to discriminate between nouns and adjectives .
+pivot features correspond to the auxiliary problems of ando and zhang ( 2005a ) .
+in section 2 , we showed example pivot features of type < the token on the right > .
+we also use pivot features of type < the token on the left > and < the token in the middle > .
+in practice there are many thousands of pivot features , corresponding to instantiations of these three types for frequent words in both domains .
+we choose m pivot features , which we index with e. pivot predictors .
+from each pivot feature we create a binary classification problem of the form does pivot feature e occur in this instance ? .
+one such example is is < the token on the right > required ?
+these binary classification problems can be trained from the unlabeled data , since they merely represent properties of the input .
+if we represent our features as a binary vector x , we can solve these problems using m linear predictors .
+note that these predictors operate on the original feature space .
+this step is shown in line 2 of figure 3 .
+here l ( p , y ) is a real-valued loss function for binary classification .
+we follow ando and zhang ( 2005a ) and use the modified huber loss .
+since each instance contains features which are totally predictive of the pivot feature ( the feature itself ) , we never use these features when making the binary prediction .
+that is , we do not use any feature derived from the right word when solving a right token pivot predictor .
+the pivot predictors are the key element in scl .
+singular value decomposition .
+since each pivot predictor is a projection onto r , we could create m new real-valued features , one for each pivot .
+for both computational and statistical reasons , though , we follow ando and zhang ( 2005a ) and compute a low-dimensional linear approximation to the pivot predictor space .
+let w be the matrix whose columns are the pivot predictor weight vectors .
+now let w = udvt be the singular value decomposition of w , so that 0 = ut [ 1 : h , : ] is the matrix whose rows are the top left singular vectors of w. the rows of 0 are the principal pivot predictors , which capture the variance of the pivot predictor space as best as possible in h dimensions .
+furthermore , 0 is a projection from the original feature space onto rh .
+that is , 0x is the desired mapping to the ( low dimensional ) shared feature representation .
+this is step 3 of figure 3 .
+supervised training and inference .
+to perform inference and learning for the supervised task , we simply augment the original feature vector with features obtained by applying the mapping 0 .
+we then use a standard discriminative learner on the augmented feature vector .
+for training instance t , the augmented feature vector will contain all the original features xt plus the new shared features 0xt .
+if we have designed the pivots well , then 0 should encode correspondences among features from different domains which are important for the supervised task , and the classifier we train using these new features on the source domain will perform well on the target domain .
+model choices .
+structural correspondence learning uses the techniques of alternating structural optimization ( aso ) to learn the correlations among pivot and non-pivot features .
+ando and zhang ( 2005a ) describe several free paramters and extensions to aso , and we briefly address our choices for these here .
+we set h , the dimensionality of our low-rank representation to be 25 .
+as in ando and zhang ( 2005a ) , we observed that setting h between 20 and 100 did not change results significantly , and a lower dimensionality translated to faster run-time .
+we also implemented both of the extensions described in ando and zhang ( 2005a ) .
+the first is to only use positive entries in the pivot predictor weight vectors to compute the svd .
+this yields a sparse representation which saves both time and space , and it also performs better .
+the second is to compute block svds of the matrix w , where one block corresponds to one feature type .
+we used the same 58 feature types as ratnaparkhi ( 1996 ) .
+this gave us a total of 1450 projection features for both semisupervised aso and scl .
+we found it necessary to make a change to the aso algorithm as described in ando and zhang ( 2005a ) .
+we rescale the projection features to allow them to receive more weight from a regularized discriminative learner .
+without any rescaling , we were not able to reproduce the original aso results .
+the rescaling parameter is a single number , and we choose it using heldout data from our source domain .
+in all our experiments , we rescale our projection features to have average l1 norm on the training set five times that of the binary-valued features .
+finally , we also make one more change to make optimization faster .
+we select only half of the aso features for use in the final model .
+this is done by running a few iterations of stochastic gradient descent on the pos tagging problem , then choosing the features with the largest weight- variance across the different labels .
+this cut in half training time and marginally improved performance in all our experiments .
+we used sections 02-21 of the penn treebank ( marcus et al. , 1993 ) for training .
+this resulted in 39,832 training sentences .
+for the unlabeled data , we used 100,000 sentences from a 1988 subset of the wsj .
+target domain : biomedical text .
+for unlabeled data we used 200,000 sentences that were chosen by searching medline for abstracts pertaining to cancer , in particular genomic variations and mutations .
+for labeled training and testing purposes we use 1061 sentences that have been annotated by humans as part of the penn bioie project ( pennbioie , 2005 ) .
+we use the same 561- sentence test set in all our experiments .
+the partof-speech tag set for this data is a superset of the penn treebanks including the two new tags hyph ( for hyphens ) and afx ( for common post- modifiers of biomedical entities such as genes ) .
+these tags were introduced due to the importance of hyphenated entities in biomedical text , and are used for 1.8 % of the words in the test set .
+any tagger trained only on wsj text will automatically predict wrong tags for those words .
+supervised tagger .
+since scl is really a method for inducing a set of cross-domain features , we are free to choose any feature-based classifier to use them .
+for our experiments we use a version of the discriminative online large-margin learning algorithm mira ( crammer et al. , 2006 ) .
+mira learns and outputs a linear classification score , s ( x , y ; w ) = w f ( x , y ) , where the feature representation f can contain arbitrary features of the input , including the correspondence features described earlier .
+in particular , mira aims to learn weights so that the score of correct output , yt , for input xt is separated from the highest scoring incorrect outputs 2 , with a margin proportional to their hamming losses .
+mira has been used successfully for both sequence analysis ( mcdonald et al. , 2005a ) and dependency parsing ( mcdonald et al. , 2005b ) .
+as with any structured predictor , we need to factor the output space to make inference tractable .
+we use a first-order markov factorization , allowing for an efficient viterbi inference procedure .
+in section 2 we claimed that good representations should encode correspondences between words like signal from medline and investment from the wsj .
+recall that the rows of 0 are projections from the original feature space onto the real line .
+here we examine word features under these projections .
+figure 4 shows a row from the matrix 0 .
+applying this projection to a word gives a real value on the horizontal dashed line axis .
+the words below the horizontal axis occur only in the wsj .
+the words above the axis occur only in medline .
+the verticle line in the middle represents the value zero .
+ticks to the left or right indicate relative positive or negative values for a word under this projection .
+this projection discriminates between nouns ( negative ) and adjectives ( positive ) .
+a tagger which gives high positive weight to the features induced by applying this projection will be able to discriminate among the associated classes of biomedical words , even when it has never observed the words explicitly in the wsj source training set .
+empirical results .
+all the results we present in this section use the mira tagger from section 5.3 .
+the aso and structural correspondence results also use projection features learned using aso and scl .
+section 7.1 presents results comparing structural correspondence learning with the supervised baseline and aso in the case where we have no labeled data in the target domain .
+section 7.2 gives results for the case where we have some limited data in the target domain .
+in this case , we use classifiers as features as described in florian et al. ( 2004 ) .
+finally , we show in section 7.3 that our scl pos tagger improves the performance of a dependency parser on the target domain .
+no target labeled training data .
+for the results in this section , we trained a structural correspondence learner with 100,000 sentences of unlabeled data from the wsj and 100,000 sentences of unlabeled biomedical data .
+we use as pivot features words that occur more than 50 times in both domains .
+the supervised baseline does not use unlabeled data .
+the aso baseline is an implementation of ando and zhang ( 2005b ) .
+it uses 200,000 sentences of unlabeled medline data but no unlabeled wsj data .
+for aso we used as auxiliary problems words that occur more than 500 times in the medline unlabeled data .
+figure 5 ( a ) plots the accuracies of the three models with varying amounts of wsj training data .
+with one hundred sentences of training data , structural correspondence learning gives a 19.1 % relative reduction in error over the supervised baseline , and it consistently outperforms both baseline models .
+figure 5 ( b ) gives results for 40,000 sentences , and figure 5 ( c ) shows corresponding significance tests , with p < 0.05 being significant .
+we use a mcnemar paired test for labeling disagreements ( gillick and cox , 1989 ) .
+even when we use all the wsj training data available , the scl model significantly improves accuracy over both the supervised and aso baselines .
+the second column of figure 5 ( b ) gives unknown word accuracies on the biomedical data .
+of thirteen thousand test instances , approximately three thousand were unknown .
+for unknown words , scl gives a relative reduction in error of 19.5 % over ratnaparkhi ( 1996 ) , even with 40,000 sentences of source domain training data .
+some target labeled training data .
+in this section we give results for small amounts of target domain training data .
+in this case , we make use of the out-of-domain data by using features of the source domain taggers predictions in training and testing the target domain tagger ( florian et al. , 2004 ) .
+though other methods for incorporating small amounts of training data in the target domain were available , such as those proposed by chelba and acero ( 2004 ) and by daume iii and marcu ( 2006 ) , we chose this method for its simplicity and consistently good performance .
+we use as features the current predicted tag and all tag bigrams in a 5-token window around the current token .
+figure 6 ( a ) plots tagging accuracy for varying amounts of medline training data .
+the two horizontal lines are the fixed accuracies of the scl wsj-trained taggers using one thousand and forty thousand sentences of training data .
+the five learning curves are for taggers trained with varying amounts of target domain training data .
+they use features on the outputs of taggers from section 7.1 .
+the legend indicates the kinds of features used in the target domain ( in addition to the standard features ) .
+for example , 40k-scl means that the tagger uses features on the outputs of an scl source tagger trained on forty thousand sentences of wsj data. nosource indicates a target tagger that did not use any tagger trained on the source domain .
+with 1000 source domain sentences and 50 target domain sentences , using scl tagger features gives a 20.4 % relative reduction in error over using supervised tagger features and a 39.9 % relative reduction in error over using no source features .
+figure 6 ( b ) is a table of accuracies for 500 target domain training sentences , and figure 6 ( c ) gives corresponding significance scores .
+with 1000 source domain sentences and 500 target domain sentences , using supervised tagger features gives no improvement over using no source features .
+using scl features still does , however .
+improving parser performance .
+we emphasize the importance of pos tagging in a pipelined nlp system by incorporating our scl tagger into a wsj-trained dependency parser and and evaluate it on medline data .
+we use the parser described by mcdonald et al. ( 2005b ) .
+that parser assumes that a sentence has been postagged before parsing .
+we train the parser and pos tagger on the same size of wsj data .
+figure 7 shows dependency parsing accuracy on our 561-sentence medline test set .
+we parsed the sentences using the pos tags output by our source domain supervised tagger , the scl tagger from subsection 7.1 , and the gold pos tags .
+all of the differences in this figure are significant according to mcnemars test .
+the scl tags consistently improve parsing performance over the tags output by the supervised tagger .
+this is a rather indirect method of improving parsing performance with scl .
+in the future , we plan on directly incorporating scl features into a discriminative parser to improve its adaptation properties .
+related work .
+domain adaptation is an important and well- studied area in natural language processing .
+here we outline a few recent advances .
+roark and bacchiani ( 2003 ) use a dirichlet prior on the multinomial parameters of a generative parsing model to combine a large amount of training data from a source corpus ( wsj ) , and small amount of training data from a target corpus ( brown ) .
+aside from florian et al. ( 2004 ) , several authors have also given techniques for adapting classification to new domains .
+chelba and acero ( 2004 ) first train a classifier on the source data .
+then they use maximum a posteriori estimation of the weights of a maximum entropy target domain classifier .
+the prior is gaussian with mean equal to the weights of the source domain classifier .
+daume iii and marcu ( 2006 ) use an empirical bayes model to estimate a latent variable model grouping instances into domain-specific or common across both domains .
+they also jointly estimate the parameters of the common classification model and the domain specific classification models .
+our work focuses on finding a common representation for features from different domains , not instances .
+we believe this is an important distinction , since the same instance can contain some features which are common across domains and some which are domain specific .
+the key difference between the previous four pieces of work and our own is the use of unlabeled data .
+we do not require labeled training data in the new domain to demonstrate an improvement over our baseline models .
+we believe this is essential , since many domains of application in natural language processing have no labeled training data .
+lease and charniak ( 2005 ) adapt a wsj parser to biomedical text without any biomedical tree- banked data .
+however , they assume other labeled resources in the target domain .
+in section 7.3 we give similar parsing results , but we adapt a source domain tagger to obtain the pos resources .
+to the best of our knowledge , scl is the first method to use unlabeled data from both domains for domain adaptation .
+by using just the unlabeled data from the target domain , however , we can view domain adaptation as a standard semisupervised learning problem .
+there are many possible approaches for semisupservised learning in natural language processing , and it is beyond the scope of this paper to address them all .
+we chose to compare with aso because it consistently outperforms cotraining ( blum and mitchell , 1998 ) and clustering methods ( miller et al. , 2004 ) .
+we did run experiments with the top-k version of aso ( ando and zhang , 2005a ) , which is inspired by cotraining but consistently outperforms it .
+this did not outperform the supervised method for domain adaptation .
+we speculate that this is because biomedical and financial data are quite different .
+in such a situation , bootstrapping techniques are likely to introduce too much noise from the source domain to be useful .
+structural correspondence learning is most similar to that of ando ( 2004 ) , who analyzed a situation with no target domain labeled data .
+her model estimated co-occurrence counts from source unlabeled data and then used the svd of this matrix to generate features for a named entity recognizer .
+our aso baseline uses unlabeled data from the target domain .
+since this consistently outperforms unlabeled data from only the source domain , we report only these baseline results .
+to the best of our knowledge , this is the first work to use unlabeled data from both domains to find feature correspondences .
+one important advantage that this work shares with ando ( 2004 ) is that an scl model can be easily combined with all other domain adaptation techniques ( section 7.2 ) .
+we are simply inducing a feature representation that generalizes well across domains .
+this feature representation can then be used in all the techniques described above .
+conclusion .
+structural correspondence learning is a marriage of ideas from single domain semi-supervised learning and domain adaptation .
+it uses unlabeled data and frequently-occurring pivot features from both source and target domains to find correspondences among features from these domains .
+finding correspondences involves estimating the correlations between pivot and non-pivot feautres , and we adapt structural learning ( aso ) ( ando and zhang , 2005a ; ando and zhang , 2005b ) for this task .
+scl is a general technique that can be applied to any feature-based discriminative learner .
+we showed results using scl to transfer a pos tagger from the wall street journal to a corpus of medline abstracts .
+scl consistently outperformed both supervised and semi-supervised learning with no labeled target domain training data .
+we also showed how to combine an scl tagger with target domain labeled data using the classifier combination techniques from florian et al. ( 2004 ) .
+finally , we improved parsing performance in the target domain when using the scl pos tagger .
+one of our next goals is to apply scl directly to parsing .
+we are also focusing on other potential applications , including chunking ( sha and pereira , 2003 ) , named entity recognition ( florian et al. , 2004 ; ando and zhang , 2005b ; daume iii and marcu , 2006 ) , and speaker adaptation ( kuhn et al. , 1998 ) .
+finally , we are investigating more direct ways of applying structural correspondence learning when we have labeled data from both source and target domains .
+in particular , the labeled data of both domains , not just the unlabeled data , should influence the learned representations .

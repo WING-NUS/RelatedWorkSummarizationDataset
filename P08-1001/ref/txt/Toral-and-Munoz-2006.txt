@@ -1,0 +1,131 @@
+a proposal to automatically build and maintain gazetteers for named entity recognition by using wikipedia .
+abstract .
+this paper describes a method to automatically create and maintain gazetteers for named entity recognition ( ner ) .
+this method extracts the necessary information from linguistic resources .
+our approach is based on the analysis of an on-line encyclopedia entries by using a noun hierarchy and optionally a pos tagger .
+an important motivation is to reach a high level of language independence .
+this restricts the techniques that can be used but makes the method useful for languages with few resources .
+the evaluation carried out proves that this approach can be successfully used to build ner gazetteers for location ( f 78 % ) and person ( f 68 % ) categories .
+introduction .
+named entity recognition ( ner ) was defined at the muc conferences ( chinchor , 1998 ) as the task consisting of detecting and classifying strings of text which are considered to belong to different classes ( e.g. person , location , organization , date , time ) .
+named entities are theoretically identified and classified by using evidence .
+two kinds of evidence have been defined ( mcdonald , 1996 ) .
+these are internal and external evidence .
+internal evidence is the one provided from within the sequence of words that constitute the entity .
+in contrast , external evidence is the criteria that can be obtained by the context in which entities appear .
+since the time ner was introduced , mainly two approaches have been adopted to deal with this task .
+one is referred as knowledge-based and uses explicit resources like rules and gazetteers , which commonly are hand-crafted .
+the other follows the learning paradigm and usually uses as a resource a tagged corpus which is used to train a supervised learning algorithm .
+in the knowledge-based approach two kind of gazetteers can be distinguished .
+on one hand there are trigger gazetteers , which contain key words that indicate the possible presence of an entity of a given type .
+these words usually are common nouns .
+e.g. ms. indicates that the entity after it is a person entity .
+on the other hand there are entity gazetteers which contain entities themselves , which usually are proper nouns .
+e.g.
+portugal could be an instance in a location gazetteer .
+initially , and specially for the muc conferences , most of the ner systems developed did belong to the knowledge-based approach .
+this approach proved to be able to obtain high scores .
+in fact , the highest score obtained by a knowledge- based system in muc-7 reached f 93.39 % ( mikheev et al. , 1998 ) .
+however , this approach has an important problem : gazetteers and rules are difficult and tedious to develop and to maintain .
+if the system is to be used for an open domain , linguistic experts are needed to build the rules , and besides , it takes too much time to tune these resources in order to obtain satisfactory results .
+because of this , lately most of the research falls into the learning-based paradigm .
+the first problem identified assumes that the gazetteers are manually created and maintained .
+however , this is not always the case .
+gazetteers could be automatically created and maintained by extracting the necessary information from available linguistic resources , which we think is a promising line of future research .
+several research works have been carried out in this direction .
+an example of this is a ner system which uses trigger gazetteers automatically extracted from wordnet ( magnini et al. , 2002 ) by using wordnet predicates .
+the advantage in this case is that the resource used is multilingual and thus , porting it to another language is almost straightforward ( negri and magnini , 2004 ) .
+there is also a work that deals with automatically building location gazetteers from internet texts by applying text mining procedures ( ourioupina , 2002 ) , ( uryupina , 2003 ) .
+however , this work uses linguistic patterns , and thus is language dependent .
+the author claims that the approach may successfully be used to create gazetteers for ner .
+we agree with ( magnini et al. , 2002 ) that in order to automatically create and maintain trigger gazetteers , using a hierarchy of common nouns is a good approach .
+therefore , we want to focus on the automatically creation and maintenance of entity gazetteers .
+another reason for this is that the class of common nouns ( the ones being triggers ) is much more stable than the class of proper names ( the ones in entity gazetteers ) .
+because of this , the maintenance of the latter is important as new entities to be taken into account appear .
+for example , if we refer to presidents , the trigger word used might be � president � and it is uncommon that the trigger used to refer to them changes over time .
+on the other hand , the entities being presidents change as new presidents appear and current presidents will disappear .
+our aim is to find a method which allow us to automatically create and maintain entity gazetteers by extracting the necessary information from linguistic resources .
+an important restriction though , is that we want our method to be as independent of language as possible .
+the rest of this paper is structured as follows .
+in the next section we discuss about our proposal .
+section three presents the results we have obtained and some comments about them .
+finally , in section four we outline our conclusions and future work .
+approach .
+in this section we present our approach to automatically build and maintain dictionaries of proper nouns .
+in a nutshell , we analyse the entries of an encyclopedia with the aid of a noun hierarchy .
+our motivation is that proper nouns that form entities can be obtained from the entries in an encyclopedia and that some features of their definitions in the encyclopedia can help to classify them into their correct entity category .
+the encyclopedia used has been wikipedia1 .
+according to the english version of wikipedia 2 , wikipedia is a multi-lingual web-based , free- content encyclopedia which is updated continuously in a collaborative way .
+the reasons why we have chosen this encyclopedia are the following : it is a big source of information .
+by december 2005 , it has over 2,500,000 definitions .
+the english version alone has more than 850,000 entries .
+its content has a free license , meaning that it will always be available for research without restrictions and without needing to acquire any license .
+it is a general knowledge resource .
+thus , it can be used to extract information for open domain systems .
+its data has some degree of formality and structure ( e.g. categories ) which helps to process it .
+it is a multilingual resource .
+thus , if we are able to develop a language independent system , it can be used to create gazetteers for any language for which wikipedia is available .
+it is continuously updated .
+this is a very important fact for the maintenance of the gazetteers .
+the noun hierarchy used has been the noun hierarchy from wordnet ( miller , 1995 ) .
+this is a widely used resource for nlp tasks .
+although initially being a monolingual resource for the english language , a later project called eurowordnet ( vossen , 1998 ) , provided wordnet-like hierarchies for a set of languages of the european union .
+besides , eurowordnet defines a language independent index called inter-lingual-index ( ili ) which allows to establish relations between words in wordnets of different languages .
+the ili facilitates also the development of wordnets for other languages .
+from this noun hierarchy we consider the nodes ( called synsets in wordnet ) which in our opinion represent more accurately the different kind of entities we are working with ( location , organization and person ) .
+for example , we consider the synset 6026 as the corresponding to the entity class person .
+given an entry from wikipedia , a pos-tagger ( carreras et al. , 2004 ) is applied to the first sentence of its definition .
+as an example , the first sentence of the entry portugal in the simple english wikipedia 3 is presented here : for every noun in a definition we obtain the synset of wordnet that contains its first sense4 .
+we follow the hyperonymy branch of this synset until we arrive to a synset we have considered belonging to an entity class or we arrive to the root of the hierarchy .
+if we arrive to a considered synset , then we consider that noun as belonging to the entity class of the considered synset .
+as it has been said in the abstract , the application of a pos tagger is optional .
+the algorithm will perform considerably faster with it as with the pos data we only need to process the nouns .
+if a pos tagger is not available for a language , the algorithm can still be applied .
+the only drawback is that it will perform slower as it needs to process all the words .
+however , through our experimentation we can conclude that the results do not significantly change .
+finally , we apply a weighting algorithm which takes into account the amount of nouns in the definition identified as belonging to the different entity types considered and decides to which entity type the entry belongs .
+this algorithm has a constant kappa which allows to increase or decrease the distance required within categories in order to assign an entry to a given class .
+the value of kappa is the minimum difference of number of occurrences between the first and second most frequent categories in an entry in order to assign the entry to the first category .
+in our example , for any value of kappa lower than 4 , the algorithm would say that the entry portugal belongs to the location entity type .
+once we have this basic approach we apply different heuristics which we think may improve the results obtained and which effect will be analysed in the section about results .
+the first heuristic , called is instance , tries to determine whether the entries from wikipedia are instances ( e.g.
+portugal ) or word classes ( e.g. country ) .
+this is done because of the fact that named entities only consider instances .
+therefore , we are not interested in word classes .
+we consider that an entry from wikipedia is an instance when it has an associated entry in wordnet and it is an instance .
+the procedure to determine if an entry from word- net is an instance or a word class is similar to the one used in ( magnini et al. , 2002 ) .
+the second heuristic is called is in wordnet .
+it simply determines if the entries from wikipedia have an associated entry in wordnet .
+if so , we may use the information from wordnet to determine its category .
+experiments and results .
+we have tested our approach by applying it to 3517 entries of the simple english wikipedia which were randomly selected .
+thus , these entries have been manually tagged with the expected entity category5 .
+the distribution by entity classes can be seen in table 1 : as it can be seen in table 1 , the amount of entities of the categories person and location are balanced but this is not the case for the type organization .
+there are very few instances of this type .
+this is understandable as in an encyclopedia locations and people are defined but this is not the usual case for organizations .
+according to what was said in section 2 , we considered the heuristics explained there by carrying out two experiments .
+in the first one we applied the is instance heuristic .
+the second experiment considers the two heuristics explained in section 2 ( is instance and is in wordnet ) .
+we do not present results without the first heuristic as through our experimentation it proved to increase both recall and precision for every entity category .
+for each experiment we considered two values of a constant kappa which is used in our algorithm .
+the values are 0 and 2 as through experimentation we found these are the values which provide the highest recall and the highest precision , respectively .
+results for the first experiment can be seen in table 2 and results for the second experiment in table 3 .
+as it can be seen in these tables , the best recall for all classes is obtained in experiment 2 with kappa 0 ( table 3 ) while the best precision is obtained in experiment 1 with kappa 2 ( table 2 ) .
+the results both for location and person categories are in our opinion good enough to the purpose of building and maintaining good quality gazetteers after a manual supervision .
+however , the results obtained for the organization class are very low .
+this is mainly due to the fact of the high interaction between this category and location combined with the practically absence of traditional entities of the organization type such as companies .
+this interaction can be seen in the in- depth results which presentation follows .
+conclusions .
+we have presented a method to automatically create and maintain entity gazetteers using as resources an encyclopedia , a noun hierarchy and , optionally , a pos tagger .
+the method proves to be helpful for these tasks as it facilitates the creation and maintenance of this kind of resources .
+in our opinion , the principal drawback of our system is that it has a low precision for the configuration for which it obtains an acceptable value of recall .
+therefore , the automatically created gazetteers need to pass a step of manual supervision in order to have a good quality .
+on the positive side , we can conclude that our method is helpful as it takes less time to automatically create gazetteers with our method and after that to supervise them than to create that dictionaries from scratch .
+moreover , the updating of the gazetteers is straightforward ; just by executing the procedure , the new entries in wikipedia ( the entries that did not exist at the time the procedure was performed the last time ) would be analysed and from these set , the ones detected as entities would be added to the corresponding gazetteers .
+another important fact is that the method has a high degree of language independence ; in order to apply this approach to a new language , we need a version of wikipedia and wordnet for that language , but the algorithm and the process does not change .
+therefore , we think that our method can be useful for the creation of gazetteers for languages in which ner gazetteers are not available but have wikipedia and wordnet resources .
+during the development of this research , several future works possibilities have appeared .
+regarding the task we have developed , we consider to carry out new experiments incorporating features that wikipedia provides such as links between pairs of entries .
+following with this , we consider to test more complex weighting techniques for our algorithm .
+besides , we think that the resulting gazetteers for the configurations that provide high precision and low recall , although not being appropriate for building gazetteers for ner systems , can be interesting for other tasks .
+as an example , we consider to use them to extract verb frequencies for the entity categories considered which can be later used as features for a learning based named entity recogniser .

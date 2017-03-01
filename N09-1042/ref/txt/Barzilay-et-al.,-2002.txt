@@ -1,0 +1,368 @@
+inferring strategies for sentence ordering in multidocument news summarization abstract .
+the problem of organizing information for multidocument summarization so that the generated summary is coherent has received relatively little attention .
+while sentence ordering for single document summarization can be determined from the ordering of sentences in the input article , this is not the case for multidocument summarization where summary sentences may be drawn from different input articles .
+in this paper , we propose a methodology for studying the properties of ordering information in the news genre and describe experiments done on a corpus of multiple acceptable orderings we developed for the task .
+based on these experiments , we implemented a strategy for ordering information that combines constraints from chronological order of events and topical relatedness .
+evaluation of our augmented algorithm shows a significant improvement of the ordering over two baseline strategies .
+introduction .
+multidocument summarization poses a number of new challenges over single document summarization .
+researchers have already investigated issues such as identifying repetitions or contradictions across input documents and determining which information is salient enough to include in the summary ( barzilay , mckeown , & elhadad , 1999 ; carbonell & goldstein , 1998 ; elhadad & mckeown , 2001 ; mani & bloedorn , 1997 ; mckeown , klavans , hatzivassiloglou , barzilay , & eskin , 1999 ; radev & mckeown , 1998 ; white , korelsky , cardie , ng , pierce , & wagstaff , 2001 ) .
+one issue that has received little attention is how to organize the selected information so that the output summary is coherent .
+once all the relevant pieces of information have been selected across the input documents , the summarizer has to decide in which order to present them so that the whole text makes sense .
+in single document summarization , one possible ordering of the extracted information is provided by the input document itself .
+however , jing ( 1998 ) observed that , in single document summaries written by professional summarizers , extracted sentences do not always retain their precedence orders in the summary .
+moreover , in the case of multiple input documents , this does not provide a useful solution : information may be drawn from different documents and therefore , no single document can provide an ordering .
+furthermore , the order between two pieces of information can change significantly from one document to another .
+in this paper , we provide a corpus based methodology for studying ordering .
+our goal was to develop a good ordering strategy in the context of multidocument summarization targeted for the news genre .
+the first question we addressed is the importance of ordering .
+we conducted experiments which show that ordering significantly affects the readers comprehension of a text .
+our experiments also show that although there is no single ideal ordering of information , ordering is not an unconstrained problem ; the number of good orderings for a given text is limited .
+the second question addressed was the analysis and use of data to infer a strategy for ordering .
+existing corpus based methods , such as supervised learning , are not easily applicable to our problem in part because of lack of training data .
+given that there are multiple possible orderings , a corpus providing one ordering for each set of information does not allow us to differentiate between sentences which must be together and sentences which happen to be together .
+this led us to develop a corpus of data sets , each of which contains multiple acceptable orderings of a single text .
+such a corpus is expensive to construct and therefore , does not provide enough data for pure statistical approaches .
+instead , we used a hybrid corpus analysis strategy that first automatically identifies commonalities across orderings .
+manual analysis of the resulting clusters led to the identification of constraints on ordering .
+finally , we evaluated plausible ordering strategies by asking humans to judge the results .
+our set of experiments together suggests an ordering algorithm that integrates constraints from an approximation of the temporal sequence of the underlying events and relatedness between content elements .
+our evaluation of plausible strategies measured the usefulness of a chronological ordering algorithm used in previous summarization systems ( mckeown et al. , 1999 ; lin & hovy , 2001 ) as well as an alternative , original strategy , majority ordering .
+our evaluation showed that the two ordering algorithms alone do not yield satisfactory results .
+the first , majority ordering , is critically linked to the level of similarity of information ordering across the input texts .
+when input texts have different orderings , however , the algorithm produces unpredictable and unacceptable results .
+the second , chronological ordering produces good results when the information is event-based , and therefore , is temporally sequenced .
+when texts do not refer to events , but describe states or properties , this algorithm falls short .
+our automatic analysis revealed that topical relatedness is an important constraint ; groups of related sentences tend to appear together .
+our algorithm combines chronological ordering with constraints from topical relatedness .
+evaluation shows that the augmented algorithm significantly outperforms either of the simpler methods alone .
+this strategy can be characterized as bottom-up since final ordering of the text emerges from how the data groups together , whether by related content or by chronological sequence .
+this contrasts with top-down strategies such as rst ( moore & paris , 1993 ; hovy , 1993 ) , schemas ( mckeown , 1985 ) or plans ( dale , 1992 ) which impose an external , rhetorically motivated ordering on the data .
+in the following sections , we first show that the way information is ordered in a summary can critically affect its overall quality .
+we then give an overview of our summarization system , multig ~ n.
+we next describe the two naive ordering algorithms and evaluate them , followed by a study of multiple orderings produced by humans .
+this allows us to determine how to improve the chronological ordering algorithm using cohesion as an additional constraint .
+the last section describes the augmented algorithm along with its evaluation .
+impact of ordering on the overall quality of a summary .
+even though the problem of ordering information for multidocument summarization has received relatively little attention , we hypothesize that good ordering is crucial to produce summaries of quality .
+the consensus architecture of the state of the art summarizers consists of a content selection module in which the salient information is extracted and a regeneration module in which the information is reformulated into a fluent text .
+ideally , the regeneration component contains devices that perform surface repairs on the text by doing anaphora resolution , introducing cohesion markers or choosing the appropriate lexical paraphrases .
+our claim in this paper is that the multidocument summarization architecture needs an explicit ordering component .
+if two pieces of information extracted by the content selection phase end up together but should not , in fact , be next one to another , surface devices will not repair the impaired flow of information in the summary .
+an ordering strategy would help avoid this situation .
+it is clear that ordering cannot improve the output of earlier stages of a summarizer , among them content selection1 ; however , finding an acceptable ordering can enhance user comprehension of the summary and , therefore , its overall quality .
+of course , surface devices are still needed to smooth the output summary , but this is out of the scope of this paper ( but see ( schiffman , nenkova , & mckeown , 2002 ) ) .
+in this section we show that the quality of ordering has a direct effect on user comprehension of the summary .
+to verify our hypothesis , we performed an experiment , measuring the impact of ordering on the users comprehension of summaries .
+we selected ten summaries produced by the columbia summarization system ( mckeown , barzilay , evans , hatzivassiloglou , kan , schiffman , & teufel , 2001 ) .
+it is composed of a router and two underlying summarizers multigen and dems ( difference engine for multidocument summarization ) .
+depending on the type of input articles to be summarized , the router selects the appropriate summarizer .
+we evaluated this system through the document understanding conference 2001 ( duc ) 2 evaluation , where summaries produced by several systems were graded by human judges according to different criteria , among them how well the information contained in the summary is ordered .
+to actually identify a possible impact of ordering on comprehension , we selected only summaries where humans judged the ordering as poor.3 for each summary , we manually reordered the sentences generated by the summarizer , using the input articles as a reference .
+when doing so , we did not change the content all the sentences in the reordered summaries were the same ones as in the originally produced summaries .
+this process yields ten additional reordered summaries and thus , overall our collection contains twenty summaries .
+two subjects other than the authors participated in this experiment .
+each summary was read by one participant without having access to the input articles .
+we distributed the summaries among the judges so that none of them read both an original summary and its reordering .
+they were asked to grade how well the summary could be understood , using the ratings incomprehensible , somewhat comprehensible or comprehensible .
+the results are shown in figure 14 .
+seven original summaries were considered incomprehensible by their judge , two were somewhat comprehensible , and only one original summary was fully comprehensible .
+the reordered summaries obtained better grades overall five summaries were fully comprehensible , two were somewhat comprehensible , while three remained incomprehensible .
+to assess the statistical significance of our results , we applied the fisher exact test to our data set , conflating incomprehensible and somewhat comprehensible summaries into one category to obtain a 2x2 table .
+this test is adapted to our case because of the reduced size of our data set .
+we obtained a p-value of 0.07 ( siegal & castellan , 1988 ) , which means that if reordering is not , in general , helpful , there is only a 7 % chance that doing reordering anyway would produce a result this different in quality from the original ordering .
+this experiment indicates that a good ordering can improve the overall comprehensibility of a summary .
+in the case of some low-scoring summaries , it is clear that poor ordering is the likely culprit .
+for instance , readers can easily identify that grouping the two following sentences is an unsuitable choice and could be misleading .
+miss taylors health problems started with a fall from a horse when she was 13 and filming the movie national velvet .
+the recovery of elizabeth taylor , near death two weeks ago with viral pneumonia , was complicated by a yeast infection , her doctors said friday .
+but in other cases , when information in a summary is poorly ordered and readers cannot make sense of the text , we observed through interviews with the readers that they tend to blame it on content selection rather than on ordering , even if the content is not the issue .
+thus , the issue of ordering is not isolated ; it can affect the overall quality of a summary .
+multigen overview .
+our framework is the multigen system ( mckeown et al. , 1999 ) , a multidocument summarizer which has been trained and tested on news articles .
+multigen is part of the columbia summarization system .
+it operates on a set of news articles describing the same event , creating a summary which synthesizes common information across documents .
+the system runs daily over real data within newsblaster5 , a tool which collects news articles from multiple sources , organizes them into topical clusters and provides a summary for each of the clusters .
+in the case of multidocument summarization of articles about the same event , source articles can contain both repetitions and contradictions .
+extracting all the similar sentences would produce a verbose and repetitive summary , while extracting only some of the similar sentences would produce a summary biased towards some sources .
+multigen uses a comparison of extracted similar sentences to select the appropriate phrases to include in the summary and reformulates them as new text .
+multigen consists of an analysis and a generation component .
+the analysis component ( hatzivassiloglou , klavans , & eskin , 1999 ) identifies units of text which convey similar information across the input documents using statistical techniques and shallow text analysis .
+once similar text units are identified , we cluster them into themes .
+themes are sets of sentences from different documents that contain repeated information and do not necessarily contain sentences from all the documents ( see two examples of themes in figure 2 ) .
+for each theme , the generation component ( barzilay et al. , 1999 ) identifies phrases which are in the intersection of the theme sentences and selects them as part of the summary .
+the intersection sentences are then ordered to produce a coherent text .
+at the end , for each theme there will be a single corresponding generated output sentence in the summary .
+in the following section , we describe different strategies for ordering the output sentences to obtain a quality summary .
+naive ordering algorithms are not sufficient .
+when producing a summary , any multidocument summarization system has to choose in which order to present the output sentences .
+in this section , we describe two algorithms for ordering sentences suitable for multidocument summarization in the news genre .
+the first algorithm , majority ordering ( mo ) , relies only on the original orders of sentences in the input documents .
+the second one , chronological ordering ( co ) , uses time-related features to order sentences .
+this strategy was originally implemented in multicen and followed by other summarization systems ( radev , jing , & budzikowska , 2000 ; lin & hovy , 2001 ) .
+in the multicen framework , ordering sentences is equivalent to ordering themes , and we describe the algorithms in terms of themes .
+this makes sense because , ultimately , the summary will be composed of a sequence of sentences , each one constructed from the information in one theme .
+our evaluation shows that these methods alone do not provide an adequate strategy for ordering .
+majority ordering 4 . 1.1 the algorithm .
+in single document summarization , the order of sentences in the output summary is typically determined by their order in the input text .
+this strategy can be adapted to multidocument summarization .
+consider two themes , th1 and the ; if sentences from th1 precede sentences from the in all input texts , then presenting th1 before the is likely to be an acceptable order .
+to use the majority ordering algorithm when the order between sentences from th1 and the varies from one text to another , we must augment the strategy .
+one way to define the order between th1 and the is to adopt the order occurring in the majority of the texts where th1 and the occur .
+this strategy defines a pairwise order between themes .
+however , this pairwise relation is not necessarily transitive .
+for example , given the themes th1 , the and th3 and the following situation : th1 precedes the in a text , the precedes th3 in the same text or in another text , and th3 precedes th1 in yet another text ; there is a conflict between the orders ( th1 , the , th3 ) and ( th3 , th1 ) .
+since transitivity is a necessary condition for a relation to be called an order , this relation does not form an order .
+we , therefore , have to expand this pairwise relation to provide a total order .
+in other words , we have to find a linear ordering between themes which maximizes the agreement between the orderings provided by the input texts .
+for each pair of themes , thi and thy , we keep two counts , cij and cy , i ; cij is the number of input texts in which sentences from thi occur before sentences from thy , and cy , i is the same for the opposite order .
+the weight of a linear order ( thi1 , ... , thik ) is defined as the sum of the counts for every pair cil , im , such that il ^ im and l , m ^ { 1 ... k } .
+stating this problem in terms of a directed graph where nodes are themes , and a vertex from thi to thy has the weight cij , we are looking for a path with maximal weight which traverses each node exactly once ( see figure 3 ) .
+we call such a graph a precedence graph .
+the problem of finding a path with maximal weight has been addressed by cohen , schapire , and singer ( 1999 ) in the task of learning orderings .
+they adopt a two-stage approach .
+in the first stage , given a training corpus of ordered instances and a set of features describing them , a binary preference function is learned .
+in the second stage , new instances are ordered so that agreement with the learned preference function is maximized .
+to do so , cohen et al. ( 1999 ) represent the preference function as a directed , weighted graph .
+our precedence graph can be seen as such a graph where the preference function between the nodes thi and thj is ci , j .
+the orderings from the input articles provide us directly with a preference function and , therefore , we do not need to learn it .
+unfortunately this problem is np-complete ; cohen et al. ( 1999 ) prove it by reducing from cyclic-ordering ( galil & megido , 1977 ) .
+however , using a modified version of topological sort provides us with an approximate solution .
+for each node , we assign a weight equal to the sum of the weights of its outgoing edges minus the sum of the weights of its incoming edges .
+we first pick up the node with maximum weight , ordering it ahead of the other nodes , delete it and its outgoing edges from the precedence graph and update properly the weights of the remaining nodes in the graph .
+we then iterate through the nodes until the graph is empty .
+cohen et al. ( 1999 ) show that this algorithm produces a tight approximation of the optimal solution .
+currently multigen uses an implementation of this algorithm for its ordering component .
+figures 4 and 5 show examples of produced summaries .
+one feature of this strategy is that it can produce several orderings with the same weight .
+this happens when there is a tie between two opposite orderings .
+in this situation , this strategy does not provide enough constraints to determine one optimal ordering ; an ordering is chosen randomly among the orders with maximal weight .
+evaluation .
+we asked three human judges ( not including ourselves ) to classify the quality of the order of information in 25 summaries produced using the mo algorithm into three categories poor , fair and good .
+we use an operational definition of a poor summary as a text whose readability would be significantly improved by reordering its sentences .
+a fair summary is a text which makes sense , but reordering of some sentences can yield a better readability .
+finally , a summary which cannot be further improved by any sentence reordering is considered a good summary .
+the judges were asked to grade the summaries taking into account only the order in which the information is presented .
+to help them focus on this aspect of the texts , we resolved dangling references beforehand .
+figure 13 shows the grades assigned to the summaries three summaries were graded as poor , 14 were graded as fair , and eight were graded as good .
+we are showing here the majority grade that is selected by at least two judges .
+this was made possible because in our experiments , judges had strong agreement ; they never gave three different grades to a summary .
+the mo algorithm produces a small number of good summaries , but most of the summaries were graded as fair .
+for instance , the summary graded good shown in figure 4 orders the information in a natural way ; the text starts with a sentence summary of the event , then the outcome of the trial is given , a reminder of the facts that caused the trial and a possible explanation of the facts .
+looking at the good summaries produced by mo , we found that it performs well when the input articles follow the same order when presenting the information .
+in other words , the algorithm produces a good ordering if the input articles orderings have high agreement .
+on the other hand , when analyzing poor summaries , we observed that the input texts have very different orderings .
+by trying to maximize the agreement of the input texts orderings , mo produces a new ordering that does not occur in any input text .
+the ordering is , therefore , not guaranteed to be acceptable .
+an example of a new produced ordering is given in figure 5 .
+the summary would be more readable if several sentences were moved around .
+an example of a better ordering is given in figure 6 .
+in this summary , the three sentences related to the fact that the subject had a sex-change operation are grouped together , while in the one produced by the majority ordering algorithm , they are scattered throughout the summary .
+this algorithm can be used to order sentences accurately if we are certain that the input texts follow similar organizations .
+this assumption may hold in limited domains where documents have a fixed organization of the information .
+however , in our case , the input texts we are processing do not have such regularities .
+looking at the daily statistics of newsblaster which collects clusters of related articles to be synthesized into one summary , we notice that the typical cluster size is seven .
+but every day there are several clusters which contain more than 20 and up to 70 articles to be summarized into single summaries6 .
+with such a big number of input articles , we cannot assume that they will all have similar ordering of the information .
+mos performance critically depends on the agreement of orderings in the input texts ; we , therefore , need an ordering strategy which can fit any input data .
+from here on , we will focus only on the chronological ordering algorithm and techniques to improve it .
+chronological ordering .
+the algorithm .
+multidocument summarization of news typically deals with articles published on different dates , and articles themselves cover events occurring over a wide range of time .
+using chronological order in the summary to describe the main events helps the user understand what has happened .
+it seems like a natural and appropriate strategy .
+as mentioned earlier , in our framework , we are ordering themes ; using this strategy , we , therefore , need to assign a date to themes .
+to identify the date an event occurred requires a detailed interpretation of temporal references in articles .
+while there have been recent developments in disambiguating temporal expressions and event ordering ( wiebe , ohara , ohrstrom-sandgren , & mckeever , 1998 ; mani & wilson , 2000 ; filatova & hovy , 2001 ) , correlating events with the date on which they occurred is a hard task .
+in our case , we approximate the theme time by its first publication time ; that is , the first time the theme has been reported in our set of input articles ( see figure 7 ) .
+it is an acceptable approximation for news events ; the first publication time of an event usually corresponds to its occurrence in real life .
+for instance , in a terrorist attack story , the theme conveying the attack itself will have a date previous to the date of the theme describing a trial following the attack .
+evaluation .
+following the same methodology we used for the mo algorithm evaluation , we asked three human judges ( not including ourselves ) to grade 25 summaries generated by the system using the co algorithm applied to the same collection of input texts .
+the results are shown in figure 13 : ten summaries were graded as poor , eight were graded as fair and seven were graded as good .
+our first suspicion was that our approximation deviates too much from the real chronological order of events and , therefore , lowers the quality of sentence ordering .
+to verify this hypothesis , we identified sentences that broke the original chronological order and restored the ordering manually .
+interestingly , the displaced sentences were mainly background information .
+the evaluation of the modified summaries shows no visible improvement .
+when comparing good ( figure 8 ) and poor ( figure 9 ) summaries , we notice two phenomena : first , many of the badly placed sentences cannot be ordered based on their temporal occurrence .
+for instance , in figure 9 , the sentence quoting clinton is not one event in the sequence of events being described , but rather , a reaction to the main events .
+a tool assigning time stamps would assign to this sentence the date at which clinton made his statement .
+this is also true for the sentence reporting albrights reaction .
+assigning a date to a reaction , or more generally to any sentence conveying background information , and placing it into the chronological stream of the main events does not produce a logical ordering .
+the ordering of these themes is , therefore , not covered by the co algorithm .
+furthermore , some sentences cannot be assigned any time stamp .
+for instance , the sentence , the vast , sparsely inhabited xinjiang region , largely desert , has many chinese military and nuclear installations and civilian mining. describes a state rather than an event and , therefore , trying to describe it in temporal terms is invalid .
+thus the ordering cannot be improved at the temporal level .
+the second phenomenon we observed is that poor summaries typically contain abrupt switches of topics and are generally incoherent .
+for instance , in figure 9 , quotes from us officials ( third and fifth sentences ) are split , and sentences about the mourning ( first and sixth sentences ) appear too far apart in the summary .
+grouping them together would increase the readability of the summary .
+at this point , we need to find additional constraints to improve the ordering .
+improving the ordering : experiments and analysis .
+in the previous section , we showed that using naive ordering algorithms does not produce satisfactory orderings .
+in this section , we investigate through experiments with humans how to identify patterns of orderings that can improve the algorithm .
+collecting a corpus of multiple orderings .
+sentences in a text can be ordered in a number of ways , and the text as a whole will still convey the same meaning .
+but the majority of possible orders are likely to be unacceptable because they break conventions of information presentation .
+one way to identify these conventions is to find commonalities among different acceptable orderings of the same information .
+extracting regularities in several acceptable orderings can help us specify ordering constraints for a given input type .
+there is no naturally occurring existing collection of summaries for multiple documents that we aware of7 .
+but even such a collection would not be sufficient since we want to analyze a collection of multiple summaries over the same set of articles .
+we created our own collection of multiple orderings produced by different humans .
+using this collection , we studied common behaviors and mapped them to strategies for ordering .
+our collection of multiple orderings , along with our test corpus is available at http : / / www.cs.columbia.edu / ~ noemie / ordering / .
+we collected ten sets of articles for this collection .
+each set consisted of two to three news articles reporting the same event .
+for each set , we manually selected the intersection sentences , simulating multigen8 .
+on average , each set contained 8.8 intersection sentences .
+the sentences were cleaned of explicit references ( for instance , occurrences of the president were resolved to president clinton ) and connectives , so that participants would not use them as clues for ordering .
+ten subjects participated in the experiment , and they each built one ordering per set of intersection sentences .
+each subject was asked to order the intersection sentences of a set so that they form a readable text .
+overall , we obtained 100 orderings , ten alternative orderings per set .
+figure 10 shows the ten alternative orderings collected for one set .
+we first observed that a surprisingly large portion of the orderings are different .
+out of the ten sets , only two sets had some identical orderings ( in one set , two orderings were identical while in the other set , there were two pairs of identical orderings ) .
+this variety in the produced orderings can be interpreted as suggesting that not all the orderings were actually valid or that the task was maybe too hard for the subjects to allow them to produce reasonable orderings .
+in fact , all the subjects were satisfied with the orderings they produced .
+furthermore , we manually went through all the 100 orderings , and all appeared to be valid .
+in other words , there are many acceptable orderings given one set of sentences .
+this confirms the intuition that we do not need to look for a single ideal total ordering but rather construct an acceptable one .
+looking at these various orderings , one might also conclude that any ordering would do just as well as any other .
+one piece of evidence against this statement is that , as shown in section 2 , some orderings yield incomprehensible texts and thus should be avoided .
+furthermore , for a text with n sentences , there are n ! possible orderings , but only a small fraction of those are actually valid orderings .
+one way to validate this claim would be to enumerate all the possible orderings of a single text and evaluate each one of them .
+this would be doable for very small texts ( a text of 5 sentences has 120 possible orderings ) but not for texts of a reasonable size .
+a more feasible way to validate our claim is to get multiple orderings of the same text from a large number of subjects .
+we asked subjects to order one text of eight sentences .
+there is a maximum of 40,320 possible orderings for these sentences .
+while 50 subjects participated , we only obtained 21 unique orderings , showing that the number of acceptable orderings does not grow as fast as the number of participants .
+we can conclude that only a small fraction of all possible orderings of the information in a text contains orderings that render a readable text .
+analysis .
+the several alternative orderings produced for a single summary exhibit commonalities .
+we noticed that , within the multiple orderings of a set , some sentences always appear together .
+they do not appear in the same order from one ordering to another , but they share an adjacency relation .
+from now on , we refer to them as blocks .
+for each set , we identify blocks by automatically clustering sentences across orderings .
+we use as a distance metric between two sentences , the average number of sentences that separate them over all orderings .
+in figure 10 , for instance , the distance between sentences d and g is 2 .
+the blocks identified by clustering are : sentences b , d , g and i ; sentences a and j ; sentences c and f ; and sentences e and h. we observed that all the blocks in the experiment correspond to clusters of topically related sentences .
+these blocks form units of text dealing with the same subject .
+in other words , all valid orderings contain blocks of topically related sentences .
+the notion of grouping topically related sentences is known as cohesion .
+as defined by hasan ( 1984 ) , cohesion is a device for sticking together different parts of the text .
+studies show that the level of cohesion has a direct impact on reading comprehension ( halliday & hasan , 1976 ) .
+therefore , good orderings are cohesive ; this is what makes the summary readable .
+conversely , the evaluation of the co algorithm showed that the summaries that were judged invalid contain abrupt switches of topic .
+in other words , orderings that are not cohesive are graded poorly .
+there is a correlation between the quality of the ordering and cohesion .
+incorporating cohesion constraint into our ordering strategy by opportunistically grouping sentences together would be beneficial .
+cohesion is achieved by surface devices , such as repetition of words and coreferences .
+we describe next how we include cohesion in the co algorithm based on these surface features .
+the augmented algorithm .
+disfluencies arise in the output of the co algorithm when topics are distributed over the whole text , violating cohesion properties ( mccoy & cheng , 1991 ) .
+a typical scenario is illustrated in figure 11 .
+the inputs are texts t1 , t2 , t3 ( ordered by publication time ) .
+a1 , a2 and a3 belong to the same theme , whose intersection sentence is a , and similarly for b and c. the themes a and b are topically related , but c is not related .
+summary 51 , based only on chronological clues , contains two topical shifts ; from a to c and back from c to b. a better summary would be 52 , which keeps a and b together .
+the algorithm .
+our goal is to remove disfluencies from the summary by grouping together topically related themes .
+the main technical difficulty in incorporating cohesion in our ordering algorithm is to identify and to group topically related themes across multiple documents .
+in other words , given two themes , we need to determine if they belong to the same cohesion block .
+for a single document , topical segmentation ( hearst , 1994 ) could be used to identify blocks , but this technique is not a possibility for identifying cohesion between sentences across multiple documents .
+segmentation algorithms typically exploit the linear structure of an input text ; in our case , we want to group together sentences belonging to different texts .
+our solution consists of the following steps .
+in a preprocessing stage , we segment each input text ( kan , klavans , & mckeown , 1998 ) based on word distribution and coreference analysis , so that given two sentences within the same text , we can determine if they are topically related .
+assume the themes a and b exist , where a contains sentences ( a1 ... an ) , and b contains sentences ( b1 ... bm ) .
+recall that a theme is a set of sentences conveying similar information drawn from different input texts .
+we denote # ab to be the number of pairs of sentences ( az , bj ) which appear in the same text , and # ab + to be the number of sentence pairs which appear in the same text and are in the same segment .
+in the first stage , for each pair of themes a and b , we compute the ratio # ab + / # ab to measure the relatedness of two themes .
+this measure takes into account both positive and negative evidence .
+if most of the sentences in a and b that appear together in the same texts are also in the same segments , it means that a and b are highly topically related .
+in this case , the ratio is close to 1 .
+on the other hand , if among the texts containing sentences from a and b , only a few pairs are in the same segments , then a and b are not topically related .
+accordingly , the ratio is close to 0 .
+a and b are considered related if this ratio is higher than a predetermined threshold .
+we determined experimentally its value to be 0.6 .
+this strategy defines pairwise relations between themes .
+a transitive closure of this relation builds groups of related themes and , as a result , ensures that themes that do not appear together in any article but which are both related to a third theme will still be linked .
+this creates an even higher degree of relatedness among themes .
+because we use a threshold to establish pairwise relations , the transitive closure does not produce elongated chains that could link together unrelated themes .
+we are now able to identify topically related themes .
+at the end of the first stage , they are grouped into blocks .
+in a second stage , we assign a time stamp to each block of related themes using the earliest time stamp of the themes it contains .
+we adapt the co algorithm described in 4.2.1 to work at the level of the blocks .
+the blocks and the themes correspond to , respectively , themes and sentences in the co algorithm .
+by analogy , we can easily show that the adapted algorithm produces a complete order of the blocks .
+this yields a macro-ordering of the summary .
+we still need to order the themes inside each block .
+in the last stage of the augmented algorithm , for each block , we order the themes it contains by applying the co algorithm to them .
+figure 12 shows an example of a summary produced by the augmented algorithm .
+this algorithm ensures that cohesively related themes will not be spread over the text and decreases the number of abrupt switches of topics .
+figure 12 shows how the augmented algorithm improves the sentence order compared with the order in the summary produced by the co algorithm in figure 9 ; sentences quoting us officials are now grouped together , and so are the descriptions of the mourning .
+evaluation .
+following the same methodology used to evaluate the mo and the co algorithms , we asked the judges to grade 25 summaries produced by the augmented algorithm .
+results are shown in figure 13 .
+the manual effort needed to compare and judge system output is extensive considering that each human judge had to read three summaries for each input set as well as skim the input texts to verify that no misleading information was introduced in the summaries .
+we collected a corpus of 25 sets of articles for evaluation .
+overall , there were 75 summaries to be evaluated .
+the size of our corpus is comparable with the collection used for the duc evaluation ( 30 sets of articles ) .
+this evaluation shows a significant improvement in the quality of the orderings from the co algorithm to the augmented algorithm .
+to assess the significance of the improvement , we used the fisher exact test , conflating poor and fair summaries into one category ( p-value of 0.04 ) .
+the augmented algorithm also shows an improvement over the mo algorithm ( p-value of 0.07 ) .
+related work .
+finding an acceptable ordering has not been studied before in domain independent text summarization .
+in single document summarization , summary sentences are typically arranged in the same order that they were found in the full document , although jing ( 1998 ) reports that human summarizers do sometimes change the original order .
+in multidocument summarization , the summary consists of fragments of text or sentences that were selected from different texts .
+thus , there is no complete ordering of summary sentences that can be found in the original documents .
+in domain dependent summarization , it is possible to establish possible orderings a priori .
+a valid ordering is traditionally derived from a manual analysis of a corpus of texts in the domain , and it typically operates over a set of semantic concepts .
+a semantic representation of the information is usually available as input to the ordering component .
+for instance , in the specific domain of news on the topic of terrorist attacks , summaries can be constructed by first describing the place of the attack , followed by the number of casualties , who the possible perpetrators are , etc .
+another alternative when ordering information , still in the domain dependent framework , is to use a more data driven approach , which produces a more flexible output .
+a priori defined simple ordering strategies are combined together by looking at a set of features from the input .
+elhadad and mckeown ( 2001 ) use such techniques to produce patient specific summaries of technical medical articles .
+examples of features which influence the ordering are presence of contradiction or repetition , relevance to the patient characteristics , or type of results being reported .
+a linear combination of these features assigns a weight to each semantic predicate to be included in the output , allowing them to be ordered .
+in this case , the features are domain dependent and have been identified through corpus analysis and interviews with physicians .
+in the case of a domain independent system , it would be an entire new challenge to define and compute such a set of features .
+producing a good ordering of information is also a critical task for the generation community , which has extensively investigated the issue ( mckeown , 1985 ; moore & paris , 1993 ; hovy , 1993 ; bouayad-agha , power , & scott , 2000 ; mooney , carberry , & mccoy , 1990 ) .
+one approach is top-down , using schemas ( mckeown , 1985 ) or plans ( dale , 1992 ) to determine the organizational structure of the text .
+this approach postulates a rhetorical structure which can be used to select information from an underlying knowledge base .
+because the domain is limited , an encoding can be developed of the kinds of propositional content that match rhetorical elements of the schema or plan , thereby allowing content to be selected and ordered .
+rhetorical structure theory ( rst ) allows for more flexibility in ordering content by establishing relations between pairs of propositions .
+constraints based on intention ( e.g. , moore & paris , 1993 ) , plan-like conventions ( e.g. , hovy , 1993 ) , or stylistic constraints ( e.g. , bouayad-agha et al. , 2000 ) are used as preconditions on the plan operators containing rst relations to determine when a relation is used and how it is ordered with respect to other relations .
+another approach ( mooney et al. , 1990 ) is bottom-up and is used to group together stretches of text in a long , generated document by finding propositions that are related by a common focus .
+since this approach was developed for a generation system , it finds related propositions by comparisons of proposition arguments at the semantic level .
+in our case , we are dealing with a surface representation , so we find alternative methods for grouping text fragments .
+a more recent approach by duboue and mckeown ( 2001 ) has been implemented to automatically estimate constraints on information ordering in the medical domain , at the content planning stage .
+using a collection of semantically tagged transcripts written by domain experts , duboue and mckeown ( 2001 ) identify basic adjacency patterns contained within a plan , as well as their ordering .
+multigen generates summaries of news on any topic .
+in such an unconstrained domain , it would be impossible to enumerate the semantics for all possible types of sentences which could match the elements of a schema , a plan or rhetorical relations .
+for instance , duboue and mckeown build their content planner based on a set of 29 semantic categories ; in our case , there is no such regularity in the input information .
+furthermore , it would be difficult to specify a generic rhetorical plan for a summary of news .
+instead , content determination in multigen is opportunistic , depending on the kinds of similarities that happen to exist between a set of news documents .
+similarly , we describe here an ordering scheme that is opportunistic and bottom-up , depending on the cohesion and temporal connections that happen to exist between selected text .
+our ordering component takes place after the content selection of the information in a pipeline architecture , in contrast to generation systems , where usually the ordering and the content selection come in tandem .
+this separation might come at a cost if there is no good ordering to the given extracted information , it is not possible to go back to the content selection to extract new information .
+in summarization , content selection is driven by salience criteria .
+we believe that the same ordering strategy should work with different content selectors , independently of their salience criteria .
+therefore , we choose to keep the two components , selection and ordering , as two separate modules .
+conclusion and future work .
+in this paper we investigated information ordering constraints in multidocument summarization in the news genre .
+we evaluated two alternative ordering strategies , chronological ordering ( co ) and majority ordering ( mo ) .
+our experiments show that mo performs well only when all input texts follow similar organization of the information .
+in the domains where this constraint holds , mo would be an appropriate and highly effective strategy .
+but in the news genre we cannot make this assumption ; thus it is not an appropriate solution .
+the chronological ordering ( co ) algorithm can provide an acceptable solution for many cases , but is not sufficient when summaries contain information that is not event based .
+our experiments , using a corpus that we collected of multiple alternative summaries each of multiple documents , show that cohesion is an important constraint contributing to ordering .
+moreover , they also show that appropriate ordering of information is critical to allow for easy comprehension of the summary and that it is not the case that all possible orderings of information are acceptable .
+we developed an operational algorithm that integrates cohesion as part of the co algorithm , and implemented it as part of the multigen summarization system .
+our evaluation of the system shows significant improvement in summary quality .
+while in this paper we focused on augmenting the co algorithm , we believe that mo is a promising strategy and should not be neglected .
+it is clear that different forms of summarization are useful in different situations , depending on the intended purpose of the summary and on the types of documents summarized .
+for our future work , we plan to build on the approach we used for the duc 2001 evaluation , where we developed a summarizer that would use different algorithms for summary generation depending on the type of input text .
+we suspect that ordering strategies may differ also , depending on the type of summary .
+our work will first investigate whether we can use our augmented algorithm for other summary types .
+if the algorithm does not yield good orderings , we will investigate through corpus analysis other summary type specific constraints .
+we suspect that our augmented algorithm may apply , for instance , to biographical summaries , since the information being summarized is a mixture of event-based information that can be chronologically ordered along with descriptive information about the person .
+it is unclear whether it can apply to other types of summaries such as summaries of different events , since pieces of information may not be temporally related to each other .
+we also plan to identify the types of summaries which would benefit from using the mo algorithm or an augmented version of it ( the same way the co algorithm was augmented with the cohesion constraint ) .

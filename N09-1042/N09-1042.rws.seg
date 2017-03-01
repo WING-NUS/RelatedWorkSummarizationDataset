@@ -1,0 +1,15 @@
+(claim)#topic and content models .
+(claim)#our work is grounded in topic modeling approaches , which posit that latent state variables control the generation of words .
+0#(blei et al., 2003);(griffiths and steyvers, 2004)#in earlier topic modeling work such as latent dirichlet allocation ( lda ) $1 $2 , documents are treated as bags of words , where each word receives a separate topic assignment ; the topic assignments are auxiliary variables to the main task of language modeling .
+0#(griffiths et al., 2005);(wallach, 2006);(purver et al., 2006);(gruber et al., 2007)#more recent work has attempted to adapt the concepts of topic modeling to more sophisticated representations than a bag of words ; they use these representations to impose stronger constraints on topic assignments $1 $2 $3 $4 .
+(claim)#these approaches , however , generally model markovian topic or state transitions , which only capture local dependencies between adjacent words or blocks within a document .
+0#(barzilay and lee, 2004);(elsner et al., 2007)#for instance , content models $1 $2 are implemented as hmms , where the states correspond to topics of domain-specific information , and transitions reflect pairwise ordering preferences .
+0#(titov and mcdonald, 2008)#even approaches that break text into contiguous chunks $1 assign topics based on local context .
+(claim)#while these locally constrained models can implicitly reflect some discourse-level constraints , they cannot capture long-range dependencies without an explosion of the parameter space .
+(claim)#in contrast , our model captures the entire sequence of topics using a compact representation .
+(claim)#as a result , we can explicitly and tractably model global discourse-level constraints .
+(claim)#modeling ordering constraints .
+1#(barzilay et al., 2002);(lapata, 2003);(karamanis et al., 2004)#sentence ordering has been extensively studied in the context of probabilistic text modeling for summarization and generation $1 $2 $3 .
+(claim)#the emphasis of that body of work is on learning ordering constraints from data , with the goal of reordering new text from the same domain .
+(claim)#our emphasis , however , is on applications where ordering is already observed , and how that ordering can improve text analysis .
+(claim)#from the methodological side , that body of prior work is largely driven by local pairwise constraints , while we aim to encode global constraints .

@@ -1,0 +1,39 @@
+Our focus in this section is on describing the properties
+of the two previous systems for reconstructing
+ancient word forms to which we compare our
+method. Citations for other related work, such as
+similar approaches to using faithfulness and markedness
+features, appear in the body of the paper.
+In (Oakes 2000), the word forms in a given protolanguage
+are reconstructed using a Viterbi multialignment
+between a small number of its descendant
+languages. The alignment is computed using handset
+parameters. Deterministic rules characterizing
+changes between pairs of observed languages are extracted
+from the alignment when their frequency is
+higher than a threshold, and a proto-phoneme inventory
+is built using linguistically motivated rules and
+parsimony. A reconstruction of each observed word
+is first proposed independently for each language. If
+at least two reconstructions agree, a majority vote
+is taken, otherwise no reconstruction is proposed.
+This approach has several limitations. First, it is not
+tractable for larger trees, since the time complexity
+of their multi-alignment algorithm grows exponentially
+in the number of languages. Second, deterministic
+rules, while elegant in theory, are not robust
+to noise: even in experiments with only four daughter
+languages, a large fraction of the words could not
+be reconstructed.
+In (Bouchard-Cˆot´e et al. 2008), a stochastic model
+of sound change is used and reconstructions are inferred
+by performing probabilistic inference over an
+evolutionary tree expressing the relationships between
+languages. The model does not support generalizations
+across languages, and has no way to capture
+phonotactic regularities within languages. As a
+consequence, the resulting method does not scale to
+large phylogenies. The work we present here addresses
+both of these issues, with a richer model
+and faster inference allowing improved reconstruction
+and increased scale.

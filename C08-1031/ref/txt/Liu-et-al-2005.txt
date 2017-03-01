@@ -1,0 +1,373 @@
+opinion observer : analyzing and comparing opinions on the web .
+abstract .
+the web has become an excellent source for gathering consumer opinions .
+there are now numerous web sites containing such opinions , e.g. , customer reviews of products , forums , discussion groups , and blogs .
+this paper focuses on online customer reviews of products .
+it makes two contributions .
+first , it proposes a novel framework for analyzing and comparing consumer opinions of competing products .
+a prototype system called opinion observer is also implemented .
+the system is such that with a single glance of its visualization , the user is able to clearly see the strengths and weaknesses of each product in the minds of consumers in terms of various product features .
+this comparison is useful to both potential customers and product manufacturers .
+for a potential customer , he / she can see a visual side-by-side and feature-by-feature comparison of consumer opinions on these products , which helps him / her to decide which product to buy .
+for a product manufacturer , the comparison enables it to easily gather marketing intelligence and product benchmarking information .
+second , a new technique based on language pattern mining is proposed to extract product features from pros and cons in a particular type of reviews .
+such features form the basis for the above comparison .
+experimental results show that the technique is highly effective and outperform existing methods significantly .
+introduction .
+the web has dramatically changed the way that consumers express their opinions .
+they can now post reviews of products at merchant sites and express their views on almost anything in internet forums , discussion groups , and blogs .
+this online word-of-mouth behavior represents new and measurable sources of information for marketing intelligence .
+techniques are now being developed to exploit these sources to help companies and individuals to gain such information effectively and easily .
+this paper focuses on online customer reviews of products .
+it is a common practice for online merchants ( e.g. , amazon.com ) to ask copyright is held by the international world wide web conference committee ( iw3c2 ) .
+distribution of these papers is limited to classroom use , and personal use by others .
+in this paper , we propose an analysis system with a visual component to compare consumer opinions of different products .
+the system is called opinion observer .
+with a single glance of its visualization , the user can clearly see the strengths and weaknesses of each product in the minds of consumers .
+we use figure 1 to illustrate the idea .
+it compares customer opinions of two digital cameras along different feature dimensions , i.e. , picture , battery , zoom , size , and weight .
+each bar in figure 1 shows the percents of reviews that express positive ( above x-axis ) and negative ( below x-axis ) opinions on a feature of a camera .
+one can easily see that digital camera 1 is a superior camera .
+specifically , most customers have negative opinions about the picture quality , battery and zoom of digital camera 2 .
+however , on the same three features , customers are mostly positive about digital camera 1 .
+regarding size and weight , customers have similar opinions on both cameras .
+the visualization enables the user to clearly see how the cameras compare with each other along each feature dimension .
+this opinion comparison is useful to both potential customers ( buyers ) and product manufacturers .
+for a potential customer , although he / she can read all reviews of different products at merchant sites to mentally compare and assess the strengths and weaknesses of each product in order to decide which one to buy , it is much more convenient and less time consuming to see a visual feature-by-feature comparison of customer opinions in the reviews .
+a system like ours can be installed at a merchant site that has reviews so that potential buyers can compare not only prices and product specifications ( which can already be done at some sites ) , but also opinions from existing customers .
+for a product manufacturer , comparing consumer opinions of its products and those of its competitors to find their strengths and weaknesses is crucial for marketing intelligence and for product benchmarking .
+this is typically done manually now , which is very labor intensive and time consuming .
+our system comes to help naturally in this case .
+to enable the above visualization , two challenging technical tasks need to be performed : identifying product features that customers have expressed their ( positive or negative ) opinions on .
+for each feature , identifying whether the opinion from each reviewer is positive or negative , if any .
+negative opinions typically represent complains / problems about some features .
+for formats ( 1 ) and ( 2 ) , opinion orientations ( positive or negative ) of features are known because pros and cons are separated and thus there is no need to identify them .
+only product features that have been commented on by customers need to be identified .
+for format ( 3 ) , we need to identify both product features and opinion orientations .
+in [ 17 ] , we proposed several techniques to perform these tasks for format ( 3 ) , which are also useful for format ( 1 ) .
+in both formats ( 1 ) and ( 3 ) , reviewers typically use full sentences .
+however , for format ( 2 ) , pros and cons tend to be very brief .
+for example , under cons , one may write : heavy , bad picture quality , battery life too short , which are elaborated in the detailed review .
+in this paper , we propose a new technique to identify product features from pros and cons in format ( 2 ) .
+the method is based on natural language processing and supervised pattern discovery .
+we show that the techniques in [ 17 ] are not suitable for format ( 2 ) because of short phrases or incomplete sentences ( we call them sentence segments ) in pros and cons rather than full sentences .
+we do not analyze detailed reviews of format ( 2 ) as they are elaborations of pros and cons .
+analyzing short sentence segments in pros and cons produce more accurate results .
+note that our visualization system is applicable to all three formats .
+our work is related but quite different from sentiment classification [ e.g. , 8 , 9 , 15 , 29 , 30 , 32 , 33 , 35 ] .
+its purpose is to classify reviews as positive or negative .
+it does not identify product features that have been commented on by consumers .
+we will discuss this and other related work in section 2 .
+given a set of products ( which may be from the same brand or different brands ) and a set of urls of web pages that contain customer reviews , opinion observer works in two stages : stage 1 : extracting and analyzing customer reviews in two steps : step 1 : this step automatically connects to and downloads all customer reviews from the given pages .
+subsequently , the system monitors these pages to periodically download new reviews if any .
+all raw reviews are stored in a database .
+note that this step is not needed if an online merchant or a dedicated review site that has reviews wants to provide the opinion comparison service .
+step 2 : in this step , all the new reviews ( which were not analyzed before ) of every product are analyzed .
+two tasks are performed , identifying product features and opinion orientations from each review .
+this can be done automatically or semi-automatically .
+details of this step will be discussed in sections 3.3 and 3.4 .
+stage 2 : in this stage , based on the analysis results , different users can visualize and compare opinions of different products using a user interface .
+the user simply chooses the products that he / she wishes to compare and the system then retrieves the analyzed results of these products and display them in the interface ( see section 3.2 ) .
+note that stage 1 tasks are performed by the system or together with human analysts .
+stage 2 is for anyone who is authorized to view the results .
+this paper makes the following contributions : to the best of our knowledge , opinion observer is the first system that allows comparison of consumer opinions of multiple ( competing ) products ( it can be one ) .
+the system is useful to both potential customers and product manufacturers .
+a new technique is proposed to identify product features from pros and cons of review format ( 2 ) .
+existing techniques in [ 17 ] are not suitable for this case .
+our experimental results show that the proposed technique is highly effective .
+related work .
+gathering and comparing consumer opinions of competing products from the web for marketing intelligence and for product benchmarking is an important problem .
+to our knowledge , no existing system is able to perform visual comparison of consumer opinions as proposed in this paper .
+below , we mainly discuss prior work related to analysis of customer reviews or opinions .
+in [ 17 ] , we propose several methods to analyze customer reviews of format ( 3 ) .
+they perform the same tasks of identifying product features on which customers have expressed their opinions and determining whether the opinions are positive or negative .
+however , the techniques in [ 17 ] , which are primarily based on unsupervised itemset mining , are only suitable for reviews of formats ( 3 ) and ( 1 ) .
+reviews of these formats usually consist of full sentences .
+the techniques are not suitable for pros and cons of format ( 2 ) , which are very brief .
+instead , we use supervised rule mining in this work to generate language patterns to identify product features .
+this new method is much more effective than the old methods ( see section 5 ) .
+currently we do not use detailed reviews of format ( 2 ) .
+although the methods in [ 17 ] can be applied to detailed reviews of format ( 2 ) , analyzing short sentence segments in pros and cons produce more accurate results .
+in [ 23 ] , morinaga et al. compare information of different products in a category through search to find the reputation of the products .
+it does not analyze reviews , and does not identify product features .
+below , we present some other related research .
+terminology finding and entity extraction there are basically two techniques for terminology finding : symbolic approaches that rely on noun phrases , and statistical approaches that exploit the fact that words composing a term tend to be found close to each other and reoccurring [ e.g. , 4 , 7 , 18 , 19 ] .
+however , using noun phrases tends to produce too many non-terms , while using reoccurring phrases misses many low frequency terms , terms with variations , and terms with only one word .
+as shown in [ 17 ] using the existing terminology finding system fastr [ 11 ] produces very poor results .
+furthermore , using noun phrases are not sufficient for finding product features .
+we also need to consider other language components ( e.g. , verbs and adjectives ) as we will see in section 3.3 .
+recently , information extraction from texts was studied by several researchers .
+their focus is on using machine learning and nlp methods to extract / classify named entities and relations [ 5 , 10 , 14 , 20 , 31 ] .
+our task involves identifying product features which are usually not named entities and can be expressed as nouns , noun phrases , verbs , and adjectives .
+also , our extraction work uses short sentence segments rather than full sentences .
+sentiment classification .
+sentiment classification classifies opinion texts or sentences as positive or negative .
+work of hearst [ 16 ] on classification of entire documents uses models inspired by cognitive linguistics .
+das and chen [ 8 ] use a manually crafted lexicon in conjunction with several scoring methods to classify stock postings .
+tong [ 32 ] generates sentiment ( positive and negative ) timelines by tracking online discussions about movies over time . [ 33 ] applies a unsupervised learning technique based on mutual information between document phrases and the words excellent and poor to find indicative words of opinions for classification . [ 29 ] examines several supervised machine learning methods for sentiment classification of movie reviews . [ 9 ] also experiments a number of learning methods for review classification .
+they show that the classifiers perform well on whole reviews , but poorly on sentences because a sentence contains much less information . [ 1 ] finds that supervised sentiment classification is inaccurate .
+they proposed a method based on social network for the purpose .
+however , social networks are not applicable to customer reviews . [ 15 ] investigates sentence subjectivity classification .
+a method is proposed to find adjectives that are indicative of positive or negative opinions . [ 34 ] proposes a similar method for nouns .
+other related works on sentiment classification and opinions discovery include [ 26 , 27 , 30 , 35 , 36 ] .
+our work differs from sentiment and subjectivity classification as they do not identify features commented by customers or what customers praise or complain about .
+thus , we solve a related but different problem .
+they also do not perform opinion comparisons .
+opinion observer .
+we now present the proposed system , opinion observer .
+we first describe the problem statement , and then introduce the main visualization interface of opinion observer for comparing consumer opinions of different products .
+after that , we discuss the new automatic technique for identifying product features from pros and cons in reviews of format ( 2 ) , which is followed by the interactive method with a convenient user interface .
+finally , we discuss how to automatically collect customer reviews from web pages using a web data record extraction technique .
+problem statement .
+let p = { p1 , p2 , ... , pn } be a set of products ( which may be from the same brand or different brands ) that the user is interested in .
+each product pi has a set of reviews ri = { r1 , r2 , ... , rk } .
+each review rj is a sequence of sentences rj = < sj1 , sj2 , ... , sjm > ( this is a simplification as pros and cons in a review may be separated ) .
+the reviews may be from one site or multiple sites as more than one site may have reviews of a particular product .
+definition ( product feature ) : a product feature f in rj is an attribute / component of the product that has been commented on in rj .
+if f appears in rj , it is called an explicit feature in rj .
+if f does not appear in rj but is implied , it is called an implicit feature in rj .
+in a similar way , we can define an explicit feature and an implicit feature in a sentence .
+for example , battery life in the following two opinion sentences / segments is an explicit feature : we note that it is common that a sequence of sentences ( at least one ) in a review together express an opinion on a feature .
+also , one sentence may be used to express opinions of more than one feature as the following two sentences show : we can define the negative opinion set ( nset ) in the same way .
+our task : in order to visually compare consumer opinions on a set of products , we need to analyze the reviews in ri of each product pi ( 1 ) to find all the explicit and implicit product features on which reviewers have expressed their ( positive or negative ) opinions , and ( 2 ) to produce the positive opinion set and the negative opinion set for each feature .
+it should be noted that reviews can be analyzed and visualized at different levels of detail .
+for example , in analyzing the reviews of a digital camera , at the highest level ( level 1 ) we can aggregate psets and nsets of all features of the camera to show an overall customer opinion on the product .
+at level 2 , we can focus on each main feature or component of the product , e.g. , battery , zoom and picture , and generate its pset and nset .
+in visualization , we simply use the size of pset or nset of each feature to show the number of positive or negative opinions on the feature ( see figure 1 ) .
+at level 3 , we can study specific problems of each feature , e.g. , the picture is blurry and the picture is dark .
+at the moment , our system aims to work at level 1 and level 2 , which are often sufficient .
+details at level 3 and beyond are too specific and are studied by human analysts .
+visualizing opinion comparison .
+we now discuss visualization of opinion comparison .
+we assume that every product feature and its positive and negative opinion sets ( pset and nset ) have been generated ( see sections 3.3 and 3.4 ) for a set of products p. the main visualization screen is shown in figure 2 , which compares opinions on three cell phones from three different brands .
+due to confidentiality , we do not show the actual brand and model of each product .
+percent of positive or negative opinions .
+we can also show the comparison in term of percentages of positive and negative reviews .
+a similar method as above can be used to produce a suitable visualization .
+to support the visualization , we need to identify product features and opinions on them , which is the topic of sections 3.3 and 3.4. any feature of any product .
+this is to ensure that the tallest bar fits the limited space .
+pros and cons are separated and very brief .
+we propose a supervised pattern mining method to find language patterns to identify product features from pros and cons .
+we do not need to determine opinion orientations as they are already indicated by pros and cons ( we do not analyze full reviews , which elaborate on pros and cons ) .
+our approach is based on the following important observation : we can see that each segment describes a product feature on which the reviewer has expressed an opinion ( the last two can be seen as full sentences ) .
+the product feature for each segment is listed within < > .
+from the list of features , we note the following : explicit features and implicit features : some features are genuine features , i.e. , < photo > , < use > , < manual > , < option > , < video > , < battery > , and < software > .
+we call them explicit features as they appear in sentence segments .
+however , < 16mb > is a value of feature < memory > , which we call an implicit feature as it does not appear in the sentence segment .
+we need to identify both types of product features .
+synonyms : different reviewers may use different words to mean the same produce feature .
+for example , one reviewer may use photo , but another may use picture .
+synonym of features should be grouped together .
+granularity of features : in sentence segment great photos , it is easy to decide that photo is the feature .
+however , in battery usage , we can use either battery usage or battery as the feature .
+as indicated in section 3 . 1 , we do not use battery usage as it is too specific and can fragment the comparison .
+for example , other reviewers may complain battery size , battery weight , battery color , etc .
+this results in a large number of features and each feature is only commented on by a few customers .
+then , visualization becomes ineffective .
+note that in semi-automatic tagging , more detailed analysis is possible ( see sections 3.4 ) .
+extracting product features .
+we use supervised rule discovery to perform this task .
+we first prepare a training dataset by manually labeling ( or tagging ) a large number of reviews .
+the steps are as follows : perform part-of-speech ( pos ) tagging and remove digits : we use the nlprocessor linguistic parser [ 28 ] to generate the pos tag of each word ( whether the word is a noun , verb , adjective , etc ) .
+pos tagging is important as it allows us to generate general language patterns .
+we also remove digits in sentences , e.g. , changing 16mb to mb .
+digits often represent concepts that are too specific to be used in rule discovery , which aims to generalize .
+replace the actual feature words in a sentence with [ feature ] : this replacement is necessary because different products have different features .
+the replacement ensures that we can find general language patterns which can be used for any product .
+after replacement , the above two examples become : for implicit features , we replace the words that indicate such features with [ feature ] .
+for example , mb above is replaced with [ feature ] as it indicates implicit feature < memory > .
+we only use 3-grams ( 3 words with their pos tags ) here , which works well .
+the reason for using n-gram rather than full sentences is because most product features can be found based on local information and pos tagging .
+using long sentences tend to generate a large number of spurious rules .
+perform word stemming : this is commonly performed in information retrieval tasks to reduce a word to its stem .
+after the five-step pre-processing and labeling ( tagging ) , the resulting sentence ( 3-gram ) segments are saved in a file ( called a transaction file ) for the generation of rules .
+in this file , each line contains one processed ( labeled ) sentence segment .
+we then use association rule mining [ 2 ] to find all rules .
+rule generation : association rule mining is one of the main data mining models .
+it is commonly stated as follows : let i = { i1 , ... , in } be a set of items , and d be a set of transactions .
+each transaction consists of a subset of items in i. an association rule is an implication of the form x > y , where x c i , y c i , and x n y = 0 .
+the rule x > y holds in d with confidence c if c % of transactions in d that support x also support y. the rule has support s in d if s % of transactions in d contain x v y. the problem of mining association rules is to generate all association rules in d that have support and confidence greater than the user- specified minimum support and minimum confidence .
+we use the association mining system cba [ 21 ] to mine rules .
+we use 1 % as the minimum support , but do not use minimum confidence here , which will be used later .
+some example rules are given below ( we omit supports and confidences of the rules ) : we observe that both pos tags and words may appear in rules .
+note that although association rule mining is commonly applied as an unsupervised method , here we use it in a supervised case because features are manually tagged or labeled .
+post-processing : not all generated rules are useful .
+some post- processing is needed due to a few reasons : we only need rules that have [ feature ] on the right-hand-side of > as our objective is to predict [ feature ] and extract the feature .
+thus , the above rules ( c ) and ( d ) should be removed .
+we need to consider the sequence of items in the conditional part ( the left-hand-side ) of each rule .
+in association rule mining , the algorithm does not consider the position of an item in a transaction .
+however , in natural language sentences , ordering of words is significant .
+for example , if we consider word sequence , rule ( b ) above should be : thus , we need to check each rule against the transaction file to find the possible sequences .
+this may split the original rule into a few rules according to different sequences .
+this process is not complex , and thus will not be discussed further due to space limitations .
+here , we need minimum confidence ( we use 50 % ) to remove those derived rules that are not sufficiently predictive .
+finally , we generate language patterns : rules still cannot be used to extract features .
+they need to be transformed into patterns to be used to match test reviews .
+note that step 2 and 3 can be computed together .
+we present them separately for clarity .
+extraction of product features : the resulting patterns are used to match and identify candidate features from new reviews after pos tagging .
+there are a few situations that need to be handled .
+a generated pattern does not need to match a part of a sentence segment with the same length as the pattern .
+in other words , we allow gaps for pattern matching .
+for example , pattern < nn1 > [ feature ] < nn2 > can match the segment size of printout .
+note that our system allows the user to set a value for the maximum length that a pattern could expand .
+it also allows the user to set the maximum length of a review segment that a pattern should be applied to .
+these two values enable the user to refine the patterns for better extraction .
+note also , the user can add new patterns as well .
+however , in our experiments reported in section 5 , we did not manually set any of these values or add any pattern ( no manual involvement ) .
+if a sentence segment satisfies multiple patterns , we normally use the pattern that gives the highest confidence as higher confidence indicates higher predictive accuracy ( see feature refinement below as well ) .
+for those sentence segments that no pattern applies , we use nouns or noun phrases produced by nlprocessor as features if such nouns or noun phrases exist .
+note that our rule mining method is not applicable to cases that a sentence segment has only a single word , e.g. , heavy and big .
+in such cases , we treat these single words as candidate features .
+feature refinement via frequent terms : in this final step , we want to correct some mistakes made during extraction .
+two main cases are handled : however , the more suitable product feature is subwoofer .
+the question is : how does the system know this ?
+in the above example , if we know that in a number of reviews of the product , subwoofer was found as candidate features , e.g. , subwoofer annoys people .
+subwoofer is bulky .
+however , hum was never found in any other review or never identified as a feature .
+we can conclude that subwoofer is more likely to the genuine feature .
+based on this observation , we assume that if a candidate feature x appears more frequently than a candidate feature y , then x is more likely to be a genuine feature .
+this assumption is reasonable because a more frequent feature is less likely to be wrong .
+our experiment results in section 5 also confirm this .
+we can then perform feature refinement for each review segment based on the assumption .
+in the above example , subwoofer is more frequent than hum , thus subwoofer replaces hum as the feature for the segment .
+we tested two strategies , frequent-noun and frequent-term .
+the frequent-noun strategy , which is more restrictive , only allows a noun to replace another noun , e.g. , the subwoofer and hum case above .
+the detailed procedure is as follows : the generated product features together with their frequency counts are saved in a candidate feature list .
+we iterate over the review sentences .
+for each sentence segment , if there are two or more nouns , we choose the noun which is in the candidate feature list and is more frequent .
+the frequent-term strategy allows replacement of any type of words .
+again , for each sentence segment , we simply choose the word / phrase ( it does not need to be a noun ) with the highest frequency in the candidate feature list .
+this strategy comes to help in cases where the pos tagger makes mistakes and / or the product feature is not of type noun .
+our experiments results show the frequent-term strategy gives better results than the frequent-noun strategy .
+it improves the recall and precision values of the product feature extraction significantly .
+mapping to implicit features : we noted earlier that some candidate features represent specific values of the actual features .
+for example , heavy and big are not features themselves but are values of < weight > and < size > respectively .
+thus , we need to map them to implicit features , < weight > and < size > , respectively .
+a similar rule mining technique as above can be used here .
+in labeling or tagging the training data for mining rules , we also tag the mapping of candidate features to their actual features .
+for example , when we tag heavy in the sentence segment below as a feature word we also record a mapping of heavy to < weight > .
+rule mining can be used to generate mapping rules , which is simple , and thus will not be discussed further .
+computing pset and nset : pset and nset for each feature of every product is easily computed ( for visualization ) as we know whether the feature is from pros or cons of a review .
+grouping synonyms .
+it is common that people use different words to describe a feature , i.e. , photo , picture and image all refers to the same feature in digital camera reviews .
+for effective visualization , it is important to group features with similar meaning together .
+our current system uses a simple method .
+the basic idea is to employ wordnet [ 12 ] to check if any synonym groups / sets exist among the features .
+for a given word , it may have more than one sense , i.e. , different synonyms for different senses .
+however , we cannot use all the synonyms as they will result in many errors .
+for example , movie and picture are considered as synonyms in a sense , or in a synset ( defined in wordnet ) .
+this is true when we talk about hollywood movies .
+however , in the case of a digital camera review , it is not suitable to regard picture and movie in one synset , as picture is more related to photo while movie refers to video .
+to reduce the occurrence of such situations , we choose only the top two frequent senses of a word for finding its synonyms .
+that is , word a and word b will be regarded as synonyms only if there is a synset containing a and b that appear in the top two senses of both words .
+semi-automated tagging of reviews .
+it is very hard , if not impossible , for any automatic technique to achieve perfect accuracy due to the difficulty of natural language understanding .
+the techniques presented in section 3.3 and those in [ 17 ] alone are useful in situations where a fast and approximate solution is sufficient .
+for applications that need near-perfect solutions , human analysts have to be involved to correct errors made by automatic techniques ( which generate the first-cut solution ) .
+opinion observer enables analysts to correct errors using a convenient user interface , which also displays the results of automatic techniques for each review sentence .
+this is called semiautomatic tagging in this paper .
+a tagging interface is given in figure 4 .
+on the top left corner , the analyst can choose a product by selecting a brand and a model .
+after that , he / she can click on retrieve reviews to retrieve all the reviews of the product from the database .
+the id and the title ( if any ) of the reviews are displayed in the window on the left .
+the analyst can click on a title to display the full review in the window in the middle .
+the analyst then can read the review .
+for reviews of format ( 2 ) , he / she simply clicks on pros or cons , which will then be highlighted in red ( figure 4 ) and all the features produced by the automated technique will be displayed on the right .
+the window in the middle ( on the right ) lists all the features identified by the automatic techniques .
+positive and negative opinions are indicated by thumbs-up and thumbs-down .
+for reviews of format ( 3 ) or ( 1 ) , if the analyst finds that sentence i contains product features on which the reviewer has expressed an opinion , he / she selects the sentence by clicking on the sentence .
+due to space limitations , this interface is not given here .
+the product features and opinions found by the automatic techniques in [ 17 ] are also displayed in the window on the right .
+if the results generated by automatic techniques are correct , the analyst simply clicks on accept .
+if a feature is wrong , he / she can delete the feature .
+if a feature is missing , he / she can select an existing feature from the drop-down list or add a new feature by typing in ( or cut-and-paste to ) the feature slot .
+if the opinion orientation on a feature is not correct , he / she can also change it .
+this semi-automatic tagging is much more efficient than manual tagging with no help as we will see in the experiment section .
+note that it is possible that a company analyst can supply a list of product features .
+then , the system only needs to map those identified features from reviews to the supplied features .
+we did not study this issue in this work , but plan to study it in the future .
+it should also be noted that in many cases using only the supplied features is insufficient because customers may mention something that the analyst has never thought of , i.e. , unexpected features .
+extracting reviews from web pages .
+in order to analyze reviews , we need to first extract them from web pages .
+note that this step is not needed if a merchant who already has reviews at its site ( e.g. , amazon.com ) or a dedicated review site ( e.g. , epinions.com ) wants to provide the service .
+to perform the extraction task automatically is a non-trivial task .
+manually browsing the web and doing cut-and-paste is clearly not acceptable .
+it is also too time consuming to write a site specific extraction program for each site .
+fortunately , there are existing technologies for this purpose .
+one approach is wrapper induction [ 24 ] .
+a wrapper induction system allows the user to manually label a set of reviews from each site and the system learns extraction rules from them .
+these rules are then used to automatically extract reviews from other pages at the same site .
+another approach is to automatically find patterns from a page that contains several reviews .
+these patterns are then employed to extract reviews from other pages of the site .
+both these approaches are based on the fact that reviews at each site are displayed according to some fixed layout templates .
+we use the second approach which is provided by our system mdr-2 [ 37 ] , which is improvement of mdr [ 22 ] .
+mdr-2 is able to extract individual data fields in data records .
+due to space limitations , we will not discuss it further ( see [ 22 ] [ 37 ] for more details ) .
+system architecture .
+opinion observer is designed for use by product manufacturers .
+a manufacturer can compare consumer opinions from various sources to benchmark its products against those of its competitors .
+note that a simpler system can also be built for an online merchant site that has reviews .
+figure 5 gives the system architecture .
+below , we describe each component : review sources : these are web pages containing reviews of the products that the user is interested in .
+the entry page urls of these sources are provided by the analyst / user .
+review extraction : it extracts all reviews from the given urls and put them in the database ( see section 3.5 ) .
+database : it stores both raw reviews and processed reviews .
+currently , we use the database system , mysql [ 25 ] .
+raw reviews : these are the original reviews extracted from the user-supplied sources on the web .
+processed reviews : these are reviews that have been processed by the automatic techniques and / or interactively tagged ( corrected ) by the analyst ( s ) ( see below ) .
+automatic review processing : this component automatic performs review processing to produce the results as described in section 3.3 and [ 17 ] .
+analyst : this is the company analyst who takes the automatically processed reviews and corrects any errors interactively using the user interface ( figures 4 ) .
+ui ( user interface ) : it enables analysts and users to interact with the system .
+some of the interfaces are shown in figures 2 and 4 .
+clearly , this general architecture can be simplified or customized for other usage situations .
+experiment results .
+we now evaluate the proposed automatic technique to see how effective it is in identifying product features from pros and cons in reviews of format ( 2 ) .
+we also assess the time saved by semiautomatic tagging over manual tagging .
+note that we generate language patterns and product features separately for pros and cons as this gives better results .
+table 1 shows the experimental results for pros .
+column 1 lists each data set ( product ) .
+columns 2 to 7 give each stage of product feature extraction .
+columns 2 and 3 are the recall and precision results of using only automatic generated language patterns .
+columns 4 and 5 show the recall and precision results after the frequent-noun strategy is applied to refine the features extracted by using only patterns .
+columns 6 and 7 give the recall and precision results after the frequent-term strategy is applied to refine the features extracted by using only patterns .
+comparing the two strategies , we observe that the frequent-term strategy gives better results than the frequent-noun strategy .
+the reason for this is that some features are not expressed as nouns and pos tagger also makes mistakes .
+from columns 6 and 7 , we can see that the frequent-term strategy improves the results of patterns only significantly .
+the results indicate that many features appear explicitly as nouns or noun phrases .
+however , there are still some adjectives and verbs appear as implicit features , which cannot be found .
+we also observe that pos tagging makes many mistakes due to the brief segments ( incomplete sentences ) in pros and cons .
+columns 4-5 and 8-9 show the recall and precision of the fbs system in [ 17 ] .
+the low recall and precision values indicate that the techniques there are not suitable for pros and cons , which are mostly short phrases or incomplete sentences .
+clearly , from tables 1 , 2 , and 3 , we can see that the recall and precision of the proposed technique are much higher than those of the two existing methods .
+from the tables , we also observe that the results for pros are better than those for cons .
+after reading through the reviews and the generated patterns for pros and cons carefully , we found that people tend to use similar words like excellent , great , good in pros for various product features .
+in contrast , the words that people use to complain differ a lot in cons .
+consequently , there are some patterns contain specific words for pros , e.g. , excellent < nn > [ feature ] , great < nn > [ feature ] , but for cons , there is no such pattern but only those patterns consisting of pos tags , e.g. , < jj > < nn > [ feature ] .
+thus , this results in significantly fewer generated patterns for cons than for pros ( 22 vs. 117 ) .
+because we use nouns or noun phrases if a segment does not match any pattern , the small number of patterns for cons result in a large number of segments using nouns or noun phrases as product features .
+as we discussed before , there are still features that are adjectives and verbs , which are missed .
+cons needs further investigation in order to achieve better results .
+semi-automatic tagging : if the analyst wishes to correct errors made by the automatic techniques .
+he / she can read the reviews and use the user interface in figure 4 to perform the task .
+since most results produced by our automatic techniques are correct , the process is much more efficient than manual tagging .
+we experimented in two settings using the same interface : manual tagging ( i.e. , without using the results of automatic techniques ) : the analyst reads , manually extracts each feature ( via cut-and-paste and / or search through the drop-down list ) and decides the opinion orientation .
+our experiment results with two human taggers show that the amount of time saved by the second method is around 45 % ( including time used for reading the reviews ) .
+without our visual interface , the manual method will be much more time consuming .
+another saving in time and effort is from automatic extraction of reviews from web pages .
+manual cut-and-paste will be extremely time consuming , and cannot scale to a large number of reviews .
+finally , regarding synonym grouping , our method achieves 52 % recall and 100 % precision on these data as the method is very conservative .
+the main problem with our simple method is that it does not handle context-dependent synonyms .
+this is a hard topic in nlp and has not been the focus of this work .
+we will study this more in the future .
+we do not list the result for each dataset as there are only a few synonyms in each dataset .
+conclusions .
+consumer opinions used to be very difficult to find before the web was available .
+companies often conduct surveys or engage external consultants to find such opinions about their products and those of their competitors .
+now much of the information is publicly available on the web .
+in this paper , we focused on one type of opinion sources , customer reviews of products .
+we proposed a novel visual analysis system to compare consumer opinions of multiple products .
+to support visual analysis , we designed a supervised pattern discovery method to automatically identify product features from pros and cons in reviews of format ( 2 ) .
+a friendly interface is also provided to enable the analyst to interactively correct errors of the automatic system , if needed , which is much more efficient than manual tagging .
+experiment results show that the system is highly effective .
+in our future work , we will improve the automatic techniques , study the strength of opinions , and investigate how to extract useful information from other types of opinion sources .

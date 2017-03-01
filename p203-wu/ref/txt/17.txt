@@ -1,0 +1,183 @@
+an em based training algorithm for cross-language text categorization .
+abstract .
+due to the globalization on the web , many companies and institutions need to efficiently organize and search repositories containing multilingual documents .
+the management of these heterogeneous text collections increases the costs significantly because experts of different languages are required to organize these collections .
+cross-language text categorization can provide techniques to extend existing automatic classification systems in one language to new languages without requiring additional intervention of human experts .
+in this paper we propose a learning algorithm based on the em scheme which can be used to train text classifiers in a multilingual environment .
+in particular , in the proposed approach , we assume that a predefined category set and a collection of labeled training data is available for a given language l1 .
+a classifier for a different language l2 is trained by translating the available labeled training set for l1 to l2 and by using an additional set of unlabeled documents from l2 .
+this technique allows us to extract correct statistical properties of the language l2 which are not completely available in automatically translated examples , because of the different characteristics of language l1 and of the approximation of the translation process .
+our experimental results show that the performance of the proposed method is very promising when applied on a test document set extracted from newsgroups in english and italian .
+introduction .
+automatic text categorization is a well studied task with many effective techniques .
+nowadays , the most popular and successful algorithms for text classification are based on machine learning techniques .
+learning systems have the advantage of flexibility since the only required human effort is to provide a consistent set of labeled examples .
+however , la- beling a dataset can be costly because different expertises may be required .
+in fact , in recent years also because of the growth in the popularity of the web , many companies and organizations were required to manage documents in different languages .
+multi-language text classification became an important task .
+this task can be approached as a set of mono-language problems , but a different labeled dataset would be needed to train a classifier for each language .
+this labeling process can be quite costly since it needs an expert for each different language .
+cross-language text categorization ( cltc ) is a new area in text categorization .
+the cltc task can be stated as follows : suppose we have a good classifier for a set of categories in a language l1 and a large amount of unlabeled data in a different language l2 ; how can we categorize this corpus according to the same categories defined for language l1 without having to manually label any data in l2 ?
+when using the machine learning paradigm , this problem can be reformulated as : how can we train a text classifier for language l2 using the examples labeled for language l1 ?
+an algorithm that is able to effectively perform this task would reduce the costs of building multi-language classification systems , since the human effort would be reduced to provide a training set in just one language .
+the approach that we propose is based on two steps : first the training set available in the language l1 is translated into the target language l2 using an automatic translation system .
+this procedure can introduce noise in the translated documents since automatic translation is often approximate , especially if we use simple translation systems .
+moreover , the translated documents can have different characteristics compared to the set of documents written in the target language l2 .
+in the second step , a text classifier for the target language l2 is trained using the em algorithm to take advantage both of the labeled examples obtained from the original language l1 in the first step and of the set of unlabeled data in language l2 .
+in this way , the properties of the target language can be extracted from the unlabeled examples .
+the algorithm also requires a proper feature selection technique to avoid to converge to trivial solutions .
+the paper is organized as follows .
+in the next section we discuss possible approaches to cross-language text classification and review the existing techniques proposed in the literature .
+then , section 3 describes the classical text categorization techniques that are used in the proposed system .
+in section 4 the novel em-based learning algorithm is described .
+section 5 contains the experimental results obtained on a test set containing messages extracted from newsgroups in two different languages ( english and italian ) .
+finally , in section 6 the conclusions are drawn .
+cross-language text classification .
+for reason of simplicity , we reduce the multi-lingual case with k languages to k ^ 1 bi-lingual problems selecting one language as the principal one ; thus studying the bi-lingual case is not restrictive with respect to the multi-lingual problem .
+before describing some aspects of the cross-lingual text categorization task , we introduce some notations used in the following sections .
+we denote the two languages with l1 and l2 and with l2-1 the language l1 generated by the translation from l2 .
+moreover , we denote with tr1 and ts1 the training set and the test set in language l1 , and with tr2 _ 1 and ts2 _ 1 the training set tr2 and the test set ts2 translated into the language l1 .
+in cltc , we can imagine three different scenarios : poly-lingual training : a labeled training set is available for each language and one classifier is trained using training examples from all the different languages .
+the feature space used by the classifier corresponds to an unique and enormous language obtained by the union of all the vocabularies .
+the classifier parameters are estimated by merging the training sets of the different languages .
+cross-lingual training : the labeled training set is available for only one language and we have to use that to classify documents in other languages .
+this approach is the more interesting one and is what we are interested in this paper .
+clearly , this problem is more difficult to solve .
+in this setting , we can individuate a sub-categorization depending on the approach used to tackle it : training-set translation : this approach requires the translation of the labeled set into the target language which then is used to train a classifier for this language .
+we can take advantage of the availability of unlabeled documents in the second language .
+test-set translation : in this approach a classifier is trained by using documents in the first language tr1 and it is tested on the ts2 _ 1 sets .
+esperanto language : this approach uses an universal reference language which all documents are translated to .
+the esperanto language ( from the legendary language spoken in all the world ) should contain all properties of the languages of interest and be organized in a semantic way : words indicating the same concepts in the languages should be translated to the same terms in the esperanto language .
+some linguistic tools exist to create an universal language .
+we were not able to find systems in the literature using this approach .
+there are very few systems for cltc described in the literature .
+an interesting work is presented in [ 7 ] where some methods are tested on a bi-lingual task for the ilo ( international labor organization ) corpus .
+the considered languages were english and spanish and two different classifiers were evaluated ( the rocchio classifier and the winnow classifier ) .
+as baseline they used the results for the mono-lingual categorization which yielded an accuracy of about 86 % .
+using the poly-lingual approach , in which english and spanish labeled documents were used together to train an unique classifier , they obtained an accuracy of about 81 % .
+finally , following the test-set translation approach they proposed two different methods : terminology translation and profile-based translation .
+in the first method they simply trained a classifier using the tre set and tested it using the tss e ( the spanish test set translated into english ) .
+in the second strategy ( profile-based translation ) , a reduced vocabulary was created by selecting the 150 most important terms of each class from a preliminary categorization of the english data set and the translation process was performed using this vocabulary .
+when using this second technique the average accuracy was around 73 % , which is still very far from the mono-lingual case of 86 % .
+text categorization .
+different machine learning models have been applied to automatic text categorization , but the most successful are the naive-bayes ( nb ) [ 5 ] and support vector machines ( svm ) [ 4 ] .
+the naive-bayes is a probabilistic classifier which estimates the probability of the document to be in the modeled class .
+more formally , a document di belongs to the class cj such that : using the bayes rule , the probability p ( cj i di ) can be expressed as : since p ( di ) is a common factor in the models for each class ( it does not depend on the class ) , it can be neglected .
+the class a-priori probability p ( cj ) can be easily estimated from the document distribution in the training set or otherwise can be considered as a constant .
+finally , the most important assumption , the naive assumption , is that the presence of each word in the documents is an independent event .
+even if this hypothesis is not true in practice , it allows to write .
+the good-turing smoothing states that the probability of finding a never-seen word is equal to the probability of having a once-seen word .
+the idea is that the once-seen words are rare words that have been observed in the training set only by accident , while the never-seen words are rare words not appearing in the training set by chance .
+thus the probability of observing a rare word is estimated by counting the frequency of once-seen words .
+term filtering : information gain in text classification , the goal is to assign labels to the documents according their contents .
+a very important assumption of most automatic text classifiers is that many words and structures used in natural language are not significant in representing the content of the text document : adverbs , pronouns , generic terms and so on can be safely removed without loosing information .
+moreover , many experiments show that they often represent noisy features , which can harm the classifier .
+two different approaches to removing non informative words can be pursued [ 8 ] : usually both techniques are used in cascade .
+in categorization tasks , the most common measure of informativeness is the information gain ( ig ) .
+this function measures the gain in information given by the presence and absence of a class ck by knowing the presence or absence of a word wi [ 1 ] : if the ig value is high , that feature is considered important and informative for a topic and it should not be removed , otherwise it does not provide useful information to determine the topic and it can be removed .
+usually using the ig measure we can remove a very high number of features , reducing the vocabulary dimension to 100 1000 words and improving the results of the system .
+an em based training algorithm for cross- lingual classifiers .
+we designed a cross-language text classification system taking into account the following requirements .
+the method is very simple and fast and it is the most used in text categorization since , despite the strong simplificative hypotheses , it yields good performances in most cases .
+however , the estimation for those words that never appear in the training set can yield wrong results .
+in fact , if a word doesn t appear in the training set , it will have a zero probability of appearing in that class .
+thus when it is found in a test document the probability computed in ( 2 ) will be null too , even if the document contained many other on-topic terms .
+this problem is known as the zero-estimation problem and can be solved using the smoothing techniques [ 5 ] .
+in particular , we applied the good-turing smoothing [ 3 ] , which was showed to have better performance and corresponds to set a large amount of unlabeled documents in the unknown language l2 .
+in this scenario , we would like to use the labeled set on l1 ( and eventually the information hidden in the unlabeled data for l2 ) to train a classifier for organizing the collection of documents in the language l2 .
+since the unlabeled dataset can contain a large number of documents , an approach based on the test-set translation can be very time consuming as translation is a slow process .
+thus , the best solution seems to be the adoption of the training-set translation which requires only the translation of the training set available in language l1 .
+the so trained classifier c1 ^ 2 can then be applied on the documents directly in their original language l2 .
+in order to use the information available in the unlabeled collection ts2 in language l2 , the proposed system exploits the em algorithm [ 2 ] by considering the class labels for the documents in ts2 as unknown variables , that can be estimated in the e step .
+a similar approach has been proposed for text classification for learning from both labeled and unlabeled data [ 6 ] .
+the idea is that , even if the labels are not available , useful statistical properties can be extracted by looking at the distribution of terms in unlabeled texts .
+this additional source of knowledge can be particularly useful for cross-language learning , since the labeled documents are written in a different language than the target one and their translated versions usually do not have the same statistical properties of the target language ( also because of the approximation and errors introduced by the automatic translation process ) .
+in fact , using the classifier trained also with documents ( although not labeled ) written in the same language as the test-set , the results should be better than without using them ( both the test-set translation and the training-set translation approaches do not use documents originally written in the target language ) .
+the basic algorithm .
+the algorithm consists of an initialization step ( step 0 ) and an iteration step ( step t ) that repeats the e and m phases until we reach convergence .
+thus , the algorithm can be sketched as follows : however , this basic algorithm may fail to find useful solutions , as it confirmed by the experimental results presented in the next section .
+this is due to the fact that the em algorithm needs to apply some regularization technique to avoid trivial solutions .
+for example , we can obtain a good explanation of the unlabeled set by assigning all the examples to the same class , which is an easy task to learn .
+in the experiments we found a very frequent behavior which caused one of the classes to end up with an empty set of examples .
+this effect is due to many noisy terms in the documents which overwhelm the real informative terms causing the progressive shift of all the examples in one class to another one .
+the improved algorithm using ig term filtering .
+in order to introduce a regularization effect in the em iteration , a term filtering technique was exploited to keep only the most informative features .
+we decided to use the information gain ( ig ) scores to identify the most informative words with respect to the classification task .
+in the modified algorithm a feature selection step is applied before training the classifier at each iteration .
+in particular the ig filter is applied at the initialization step , selecting the k1 top score words from the set tr1 ^ 2 .
+then a similar feature selection is performed at each iteration of the em procedure .
+in particular , for each iteration t , the ig values for the terms are computed using the labeled set trt2 and only the first k2 most informative words are kept in the document representation .
+in the experiments we set k1 < k2 .
+in fact , from the experimental evidence , we found that it is preferable to select few informative terms from the translated documents to avoid the inclusion of many noisy words .
+on the contrary , to capture a good model in the target language a larger dictionary is needed , since many informative terms are extracted from the unlabeled data .
+the scheme of the modified algorithm is shown in figure 1 .
+experimental results .
+we performed a set of experiments in the bi-lingual case ; the extension to the multi-lingual case can be easily done by replicating the system for each language .
+in the following we describe the experimental setup and the results obtained by different approaches .
+all the experiments where performed using a naive bayes classifier with good-turing smoothing .
+the multi-lingual dataset .
+we collected a bi-lingual dataset by downloading messages from newsgroups in english ( language le ) and italian ( language li ) .
+we selected three different discussion groups available in the two languages : hardware , auto and sports .
+we downloaded about 27.000 messages : about 8.000 messages from each italian newsgroup and 1.000 messages from the english ones .
+the italian dataset was split into a training set tri and a test set tsi as detailed in table 1 .
+for each experiment 10 different configurations of these sets were generated by choosing their elements at random in order to perform a ten-fold cross-validation scheme .
+notice that the training set tri was only used for the baseline mono-lingual experiment .
+instead , the english training set contained the same 3.000 documents for all the experiments .
+finally , we used the newsgroup topics as class labels .
+the automatic translation of the documents from english to italian was performed using the trial version of the office translator idiomax1 , a plug-in for the office xp suite .
+we used this tool without any pre-processing on the input text , obtaining the translated training set tre ^ i.
+baseline experiment : mono-lingual classification .
+the baseline experiment was the mono-lingual categorization test as in [ 7 ] .
+we trained a naive-bayes classifier with good-turing smoothing by using the set tri and then we tested it on the set tsi .
+we removed the most common words by using a stop-word list and we repeated the experiment in ten-fold cross-validation , evaluating precision and recall .
+the results are shown in table 2 .
+we can treat these as the optimal results because labeled italian training sets are used .
+below , we want to see how close to these results we can achieve using the english training set , i.e. , without using any labeled italian documents .
+in the first cross-language experiment , we applied the basic training-set translation approach .
+we used the translated learning set tre-i to train the classifier and then tested it on the italian test set tsi .
+notice that this is the configuration obtained by the initialization step of the proposed algorithm without feature selection .
+the results are obviously worse than in the mono-lingual case ( table 3 ) .
+table 3 .
+recall and precision obtained by the basic training-set translation approach .
+results are averages on a ten-fold cross-validation .
+from the results it is evident that the three classes have quite different behaviors : the class hw has a quite high recall and a low precision ; the class sport instead has a very low recall and very high precision ; finally , the class auto has both low recall and precision .
+these results are due to a phenomenon existing in dealing with multi-language document corpora , which is analyzed in the next subsection .
+in order to evaluate the effect of the feature selection using the ig scores , we performed the basic training-set translation learning applying the ig filtering to the translated dataset .
+the results in table 4 show a significant improvement in performance , supporting the introduction of the ig-based feature selection .
+this approach is basically the profile-based translation technique proposed in [ 16 ] ( the only difference is the direction of the translation step ) .
+named entities .
+a particular phenomenon may happen in a multi-lingual corpora especially when the contents concern aspects of everyday life , as it is in newsgroups .
+even if the general topic is the same , the actual contents are strongly dependent on the nation where the writer lives .
+for example , if we consider the messages in the group sport , the subtopic distribution of the italian messages ( popular sub-topics are soccer , f1 , basketball , etc . ) are very different from those of american messages ( they mostly deal with baseball , football , basketball , etc . ) .
+beside the different distribution among the sub-topics for a broad category such as sport , the terms used may differ depending on the countries .
+for instance , in the class auto we can find different names of car models , brands and car accessories in different languages .
+in some other classes this effect has lower impact as it happens in the class hardware where the terms referring to computer brands , device brands , softwares are basically the same for any language .
+these observations give a possible explanation for the results in table 3 , where the recall for the class hw is significantly higher than for the other two classes .
+the terms used in messages on the same topic but from different languages have two other peculiarities which can cause problems to the design of cross-language systems : the use of terms related to proper names peculiar to a particular geographical area ( e.g. teams , players , car models , brands ) . the presence in the l1 language ( in our case english ) of words or groups of words which should not be translated , since they are used in the original form also in the l2 language .
+an example is the word windows referring to the computer operating system which should not be translated because in italian the same word is used .
+this problem affects the quality of the translated training set tre i and it can be reduced by using more sophisticated automatic translation systems which take into account domain knowledge .
+in both cases a solution would be to tag named entities , mapping them to cross-lingual tags .
+the recognition of named entities and the use of appropriate tags would prevent the automatic translator from producing funny translations and give a better representation of the text by using fewer but more significant features .
+we used a simple ner preprocessing step only to avoid the translation of a predefined set of words ( a subset of them is reported in table 5 ) .
+the results in table 6 show that this technique did not yield a significant improvement when using the basic training set translation method .
+in fact , many of these words refer to entities which are peculiar only to the english domain .
+since ner in the general case is a quite complex task requiring considerable costs for providing appropriate rules , we decided not to use ner in the final system .
+em cross-language learning .
+table 7 reports the results obtained when applying the basic algorithm using the em iteration .
+the bad results for the class sport are due to the fact that the initial classifier trained on the translated messages is not sufficiently selective because of the different subtopic distributions in the italian and in the english newsgroups .
+this fact implies that some examples are incorrectly assigned to the other classes and this is progressively amplified during the following em iterations .
+in this case , we apply a selection on the words in the translated training set , while a larger value for k2 defines a sufficiently large dictionary for the target language .
+table 8 shows the results which are extremely good even compared to the baseline mono-lingual test in table 2 .
+moreover , comparing with the results in table 4 , we can see that the em iterations are very effective yielding a significant improvement with respect to the corresponding baseline experiment using feature selection .
+thus , the proposed algorithm shows a very good accuracy improvement with respect to the other methods proposed so far .
+conclusions .
+in this paper we presented a new technique to categorize text documents in a cross-language environment .
+it is motivated by the availability of documents written in different languages and also by the fact that companies need to build categorization systems for these multi-lingual documents .
+manually labeling a large number of documents in each language is very labor intensive and time consuming .
+although cross-language text categorization is an important problem , little research has been done so far .
+the proposed approach is based on the idea that we can use a known training set in one language to initialize the em iterations on an unlabeled set of documents written in a different language .
+once labeled , these documents are used to train a classifier iteratively without using the labeled documents in the first language .
+this solves the problem that the document sets in the two languages may be quite dissimilar , or with different distributions .
+we also show that feature selection is extremely important in this setting .
+experimental results demonstrated that our approach is highly effective and reaches recall and precision values comparable with the monolingual case , where manually labeled documents are prepared for each language .

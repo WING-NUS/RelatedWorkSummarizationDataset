@@ -1,0 +1,503 @@
+web people search via connection analysis .
+abstract .
+nowadays , searches for the web pages of a person with a given name constitute a notable fraction of queries to web search engines .
+such a query would normally return web pages related to several namesakes , who happened to have the queried name , leaving the burden of disambiguating and collecting pages relevant to a particular person ( from among the namesakes ) on the user .
+in this paper , we develop a web people search approach that clusters web pages based on their association to different people .
+our method exploits a variety of semantic information extracted from web pages , such as named entities and hyperlinks , to disambiguate among namesakes referred to on the web pages .
+we demonstrate the effectiveness of our approach by testing the efficacy of the disambiguation algorithms and its impact on person search .
+introduction .
+searching for entities is a common activity in internet search today .
+searching for web pages related to a person accounts for more than 5 percent of the current web searches [ 24 ] .
+currently , it is done using keywords .
+a search engine such as google or yahoo ! returns a set of web pages , in ranked order , where each web page is deemed relevant to the search keyword entered ( the person name in this case ) .
+a next generation search engine can provide significantly more powerful models for person search .
+assume ( for now ) that for each such web page , the search-engine could determine which real entity ( i.e. , which andrew mccallum ) the page refers to .
+this information can be used to provide a capability of clustered person search , where instead of a list of web pages of ( possibly ) multiple persons with the same name , the results are clustered by associating each cluster to a real person .
+the clusters can be returned in a ranked order determined by aggregating the rank of the web pages that constitute the cluster .
+with each cluster , we also provide a summary description that is representative of the real person associated with that cluster ( for instance , in this example , the summary description may be a list of words such as computer science , machine learning , and professor ) .
+the user can hone in on the cluster of interest to her and get all pages in that cluster , i.e. , only the pages associated with that andrew mccallum .
+there are other people information search services as well ( such as http : / / people.yahoo.com and http : / / find.intelius.com ) that provide background information about people , such as current and previous addresses and a host of other information when available ; our interest and focus is on web pages relevant to a person on the public internet .
+such cluster-based people search could potentially be very useful .
+imagine searching for the web page of george bush who used to live in your neighborhood in champaign , illinois , using google today .
+this is virtually impossible ( or at least very tiring ) since the first 20-30 pages of a google search of george bush returns pages only about the president .
+in the clustered approach , ideally , all of the presidents pages will be folded into a single cluster , giving his namesakes an opportunity to be displayed in the first page of search results .
+one might argue that the use of context could improve the results of the standard search engines today , and thus , there is no need for clustering approaches .
+however , this is not the case if you have very little knowledge about the person you are searching for .
+for example , assume that we are searching for tom mitchell , the psychology professor with his name and keywords psychology and professor .
+the search engine , e.g. , google , returns more than two different people ( to be exact 13 different persons in the top 100 pages ) .
+hence , the task of clustering the pages related to different people is still valid even for the queries that include context .
+while the example above shows the clustered approach in a positive light , in reality , it is not that obvious that it indeed is a better option compared to searching for people using keyword-based search supported by current search engines .
+intuitively , if clusters identified by the search engine corresponded to a single person , then the clustered- based approach would be a good choice .
+on the other hand , if clusters contained errors ( multiple people merged into the same cluster , or alternatively , pages of the same person spread over multiple clusters ) , the advantages of a cluster- based approach are not obvious .
+for instance , if the web pages were randomly assigned to clusters , the cluster-based approach could be worse compared to the state of the art .
+the key issue is the quality of clustering algorithms in disambiguating different web pages of the namesake .
+in this paper , we make the following contributions .
+first , we develop a novel algorithm for disambiguating among people that have the same name .
+our algorithm is based on extracting significant entities such as the names of other persons , organizations , and locations on each web page , forming relationships between the person associated with the web page and the entities extracted , and then analyzing the relationships along with features such as tf / idf , as well as other useful content including hyperlink information to disambiguate the pages .
+we then design a cluster-based people search approach based on the disambiguation algorithm .
+we conduct a detailed experimental study to 1 ) determine the effectiveness of the disambiguation algorithm and 2 ) compare traditional people search supported by current search engines with the clustered entity search built on top of the disambiguation algorithm .
+our results show that clustered person search offers significant advantages .
+the main contributions of this paper are the following : a new approach for web people search that shows high-quality clustering results ( sections 2 , 3 , and 4 ) . a thorough empirical evaluation of the proposed solution ( section 7 ) , and a new study of the impact on search of the proposed approach ( section 7.3 ) .
+in the subsequent sections , we describe the proposed approach in more detail .
+we start by presenting an overview of the overall approach in section 2 .
+overview of the approach .
+in this section , we provide an overview of all the necessary algorithms and components for implementing the web people search system .
+we take the middleware-based approach to develop our algorithms .
+in the proposed approach , the processing of a user query consists of the following steps : user input .
+a user submits a query to the middle- ware via a specialized web-based interface .
+web page retrieval .
+the middleware queries a search engine with this query via the search engine api and retrieves a fixed number ( top k ) of relevant web pages .
+preprocessing .
+the retrieved web pages are preprocessed : tf / idf .
+preprocessing steps for computing tf / idf are carried out .
+they include stemming , stop word removal , noun phrase identification , inverted index computations , etc .
+extraction .
+named entities ( nes ) and web- related information is extracted from the web pages .
+graph creation .
+the entity-relationship ( er ) graph is generated based on data extracted on the preprocessing step ( section 3 ) .
+clustering .
+the clustering algorithm takes the graph , tf / idf values , and model parameters and disambiguates the set of ( k ) web pages ( section 4 ) .
+the result is a set of clusters of these pages with the aim being to cluster web pages based on association to real person .
+cluster processing .
+each resulting cluster is then processed as follows ( section 5 ) : sketches .
+a set of keywords that represent the web pages within a cluster is computed for each cluster .
+the goal is that the user should be able to find the person of interest by looking at the sketch .
+cluster ranking .
+all clusters are ranked by a chosen criterion to be presented in a certain order to the user .
+web page ranking .
+once the user hones in on a particular cluster , the web pages in this cluster are presented in a certain order , computed on this step .
+visualization of results .
+the results are presented to the user in the form of clusters ( and their sketches ) corresponding to namesakes and that can be explored further .
+the following sections will elaborate all of these steps in detail .
+generating a graph representation .
+the core of our approach is based on analyzing entities , relationships , and features ( instantiated attributes of entities ) present in the data set .
+for example , the word distribution inside a web page / document is frequently utilized as a topic feature of that web page / document in the literature .
+a web page topic can be captured using the tf / idf methodology [ 5 ] or by other techniques [ 8 ] , [ 39 ] .
+our goal is to exploit entities and relationships for disambiguation .
+however , unlike the problem settings of many disambiguation methods , which work off a normalized database , e.g. , [ 2 ] , [ 12 ] , [ 15 ] , [ 16 ] , and [ 20 ] , in our problem setting , we do not have the entities and relationships associated with each web page already available for use .
+rather , such entities and relationships need to be extracted off the web pages , which we do using information extraction ( ie ) software .
+in addition to nes , we also extract hyperlinks and e-mail addresses from the web pages , see fig . 1 .
+the abstract representation we wish to construct is a graph where the nodes correspond to the different web pages and entities , and the edges correspond to the relationships between the web pages and entities or among entities .
+the graph creation algorithm is illustrated in fig . 2 .
+when an ne is extracted , a node is created for that ne to represent all nes with the same name .
+for example , a person john smith might be extracted from two different web pages .
+a single node will be created for john smith , regardless whether the two pages refer to the same person or to two different people .
+the node represents the group of persons that share the same name .
+the same holds for locations and organizations .
+a node is also created for each of the ( top k ) web pages .
+a relationship edge is created between a node representing a web page and a node corresponding to each ne extracted from that web page .
+the relationship edges are typed .
+a relationship edge between a web page ( node ) and a person ( node ) will have a type distinct from a relationship edge between a web page ( node ) and an organization ( node ) or a location ( node ) .
+any hyperlinks and e-mail addresses extracted from the web page are handled in an analogous fashion , that is , with nodes being created to correspond to these hyperlinks and e-mail addresses and edges corresponding to the relationship with the page they are extracted from , see fig . 3 .
+at the end of this process , we have a complete graph representation of the information that a clustering or disambiguation algorithm can now work with .
+the algorithm is now abstracted from any of the extraction details and can , in fact , self-tune itself to optimize , based on the nature of the graph .
+disambiguation algorithm .
+this section describes the algorithm for clustering web pages that is employed by the proposed solution .
+it takes as input the entity relationship graph described in section 3 .
+it then uses a correlation clustering ( cc ) algorithm to cluster the pages , as discussed in section 4.1 .
+the outcome is a set of clusters with each cluster corresponding to a person .
+sections 4.2 and 4.3 explain how to assign edge label , used by cc , with the help of a carefully designed similarity function .
+finally , sections 4.4 and 4.5 discuss how to calibrate this similarity function .
+correlation clustering .
+we group the nodes representing the web pages that belong to the same person by employing a cc algorithm [ 7 ] .
+cc has been applied in the past to group documents of the same topic and to other problems .
+it assumes that there is a similarity function s ( u ; v ) that for any objects ( e.g. , documents ) , u and v returns whether or not it believes that u and v are similar to each other .
+such a function is typically learned on the past data .
+the overall clustering problem is represented as a fully connected graph , where each object becomes a node in the graph .
+each ( u ; v ) edge is assigned a + ( similar ) or ( different ) label , according to the similarity function s ( u ; v ) .
+the goal is to find the partition of the graph into clusters that agrees the most with the assigned labels .
+an interesting property of cc is that , unlike many other types of clustering , it does not take k ( the number of the resulting clusters ) as its input parameter , whereas k is often difficult to determine beforehand .
+instead , cc determines k from the labeling itself .
+the goal of cc is formulated formally as either to maximize the agreement ( the number of positive edges inside the clusters plus the number of negative edges outside the clusters ) or to minimize the disagreement ( the number of negative edges inside the clusters plus the number of positive edges ) .
+if the + and labels are assigned perfectly by s ( u ; v ) , the right clustering can be trivially obtained by removing all the negative edges in the graph : the remaining connected components will represent the right clusters .
+cc is designed for the cases where s ( u ; v ) is not perfect and can mislabel some of the edges ( this case is of direct interest to us ) or when there is no notion of exact clusters ( e.g. , clusters are for document topics ) .
+for example , if the labeling is such that edges ( u ; v ) and ( v ; w ) are labeled + , but edge ( u ; w ) is labeled , there will not be a clustering with perfect agreement with the labeling .
+in general , the more accurate s ( u ; v ) in its labeling , the higher the quality of the overall clustering .
+the problem of cc is known to be np-hard and various approximation algorithms have been proposed in the literature .
+we do not propose any new cc algorithm per se , we instead focus on developing and learning a new accurate s ( u ; v ) function .
+connection strength .
+to define the similarity function s ( u ; v ) , we will need to use the notion of the connection strength c ( u ; v ) between two objects u and v , which is defined in this section .
+various disambiguation approaches have been developed for a variety of applications .
+these approaches can be classified along several facets .
+one of these facets is the type of information the approach is capable of analyzing .
+for example , to decide if two object descriptions ( or two tuples in a table ) corefer ( i.e. , refer to the same entity / object ) , the traditional approaches would analyze primarily object features [ 22 ] , [ 35 ] .
+another example are relational approaches , which analyze dependencies among coreference decisions [ 32 ] , [ 38 ] .
+our proposed disambiguation algorithm is based on analyzing two types of information : object features and the er graph for the data set .
+in [ 17 ] , [ 27 ] , and [ 28 ] , it has been shown that complementing the traditional methodology of analyzing object features with analysis of the er graph can lead to the improved quality of disambiguation .
+the idea is that many real data sets are relational and thus can be viewed as a graph of entities , represented as nodes , interconnected via relationships , represented as edges .
+to decide whether two object descriptions corefer , the approach analyzes not only their features but also the paths that exist in the er graph between those two object descriptions .
+the motivation behind analyzing features of two objects u and v is based on the assumption that the similarity of features of u and v defines certain affinity / attraction between those objects f ( u ; v ) , and if this attraction is sufficiently large , then the objects are likely to be the same .
+the intuition behind analyzing paths is similar : the assumption is that each path between two objects carries in itself a certain degree of attraction .
+a path between u and v semantically captures ( perhaps complex and indirect ) interactions between them via intermediate entities .
+if the combined attraction of all these paths is sufficiently large , the objects are likely to be the same .
+an in-depth insight into the motivation for this methodology is elaborated in [ 27 ] .
+formally , the attraction between two nodes u and v via paths is measured using the connection strength measure c ( u ; v ) , which is defined as the sum of attractions contributed by each path : here , puv denotes the set of all l-short simple paths between u and v , and wp denotes the weight contributed by path p .
+a path is l-short if its length does not exceed l and is simple if it does not contain duplicate nodes .
+the weight path p contributes is derived from the type of that path , and thus , paths of the same type contributes the same weight .
+the sequence of node types and edge types determine the type of a path : two paths having the nodes of the same type connected via edges of the same type are considered to be of the same path type .
+the number of possible path types , for l-short simple path , is limited for each domain .
+let wk be the attraction associated with a path of type k .
+let puv consist of c1 paths of type 1 , c2 paths of type 2 , ... ; cn paths of type n .
+then , ( 1 ) can be equivalently written as .
+in the next section , we will discuss how the concept of connection strength c ( u ; v ) can help designing a better similarity function s ( u ; v ) .
+similarity function .
+our goal is to design a powerful similarity function s ( u ; v ) that would minimize mislabeling of the data .
+we will design a flexible function s ( u ; v ) , such that it will be able to automatically self-tune itself to the particular domain being processed .
+we construct our function s ( u ; v ) as a combination of the connection strength c ( u ; v ) and feature similarity f ( u ; v ) : the similarity function s ( u ; v ) labels data by comparing the s ( u ; v ) value against the threshold t , where -r is a nonnegative real number .
+namely , we use the 6-band ( clear margin ) approach , which labels each ( u ; v ) edge according to the following rules : that is , if the value of s ( u ; v ) is inside the b-band of t , then the algorithm is uncertain whether u and v are similar and reflects that by assigning the zero ( dont know ) label to the ( u ; v ) edge .
+it assigns the + 1 label to ( u ; v ) , when s ( u ; v ) exceeds the threshold by the clear positive b margin ; and it assigns the 1 label similarly .
+this labeling scheme allows the algorithm to avoid committing to + or decision , when it does not have enough evidence for that .
+tf / idf .
+the proposed solution employs the standard tf / idf scheme from the area of information retrieval to compute its feature-based similarity f ( u ; v ) [ 5 ] .
+first , the standard preprocessing steps are applied to all the documents , including the elimination of stop words , stemming , using only noun phrases for keywords , and deriving larger terms [ 5 ] .2 assume that the entire document corpus consists of k documents ( that is , top k web pages ) and contains n distinct terms t = ~ t1 ; t2 ; ... ; tn } .
+then , each document u can be characterized by vector u = ~ wu1 ; wu2 ; . . . ; wuni .
+here , wui is the weight assigned to term ti for document u .
+this weight is computed as wui = ( 2 + 2 xl nu ) log , n , where ni is the number of documents in the corpus that contain term ti , and nui is the number of occurrences of term ti in u .
+the similarity f ( u ; v ) between two documents u and v is computed using the cosine measure .
+training the similarity function .
+there are two interesting properties of linear program ( 6 ) .
+first , in many disambiguation techniques , and in clustering in general , it is often a nontrivial issue to set the threshold t , whereas in this case , t is simply learned from data .
+second , finding the exact value of the optimal b0 to get the best results , turned out to be not a critical issue , as wide range of values neighboring the optimal b0 will lead to similar results .
+the reason is that the constraints of linear program ( 6 ) do not include stand-alone constants except for b0 : they include ws , ss , ts , and bs , which are variables , and y ( a variable ) multiplied by various constants that correspond to the according tf / idf values .
+this creates the effect where all these variables scale up , if b0 is increased , and down , if it is decreased , tuning itself to b0 and the labeling .
+choosing negative weight .
+loosely speaking , with + / labeling , a cc algorithm will assign an entity u to a cluster if the number of positive edges between u and the other entities in the cluster outnumbers that of the negative edges .
+in other words , the number of positive edges is more than half ( i.e. , 50 percent ) .
+however , we observe that when cc is applied to a particular real-world domain , an entity might need to be assigned to a cluster for a different fraction of positive edges than 50 percent .
+for instance , if for a given domain , to keep an entity in a cluster , it is sufficient to have only 25 percent of positive edges , then by using the w + = + 1 weight for all positive edges and w = 13 weight for all negative edges will achieve the desired effect ( since 0 : 25 x 1 = 0 : 75 x 31 ) .
+one solution for choosing a good value for the weight of negative edges w is to learn it on past data .
+it is possible to design a better solution , based on the following observation .
+assume for now that we know the number of namesakes n in the top k web pages being processed by the algorithm .
+if n = 1 , then choosing w as small as possible , that is , w = 0 , is likely to produce the best result .
+this is because when w = 0 , there will be no negative weight for the cc to prevent merging , and all the pair connected via positive edges will be merged .
+similarly , if n = k , it is best to choose w = 1 .
+this would produce maximum negative evidence for pairs not to be merged .
+thus , instead of using a fixed value for w , it might be possible to pick a good value for w specifically for the top k web pages being processed , based on a function of n : w = w ( n ) .
+while n is not known , we can compute its estimated value n ^ by running the disambiguation algorithm with a fixed value of w .
+the algorithm would output certain number of clusters ^ n , which can be employed as an estimation of n .
+it should be noted that the overhead for this extracomputation is minimal : the paths once discovered need not be rediscovered second time .
+thus , the extra cost of such an estimation is equivalent to the cost of running pure cc algorithms on already labeled graph , which is less than a millisecond .
+the next question we need to address is how to choose thew ( ^ n ) function .
+a straightforward solution would be to try to fit a curve to data .
+while this approach succeeded for smaller web data sets , in practice , the following simple function has proven to work well across all the web data sets .
+the value of w ( ^ n ) is chosen to be zero when n ^ is less than a certain threshold , and it is chosen to be 1 when it is above this threshold .
+the value for this threshold itself is learned from the data .
+interpreting clustering results .
+given a set of web pages related to a particular name , the disambiguation approach above generates a set of clusters .
+we now describe how these clusters are used to build people search .
+recall that for people search , our goal is to first provide the user with a set of clusters based on association to real person .
+the task is now to 1 ) rank the clusters and 2 ) provide a summary description with each cluster .
+ranking and summarization are defined as follows : cluster rank .
+search engines ( e.g. , google ) return pages in order of relevance to the query based on the algorithm they use .
+for each cluster , we simply select the highest ranked page ( i.e. , the page with the numerically least order based on standard search-engine result ) and use that as the order of the cluster .
+the cluster orders now form the basis for cluster ranks .
+cluster sketch .
+we coalesce all pages in the cluster into a single page .
+then , after removing the stop words , we compute the tf / idf of the remaining words for the coalesced page .
+the set of terms above a certain threshold ( or top n terms ) is selected and used as a summary for the cluster .
+web page rank .
+when the user explores a particular cluster , we first display all pages in that cluster .
+these pages are displayed according to their original search engine order .
+we also take the remainder pages ( i.e. , pages in the top k not in the selected cluster ) and compute their affinity to the selected cluster .
+the remainder pages are then displayed in order of the affinity to the selected cluster .
+affinity is defined as follows : affinity to cluster .
+the affinity between a web page p and a cluster c is defined as the sum of the similarity values between the page p and each page v in the cluster c. we believe that the value of n can serve as an important factor for choosing values for other parameters of any web disambiguation technique , because web data can be quite diverse .
+thus , the described techniques for picking w based on n might be helpful in choosing other parameters in general as well .
+the clustering is not always perfect , and it may be the case that the pages for one real individual are actually spread across multiple clusters .
+however , since the remainder pages are displayed as well , the user has the option to get to these web pages too .
+also , it may be that based on the cluster summaries , the user may not be able to identify the cluster of pages associated with the real person she is looking for .
+we also provide the original list of ( unclustered ) pages from the standard search-engine , and in this case , the user can examine this list of pages .
+related work .
+disambiguation and entity resolution techniques are key to any web people search applications .
+in section 4.2 , we have already overviewed several existing entity resolution approaches , pointing out that they rely primarily on analyzing object features for making their coreference decisions .
+in this section , we first overview our past work and compare it with existing disambiguation work in section 6.1 .
+we then discuss existing web people search applications in section 6.2 .
+disambiguation .
+we have developed several disambiguation approaches in the past .
+the approaches in [ 27 ] , [ 28 ] , and [ 36 ] solve a disambiguation challenge known as fuzzy lookup .
+to address the web page clustering problem studied in this paper , one needs to address a different type of disambiguation known as fuzzy grouping .
+these disambiguation challenges are related but different , and we are unaware of any work that would solve the former using the latter .
+in lookup , the algorithm is given a list of objects and the goal is for each reference in the data set to identify which object from that list it refers to [ 27 ] and [ 28 ] .
+for grouping , no such list is available , and the goal is to simply group all of the references that corefer [ 10 ] , [ 13 ] .
+besides the differences in the types of problems , the solution in [ 27 ] , [ 28 ] , and [ 36 ] is also completely different : it reduces the disambiguation challenge into a global optimization problem , whereas in this paper , a clustering approach is employed .
+while the solution in [ 17 ] and [ 18 ] also addresses the entity resolution problem , the clustering algorithm proposed in this paper , however , is different : it is based on cc ( section 4.1 ) , and it employs a supervised learning approach for tuning to the data set being processed ( section 4.4 ) .
+most related techniques .
+the differences among our disambiguation methodology and most related existing work are multilevel ( see table 1 ) .
+critical to understanding the differences is the notion of the connection subgraph gluv for two nodes u and v , which is defined as the subgraph of the er graph formed by the nodes and edges of all l-short simple paths between u and v [ 21 ] .
+the differences can be summarized as : level 2 : data with respect to gluv .
+most of the existing techniques are different from our methodology as they do not analyze the same type of data : specifically , our methodology is based on analyzing gluv , and the majority of the existing techniques do not analyze gluv at all .
+for example , in the recent web people search task ( weps ) at semeval workshop [ 3 ] , the participated algorithms that achieved the top three places all exploit extended rich features such as nes or urls extracted from the web pages , while no relationships are analyzed as in our approach .
+then , there are some recent techniques that might be able to analyze portions of gluv if certain conditions are met , e.g. , see table 1 .
+let us take , for instance , the work of bhattacharya and getoor [ 12 ] , which summarizes the approaches covered in [ 10 ] , [ 11 ] , and [ 13 ] : name co-occurrence .
+the approach in [ 12 ] analyzes only co-occurrences of names of authors via publications for a publication data set .
+fig . 4 illustrates a sample gluv for the scenario where authors write publications and can be associated with some departments and organizations .
+when analyzing authors a1 and a4 , the approach in [ 10 ] , [ 11 ] , and [ 13 ] would only be interested in author a3 , which is a cooccurring author in publications p1 and p2 , which are connected to a1 and a4 , respectively .
+that is , bhattacharya and getoor [ 12 ] would be interested only in the subgraph shown in fig . 5 .
+our methodology instead analyzes the whole gluv .
+our approach can analyze all of the types of relationships and entities present in gluv .
+there is also recent work , e.g. [ 26 ] , [ 31 ] , and [ 33 ] , which builds on our work , but often still analyzes just portions of gl uv .
+for instance , holzer et al. [ 26 ] analyzes only the shortest path between u and v. the adaptive approach in [ 33 ] analyzes g2uv , see fig . 7 .
+another interesting solution [ 31 ] simply looks at people and connects them via are-related relationships , see fig . 6 .
+there , people can be related if for instance , their names cooccur on the same web page .
+the solution however can analyze only one type of the are-related relationship , whereas there can be different types of such relationships in a given domain , since people can be related for different reasons .
+level 3 : analysis of gluv .
+those existing research efforts that analyze gluv do it differently from our methodology .
+our methodology is based on analyzing paths in puv and building mathematical models for cu ; v ) , which are affinity-on randomwalk-based models .
+the existing work ( e.g. , [ 27 ] , [ 28 ] ) is often not path-centric and uses domain-specific or probabilistic ( e.g. , [ 13 ] ) techniques to analyze the direct neighbors .
+some techniques are based on just analyzing the shortest u-v path [ 26 ] .
+level 4 : way to use cu ; v ) .
+finally , once gluv is analyzed , disambiguation approaches have to use the results of this analysis in making their coreference decisions .
+the way we use it is also different .
+for instance , [ 10 ] and [ 11 ] employ agglomerative clustering .
+in our previous work [ 27 ] , [ 28 ] , the disambiguation problem is converted into an optimization problem , which is then solved iteratively .
+in this paper , a cc approach is employed ( section 4.1 ) , which utilizes supervised learning for tuning itself to the data set being processed ( section 4.1 ) .
+level 5 : domain independence .
+once our framework is provided with the er graph for a data set , it processes it the same way , regardless of the domain , that is , it is domain independent .
+some of the existing techniques are applicable to only certain types of domains or just one domain .
+for instance , the approach in [ 12 ] only applies to data sets where noisy references to person entities ( e.g. , author names ) are observed together ( e.g. , in publications ) , i.e. , domains where the co-occurrence property holds .
+wsd .
+natural language processing area studies related problems of word sense disambiguation and word sense discrimination [ 34 ] , [ 37 ] .
+the goal of the first problem is to determine the exact sense of an ambiguous word given a list of word senses .
+the task of the second is to determine , which instances of the ambiguous word can be clustered as sharing the same meaning .
+the research on wsd mostly focuses on how to match the contextual features of word with the knowledge of word senses .
+it is important to decide which information to include for the context features to best represent the ambiguous word .
+on the other hand , how to use the external knowledge sources and what knowledge to exploit is a fundamental problem to solve in wsd .
+many researchers have proposed various approaches , such as using lexical knowledge associated with a dictionary , building semantic network as is done by wordnet , etc .
+there are both supervised and unsupervised approaches for wsd problem , depending on whether or not there is a sense-tagged corpus available as training data set .
+for unsupervised approaches , a trend is to use iterative or recursive algorithms to sense-tag the words with a finite number of processing cycles .
+in each step , such algorithms would either remove irrelevant senses or tag some words by synthesizing the information from previous steps .
+for supervised approaches , both hidden models ( e.g. , em ) and explicit models ( e.g. , log linear model ) have been used , depending on whether the features are directly associated with the word sense in the training data .
+if we view the ambiguous word as a reference and the word sense as an entity , then the two instances of wsd problem are similar to the lookup and grouping instances of entity resolution / weps .
+because of this similarity , the proposed approaches are frequently similar at a high level .
+there are some lower level differences among the wsd and weps problems .
+for instance , for wsd , we can often assume that there is a dictionary of all word senses ( perhaps imperfect ) , which can be employed sometimes quite effectively .
+currently , such a complete dictionary is infeasible for weps.4 in addition , while a word typically has only a few semantic meanings , a reference to a person , e.g. , j. smith , can be much more uncertain .
+the different natures of domains also contribute to the differences of the wsd and weps problems and solutions .
+for example , the part of speech tag associated with a word can significantly help in disambiguating the word sense in wsd .
+on the other hand , the pos tag assigned to a reference play much less significant role in the case of weps .
+there are many other interesting related disambiguation techniques , and we could not mention all of them in this article .
+instead , we next describe the techniques and applications that deal directly with web search .
+web people search .
+there are some research efforts [ 1 ] , [ 4 ] , [ 8 ] , [ 14 ] , [ 40 ] , [ 41 ] that have explored the problem of entity disambiguation in the web setting .
+we empirically compared our approach to some of the state-of-the-art techniques in section 7 .
+web people search applications can be implemented in two different settings .
+one is a server-side setting , where the disambiguation mechanism is integrated into the search- engine directly .
+the other setting is a middleware approach , where we build people search capabilities on top of an existing search-engine such as google by wrapping the original engine .
+the middleware would take a user query , use the search engine api to retrieve top k web pages most relevant to the user query , and then cluster those web pages based on their associations to real people .
+the middleware approach is more common , as it is difficult to conduct realistic testing of the server-side approach due to the lack of direct access to the search engine internal data .
+in this paper , we also take the middleware-based approach to develop our algorithms .
+there are a few publicly available web search engines that offer related functionality in that web search results are returned in clusters .
+clusty ( http : / / www.clusty.com ) from vivisimo inc . , grokker ( http : / / www.grokker.com ) , and kartoo ( http : / / www.kartoo.com ) are search engines that return clustered results .
+however , the clusters are determined based on the intersection of broad topics ( for instance , research related pages could form one cluster and family pages could form another cluster ) or page source ; also , the clustering does not take into account the fact that multiple persons can have the same name .
+for all of these engines , clustering is done based on the entire web page content or based on the title and abstract from a standard search-engine result .
+zoominfo ( http : / / www.zoominfo.com ) search engine is an example of person search on the web .
+this search engine is similar to the one proposed in this paper .
+it also extracts the named entities and after that applies some machine learning and data mining algorithms to identify different people on the web .
+but , this system has a high cost and low scalability because the person information in the systems is collected primarily manually .
+among research efforts , such as [ 1 ] , [ 4 ] , [ 8 ] , [ 11 ] , [ 14 ] , [ 40 ] , and [ 41 ] , the approach in [ 24 ] is somewhat similar to our approach in that there is an exploitation of relationships for disambiguation ; however , the assembly of relationships and approach to exploiting such relationships are quite different as we now explain .
+the approach in [ 24 ] starts with constructing a sketch of each web page ( representative of a person with the name ) , which is essentially a set of attribute-value pairs for common distinguishing attributes of a person such as his affiliation , job title , etc .
+to construct the sketch , however , a variety of existing data sources ( such as dblp ) and some preconstructed specialized knowledge bases ( such as tap ) are used .
+this approach is thus restricted to person searches , where the persons are famous or prominent ( famous enough for us to have compiled information about them in advance ) , whereas our approach does not rely on any such pre- compiled knowledge and thus will scale to person search for any person on the web .
+even in the case where precompiled knowledge exists , the sketch comparison approach in [ 24 ] is limited since it relies on name co- occurrence , see table 1 .
+the approach in [ 8 ] is based on exploiting the link structure of pages on the web , with the hypotheses that web pages belonging to the same real person are more likely to be linked together .
+three algorithms are presented for disambiguation , the first is just exploiting the link structure of web pages , the second algorithm is based on word similarities between documents and does clustering using agglomerative / conglomerative double clustering ( a / dc ) , and the third approach combines link analysis with a / dc clustering .
+experimental results .
+in this section , we empirically evaluate the proposed approach .
+first , in section 7.1 , we describe the experimental setup .
+next , section 7.2 covers experiments that evaluate the overall disambiguation quality of various algorithms .
+then , section 7.3 studies the impact of the new cluster-based interface on web search .
+finally , section 7.4 concludes the experimental evaluation with a study of the efficiency of the approach .
+specifically , it shows that the overall query response time is largely determined by the time needed to preprocess the web pages and that the clustering time itself is just a small fraction of the response time .
+experimental setup .
+data sets .
+we conduct experiments on several real data sets for disambiguation of people on the web .
+each data set has been created by querying the web using the google or yahoo ! search engine with a number of different queries .
+a query is either a person name or a person name along with context keywords .
+the top 100 returned web pages of the web search were gathered for each person .
+to get the ground truth for these data sets , the pages for each person name have then been assigned to distinct real persons by manual examination .
+the three data sets that we have at our disposal are the following : www 2005 data set .
+data set used by ron bekkerman and andrew mccallum in www 2005 [ 8 ] .
+it contains web pages for 12 different people names .
+weps data set .
+data set used in weps at the semeval workshop [ 3 ] .
+the original weps data consist of the trial , training , and test portions .
+the weps trial portion contains web pages for nine person names , and it is the same data set used by artiles et al. in [ 4 ] .
+the weps training consists of web pages for 49 person names : seven from wikipedia , 10 from ecdl , and 32 from the us census .
+the weps test part consists of 30 person names : 10 from wikipedia , 10 from acl06 , and 10 from us census .
+context data set .
+this data set is generated by us , by issuing nine queries to google , each in the form of a person name along with context keywords .
+from the pages of the data sets , we constructed the graph to be analyzed , by extracting entities and creating the relationships as described in section 2 .
+we used the gate [ 19 ] system for the extraction of nes from the web pages in the data set .
+we used the system as-is , i.e. , without providing any additional training , rules , or data .
+the extraction of entities , while not perfect , is of reasonably high accuracy .
+we also employed some standard word stemming and fuzzy matching ( consolidating us and united states , etc . ) over the extracted entities as a cleaning step .
+to train the free parameters of our algorithm , we apply leave-one-out cross validation on smaller data sets , including www 2005 , weps trial , and context data sets .
+for the full weps data set , before the ground truth for its weps test portion was released by the organizers of the workshop , we tested our approach on the weps training set by a twofold cross validation .
+that is , we randomly divided the data set into two halves , such that each of the subsets ( i.e. , wikipedia , ecdl , and us census ) are divided randomly into two halves .
+then , we trained on the first half and tested on the second , and vice versa , and then , we reported the average of the results .
+after the ground truth of the weps test portion became available , we trained our algorithm on the whole weps training portion and tested on the weps test portion .
+overall quality comparison .
+quality evaluation measures .
+following the suit of weps challenge [ 3 ] and artiles et al. [ 4 ] , we use the b-cubed [ 6 ] and fp measures for assessing the quality of disambiguation.5 b-cubed is considered to be a better measure than fp and many other measures , as it is more fine grained , and it does not have as many measuring anomalies ( counterintuitive measuring outcomes ) .
+thus , we will use b-cubed as our primary measure .
+a more detailed discussion of quality metrics is beyond the scope of this paper .
+baseline methods .
+in addition to comparing our algorithm to prominent solutions and the state of the art , we also use the agglomerative vector space clustering algorithm with tf / idf as our baseline method .
+this method is widely employed as a benchmark to evaluate similar tasks , e.g. , in [ 4 ] and [ 8 ] .
+the threshold parameter for this method is trained the same way as discussed above .
+statistical significance test .
+we used the standard 1-tailed paired t-test , with a = 0 : 05 to measure the statistical significance of our results when compared to other approaches .
+all of the results have been found to be significant , even for a as low as 0.001 for some experiments .
+the exception is the context experiment , where the results have been found to be significant for a = 0 : 07 .
+testing disambiguation quality .
+in this section , we present a set of experiments that study the quality aspect of the proposed approach .
+experiment 1 assesses the overall quality of the proposed approach .
+experiment 2 evaluates its quality on a disambiguation problem known as the group identification .
+experiment 3 studies the quality on queries with context .
+the last experiment in this section evaluates the quality of the algorithm for generating cluster sketches .
+experiment 1 ( disambiguation quality : overall ) .table 2 demonstrates the overall disambiguation quality results on www 2005 and weps data sets .
+here , s ( u ; v ) = c ( u ; v ) represents the approach where only the connection strength is employed for disambiguation .
+that approach relies only on the extracted nes and hyperlink information , and it does not use the tf / idf .
+method s ( u ; v ) = c ( u ; v ) + ~ f ( u ; v ) complements the previous method with the analysis of the features of web pages f ( u ; v ) , in the form of their tf / idf similarity .
+the last row in the table represent the approach that , in addition to the above , also picks w ~ according to the function w ~ ( ^ n ) of the predicted number of namesakes , as has been discussed in section 4.5 .
+the table shows that , as expected , each subsequent method achieves better results than the previous one .
+the proposed approach gains 7.8 percent improvement in terms of b-cubed measure over the baseline approach on the www 2005 data set , and it gets 6.1 percent improvement on weps training data set ( training is by twofold cross validation ) and 10.7 percent improvement on weps test data set ( training is on the whole weps training set ) .
+the improvement is statistically significant at the 0.05 level for the www 2005 data set and at a 0.001 level for the weps data sets .
+the improvement is also evident in terms of the fp measure .
+we also compare the results with the top runners in the weps challenge [ 3 ] .
+the first runner in the challenge reports 0.78 for fp and 0.70 for b-cubed measures .
+the proposed algorithm outperforms all of the weps challenge algorithms .
+some of the learning approaches in weps challenge have not shown as good results as anticipated .
+this has been attributed to the fact that 1 ) the weps training and test data sets are small , and 2 ) these data sets have different properties such as different average ambiguity .
+these factors might have resulted in overfitting for the models used .
+on the other hand , table 2 shows that the proposed learning model is stable on the weps data set .
+disambiguation quality per namesake .
+tables 4 and 5 demonstrate more detailed ( per queried name ) results for the experiments on the weps trial and the www 2005 data sets .
+the weps trial data set has also been used by artiles et al. in sigir 2005 [ 4 ] .
+from these tables , we can see that nine person names are queried in the weps trial data set and 12 names in the www 2005 data set .
+the # field shows the number of namesakes for a particular name in the corresponding 100 web pages .
+table 4 compares the results of the proposed approach with those in [ 4 ] .
+in [ 4 ] , the authors employ an enhanced version of agglomerative clustering based on tf / idf .
+the table shows that the proposed approach outperforms that in [ 4 ] by 9.5 percent in terms of the fp measure .6 the achieved improvement is statistically significant at the 0.05 level .
+table 5 demonstrates the results for a similar experiment but on the www 2005 data set .
+b-cubed .
+for each reference r ( where references are web pages in this case ) , b-cubed computes set sr of references that corefer with r according to the ground truth .
+the term corefer means refer to the same object .
+it also computes set ar of references that corefer with r according to the clustering produced by the algorithm .
+for reference r , it computes precisionr = iaj ~ and recallr = iarnsri isri .
+it then computes precision ( recall ) as the average precisionr ( recallr ) over all references .
+the improvement is achieved since the proposed disambiguation method is simply capable of analyzing more information , hidden in the data sets , and which [ 4 ] and [ 8 ] do not analyze .
+experiment 2 ( disambiguation quality : group identification ) .
+in [ 8 ] , the authors propose an unsupervised approach for group identification : a related-but-different problem to the one studied in this paper .
+in that problem , the algorithm is given n names of n people that are somehow related , e.g. , these names are found in somebodys address book .
+the task is to find the web pages related to the meant n people .
+we have modified our algorithm to apply it to that problem , as explained in the electronic appendix in more detail , which can be found on the computer society digital library at http : / / doi.ieeecomputersociety.org / 10.1109 / tkde.2008.78.
+that algorithm outperforms [ 8 ] by 11.8 percent of f-measure , as illustrated in table 3 .
+in this experiment , f-measure is computed the same way as in [ 8 ] .7 the field # w in table 3 is the number of the to-befound web pages related to the namesake of interest .
+the field # c is the number of web pages found correctly and the field # i is the number of pages found incorrectly in the resulting groups .
+we can see that the baseline algorithm also outperforms the algorithm proposed in [ 8 ] .
+the baseline algorithm utilizes only one free parameter , the threshold , which in our case is trained from data .
+the difference between the www 2005 algorithm and our new algorithm is statistically significant at the 0.05 level .
+the work in [ 9 ] is the latest follow-up to the work in [ 8 ] , we are aware of .
+in it , the authors have extracted all the hyperlinks contained in the 1,085 web pages of the www 2005 data set and crawled the web three hops from those links , retrieving additional web pages .
+this costly process has resulted in 669,847 web pages overall .
+by analyzing all these web pages , the authors achieved 83.9 percent f- measure .
+this is still 8.2 percent less than the results of the approach proposed in this paper , which achieves 92.1 percent , and it does not yet analyze all this additional data .
+experiment 3 ( disambiguation quality : queries with context ) .
+we generated a data set by querying google with a person name and context keyword ( s ) that is related to that person .
+we used nine different queries .
+the statistics for this data set is illustrated in table 6 .
+for instance , the table shows that for query q8 = tom mitchellpsychology , 98 meaningful pages were found ( the rest are empty pages ) , and there are 13 namesakes for tom mitchell in those pages .
+table 6 presents the disambiguation quality results for the proposed and baseline algorithms .
+the proposed approach outperforms the baseline by 6.3 percent of the b-cubed measure .
+the difference between the baseline and the new algorithm is significant at the 0.07 level .
+while the proposed algorithm factors in the same information used by the baseline , it ultimately makes its own decisions , which are largely driven by analyzing the connections .
+table 6 demonstrates that point : the results are worse than those of the baseline for the two cases , but they are better on the average .
+experiment 4 ( quality of generating cluster sketches ) .
+in section 2 , we have presented an algorithm for generating representative keywords to summarize each cluster .
+table 7 illustrates the output of that algorithm for the andrew mccallum query on the www 2005 data set .
+the keywords and phrases are shown in their stemmed versions .
+the table shows only the top-10 keywords for each cluster for the sake of clarity .
+each cluster has a different set of keywords .
+therefore , if the search is for umass professor andrew mccallum , his cluster can easily be identified with the terms like machine learning and artificial intelligence , as well as with the keywords like extract , model , and classification .
+impact on search .
+comparing the effectiveness of cluster-based people search to the traditional search is a complex task , as it implies too many unknowns : what the user is looking for exactly , which background / context information she knows and intends to use in her query , how the user will react on partially examined output in the returned results , and so on .
+to perform a quantitative comparison , we used the following methodology .
+quality on weps trial data set results for andrew mccallum query in the www 2005 data set values in brackets show the absolute improvement over that in [ 4 ] .
+quality on www 2005 data set .
+user observations .
+a user is interested in retrieving the web pages of a particular person .
+the user queries the search engine with the name of that person , e.g. , william cohen , and then scans through the top k pages in order to satisfy the objective of finding all the web pages of that person among the top k pages .
+in case of a traditional search interface , at each observation i , where i = 1 ; 2 ; ... ; k , the user looks at the sketch provided for the ith returned web page .
+we assume that by doing so , the user can decide whether the page is relevant to the person she was looking for or irrelevant .
+for the new interface , supported by a cluster-based people search , the user first looks at the people search interface .
+the user sequentially reads cluster sketches / descriptions , until on the mth observation the user find the cluster of interest .
+the user then clicks on that cluster , and the systems then shows the original set of k web pages returned by the search engine , except that the web pages are ordered differently .
+specifically , first are the set of pages s that our algorithm identified for that namesake , next are the pages in the order of their similarity to the pages in s. at each subsequent observation , the user examines the sketch for each page , as in the standard interface and decides relevant / irrelevant in a similar fashion .
+notice that in a cluster-based search , it is possible that none of the cluster definitions satisfies the user ( i.e. , matches the person she is interested in ) .
+in such a case , the user can retrieve the original k web pages returned by the search engine .
+notice that in practice , the user can make mistakes in deciding relevant / irrelevant based on sketches .
+thus , the reported quality results will be optimistic for both the new and standard search interfaces .
+measures .
+we compare the quality of the new and standard interface using precision , recall , and f-measure .
+on the ith observation , the precision shows the fraction of relevant pages among all the web pages examined so far .
+the recall on the ith observation shows the fraction of related web pages out of all the related pages discovered so far .
+notice that using the new interface the user starts examining the first web page only on the ( m + 1 ) th step , after locating the right cluster on the mth step .
+recall plots are useful in computing another metric : how many observations are needed to discover a certain fraction of relevant pages .
+in general , the fewer observations are needed in a given interface , the faster the user can find the related pages , and thus , the better is the interface .
+each figure in this section shows three curves : one for the standard interface and two for the new interface .
+the new interface knows the number of web pages isi in the cluster s the user chooses to explore .
+the user may opt to examine only those isi web pages suggested by the algorithm and then stop .
+this case is represented by new curve in the figure .
+optionally , the user might choose to continue exploring the rest of the web pages .
+the latter situation is represented with new optional curve .
+experiment 5 ( impact on search ) .
+this experiment consists of three parts .
+the first two parts study two common cases : 1 ) a search for a namesake whose web pages form the largest cluster , these web pages also tend to be first pages in search , and 2 ) a search for a regular cluster .
+the third part studies the overall performance averaged over all the namesakes in the data set .
+case 1 : first-dominant cluster .
+figs . 8 , 9 , and 10 plot the measures for andrew mccallum the umass professor .
+his pages tend to appear first in google , they form the first group , which is also the largest one .
+the recall figure shows that one needs to do 44 observations in the standard interface to discover half ( 50 percent ) of the pages ( 27 out of 54 ) of the umass professor , while in the new interface , one needs to do just 33 observations total .
+to discover 90 percent of the relevant pages , one needs to do 92 observations in the standard interface and only 55 in the new one .
+the general trend in the plots in this section is that the precision , recall , and f-measure for the new interface either dominate , or are comparable to , those of the standard interface .
+case 2 : regular cluster .
+figs . 11 , 12 , and 13 plot the same measures for andrew mccallum the customer support person .
+his cluster consists of three pages that appear more toward the end in google search .
+his group is one of the last groups .
+to get 50 percent of his cluster , one needs to do 51 observations in the standard interface and only 16 observations in the new interface .
+for 90 percent , it is 79 observations in for the standard interface and 17 observations for the new interface .
+case 3 : average .
+figs . 14 , 15 , and 16 plot the average of recall , precision , and f measures for search impact on the www 2005 data set by averaging over all the namesakes in this data set .
+it should be noted that some of the person names have many namesakes , e.g. , david israel has 45 namesakes , bill mark has 52 namesakes , etc .
+therefore , for some of the namesakes , both the standard and new interfaces would require first doing many observations to find even the first relevant web page .
+after averaging , this leads to small overall values for measures .
+figs . 14 , 15 , and 16 show that , even with the imperfect clustering , the curves for the new interface largely dominate those for the standard interface .
+the figures do not capture another advantage of the new interface : its ability to suggest when to stop the search , since the algorithm knows the number of elements in each cluster .
+impact on search with context .
+in general , it is not hard to imagine scenarios where a good choice of keywords would identify a person really well , so that all the returned top k web pages would belong to just one namesake .
+in that case , one can expect to see no difference between the new and the standard interface .
+but quite often , searches with context still return results that contain several namesakes , see , for example , table 6 .
+figs . 17 , 18 , 19 , 20 , 21 , and 22 plot the impact on search when context is used .
+in this case , the query is andrew mccallum music .
+the number of namesakes for that query is surprisingly large : 23 .
+the reason is that web pages often contain advertisements , e.g. , links to websites that sell music .
+figs . 17 , 18 , and 19 plot the impact results for the case where the user in his query has meant andrew mccallum the umass professor , who is interested in music .
+figs . 20 , 21 , and 22 plot the same for the case where the user meant andrew mccallum the dj / musician .
+in both cases , the new interface performs better than the standard one .
+the user finds the 90 percent of the documents related to dj / musician in 20 observations with the new interface , whereas it takes 90 observations with the standard interface .
+on the other hand , to find the 90 percent of the documents for the umass professor , the user should examine the 60 pages in the new interface ( 90 pages with the current interface ) .
+efficiency .
+experiment 6 ( efficiency ) .
+the overall approach first downloads and preprocesses pages before applying the actual clustering algorithm .
+that takes 3.82 seconds per web page mainly due to the fact that we use a third party ne extractor , gate , to extract nes , the speed of which we cannot control .8 however , the preprocessing cost disappears if the server-side approach is employed instead of the wrapper approach , since this preprocessing can be done offline beforehand .
+the clustering algorithm itself executes in 4.7 seconds on the average per queried name .
+conclusions and future work .
+in this paper , we only evaluated our core technique .
+we have attempted to answer the question of which maximum quality our approach can get if it uses only the information stored in the top-k web pages being processed .
+there are several interesting directions for future work .
+one of the most promising directions is to employ external data sources for disambiguation as well .
+this includes using ontologies , encyclopedias , and the web [ 30 ] .
+another direction is to use more advances extraction capabilities that would allow : 1 ) a better interpretation of extracted entities by taking into account the roles they play with respect to each other ( boss of somebody , student of somebody ) , 2 ) extraction of relationships , as currently , the algorithm relies primarily on co-occurrence relationships only .
+we plan to develop disambiguation algorithms for other people search problems that have different settings .
+finally , we would like to work on algorithms for a generic entity search , where entities are not limited to people .

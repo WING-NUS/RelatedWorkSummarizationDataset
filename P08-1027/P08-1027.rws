@@ -1,0 +1,97 @@
+Numerous methods have been devised for classification
+of semantic relationships, among which those
+holding between nominals constitute a prominent
+category. Major differences between these methods
+include available resources, degree of preprocessing,
+features used, classification algorithm and the nature
+of training/test data.
+Available Resources.
+Many relation classification algorithms utilize
+WordNet. Among the 15 systems presented by
+the 14 SemEval teams, some utilized the manually
+provided WordNet tags for the dataset pairs (e.g.,
+(Beamer et al., 2007)). In all cases, usage of WN
+tags improves the results significantly. Some other
+systems that avoided using the labels used WN as
+a supporting resource for their algorithms (Costello,2007; Nakov and Hearst, 2007; Kim and Baldwin, 2007). Only three avoided WN altogether (Hendrickx et al., 2007; Bedmar et al., 2007; Aramaki et al., 2006).
+Other resources used for relationship discovery
+includeWikipedia (Strube and Ponzetto, 2006), thesauri
+or synonym sets (Turney, 2005) and domainspecific
+semantic hierarchies like MeSH (Rosario and Hearst, 2001).
+While usage of these resources is beneficial in
+many cases, high quality word sense annotation is
+not easily available. Besides, lexical resources are
+not available for many languages, and their coverage
+is limited even for English when applied to some restricted
+domains. In this paper we do not use any
+manually annotated resources apart from the classification
+training set.
+Degree of Preprocessing.
+Many relationship classification methods utilize
+some language-dependent preprocessing, like deep
+or shallow parsing, part of speech tagging and named entity annotation (Pantel et al., 2004). While
+the obtained features were shown to improve classification
+performance, they tend to be language dependent
+and error-prone when working on unusual
+text domains and are also highly computationally intensive
+when processing large corpora. To make our
+approach as language independent and efficient as
+possible, we avoided using any such preprocessing
+techniques.
+Classification Features.
+A wide variety of features are used by different
+algorithms, ranging from simple bag-of-words frequencies
+to WordNet-based features (Moldovan et al., 2004). Several studies utilize syntactic features.
+Many other works manually develop a set of heuristic
+features devised with some specific relationship
+in mind, like a WordNet-based meronymy feature
+(Bedmar et al., 2007) or size-of feature (Aramaki et al., 2006). However, the most prominent feature
+type is based on lexico-syntactic patterns in which
+the related words co-appear.
+Since (Hearst, 1992), numerous works have used
+patterns for discovery and identification of instances
+of semantic relationships (e.g., (Girju et al., 2006; Snow et al., 2006; Banko et al, 2007)). (Rosenfeld and Feldman 2007) discover relationship instances
+by clustering entities appearing in similar contexts.
+Strategies were developed for discovery of multiple
+patterns for some specified lexical relationship
+(Pantel and Pennacchiotti, 2006) and for unsupervised
+pattern ranking (Turney, 2006). (Davidov et al. 2007) use pattern clusters to define general relationships,
+but these are specific to a given concept.
+No study so far has proposed a method to define, discover
+and represent general relationships present in
+an arbitrary corpus.
+In (Davidov and Rappoport, 2008) we present
+an approach to extract pattern clusters from an untagged
+corpus. Each such cluster represents some
+unspecified lexical relationship. In this paper, we
+use these pattern clusters as the (only) source of machine
+learning features for a nominal relationship
+classification problem. Unlike the majority of current
+studies, we avoid using any other features that
+require some language-specific information or are
+devised for specific relationship types.
+Classification Algorithm.
+Various learning algorithms have been used for relation
+classification. Common choices include variations
+of SVM (Girju et al., 2004; Nastase et al., 2006), decision trees and memory-based learners.
+Freely available tools like Weka (Witten and Frank, 1999) allow easy experimentation with common
+learning algorithms (Hendrickx et al., 2007). In this
+paper we did not focus on a single ML algorithm,
+letting algorithm selection be automatically based
+on cross-validation results on the training set, as in
+(Hendrickx et al., 2007) but using more algorithms
+and allowing a more flexible parameter choice.
+Training Data.
+As stated above, several categorization schemes for
+nominals have been proposed. (Nastase and Szpakowicz 2003) proposed a two-level hierarchy
+with 5 (30) classes at the top (bottom) levels3. This
+hierarchy and a corresponding dataset were used in
+(Turney, 2005; Turney, 2006) and (Nastase et al., 2006) for evaluation of their algorithms. (Moldovan et al. 2004) proposed a different scheme with 35
+classes. The most recent dataset has been developed
+for SemEval 07 Task 4 (Girju et al., 2007). This
+manually annotated dataset includes a representative
+rather than exhaustive list of 7 important nominal
+relationships. We have used this dataset, strictly following
+the evaluation protocol. This made it possible
+to meaningfully compare our method to state-ofthe-
+art methods for relation classification.

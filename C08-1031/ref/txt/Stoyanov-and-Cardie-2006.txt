@@ -1,0 +1,160 @@
+toward opinion summarization : linking the sources .
+abstract .
+we target the problem of linking source mentions that belong to the same entity ( source coreference resolution ) , which is needed for creating opinion summaries .
+in this paper we describe how source coreference resolution can be transformed into standard noun phrase coreference resolution , apply a state-of-the-art coreference resolution approach to the transformed data , and evaluate on an available corpus of manually annotated opinions .
+introduction .
+sentiment analysis is concerned with the extraction and representation of attitudes , evaluations , opinions , and sentiment from text .
+the area of sentiment analysis has been the subject of much recent research interest driven by two primary motivations .
+first , there is a desire to provide applications that can extract , represent , and allow the exploration of opinions in the commercial , government , and political domains .
+second , effective sentiment analysis might be used to enhance and improve existing nlp applications such as information extraction , question answering , summarization , and clustering ( e.g.
+riloff et al. ( 2005 ) , stoyanov et al. ( 2005 ) ) .
+several research efforts ( e.g.
+riloff and wiebe ( 2003 ) , bethard et al. ( 2004 ) , wilson et al. ( 2004 ) , yu and hatzivassiloglou ( 2003 ) , wiebe and riloff ( 2005 ) ) have shown that sentiment information can be extracted at the sentence , clause , or individual opinion expression level ( fine-grained opinion information ) .
+however , little has been done to develop methods for combining fine-grained opinion information to form a summary representation in which expressions of opinions from the same source / target1 are grouped together , multiple opinions from a source toward the same target are accumulated into an aggregated opinion , and cumulative statistics are computed for each source / target .
+a simple opinion summary2 is shown in figure 1 .
+being able to create opinion summaries is important both for stand-alone applications of sentiment analysis as well as for the potential uses of sentiment analysis as part of other nlp applications .
+in this work we address the dearth of approaches for summarizing opinion information .
+in particular , we focus on the problem of source coreference resolution , i.e. deciding which source mentions are associated with opinions that belong to the same real-world entity .
+in the example from figure 1 performing source coreference resolution amounts to determining that stanishev , he , and he refer to the same real-world entities .
+given the associated opinion expressions and their polarity , this source coreference information is the critical knowledge needed to produce the summary of figure 1 ( although the two target mentions , bulgaria and our country , would also need to be identified as coreferent ) .
+our work is concerned with fine-grained expressions of opinions and assumes that a system can rely on the results of effective opinion and source extractors such as those described in riloff and wiebe ( 2003 ) , bethard et al. ( 2004 ) , wiebe and riloff ( 2005 ) and choi et al. ( 2005 ) .
+presented with sources of opinions , we approach the problem of source coreference resolution as the closely related task of noun phrase coreference resolution .
+however , source coreference resolution differs from traditional noun phrase ( np ) coreference resolution in two important aspects discussed in section 4 .
+nevertheless , as a first attempt at source coreference resolution , we employ a state-of-the- art machine learning approach to np coreference resolution developed by ng and cardie ( 2002 ) .
+using a corpus of manually annotated opinions , we perform an extensive evaluation and obtain strong initial results for the task of source coreference resolution .
+related work .
+sentiment analysis has been a subject of much recent research .
+several efforts have attempted to automatically extract opinions , emotions , and sentiment from text .
+the problem of sentiment extraction at the document level ( sentiment classification ) has been tackled as a text categorization task in which the goal is to assign to a document either positive ( � thumbs up � ) or negative ( � thumbs down � ) polarity ( e.g.
+das and chen ( 2001 ) , pang et al. ( 2002 ) , turney ( 2002 ) , dave et al. ( 2003 ) , pang and lee ( 2004 ) ) .
+in contrast , the problem of fine-grained opinion extraction has concentrated on recognizing opinions at the sentence , clause , or individual opinion expression level .
+recent work has shown that systems can be trained to recognize opinions , their polarity , and their strength at a reasonable degree of accuracy ( e.g.
+dave et al. ( 2003 ) , riloff and wiebe ( 2003 ) , bethard et al. ( 2004 ) , pang and lee ( 2004 ) , wilson et al. ( 2004 ) , yu and hatzivassiloglou ( 2003 ) , wiebe and riloff ( 2005 ) ) .
+additionally , researchers have been able to effectively identify sources of opinions automatically ( bethard et al. , 2004 ; choi et al. , 2005 ; kim and hovy , 2005 ) .
+finally , liu et al. ( 2005 ) summarize automatically generated opinions about products and develop interface that allows the summaries to be vizualized .
+our work also draws on previous work in the area of coreference resolution , which is a relatively well studied nlp problem .
+coreference resolution is the problem of deciding what noun phrases in the text ( i.e. mentions ) refer to the same real-world entities ( i.e. are coreferent ) .
+generally , successful approaches have relied machine learning methods trained on a corpus of documents annotated with coreference information ( such as the muc and ace corpora ) .
+our approach to source coreference resolution is inspired by the state-of-the-art performance of the method of ng and cardie ( 2002 ) .
+data set .
+we begin our discussion by describing the data set that we use for development and evaluation .
+as noted previously , we desire methods that work with automatically identified opinions and sources .
+however , for the purpose of developing and evaluating our approaches we rely on a corpus of manually annotated opinions and sources .
+more precisely , we rely on the mpqa corpus ( wilson and wiebe , 2003 ) 3 , which contains 535 manually annotated documents .
+full details about the corpus and the process of corpus creation can be found in wilson and wiebe ( 2003 ) ; full details of the opinion annotation scheme can be found in wiebe et al. ( 2005 ) .
+for the purposes of the discussion in this paper , the following three points suffice .
+first , the corpus is suitable for the domains and genres that we target � all documents have occurred in the world press over an 11-month period , between june 2001 and may 2002 .
+therefore , the corpus is suitable for the political and government domains as well as a substantial part of the commercial domain .
+however , a fair portion of the commercial domain is concerned with opinion extraction from product reviews .
+work described in this paper does not target the genre of reviews , which appears to differ significantly from newspaper articles .
+second , all documents are manually annotated with phrase-level opinion information .
+the annotation scheme of wiebe et al. ( 2005 ) includes phrase level opinions , their sources , as well as other attributes , which are not utilized by our approach .
+additionally , the annotations contain information that allows coreference among source mentions to be recovered .
+finally , the mpqa corpus contains no coreference information for general nps ( which are not sources ) .
+this might present a problem for traditional coreference resolution approaches , as discussed throughout the paper .
+source coreference resolution .
+in this section we define the problem of source coreference resolution , describe its challenges , and provide an overview of our general approach .
+we define source coreference resolution as the problem of determining which mentions of opinion sources refer to the same real-world entity .
+source coreference resolution differs from traditional supervised np coreference resolution in two important aspects .
+first , sources of opinions do not exactly correspond to the automatic extractors � notion of noun phrases ( nps ) .
+second , due mainly to the time-consuming nature of coreference annotation , np coreference information is incomplete in our data set : np mentions that are not sources of opinion are not annotated with coreference information ( even when they are part of a chain that contains source nps ) 4 .
+in this paper we address the former problem via a heuristic method for mapping sources to nps and give statistics for the accuracy of the mapping process .
+we then apply state-of-the-art coreference resolution methods to the nps to which sources were mapped ( source noun phrases ) .
+the latter problem of developing methods that can work with incomplete supervisory information is addressed in a subsequent effort ( stoyanov and cardie , 2006 ) .
+our general approach to source coreference resolution consists of the following steps : preprocessing : we preprocess the corpus by running nlp components such as a tokenizer , sentence split- ter , pos tagger , parser , and a base np finder .
+subsequently , we augment the set of the base nps found by the base np finder with the help of a named entity finder .
+the preprocessing is done following the np coreference work by ng and cardie ( 2002 ) .
+from the preprocessing step , we obtain an augmented set of nps in the text .
+source to noun phrase mapping : the problem of mapping ( manually or automatically annotated ) sources to nps is not trivial .
+we map sources to nps using a set of heuristics .
+coreference resolution : finally , we restrict our attention to the source nps identified in step 2 .
+we extract a feature vector for every pair of source nps from the preprocessed corpus and perform np coreference resolution .
+the next two sections give the details of steps 2 and 3 , respectively .
+we follow with the results of an evaluation of our approach in section 7 .
+mapping sources to noun phrases .
+this section describes our method for heuristically mapping sources to nps .
+in the context of source coreference resolution we consider a noun phrase to correspond to ( or match ) a source if the source and the np cover the exact same span of text .
+unfortunately , the annotated sources did not always match exactly a single automatically extracted np .
+we discovered the following problems : inexact span match .
+we discovered that often ( in 3777 out of the 11322 source mentions ) there is no noun phrase whose span matches exactly the source although there are noun phrases that overlap the source .
+in most cases this is due to the way spans of sources are marked in the data .
+for instance , in some cases determiners are not included in the source span ( e.g. � venezuelan people � vs. � the venezuelan people � ) .
+in other cases , differences are due to mistakes by the np extractor ( e.g. � muslims rulers � was not recognized , while � muslims � and � rulers � were recognized ) .
+yet in other cases , manually marked sources do not match the definition of a noun phrase .
+this case is described in more detail next .
+multiple np match .
+for 3461 of the 11322 source mentions more than one np overlaps the source .
+in roughly a quarter of these cases the multiple match is due to the presence of nested nps ( introduced by the np augmentation process introduced in section 3 ) .
+in other cases the multiple match is caused by source annotations that spanned multiple nps or included more than only nps inside its span .
+there are three general classes of such sources .
+first , some of the marked sources are appositives such as � the country � s new president , eduardo duhalde � .
+second , some sources contain an np followed by an attached prepositional phrase such as � latin american leaders at a summit meeting in costa rica � .
+third , some sources are conjunctions of nps such as � britain , canada and australia � .
+treatment of the latter is still a controversial problem in the context of coreference resolution as it is unclear whether conjunctions represent entities that are distinct from the conjuncts .
+for the purpose of our current work we do not attempt to address conjunctions .
+no matching np .
+finally , for 50 of the 11322 sources there are no overlapping nps .
+half of those ( 25 to be exact ) included marking of the word � who � such as in the sentence � carmona named new ministers , including two military of ~ cers who rebelled against chavez � .
+from the other 25 , 19 included markings of non-nps including question words , qualifiers , and adjectives such as � many � , � which � , and � domestically � .
+the remaining six are rare nps such as � lash � and � taskforce � that are mistakenly not recognized by the np extractor .
+counts for the different types of matches of sources to nps are shown in table 1 .
+we determine the match in the problematic cases using a set of heuristics : if a source matches any np exactly in span , match that source to the np ; do this even if multiple nps overlap the source � we are dealing with nested np � s .
+if no np matches matches exactly in span then : if a single np overlaps the source , then map the source to that np .
+most likely we are dealing with differently marked spans .
+if multiple nps overlap the source , determine whether the set of overlapping nps include any non-nested nps .
+if all overlapping nps are nested with each other , select the np that is closer in span to the source � we are still dealing with differently marked spans , but now we also have nested nps .
+if there is more than one set of nested nps , then most likely the source spans more than a single np .
+in this case we select the outermost of the last set of nested nps before any preposition in the span .
+we prefer : the outermost np because longer nps contain more information ; the last np because it is likely to be the head np of a phrase ( also handles the case of explanation followed by a proper noun ) ; np � s before preposition , because a preposition signals an explanatory prepositional phrase .
+if no np overlaps the source , select the last np before the source .
+in half of the cases we are dealing with the word who , which typically refers to the last preceding np .
+source coreference resolution as coreference resolution .
+once we isolate the source nps , we apply coreference resolution using the standard combination of classification and single-link clustering ( e.g.
+soon et al. ( 2001 ) and ng and cardie ( 2002 ) ) .
+we compute a vector of 57 features for every pair of source noun phrases from the preprocessed corpus .
+we use the training set of pairwise instances to train a classifier to predict whether a source np pair should be classified as positive ( the nps refer to the same entity ) or negative ( different entities ) .
+during testing , we use the trained classifier to predict whether a source np pair is positive and single-link clustering to group together sources that belong to the same entity .
+evaluation .
+for evaluation we randomly split the mpqa corpus into a training set consisting of 400 documents and a test set consisting of the remaining 135 documents .
+we use the same test set for all evaluations , although not all runs were trained on all 400 training documents as discussed below .
+the purpose of our evaluation is to create a strong baseline utilizing the best settings for the np coreference approach .
+as such , we try the two reportedly best machine learning techniques for pairwise classification � ripper ( for repeated incremental pruning to produce error reduction ) ( cohen , 1995 ) and support vector machines ( svms ) in the 5vmlight implementation ( joachims , 1998 ) .
+additionally , to exclude possible effects of parameter selection , we try many different parameter settings for the two classifiers .
+for ripper we vary the order of classes and the positive / negative weight ratio .
+for svms we vary c ( the margin tradeoff ) and the type and parameter of the kernel .
+in total , we use 24 different settings for ripper and 56 for 5vmlight .
+additionally , ng and cardie reported better results when the training data distribution is balanced through instance selection .
+for instance selection they adopt the method of soon et al. ( 2001 ) , which selects for each np the pairs with the n preceding coreferent instances and all intervening non-coreferent pairs .
+following ng and cardie ( 2002 ) , we perform instance selection with n = 1 ( soon1 in the results ) and n = 2 ( soon2 ) .
+with the three different instance selection algorithms ( soon 1 , soon2 , and none ) , the total number of settings is 72 for ripper and 168 for svma .
+however , not all svm runs completed in the time limit that we set � 200 min , so we selected half of the training set ( 200 documents ) at random and trained all classifiers on that set .
+we made sure to run to completion on the full training set those svm settings that produced the best results on the smaller training set .
+table 2 lists the results of the best performing runs .
+the upper half of the table gives the results for the runs that were trained on 400 documents and the lower half contains the results for the 200-document training set .
+we evaluated using the two widely used performance measures for coreference resolution � muc score ( vilain et al. , 1995 ) and b3 ( bagga and baldwin , 1998 ) .
+in addition , we used performance metrics ( precision , recall and f1 ) on the identification of the positive class .
+we compute the latter in two different ways � either by using the pairwise decisions as the classifiers outputs them or by performing the clustering of the source nps and then considering a pairwise decision to be positive if the two source nps belong to the same cluster .
+the second option ( marked actual in table 2 ) should be more representative of a good clustering , since coreference decisions are important only in the context of the clusters that they create .
+table 2 shows the performance of the best ripper and svm runs for each of the four evaluation metrics .
+the table also lists the rank for each run among the rest of the runs .
+discussion .
+the absolute b3 and muc scores for source coreference resolution are comparable to reported state-of-the-art results for np coreference resolutions .
+results should be interpreted cautiously , however , due to the different characteristics of our data .
+our documents contained 35.34 source nps per document on average , with coreference chains consisting of only 2.77 nps on average .
+the low average number of nps per chain may be producing artificially high score for the b3 and muc scores as the modest results on positive class identification indicate .
+from the relative performance of our runs , we observe the following trends .
+first , svms trained on the full training set outperform ripper trained on the same training set as well as the corresponding svms trained on the 200-document training set .
+the ripper runs exhibit the opposite behavior � ripper outperforms svms on the 200- document training set and ripper runs trained on the smaller data set exhibit better performance .
+overall , the single best performance is observed by ripper using the smaller training set .
+another interesting observation is that the b3 measure correlates well with good � actual � performance on positive class identification .
+in contrast , good muc performance is associated with runs that exhibit high recall on the positive class .
+this confirms some theoretical concerns that muc score does not reward algorithms that recognize well the absence of links .
+in addition , the results confirm our conjecture that � actual � precision and recall are more indicative of the true performance of coreference algorithms .
+conclusions .
+as a first step toward opinion summarization we targeted the problem of source coreference resolution .
+we showed that the problem can be tackled effectively as noun coreference resolution .
+one aspect of source coreference resolution that we do not address is the use of unsupervised information .
+the corpus contains many automatically identified non-source nps , which can be used to benefit source coreference resolution in two ways .
+first , a machine learning approach could use the unlabeled data to estimate the overall distributions .
+second , some links between sources may be realized through a non-source nps ( see the example of figure 1 ) .
+as a follow-up to the work described in this paper we developed a method that utilizes the unlabeled nps in the corpus using a structured rule learner ( stoyanov and cardie , 2006 ) .

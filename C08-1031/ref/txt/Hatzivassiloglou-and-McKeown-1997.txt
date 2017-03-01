@@ -1,0 +1,156 @@
+predicting the semantic orientation of adjectives .
+abstract .
+we identify and validate from a large corpus constraints from conjunctions on the positive or negative semantic orientation of the conjoined adjectives .
+a log-linear regression model uses these constraints to predict whether conjoined adjectives are of same or different orientations , achieving 82 % accuracy in this task when each conjunction is considered independently .
+combining the constraints across many adjectives , a clustering algorithm separates the adjectives into groups of different orientations , and finally , adjectives are labeled positive or negative .
+evaluations on real data and simulation experiments indicate high levels of performance : classification precision is more than 90 % for adjectives that occur in a modest number of conjunctions in the corpus .
+introduction .
+the semantic orientation or polarity of a word indicates the direction the word deviates from the norm for its semantic group or lexical field ( lehrer , 1974 ) .
+it also constrains the word 's usage in the language ( lyons , 1977 ) , due to its evaluative characteristics ( battistella , 1990 ) .
+for example , some nearly synonymous words differ in orientation because one implies desirability and the other does not ( e.g. , simple versus simplistic ) .
+in linguistic constructs such as conjunctions , which impose constraints on the semantic orientation of their arguments ( anscombre and ducrot , 1983 ; elhadad and mckeown , 1990 ) , the choices of arguments and connective are mutually constrained , as illustrated by : the tax proposal was simple and well-received simplistic but well-received * simplistic and well-received by the public .
+in addition , almost all antonyms have different semantic orientations . '
+if we know that two words relate to the same property ( for example , members of the same scalar group such as hot and cold ) but have different orientations , we can usually infer that they are antonyms .
+given that semantically similar words can be identified automatically on the basis of distributional properties and linguistic cues ( brown et al. , 1992 ; pereira et al. , 1993 ; hatzivassiloglou and mckeown , 1993 ) , identifying the semantic orientation of words would allow a system to further refine the retrieved semantic similarity relationships , extracting antonyms .
+unfortunately , dictionaries and similar sources ( theusari , wordnet ( miller et al. , 1990 ) ) do not include semantic orientation information.2 explicit links between antonyms and synonyms may also be lacking , particularly when they depend on the domain of discourse ; for example , the opposition bear � bull appears only in stock market reports , where the two words take specialized meanings .
+in this paper , we present and evaluate a method that automatically retrieves semantic orientation information using indirect information collected from a large corpus .
+because the method relies on the corpus , it extracts domain-dependent information and automatically adapts to a new domain when the corpus is changed .
+our method achieves high precision ( more than 90 % ) , and , while our focus to date has been on adjectives , it can be directly applied to other word classes .
+ultimately , our goal is to use this method in a larger system to automatically identify antonyms and distinguish near synonyms .
+overview of our approach .
+our approach relies on an analysis of textual corpora that correlates linguistic features , or indicators , with semantic orientation .
+while no direct indicators of positive or negative semantic orientation have been proposed ' , we demonstrate that conjunctions be tween adjectives provide indirect information about orientation .
+for most connectives , the conjoined adjectives usually are of the same orientation : compare fair and legitimate and corrupt and brutal which actually occur in our corpus , with * fair and brutal and * corrupt and legitimate ( or the other cross-products of the above conjunctions ) which are semantically anomalous .
+the situation is reversed for but , which usually connects two adjectives of different orientations .
+the system identifies and uses this indirect information in the following stages : all conjunctions of adjectives are extracted from the corpus along with relevant morphological relations .
+a log-linear regression model combines information from different conjunctions to determine if each two conjoined adjectives are of same or different orientation .
+the result is a graph with hypothesized same- or different-orientation links between adjectives .
+a clustering algorithm separates the adjectives into two subsets of different orientation .
+it places as many words of same orientation as possible into the same subset . 4 .
+the average frequencies in each group are compared and the group with the higher frequency is labeled as positive .
+in the following sections , we first present the set of adjectives used for training and evaluation .
+we next validate our hypothesis that conjunctions constrain the orientation of conjoined adjectives and then describe the remaining three steps of the algorithm .
+after presenting our results and evaluation , we discuss simulation experiments that show how our method performs under different conditions of sparseness of data .
+data collection .
+for our experiments , we use the 21 million word 1987 wall street journal corpus 4 , automatically annotated with part-of-speech tags using the parts tagger ( church , 1988 ) .
+in order to verify our hypothesis about the orientations of conjoined adjectives , and also to train and evaluate our subsequent algorithms , we need a set of adjectives with predetermined orientation labels .
+we constructed this set by taking all adjectives appearing in our corpus 20 times or more , then removing adjectives that have no orientation .
+these are typically members of groups of complementary , qualitative terms ( lyons , 1977 ) , e.g. , domestic or medical .
+we then assigned an orientation label ( either + or � ) to each adjective , using an evaluative approach .
+the criterion was whether the use of this adjective ascribes in general a positive or negative quality to the modified item , making it better or worse than a similar unmodified item .
+we were unable to reach a unique label out of context for several adjectives which we removed from consideration ; for example , cheap is positive if it is used as a synonym of in ~ expensive , but negative if it implies inferior quality .
+the operations of selecting adjectives and assigning labels were performed before testing our conjunction hypothesis or implementing any other algorithms , to avoid any influence on our labels .
+the final set contained 1,336 adjectives ( 657 positive and 679 negative terms ) .
+figure 1 shows randomly selected terms from this set .
+to further validate our set of labeled adjectives , we subsequently asked four people to independently label a randomly drawn sample of 500 of these adjectives .
+they agreed with us that the positive / negative concept applies to 89.15 % of these adjectives on average .
+for the adjectives where a positive or negative label was assigned by both us and the independent evaluators , the average agreement on the label was 97.38 % .
+the average inter-reviewer agreement on labeled adjectives was 96.97 % .
+these results are extremely significant statistically and compare favorably with validation studies performed for other tasks ( e.g. , sense disambiguation ) in the past .
+they show that positive and negative orientation are objective properties that can be reliably determined by humans .
+to extract conjunctions between adjectives , we used a two-level finite-state grammar , which covers complex modification patterns and noun-adjective apposition .
+running this parser on the 21 million word corpus , we collected 13,426 conjunctions of adjectives , expanding to a total of 15,431 conjoined adjective pairs .
+after morphological transformations , the remaining 15,048 conjunction tokens involve 9,296 distinct pairs of conjoined adjectives ( types ) .
+each conjunction token is classified by the parser according to three variables : the conjunction used ( and , or , but , either-or , or neither-nor ) , the type of modification ( attributive , predicative , appositive , resultative ) , and the number of the modified noun ( singular or plural ) .
+using the three attributes extracted by the parser , we constructed a cross-classification of the conjunctions in a three-way table .
+we counted types and tokens of each conjoined pair that had both members in the set of pre-selected labeled adjectives discussed above ; 2,748 ( 29.56 % ) of all conjoined pairs ( types ) and 4,024 ( 26.74 % ) of all conjunction occurrences ( tokens ) met this criterion .
+we augmented this table with marginal totals , arriving at 90 categories , each of which represents a triplet of attribute values , possibly with one or more " don 't care " elements .
+we then measured the percentage of conjunctions in each category with adjectives of same or different orientations .
+under the null hypothesis of same proportions of adjective pairs ( types ) of same and different orientation in a given category , the number of same- or different-orientation pairs follows a binomial distribution with p = 0.5 ( conover , 1980 ) .
+we show in table 1 the results for several representative categories , and summarize all results below : our conjunction hypothesis is validated overall and for almost all individual cases .
+the results are extremely significant statistically , except for a few cases where the sample is small .
+aside from the use of but with adjectives of different orientations , there are , rather surprisingly , small differences in the behavior of conjunctions between linguistic environments ( as represented by the three attributes ) .
+there are a few exceptions , e.g. , appositive and conjunctions modifying plural nouns are evenly split between same and different orientation .
+but in these exceptional cases the sample is very small , and the observed behavior may be due to chance .
+further analysis of different-orientation pairs in conjunctions other than but shows that conjoined antonyms are far more frequent than expected by chance , in agreement with ( justeson and katz , 1991 ) .
+prediction of link type .
+the analysis in the previous section suggests a baseline method for classifying links between adjectives : since 77.84 % of all links from conjunctions indicate same orientation , we can achieve this level of performance by always guessing that a link is of the same- orientation type .
+however , we can improve performance by noting that conjunctions using but exhibit the opposite pattern , usually involving adjectives of different orientations .
+thus , a revised but still simple rule predicts a different-orientation link if the two adjectives have been seen in a but conjunction , and a same-orientation link otherwise , assuming the two adjectives were seen connected by at least one conjunction .
+morphological relationships between adjectives also play a role .
+adjectives related in form ( e.g. , adequate � inadequate or thoughtful � thoughtless ) almost always have different semantic orientations .
+we implemented a morphological analyzer which matches adjectives related in this manner .
+this process is highly accurate , but unfortunately does not apply to many of the possible pairs : in our set of 1,336 labeled adjectives ( 891,780 possible pairs ) , 102 pairs are morphologically related ; among them , 99 are of different orientation , yielding 97.06 % accuracy for the morphology method .
+this information is orthogonal to that extracted from conjunctions : only 12 of the 102 morphologically related pairs have been observed in conjunctions in our corpus .
+thus , we add to the predictions made from conjunctions the different-orientation links suggested by morphological relationships .
+we improve the accuracy of classifying links derived from conjunctions as same or different orientation with a log-linear regression model ( santner and duffy , 1989 ) , exploiting the differences between the various conjunction categories .
+this is a generalized linear model ( mccullagh and nelder , 1989 ) with a linear predictor .
+we have 90 possible predictor variables , 42 of which are linearly independent .
+since using all the 42 independent predictors invites overfitting ( duda and hart , 1973 ) , we have investigated subsets of the full log-linear model for our data using the method of iterative stepwise refinement : starting with an initial model , variables are added or dropped if their contribution to the reduction or increase of the residual deviance compares favorably to the resulting loss or gain of residual degrees of freedom .
+this process led to the selection of nine predictor variables .
+we evaluated the three prediction models discussed above with and without the secondary source of morphology relations .
+for the log-linear model , we repeatedly partitioned our data into equally sized training and testing sets , estimated the weights on the training set , and scored the model 's performance on the testing set , averaging the resulting scores.5 table 2 shows the results of these analyses .
+although the log-linear model offers only a small improvement on pair classification than the simpler but prediction rule , it confers the important advantage of rating each prediction between 0 and 1 .
+we make extensive use of this in the next phase of our algorithm .
+finding groups of same-oriented adjectives .
+the third phase of our method assigns the adjectives into groups , placing adjectives of the same ( but unknown ) orientation in the same group .
+each pair of adjectives has an associated dissimilarity value between 0 and 1 ; adjectives connected by same orientation links have low dissimilarities , and conversely , different-orientation links result in high dissimilarities .
+adjective pairs with no connecting links are assigned the neutral dissimilarity 0.5 .
+the baseline and but methods make qualitative distinctions only ( i.e. , same-orientation , different- orientation , or unknown ) ; for them , we define dissimilarity for same-orientation links as one minus the probability that such a classification link is correct and dissimilarity for different-orientation links as the probability that such a classification is correct .
+these probabilities are estimated from separate training data .
+note that for these prediction models , dissimilarities are identical for similarly classified links .
+the log-linear model , on the other hand , offers an estimate of how good each prediction is , since it produces a value y between 0 and 1 .
+we construct the model so that 1 corresponds to same-orientation , and define dissimilarity as one minus the produced value .
+same and different-orientation links between adjectives form a graph .
+to partition the graph nodes into subsets of the same orientation , we employ an iterative optimization procedure on each connected component , based on the exchange method , a nonhierarchical clustering algorithm ( sp ath , 1985 ) .
+we define an objective function ( d scoring each possible partition p of the adjectives into two subgroups cl and c2 as where icz i stands for the cardinality of cluster i , and d ( x , y ) is the dissimilarity between adjectives x and y .
+we want to select the partition pmin that minimizes ( b , subject to the additional constraint that for each adjective x in a cluster c , erage frequency to contain the positive terms .
+this aggregation operation increases the precision of the labeling dramatically since indicators for many pairs of words are combined , even when some of the words are incorrectly assigned to their group .
+to find pmin , we first construct a random partition of the adjectives , then locate the adjective that will most reduce the objective function if it is moved from its current cluster .
+we move this adjective and proceed with the next iteration until no movements can improve the objective function .
+at the final iteration , the cluster assignment of any adjective that violates constraint ( 1 ) is changed .
+this is a steepest- descent hill-climbing method , and thus is guaranteed to converge .
+however , it will in general find a local minimum rather than the global one ; the problem is np-complete ( garey and johnson , 1979 ) .
+we can arbitrarily increase the probability of finding the globally optimal solution by repeatedly running the algorithm with different starting partitions .
+labeling the clusters as positive or negative .
+the clustering algorithm separates each component of the graph into two groups of adjectives , but does not actually label the adjectives as positive or negative .
+to accomplish that , we use a simple criterion that applies only to pairs or groups of words of opposite orientation .
+we have previously shown ( hatzivassiloglou and mckeown , 1995 ) that in oppositions of gradable adjectives where one member is semantically unmarked , the unmarked member is the most frequent one about 81 % of the time .
+this is relevant to our task because semantic markedness exhibits a strong correlation with orientation , the unmarked member almost always having positive orientation ( lehrer , 1985 ; battistella , 1990 ) .
+we compute the average frequency of the words in each group , expecting the group with higher avsince graph connectivity affects performance , we devised a method of selecting test sets that makes this dependence explicit .
+note that the graph density is largely a function of corpus size , and thus can be increased by adding more data .
+nevertheless , we report results on sparser test sets to show how our algorithm scales up .
+we separated our sets of adjectives a ( containing 1,336 adjectives ) and conjunction- and morphology- based links l ( containing 2,838 links ) into training and testing groups by selecting , for several values of the parameter a , the maximal subset of a , a , , which includes an adjective x if and only if there exist at least a links from l between x and other elements of a , .
+this operation in turn defines a subset of l , l , , which includes all links between members of a , .
+we train our log-linear model on l � l , ( excluding links between morphologically related adjectives ) , compute predictions and dissimilarities for the links in l , , and use these to classify and label the adjectives in a , . a must be at least 2 , since we need to leave some links for training .
+table 3 shows the results of these experiments for a = 2 to 5 .
+our method produced the correct classification between 78 % of the time on the sparsest test set up to more than 92 % of the time when a higher number of links was present .
+moreover , in all cases , the ratio of the two group frequencies correctly identified the positive subgroup .
+these results are extremely significant statistically ( p-value less than 10-16 ) when compared with the baseline method of randomly assigning orientations to adjectives , or the baseline method of always predicting the most frequent ( for types ) category ( 50.82 % of the adjectives in our collection are classified as negative ) .
+figure 2 shows some of the adjectives in set a4 and their classifications .
+graph connectivity and performance .
+a strong point of our method is that decisions on individual words are aggregated to provide decisions on how to group words into a class and whether to label the class as positive or negative .
+thus , the overall result can be much more accurate than the individual indicators .
+to verify this , we ran a series of simulation experiments .
+each experiment measures how our algorithm performs for a given level of precision p for identifying links and a given average number of links k for each word .
+the goal is to show that even when p is low , given enough data ( i.e. , high k ) , we can achieve high performance for the grouping .
+as we noted earlier , the corpus data is eventually represented in our system as a graph , with the nodes corresponding to adjectives and the links to predictions about whether the two connected adjectives have the same or different orientation .
+thus the parameter p in the simulation experiments measures how well we are able to predict each link independently of the others , and the parameter k measures the number of distinct adjectives each adjective appears with in conjunctions .
+p therefore directly represents the precision of the link classification algorithm , while k indirectly represents the corpus size .
+to measure the effect of p and k ( which are reflected in the graph topology ) , we need to carry out a series of experiments where we systematically vary their values .
+for example , as k ( or the amount of data ) increases for a given level of precision p for individual links , we want to measure how this affects overall accuracy of the resulting groups of nodes .
+thus , we need to construct a series of data sets , or graphs , which represent different scenarios corresponding to a given combination of values of p and k .
+to do this , we construct a random graph by randomly assigning 50 nodes to the two possible orientations .
+because we don 't have frequency and morphology information on these abstract nodes , we cannot predict whether two nodes are of the same or different orientation .
+rather , we randomly assign links between nodes so that , on average , each node participates in k links and 100 x p % of all links connect nodes of the same orientation .
+then we consider these links as identified by the link prediction algorithm as connecting two nodes with the same orientation ( so that 100 x p % of these predictions will be correct ) .
+this is equivalent to the baseline link classification method , and provides a lower bound on the performance of the algorithm actually used in our system ( section 5 ) .
+because of the lack of actual measurements such as frequency on these abstract nodes , we also de- couple the partitioning and labeling components of our system and score the partition found under the best matching conditions for the actual labels .
+thus the simulation measures only how well the system separates positive from negative adjectives , not how well it determines which is which .
+however , in all the experiments performed on real corpus data ( section 8 ) , the system correctly found the labels of the groups ; any misclassifications came from misplacing an adjective in the wrong group .
+the whole procedure of constructing the random graph and finding and scoring the groups is repeated 200 times for any given combination of p and k , and the results are averaged , thus avoiding accidentally evaluating our system on a graph that is not truly representative of graphs with the given p and k .
+we observe ( figure 3 ) that even for relatively low p , our ability to correctly classify the nodes approaches very high levels with a modest number of links .
+for p = 0.8 , we need only about 7 links per adjective for classification performance over 90 % and only 12 links per adjective for performance over 99 % .6 the difference between low and high values of p is in the rate at which increasing data increases overall precision .
+these results are somewhat more optimistic than those obtained with real data ( section 8 ) , a difference which is probably due to the uniform distributional assumptions in the simulation .
+nevertheless , we expect the trends to be similar to the ones shown in figure 3 and the results of table 3 on real data support this expectation .
+conclusion and future work .
+we have proposed and verified from corpus data constraints on the semantic orientations of conjoined adjectives .
+we used these constraints to automatically construct a log-linear regression model , which , combined with supplementary morphology rules , predicts whether two conjoined adjectives are of same or different orientation with 82 % accuracy .
+we then classified several sets of adjectives according to the links inferred in this way and labeled them as positive or negative , obtaining 92 % accuracy on the classification task for reasonably dense graphs and 100 % accuracy on the labeling task .
+simulation experiments establish that very high levels of performance can be obtained with a modest number of links per word , even when the links themselves are not always correctly classified .
+as part of our clustering algorithm 's output , a " goodness-of-fit " measure for each word is computed , based on rousseeuw 's ( 1987 ) silhouettes .
+this measure ranks the words according to how well they fit in their group , and can thus be used as a quantitative measure of orientation , refining the binary positive � negative distinction .
+by restricting the labeling decisions to words with high values of this measure we can also increase the precision of our system , at the cost of sacrificing some coverage .
+we are currently combining the output of this system with a semantic group finding system so that we can automatically identify antonyms from the corpus , without access to any semantic descriptions .
+the learned semantic categorization of the adjectives can also be used in the reverse direction , to help in interpreting the conjunctions they participate .
+we will also extend our analyses to nouns and verbs .

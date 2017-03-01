@@ -1,0 +1,135 @@
+using verbs to characterize noun-noun relations .
+abstract .
+we present a novel , simple , unsupervised method for characterizing the semantic relations that hold between nouns in noun-noun compounds .
+the main idea is to discover predicates that make explicit the hidden relations between the nouns .
+this is accomplished by writing web search engine queries that restate the noun compound as a relative clause containing a wildcard character to be filled in with a verb .
+a comparison to results from the literature suggest this is a promising approach .
+introduction .
+an important characteristic of technical literature is the abundance of long noun compounds like bone marrow biopsy specimen and neck vein thrombosis .
+while eventually mastered by domain experts , their interpretation poses a significant challenge for automated analysis , e.g. , what is the relationship between bone marrow and biopsy ?
+between biopsy and specimen ?
+understanding relations between multiword expressions is important for many tasks , including question answering , textual entailment , machine translation , and information retrieval , among others .
+in this paper we focus on the problem of determining the semantic relation ( s ) that holds within two-word english noun compounds .
+we introduce a novel approach for this problem : use paraphrases posed against an enormous text collection as a way to determine which predicates , represented as verbs , best characterize the relationship between the nouns .
+most algorithms that perform semantic interpretation place heavy reliance on the appearance of verbs , since they are the predicates which act as the backbone of the assertion being made .
+noun compounds are terse elisions of the predicate ; their structure assumes that the reader knows enough about the constituent nouns and about the world at large to be able to infer what the relationship between the words is .
+our idea is to try to uncover the relationship between the noun pairs by , in essence , rewriting or paraphrasing the noun compound in such a way as to be able to determine the predicate ( s ) holding between the nouns .
+what is especially novel about this approach is paraphrasing noun compound semantics in terms of concrete verbs , rather than a fixed number of abstract predicates ( e.g. , have , make , use ) , relations ( e.g. , location , instrument , agent ) , or prepositions ( e.g. , of , for , in ) , as is traditional in the literature .
+this idea builds on earlier work which shows that the vast size of the text available on the web makes it likely that the same concept is stated in many different ways [ 1 , 2 ] .
+this information in turn can be used to solve syntactic ambiguity problems [ 3 , 4 ] .
+here we extend that idea by applying it to determining semantic relations .
+in our approach , we pose paraphrases for a given noun compound by rewriting it as a phrase that contains a wildcard where the verb would go .
+for example , we rewrite neck vein as " vein that * neck " , send this as a query to a web search engine , and then parse the resulting snippets to find the verbs that appear in the place of the wildcard .
+some of the most frequent verbs ( + prepositions ) found for neck vein are : emerge from , pass through , be found in , be terminated at , be in , flow in , run from , terminate in , descend in , come from , etc .
+a comparison to examples from the literature suggest this is a promising approach with a broad range of potential applications .
+in the remainder of this paper we first describe related work , then give details of the algorithm , present preliminary results as compared to other work in the literature , and discuss potential applications .
+related work .
+there is currently no consensus as to which set of relations should hold between nouns in a noun compound , but most existing approaches make use of a set of a small number of abstract relations , typically less than 50 .
+however , some researchers ( e.g. , downing [ 5 ] ) , have proposed that an unlimited number is needed ; in this paper we will hold a similar position .
+one of the most important theoretical linguistic models is that of levi [ 6 ] , which states that noun compounds are derived through two basic processes : predicate nominalization .
+according to levi , predicate nominalizations can be subjective or objective , depending on whether the subject or the object is retained , and the relation can be further classified as act , product , agent or patient , depending on the thematic role between the nominalized verb and the retained argument .
+predicate deletion , in turn , is limited to the following abstract predicates : five verbs ( cause , have , make , use and be ) and four prepositions ( in , for , from and about ) .
+for example , according to levi , night flight should be analyzed as in ( flight at night ) , and tear gas as cause ( gas that causes tears ) .
+a problem with this approach is that the predicates are too abstract , and can be ambiguous , e.g. , sand dune is both have and be .
+lauer [ 7 ] simplifies levis idea by redefining the semantic relation identification problem as one of predicting which among the 8 prepositions is most likely to be associated with the compound when rewritten : of , for , in , at , on , from , with and about .
+lapata and keller [ 1 ] improve on lauers results ( whose accuracy was 40 % ) by using his problem definition along with web statistics to estimate ( noun1 , prep , noun2 ) trigram frequencies , achieving 55.71 % accuracy .
+however , the preposition-oriented approach is problematic because the same preposition can indicate several different relations , and conversely , the same relation can be indicated by several different prepositions .
+for example , in , on , and at can all refer to both location and time .
+rosario and hearst [ 8 ] show that a discriminative classifier can work quite well at assigning relations from a pre-defined set if training data is supplied in a domain-specific setting ( 60 % accuracy , 18 classes ) .
+in later work , [ 9 ] provide a semi-supervised approach for characterizing the relation between two nouns in a bioscience noun-noun compound based on the semantic category each of the constituent nouns belongs to .
+although this descent of hierarchy approach achieved a precision of 90 % for finding the correct level of generalization , it does not assign names to the relations .
+girju et al. [ 10 ] apply both classic ( svm and decision trees ) and novel supervised models ( semantic scattering and iterative semantic specialization ) , using wordnet , word sense disambiguation , and a set of linguistic features .
+they test their system against both lauers 8 prepositional paraphrases and another set of 21 semantic relations , achieving up to 54 % accuracy on the latter .
+lapata [ 11 ] focuses on the disambiguation of nominalizations .
+using partial parsing , sophisticated smoothing and contextual information , she achieved 86.1 % accuracy ( baseline 61.5 % ) on the binary decision task of whether the modifier used to be the subject or the object of the nominalized verb ( the head ) .
+girju et al. [ 12 ] present an svm-based approach for the automatic classification of semantic relations in nominalized noun phrases ( where either the head or the modifier has been derived from a verb ) .
+their classification schema consists of 35 abstract semantic relations and has been also used by [ 13 ] for the semantic classification of noun phrases in general .
+turney and littman [ 14 ] characterize the relation between two words , x and y , as a vector whose coordinates correspond to web frequencies for 128 phrases like x for y , y for x , etc . , derived from a fixed set of 64 joining terms ( e.g. for , such as , not the , is * , etc . ) .
+these vectors are then used in a nearest-neighbor classifier , which maps them to a set of fixed relations .
+he achieved an f-value of 26.5 % ( random guessing 3.3 % ) with 30 relations , and 43.2 % ( random : 20 % ) with 5 relations .
+in work to appear , turney [ 15 ] presents an unsupervised algorithm for mining the web for patterns expressing implicit semantic relations .
+for example , cause ( e.g. cold virus ) is best characterized by y * causes x , and y in * early x is the best pattern for temporal ( e.g. morning frost ) .
+he obtains an f-value 50.2 % for 5 classes .
+this approach is the closest to our proposal .
+most other approaches to noun compound interpretation used hand-coded rules for at least one component of the algorithm [ 16 ] , or rules combined with lexical resources [ 17 ] ( 52 % accuracy , 13 relations ) . [ 18 ] make use of the identity of the two nouns and a number of syntactic clues in a nearest-neighbor classifier with 60-70 % accuracy .
+using verbs to characterize noun-noun relations .
+as we have described above , traditionally , the semantics of noun compounds have been represented as a set of abstract relations .
+this is problematic for several reasons .
+first , it is unclear which is the best set , and mapping between different sets has proven challenging [ 10 ] .
+second , being both abstract and limited , these sets only capture a small part of the semantics , often multiple meanings are possible , and sometimes none of the pre-defined meanings are suitable for a given example .
+finally , it is unclear how useful the proposed sets are , as researchers have often fallen short of demonstrating practical uses .
+we believe verbs have more expressive power and are better tailored for the task of semantic representation : there is an infinite number of them ( according to [ 5 ] ) and they can capture fine-grained aspects of the meaning .
+for example , while wrinkle treatment and migraine treatment express the same abstract relation treatment-for-disease , some fine-grained differences can be shown by specific verbs e.g. , smooth is possible in a verbal paraphrase of the former , but not of the latter .
+in many theories , verbs play an important role in the process of noun compound derivation , and they are frequently used to make the hidden relation overt .
+this allows not only for simple and effective extraction ( as we have seen above ) , but also for straightforward uses of the extracted verbs and paraphrases in nlp tasks like machine translation , information retrieval , etc .
+we further believe that a single verb often is not enough and that the meaning is approximated better by a collection of verbs .
+for example , while malaria mosquito can very well be characterized as cause ( or cause ) , further aspects of the meaning , can be captured by adding some additional verbs e.g. , carry , spread , transmit , be responsible for , be infected with , pass on , etc .
+in the next section , we describe our algorithm for discovering predicate relations that hold between nouns in a compound .
+method .
+in a typical noun-noun compound noun , noun2 , noun2 is the head and noun , is a modifier , attributing a property to it .
+our idea is to preserve the head- modifier relation by substituting the pre-modifier noun , with a suitable post- modifying relative phrase ; e.g. , tear gas can be transformed into gas that causes tears , gas that brings tears , gas which produces tears , etc .
+using all possible inflections of noun , and noun2 as found in wordnet [ 19 ] , we issue exact phrase google queries of the following type .
+text snippets ( summaries ) from the search results pages ( up to 1000 per query ) and we only keep the ones for which the sequence of words following nouns is non-empty and contains at least one non-noun , thus ensuring the snippet includes the entire noun phrase .
+to help pos tagging and shallow parsing of the snippet , we further substitute the part before noun2 by the fixed phrase we look at the " .
+we then perform pos tagging [ 20 ] and shallow parsing ' , and extract the verb ( and the following preposition , if any ) between that and nouns .
+we allow for adjectives and participles to fall between the verb and the preposition , but not nouns ; we ignore the modals , and the auxiliaries , but retain the passive be , and we make sure there is exactly one verb phrase ( thus disallowing complex paraphrases like gas that makes the eyes fill with tears " ) .
+finally , we convert the main verb to an infinitive using wordnet [ 19 ] .
+the proposed method is similar to previous paraphrase acquisition approaches which search for similar / fixed endpoints and collect the intervening material .
+lin and pantel [ 21 ] extract paraphrases from dependency tree paths whose ends contain similar sets of words by generalizing over these ends .
+for example , for x solves y ' they extract paraphrasing templates like y is resolved by x ' , x resolves y " , x finds a solution to y ' and x tries to solve y ' .
+the idea is extended by shinyama et al. [ 22 ] , who use named entities of matching semantic class as anchors , e.g. , location , organization , etc .
+however , the goal of these approaches is to create summarizing paraphrases , while we are interested in finding noun compound semantics .
+table 1 shows a subset of the verbs found using our extraction method for cancer treatment , migraine treatment , wrinkle treatment and herb treatment .
+we can see that herb treatment is very different from the other compounds and shares no features with them : it uses and contains herb , but does not treat it .
+further , while migraine and wrinkles cannot be cured , they can be reduced .
+migraines can also be prevented , and wrinkles can be smoothed .
+of course , these results are merely suggestive and should not be taken as ground truth , especially the absence of indicators .
+still they seem to capture interesting fine-grained semantic distinctions , which normally require deep knowledge of the semantics of the two nouns and / or about the world .
+evaluation .
+comparison with girju et al. , 2005 .
+in order to test this approach , we compared it against examples from the literature .
+in this preliminary evaluation , we manually determined if verbs accurately reflected each papers set of semantic relations .
+table 3 shows the results comparing against the examples of 21 relations that appear in [ 10 ] .
+in two cases , the most frequent verb is the copula , but the following most frequent verbs are appropriate semantic characterizations of the compound .
+in the case of malaria mosquito , one can argue that the cause relation , assigned by [ 10 ] is not really correct , in that the disease is only indirectly caused by the mosquitos , but rather is carried by them , and the proposed most frequent verbs carry and spread more accurately represent an agent relation .
+nevertheless , cause is the third most frequent verb , indicating that it is common to consider the indirect relation as causal .
+in the case of combustion gas , the most frequent verb support , while being a good paraphrase of the noun compound , is not directly applicable to the relation assigned by [ 10 ] as result , but the other verbs are .
+in all other cases shown , the most frequent verbs accurately capture the relation assigned by [ 10 ] .
+in some cases , less frequent verbs indicate other logical entailments from the noun combination .
+for the following examples , no meaningful verbs were found ( in most cases there appears not to be a meaningful predicate for the particular nouns paired , or a nominalization plays the role of the predicate ) : quality sound , crew investigation , image team , girl mouth , style performance , worker fatalities , and session day .
+comparison with barker and szpakowicz , 1998 .
+table 4 shows comparison to examples from [ 18 ] .
+due to space limitations , here we discuss the first 8 relations only .
+we also omitted charitable donation and overdue fine , as the modifier in these cases is an adjective , and composer arranger , because no results were found .
+we obtain very good results for agent and instrument , but other relations are problematic , probably because the assigned classifications are of varying quality : printer tray and film music are probably correctly assigned to container , but flood water and story idea are not ; entrance stairs ( destination ) could be equally well analyzed as located or source ; and exam anxiety ( cause ) probably refers to time .
+finally , although we find the verb be ranked third for player coach , the equatives pose a problem in general , as the copula is not very frequent in this form of paraphrase .
+comparison with rosario and hearst , 2002 .
+as we mentioned above , [ 9 ] characterize noun-noun compounds based on the semantic category , in the mesh lexical hierarchy , each of the constituent nouns belongs to .
+for example , all noun compounds in which the first noun is classified under the a01 sub-hierarchy2 ( body regions ) , and the second one falls into a07 ( cardiovascular system ) , are hypothesized to express the same relation .
+examples include mesentery artery , leg vein , finger capillary , etc .
+by contrast , for the category pair a01-m01 ( body regionspersons ) a distinction is needed between different kinds of persons and the algorithm needs to descend one level on the m01 side : m01.643 ( patients ) , m01.898 ( donors ) , m01.150 ( disabled persons ) .
+table 5 shows some results of our comparison to [ 9 ] .
+given a category pair ( e.g. , a01-a07 ) , we consider all of the noun-noun compounds whose elements are in the corresponding mesh sub-hierarchies , and we acquire a set of paraphrasing verbs + prepositions from the web for each of them .
+we then aggregate the results from all such word pairs in order to obtain a set of paraphrasing verbs for the target category pair .
+potential applications .
+the extracted verbs ( + prepositions ) have the potential to be useful for a number of important nlp tasks .
+for example , they may help in the process of noun compound translation [ 23 ] .
+they could be also directly integrated into a paraphrase-augmented machine translation system [ 24 ] , machine translation evaluation system [ 25 ] [ 26 ] , or summarization evaluation system [ 27 ] .
+assuming annotated training data , the verbs could be used as features in the prediction of abstract relations like time and location , as is done by [ 14 ] and [ 15 ] , who used the vector-space model and a nearest-neighbor classifier .
+these relations in turn could play an important role in other applications , as demonstrated by [ 28 ] , who achieved state-of-the-art results on the pascal recognizing textual entailment challenge .
+in information retrieval , the verbs could be used for index normalization [ 29 ] or query refinement , e.g. , when querying for migraine treatment , pages containing good paraphrasing verbs , like relieve or prevent , would be preferred .
+the verbs and prepositions , intervening between the two nouns could be also used to seed a web search for whole classes of nps [ 30 ] , such as diseases , drugs , etc .
+for example , after finding that prevent is a good paraphrase for migraine treatment , we can use the query " * which prevents migraines " to obtain different treatments / drugs for migraine , e.g. feverfew , topamax , natural treatment , magnesium , botox , glucosamine , etc .
+finally , the extracted verbs could be used for linguistic analysis .
+note the similarity between table 1 and table 2 .
+the latter shows a sample componential analysis , which represents words semantics in terms of primitives , called components or features , thus making explicit relations like hyponymy , incompatibility , etc . [ 3133 ] .
+table 1 shows a similar semantic representation for noun-noun compounds .
+while the classic componential analysis has been criticized for being inherently subjective , a new dynamic componential analysis would extract the components automatically from a large corpus in a principled manner .
+conclusions and future work .
+we have presented a simple unsupervised approach to noun compound interpretation in terms of predicates characterizing the hidden relation , which could be useful for many nlp tasks .
+a significant benefit of our approach is that it does not require knowledge of the meanings of constituent nouns in order to correctly assign relations .
+a potential drawback is that it will probably not work well for low-frequency words , so semantic class information will be needed for these cases .
+in future we plan to apply full parsing to reduce the errors caused by shallow parsing and pos errors .
+we will also assess the results against a larger collection of manually labeled relations , and have an independent evaluation of the appropriateness of the verbs for those relations .
+we also plan to combine this work with the structural ambiguity resolution techniques of [ 4 ] , and determine semantic relations among multi-word terms .
+finally , we want to test the approach on some of the above-mentioned nlp tasks .

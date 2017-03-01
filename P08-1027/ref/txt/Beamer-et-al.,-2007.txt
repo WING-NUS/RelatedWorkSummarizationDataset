@@ -1,0 +1,88 @@
+uiuc : a knowledge-rich approach to identifying semantic relations between nominals .
+abstract .
+this paper describes a supervised , knowledge-intensive approach to the automatic identification of semantic relations between nominals in english sentences .
+the system employs different sets of new and previously used lexical , syntactic , and semantic features extracted from various knowledge sources .
+at semeval 2007 the system achieved an f-measure of 72.4 % and an accuracy of 76.3 % .
+introduction .
+the semeval 2007 task on semantic relations between nominals is to identify the underlying semantic relation between two nouns in the context of a sentence .
+the dataset provided consists of a definition file and 140 training and about 70 test sentences for each of the seven relations considered : cause-effect , instrument -agency , product- producer , origin-entity , theme-tool , part-whole , and content-container .
+the task is defined as a binary classification problem .
+thus , given a pair of nouns and their sentential context , the classifier decides whether the nouns are linked by the target semantic relation .
+in each training and test example sentence , the nouns are identified and manually labeled with their corresponding wordnet 3.0 senses .
+moreover , each example is accompanied by the heuristic pattern ( query ) the annotators used to extract the sentence from the web and the position of the arguments in the relation .
+based on the information employed , systems can be classified in four types of classes : ( a ) systems that use neither the given wordnet synsets nor the queries , ( b ) systems that use only wordnet senses , ( c ) systems that use only the queries , and ( d ) systems that use both .
+in this paper we present a type-b system that relies on various sets of new and previously used linguistic features employed in a supervised learning model .
+classification of semantic relations .
+semantic relations between nominals can be encoded by different syntactic constructions .
+we extend here over previous work that has focused mainly on noun compounds and other noun phrases , and noun verb noun constructions .
+we selected a list of 18 lexico-syntactic and semantic features split here into three sets : feature set # 1 ( core features ) , feature set # 2 ( context features ) , and the feature set # 3 ( special features ) .
+table 1 shows all three sets of features along with their definitions ; a detailed description is presented next .
+for some features , we list previous works where they proved useful .
+while features f 1 f4 were selected from our previous experiments , all the other features are entirely the contribution of this research .
+argument position ( f1 ) indicates the position of the semantic arguments in the relation .
+this information is very valuable , since some relations have a particular argument arrangement depending on the lexico-syntactic construction in which they occur .
+for example , most of the noun compounds encoding stuff-object / part-whole relations have e1 as the part and e2 as the whole ( e.g. , silk dress ) .
+semantic specialization ( f2 ) is a binary feature representing the prediction of a semantic specialization learning model .
+the method consists of a set of iterative procedures of specialization of the training examples on the wordnet is-a hierarchy .
+thus , after all the initial noun noun pairs are mapped through generalization to entity entity pairs in wordnet , a set of necessary specialization iterations is applied until it finds a boundary that separates positive and negative examples .
+this boundary is tested on new examples for relation prediction .
+the nominalization features ( f3 , f4 ) indicate if the target noun is a nominalization and , if yes , of what type .
+we distinguish here between agential nouns , other nominalizations , and neither .
+the features were identified based on wordnet and nomlex-plus1 and were introduced to filter some of negative examples , such as car owner / theme .
+spatio temporal features ( f5 , f6 ) were also introduced to recognize some near miss examples , such as temporal and location relations .
+for instance , activation by summer ( near-miss for cause-effect ) and mouse in thefield ( near-miss for content- container ) .
+similarly , for theme-tool , a word acting as a theme should not indicate a period of time , as in < e1 > the appointment < / e1 > was for more than one < e2 > year < / e2 > .
+for this we used the information provided by wordnet and special classes generated from the works of ( herskovits , 1987 ) , ( linstromberg , 1997 ) , and ( tyler and evans , 2003 ) .
+feature set # 2 : context features .
+this set takes advantage of the sentence context to identify features at different linguistic levels .
+the grammatical role features ( f7 , f8 ) determine if e1 or e2 is the subject , direct object , or neither .
+this feature helps filter out some instances with poor context , such as noun compounds and identify some near-miss examples .
+for example , a restriction imposed by the definition of theme-tool indicates that in constructions such as y / tool is used for v-ing x / theme , neither x nor y can be the subject of the sentence , and hence theme-tool ( x , y ) would be false .
+this restriction is also captured by the nominalization feature in case x or y is an agential noun .
+pp attachment ( f9 ) is defined for np pp constructions , where the prepositional phrase containing the noun e2 attaches or not to the np ( containing e1 ) .
+the rationale is to identify negative instances where the pp attaches to any other word before np in the sentence .
+for example , eat < e1 > pizza < / e1 > with < e2 > a fork < / e2 > , where with a fork attaches to the verb to eat ( cf . ( charniak , 2000 ) ) .
+furthermore , we implemented and used two semantic role features which identify the semantic role of the phrase in a verb argument structure , phrase containing either e 1 ( f 10 ) or e2 ( f 11 ) .
+in particular , we focus on three semantic roles : time , location , manner .
+the feature is set to 1 if the target noun is part of a semantic role phrase and to 0 otherwise .
+the idea is to filter out near-miss examples , expecially for the instrument -agency relation .
+for this , we used assert , a semantic role labeler developed at the university of colorado at boulder2 which was queried through a web interface .
+inter-noun context sequence features ( f12 , f13 ) encode the sequence of lexical and part of speech information between the two target nouns .
+feature f14 is a weight feature on the values of f12 and f13 and indicates how similar a new sequence is to the already observed inter-noun context associated with the relation .
+if there is a direct match , then the weight is set to 1 .
+if the part-of-speech pattern of the new substring matches that of an already seen sub- string , then the weight is set to 0.5 .
+weights 0.25 and 0.125 are given to those sequences that overlap entirely or partially with patterns encoding other semantic relations in the same contingency set ( e.g. , semantic relations that share syntactic pattern sequences ) .
+the value of the feature is the summation of the weights thus obtained .
+the rationale is that the greater the weight , the more representative is the context sequence for that relation .
+feature set # 3 : special features .
+this set includes features that help identify specific information about some semantic relations .
+psychological feature was defined for the theme- tool relation and indicates if the target noun ( f15 , f16 ) belongs to a list of special concepts .
+this feature was obtained from the restrictions listed in the definition of theme-tool .
+in the example need for money , the noun need is a psychological feature , and thus the instance cannot encode a theme-tool relation .
+a list of synsets from wordnet subhierarchy of motivation and cognition constituted the psychological factors .
+this was augmented with preconditions such as foundation and requirement since they would not be allowed as tools for the theme .
+the instrument semantic role is used for the instrument -agency relation as a boolean feature ( f17 ) indicating whether the argument identified as instrument in the relation ( e.g. , e1 if instrumentagency ( e1 , e2 ) ) belongs to an instrument phrase as identified by a semantic role tool , such as assert .
+the syntactic attachment feature ( f18 ) is a feature that indicates whether the argument identified as instrument in the relation attaches to a verb or to a noun in the syntactically parsed sentence .
+learning model and experimental setting .
+for our experiments we chose libsvm , an open source svm package 3 .
+since some of our features are nominal , we followed the standard practice of representing a nominal feature with n discrete values as n binary features .
+we used the rbf kernel .
+we built a binary classifier for each of the seven relations .
+since the size of the task training data per relation is small , we expanded it with new examples from various sources .
+we added a new corpus of 3,000 sentences of news articles from the trec-9 text collection ( girju , 2003 ) encoding cause-effect ( 1,320 ) and product-producer ( 721 ) .
+another collection of 3,129 sentences from wall street journal ( moldovan et al. , 2004 ; girju et al. , 2004 ) was considered for part-whole ( 1,003 ) , origin-entity ( 167 ) , product-producer ( 112 ) , and theme-tool ( 91 ) .
+we also extracted 552 product-producer instances from extended wordnet4 ( noun entries and their gloss definition ) .
+moreover , for theme-tool and content- container we used special lists of constraints5 .
+besides the selectional restrictions imposed on the nouns by special features such as f15 and f16 ( psychological feature ) , we created lists of containers from various thesauri6 and identified selectional restrictions that differentiate between containers and locations relying on taxonomies of spatial entities discussed in detail in ( herskovits , 1987 ) and ( tyler and evans , 2003 ) .
+each instance in this text collection had the target nouns identified and annotated with wordnet senses .
+since the annotations used different word- net versions , senses were mapped to sense keys .
+experimental results .
+table 2 shows the performance of our system for each semantic relation .
+base-f indicates the baseline f-measure ( all true ) , while base -acc shows the baseline accuracy score ( majority ) .
+the average score of precision , recall , f-measure , and accuracy is macroaveraged over all seven relations .
+overall , all features contributed to the performance , with a different contribution per relation ( cf .
+table 2 ) .
+conclusions .
+this paper describes a method for the automatic identification of a set of seven semantic relations based on support vector machines ( svms ) .
+the approach benefits from an extended dataset on which binary classifiers were trained for each relation .
+the feature sets fed into the svms produced very good results .

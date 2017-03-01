@@ -1,0 +1,227 @@
+incorporating prior knowledge with weighted margin support vector machines .
+abstract .
+like many purely data-driven machine learning methods , support vector machine ( svm ) classifiers are learned exclusively from the evidence presented in the training dataset ; thus a larger training dataset is required for better performance .
+in some applications , there might be human knowledge available that , in principle , could compensate for the lack of data .
+in this paper , we propose a simple generalization of svm : weighted margin svm ( wmsvms ) that permits the incorporation of prior knowledge .
+we show that sequential minimal optimization can be used in training wmsvm .
+we discuss the issues of incorporating prior knowledge using this rather general formulation .
+the experimental results show that the proposed methods of incorporating prior knowledge is effective .
+introduction .
+support vector machines ( svm ) have been successfully applied in many real-world applications .
+however , little work [ 4 , 14 ] has been done to incorporate prior knowledge into svms .
+sch olkopf [ 14 ] showed that the prior knowledge can be incorporated with the appropriate kernel function , and fung [ 4 ] showed prior knowledge in the form of multiple polyhedral sets can be used with a reformulation of svm .
+in this paper , we describe a generalization of svm that allows for incorporating prior knowledge of any form , as long as it can be used to estimate the conditional in- class probabilities .
+the proposed weighted margin support vector machine ( wmsvm ) can generalize on imperfectly labeled training dataset because each pattern in the dataset associates not only with a category label but also a confidence value that varies from 0.0 to 1.0 .
+the confidence value measures the strength of the corresponding label .
+this paper provides the geometrical motivations for generalized wmsvm formulation , its primary and dual problem , and a modification of sequential minimum optimization ( smo ) training algorithm for wmsvm .
+we can then incorporate the prior human knowledge through generating the pseudo training dataset from an unlabeled dataset , using the estimation of conditional probability p ( y | x ) over the possible label values { -1 , + 1 } as the confidence value .
+in this paper we use text classification as a running example not only because empirical studies [ 7 , 18 ] suggest svm is well suited for the application and often produces better results , but also because the keyword based prior knowledge is easy to obtain [ 13 ] in the text domain .
+for example , it is intuitive that words like nba are indicative of sports category .
+therefore it is of interest to see whether the ability of incorporating fuzzy prior knowledge can offer further improvement over this already highly effective method .
+the rest of this paper is structured as follows .
+we introduce related work in section 2 .
+section 3 discusses the generalized wmsvm , its geometrical motivation , formulation , primary and dual optimization problem .
+section 4 briefly describes how to use the modified smo for wmsvm training .
+the general issues faced when combining the true training dataset and pseudo training dataset are analyzed in the section 5 .
+in section 6 , we present experimental results on a popular text categorization dataset .
+we conclude in section 7 with some discussion of potential use of wmsvms .
+related work .
+most machine learning methods are statistical based .
+they are usually considered as data-driven methods , since prediction models are generalized from some labeled training datasets .
+different learning methods usually use different hypothesis space , and thus can result in different performance on the same application .
+the common theme however is that an adequate number of labeled training examples is required to guarantee the performance of generalized model , and the more labeled training data the better the performance .
+however , labeling the data is usually time consuming and expensive and therefore having enough labeled training data is rare in many real-world applications .
+the lack of labeled data has been addressed in many recent studies [ 15 , 1 , 8 , 3 , 13 ] .
+to reduce the need for the labeled data , these studies are usually conducted on a learning problem that is slightly different from the standard settings .
+for example , while the training set is chosen to be a random sampling of instances , in active learning [ 15 ] , the learner can actively choose the training data .
+by always picking the most informative data points to be labeled , it is hoped that the learner s need for large quantities of labeled data can be reduced .
+this paper is , however , developed based on the following two approaches : learning with prior knowledge and transductive learning .
+in some applications , while labeled data can be limited , there may be human knowledge that might compensate for the lack of labeled data .
+schapiro et al. showed in [ 13 ] that logistic regression can be modified to allow the incorporation of prior human knowledge .
+note that although the training method is a boosting style algorithm , the modified logistic regression can also be trained by other methods such as gauss-seidel [ 5 ] .
+in their approach , rough prior human knowledge is represented as a prediction rule ^ that maps each instance x to an estimated conditional probability distribution ^ ( ylx ) over the possible label values 1 , + 1 .
+given this prior model and training data , they seek a logistic model ^ ( x ) that fits not only the labeled data but also the prior model .
+they measure the fit to the data by log conditional likelihood , the fit to the prior model by the relative entropy ( kullback-leibler divergence ) .
+while using the relative entropy to measure the fit to the prior model is a natural solution for the logistic model , it is not applicable to svm since the prediction model generalized by svm is discriminant in nature .
+transductive learning was first introduced in [ 16 ] .
+in [ 1 , 8 ] , transductive support vector machine was proposed and its application in text categorization was demonstrated .
+the difference between the standard svm and transductive svm is whether the unlabeled test set is used in the training stage .
+in particular , the position information of unlabeled test set is used by transductive svm to decide the decision hyperplane .
+transductive svm is depicted in figure 1 .
+positive / negative examples are marked as + / - , test examples as circles .
+the dashed line is the solution of the standard svm .
+the solid line shows the transductive classification .
+the problem of transductive svm is that its training is much more difficult .
+for example , integer programming was used in [ 1 ] , and an iterative method with one svm training on each step was used in [ 8 ] .
+although the exact time complexity analysis for these training algorithms are not available , the general impression is that they are significantly slower than the standard svm training .
+weighted margin support vector machines .
+we now describe some notations and definitions from which we developed weighted margin support vector machines .
+given a set of vectors ( x1 , ... , xn ) , along with their corresponding labels ( y1 , ... , yn ) where yi g { + 1 , 11 , the svm classifier defines a hyperplane ( w , b ) in kernel mapped feature space that separates the training data by a maximal margin .
+definition 1 .
+we define the functional margin of a sample ( xi , yi ) with respect to a hyperplane ( w , b ) to be yi ( ( w xi ) + b ) .
+we define the geometric margin of a sample ( xi , yi ) with respect to a hyperplane ( w , b ) to be yi ( ( w xi ) + b ) / i w i2 , where i w i2 is the l2 norm of w .
+furthermore , we define the geometric margin of a set of ( xi , yi ) with respect to a hyperplane ( w , b ) to be the quantity of min0 ^ i < n ( yi ( ( w xi ) + b ) / iwi2 ) .
+the maximum margin hyperplane for a training set s is the hyperplane with respect to which the training set has maximal margin over all hyperplanes defined in the feature space .
+typically the maximum margin hyperplane is pursued by fixing the functional margin of the training set to be 1 and minimizing the norm of the weight vector w .
+those samples with minimum geometric margin with respect to maximum margin hyperplane are called support vectors because the maximum margin hyperplane is supported by these vectors : deleting support vectors will result in different maximum margin hyperplane .
+we consider the problem settings where , besides the vectors ( x1 , ... , xn ) and their corresponding labels ( y1 , ... , yn ) , we also have confidence values ( v1 , ... , vn ) .
+each vi , where vi e ( 0 , 1 ] , indicates the confidence level of yi s labeling .
+intuitively , the larger the confidence we have on a label , the larger the margin we want to have on that sample .
+but in the standard svm , there is no provision for this confidence value to be useful .
+the difference between the wmsvm and svm is illustrated in figure 2 .
+there , positive examples are depicted as circles and negative examples squares .
+the size of the squares / circles represents their associated confidence value .
+the dashed line in the middle is the hyperplane derived based on the standard svm training , and the solid line is the solution to the transductive svm learning .
+definition 2 .
+we define the effective weighted functional margin of weighted sample ( xi , yi , vi ) with respect to a hyperplane ( w , b ) and a margin normalization function f to be f ( vi ) yi ( ( w xi ) + b ) , where f is a monotonically decreasing function .
+weighted hard margin classifier .
+the simplest model of support vector machine is the maximal hard margin classifier .
+it only works on a data set that is linearly separable in feature space thus , it can not be used in many real-world situations .
+but it is the easiest algorithm to understand , and it forms the foundation for more complex support vector machines .
+in this subsection , we will generalize this basic form of support vector machines so that it can be used on fuzzy truthing data .
+when each label is associates with a confidence value , intuitively one wants support vectors that are labeled with higher confidence to assert more force on the decision plane , or equivalently one wants those support vectors to have bigger geometric margin to the decision plane .
+so , to train a maximal weighted hard margin classifier , we fix the effective weighted functional margin instead of fixing the functional margin of support vectors .
+then we try to minimize the norm of weight vector .
+we thus have the following proposition .
+the corresponding dual optimization problem can be found by differentiating the primal lagrangian with respect to w and b , imposing stationarity : proposition 2 .
+weighted soft margin classifier .
+the hard maximal margin classifier is an important concept , but it has two problems .
+first , hard margin classifier can be very brittle , since any labeling mistake on support vectors will result in significant change in decision hyper- plane .
+second , training data is not always linearly separable , and when it is not , we are forced to use a more powerful kernel , which might result in over-fitting .
+to be able to tolerate noise and outliers , we need to take into consideration the positions of more training samples than just those closest to the boundary .
+this is done generally by introducing slack variables and soft margin classifier .
+this quantity measures how much a point fails to have a margin of ^ from the hyperplane ( w , b ) .
+if ^ i > 0 , then xi is misclassified by ( w , b ) .
+as a more robust measure of margin distribution , en i = 0 11 ^ i11p measures the amount by which the training set fails to have margin ^ , and it takes into account any misclassification of the training data .
+the soft margin classifier is typically the solution that minimizes the regularized norm of ( w w ) + c en i = 0 11 ^ i11p .
+to generalize the soft margin classifier to weighted soft margin classifier , we first define a weighted version of slack variable .
+definition 4 .
+the primal optimization problem of maximal weighted soft margin classifier can thus be formulated as : proposition 3 .
+here the effective weighted margin slack variable is used to regulate ( w w ) .
+this implies that the final decision plane will be more tolerant on these margin violating samples with low confidence than others .
+this is exactly what we want : samples with high confidence label to contribute more to final decision plane .
+discussion on wmsvm formulation .
+in [ 9 ] , svm with different misclassification costs is introduced to battle the imbalanced dataset where the number of negative examples is overwhelming .
+in particular , the primal optimization problem is given : let m ^ 1 , m + 1 denote the number of negative and positive examples , and assume m ^ 1 > m + 1 , one typically wants to have c + 1 > c ^ 1 .
+this amounts to penalize more on an error made on positive example in training process .
+both wmsvm and svm with different misclassification cost for each example can result in the same box constraint for each ^ when we have csvm i = cwmsvm ig ( vi ) .
+however , there is some intrinsic difference between them .
+to see this , let ci = 0 for both formulations .
+as shown in fig . 2 , these two different formulations can result in different decision hyperplanes .
+the difference between these two formulations is also readily revealed in their respective dual objective functions .
+for example , attempt to replace ^ i f ( vi ) with ^ ^ i in dual objective function for wmsvm results in .
+sequential minimal optimization for wmsvm .
+the sequential minimal optimization ( smo ) algorithm is first proposed by platt [ 12 ] , and later enhanced by keerthi [ 10 ] .
+it is essentially a decomposition method with working set of two examples .
+the optimization problem can be solved analytically ; thus smo is one of the easiest optimization algorithms to implement .
+there are two basic components of smo : analytical solution for two points and working set selection heuristics .
+since the selection heuristics in keerthi s improved smo implementation can be easily modified to work with wmsvm , only the analytical solution is briefly described here .
+assume that x1 and x2 are selected for current optimization step .
+to observe the linear constraint , the values of their multipliers ( ^ 1 , ^ 2 ) must lie on a line : incorporating prior knowledge .
+the proposed weighted margin support vector machine is a general formulation .
+it is useful for incorporating any confidence value attached to each instance in the training dataset .
+however , along with added generality , there are some issues which need to be addressed to make it practical .
+for example , it is not clear from the formulation how to choose margin normalization function f and slack normalization function g .
+one also needs to determine the confidence value vi for each example .
+in this section , we will address these issues for the application of incorporating prior knowledge into svm using wmsvm .
+we propose a two-step approach .
+first , rough human prior knowledge is used to derive a rule ^ , which assigns each unlabeled pattern x a confidence value that indicates the likelihood of pattern x belonging to category of interest .
+a pseudo training dataset is generated by applying these rules on a set of unlabeled documents .
+second , the true training dataset and the pseudo training dataset are concatenated to form a training dataset , and a wmsvm classifier can then be trained from it . 5.1 creating pseudo training dataset in [ 4 ] , fung et al introduce a svm formulation that can incorporate prior knowledge in the form of multiple polyhedral sets .
+however , in practice , it is rare to have prior knowledge available in such closed function form .
+in general , human prior knowledge is fuzzy in nature , the rules resulting from it thus have two problems .
+first , the coverage of these rules are usually limited since they may not be able to provide prediction for all the patterns .
+second , these rules are usually not accurate and precise .
+we will have to defer the discussion on how to derive prediction rules to the next section as it is largely an application dependent issue .
+given such prediction rules , we generate a pseudo training dataset by applying these rules on a set of unlabeled dataset , in our case , the test set .
+this amounts to using the combined evidence from the human knowledge and labeled training data at both training and testing stage .
+similar to transductive svm , the idea of using unlabeled test set is a direct application of vapnik s principle of never solving a problem which is more general than the one we actually need to solve [ 17 ] .
+however , the proposed approach differs from the transductive learning in two aspects .
+first , in determining the decision hyperplane , the proposed approach relies on both the prior knowledge and the distribution of these testing examples , while transductive svm relies only on the distribution .
+second , contrast to one iteration of svm training needed by the proposed approach , multiple iterations of svm training are needed and the number of iterations is dependent on the size of test set .
+for a large test-set , transductive svm is significantly slower .
+the proposed way of incorporating such fuzzy prior knowledge is mainly influenced by the approach introduced in [ 13 ] .
+however , there are some noticeable differences between these two approaches .
+first , while the proposed approach can work on rules with limited coverage , the approach in [ 13 ] needs to work on rules with complete coverage .
+in another words , the rules needed there have to make a prediction on every instance .
+this requirement can be too restrictive sometimes and reenforcement of such a requirement can introduce unnecessary noise .
+second , the proposed approach has an integrated training and testing phase , thus classification is based on the evidence from both the training data and prior knowledge .
+however , the prediction power of human knowledge on testing data is thus lost in their approach .
+balancing two conflicting goals .
+given the true training dataset and pseudo training dataset , we now have two possibly conflicting goals in minimizing the empirical risk when constructing a predictor : ( 1 ) fit the true training dataset , and ( 2 ) fit the pseudo training dataset and thus fit the prior knowledge .
+clearly , the relative importance of the fitness of the learned hyperplane to these two training datasets needs to be controlled so that they can be appropriately combined .
+for svm , it is easier to measure the unfitness of the model to these training datasets .
+in particular , one can use the sum of the weighted slack over the dataset to measure the unfitness of the learned svm model to these two training sets .
+let the first m training examples be the labeled examples , and the rest be the pseudo examples , the objective function of primal problem is given : here the functionality of the parameter c is the same as the standard svm to control the balance between the model complexity and training error .
+the parameter ^ is used to control the relative importance of the evidence from these two different datasets .
+intuitively , one wants to have a relative bigger ^ when the number of the true labeled examples is small .
+when the number of true training examples increases , one typically wants to reduce the influence of the pseudo training dataset since the evidence embedded in the true training dataset is of better quality .
+because we do not have access to the exact value of ^ i before training , in practice , we approximate the unfitness to these two datasets .
+the solution of wmsvm on the concatenated dataset depends on a number of issues .
+the most important factor is vi , the confidence value of each test example .
+the influence of margin / slack normalization function f / g is highly dependent on vi .
+since the value of vi is just a rough estimation in this particular application , and there is no theoretical justification for the more complex function form , we choose to use the simplest function form for both f and g .
+precisely , we use f ( x ) = 1 / x and g ( x ) = x in this paper .
+experiments show this particular choice of function form is appropriate .
+experiments .
+to test the effectiveness of the proposed way of incorporating prior knowledge , we compare the performance of wmsvm with prior knowledge against svm without such knowledge , particularly when the true labeled dataset is small .
+we use text categorization as a running example as prior knowledge is readily available in this important application .
+we conduct all our experiments on two standard text categorization datasets : reuters-21578 and ohsumed .
+reuters- 21578 was compiled by david lewis from reuters newswire .
+the modapte split we used has 90 categories .
+after removing all numbers , stop words and low frequency terms , there are about 10,000 unique stemmed terms left .
+ohsumed is a subset of medline records collected by william hersh [ 6 ] .
+out of 50,216 documents that have abstract in year 1991 , the first 2 / 3 is used in training and the rest is used in testing .
+this corresponds to the same split used in [ 11 ] .
+after removing all numbers , stop words and low frequency terms , there are about 26,000 unique stemmed terms left .
+since we are studying the performance of the linear classifier under different data representation , we split the classification problem into multiple binary classification problems in a one-versus-rest fashion .
+the 10 most frequent categories are used for both datasets .
+no feature selection is done , and a modification of libsvm [ 2 ] based on description described in section 4 is used to train wmsvm .
+constructing the prior model .
+the proposed approach permits prior knowledge of any kind , as long as it provides estimates , however rough , of the confidence values of some test examples belonging to the class of interest .
+for each category , one of the authors , with access to the training data ( not the testing data that will later form the pseudo training dataset ) , comes up with a short list of indicative keywords .
+ideally , one could come up with such a short list with only an appropriate description of the category , but such description is not available for the datasets we use .
+these keywords are produced through a rather subjective process based on only the general understanding of what the categories are about .
+the idea of using keywords to capture the information needs is considered to be practical in many scenarios .
+for example , the name for each category can be used as keyword for ohsumed with little exception ( ignoring the common words such as disease ) .
+keywords used for both dataset are listed in table 1 , 2 .
+we next use these keywords to build a very simple model to predict the confidence value of an instance .
+to see how the proposed approach performs in practice , we used a model that is , while far from perfect , a natural solution given the very limited information we processed .
+given a document x , the confidence value of x belonging to the class of interest is simply : jxj . / jcj . , where jxj. denotes the number of keywords appearing in documents x , and jcj. the total number of keywords that describe category c .
+to make sure that svm training is numerically stable , a document will be ignored if it does not contain at least one of keywords that characterize the category of interest .
+this suggests the prior model we use has an incomplete coverage , it is thus significantly different from the prior model used in [ 13 ] .
+we think such a partial coverage prior model is a closer match to the fact that the keywords have only limited coverage , particularly when the category is broad ( thus there are many indicative keywords ) .
+inducing a full coverage prior model like [ 13 ] from the keywords with limited coverage , in principle , will introduce noise .
+nine true datasets are created by taking the first mi examples , where mi = 16 * 2i , i g [ 0 , 8 ] .
+we then train standard svm classifiers on these true datasets , wmsvm classifiers on the concatenations of these true datasets and the pseudo datasets .
+the pseudo datasets are always generated by applying the prior model on the testing sets .
+the test examples are then used to measure their performance .
+no experiments were conducted to determine whether better performance could be achieved with wiser choice of c ( for svm ) , we set it to 1.0 for all experiments .
+we set the parameter ^ using the heuristic formula 400 / m , where m is the number of true labeled training examples used .
+making ^ an inverse function of m is based on two common understanding : first , svm performs very well when there are enough labeled data ; second , svm is sensitive to label noise [ 19 ] .
+this inverse function form makes sure that when there is more data , the noise introduced by noisy prior model is small .
+the value 400 is picked to give enough weight to prior model when there are only 32 examples on reuters dataset .
+we did not study the influence of the different function forms , but the performance of the wmsvm with prior knowledge seems to be robust in term of the coefficient value in the heuristic formula 400 / m as shown in table 3 .
+figures 3,4 report these experiments .
+they compare the performance among the prior model , standard svm classifiers , and these wmsvm classifiers when the size of the true dataset is increasing .
+for ohsumed , we report performance in micro-average f1 over break even point ( bep ) , a commonly used measure in text categorization community [ 18 ] .
+for reuters dataset , to stay comparable with that of [ 8 ] , we report performance in macro-average f1 over bep instead .
+it is clear that combining prior knowledge with training examples can dramatically improve the classification performance , particularly when the training dataset is small .
+the performance of wmsvm with the prior knowledge on reuters is comparable to that of transductive svm [ 8 ] , but the training time is much less as only one iteration of svm training is needed .
+usually the performance of svm increases when one adds more labeled examples .
+but if the newly added examples are all negative , it is possible that the performance of svm actually decreases , as shown in figure 4 .
+note that the influence of prior knowledge on the final performance is decreasing when the number of true labeled examples is increasing .
+this is due to the particular function form of parameter ^ ( 400 / m ) .
+but one can also understand this phenomenon by noting that the more labeled examples , drawn from an independently and identically distribution , the less the additional information one might have in prior knowledge .
+conclusion .
+for statistical learning methods like svm , using human prior knowledge can in principle reduce the need for larger training dataset .
+since weak predictors that estimate the conditional in-class probabilities can be derived from most human knowledge , the ability to incorporate prior knowledge through weak predictors thus has great practical implications .
+in this paper , we proposed a generalization of the standard svm : weighted margin svm , which can handle the imperfectly labeled dataset .
+smo algorithm is extended to handle its training problem .
+we then introduced a two- step approach to incorporate fuzzy prior knowledge using the wmsvm .
+the empirical study of our approach is conducted through text classification experiments on standard datasets .
+preliminary results demonstrates its effectiveness in reducing the number of the labeled training examples needed .
+furthermore , wmsvm is a fairly generic machine learning method and incorporating fuzzy prior knowledge is just one of its many possible applications .
+for example , wmsvm can be readily used in distributed learning with heterogeneous truthing .
+further research directions include studies on the robustness of incorporating prior knowledge with respect to different quality of rough predication rules .
+more generally , how to combine the evidence from different sources and in different forms for effective modeling of data is an interesting future research direction .

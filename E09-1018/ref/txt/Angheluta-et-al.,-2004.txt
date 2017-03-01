@@ -1,0 +1,165 @@
+clustering algorithms for noun phrase coreference resolution .
+abstract .
+in this paper , we present four clustering algorithms for noun phrase coreference resolution .
+we developed two novel algorithms for this task , a fuzzy algorithm and its hard variant and evaluated their performance on two different sets of texts in comparison with an existing fuzzy and a hard clustering algorithm that are described in the literature .
+our algorithms perform slightly better and do not rely on a predefined threshold distance value for cluster membership .
+in addition , our fuzzy clustering algorithm seems to perform better than a hard clustering on a pronoun resolution task .
+keywords : coreference resolution , clustering .
+introduction .
+most of the natural language processing applications that deal with meaning of discourse imply the completion of some reference resolution activity .
+the first kind of reference resolution that appears significant in this framework is noun phrase coreference resolution .
+this is the ability to relate each noun phrase in a text to its referent in the real world .
+our coreference resolution focuses on detecting identity relationships ( i.e. not on is-a or whole / part links for example ) .
+two entities are considered as coreferents when they both refer to the same noun phrase in the situation described by the text ( e.g. , in the sentences : dan quale met his wife in college .
+the indiana senator married her shortly after he finished his studies : his , indiana senator and he all co-refer to dan quale ) .
+it is natural to view coreferencing as a partitioning or clustering of the set of entities .
+the idea is to gather coreferents into the same cluster , which is accomplished in two steps : 1 ) detection of the entities and extraction of a specific set of their features ; 2 ) clustering of the entities .
+for the first subtask we use the same set of features as in [ 3 ] .
+we implemented two novel algorithms for the second step : a progressive fuzzy clustering algorithm and its hard variant .
+we also implemented the hard clustering algorithm presented in [ 3 ] and a fuzzy clustering algorithm as described in [ 2 ] .
+our goal is to test the quality of the coreference resolution that is achieved by these four algorithms .
+coreference resolution is very valuable in text based applications including information retrieval , text summarization , information extraction and question answering , as it refines the representations made of the content of a text .
+the next section explains the methods used for feature selection and the four clustering algorithms .
+we then describe our experiments and their results .
+in the discussion the four algorithms are critically evaluated .
+methods .
+feature selection .
+an entity is a noun phrase in the text .
+each entity is represented as a set of 11 features ( see table 1 ) .
+here follows a short description of their definition and mode of extraction : individual words : the words of the noun phrase are used to measure the mismatching words between two entities and to see if one entity subsumes ( includes totally as a sub-string ) the other .
+clustering algorithms for noun phrase coreference resolution .
+distance metric .
+the clustering methods .
+in the algorithm of [ 3 ] each entity initially forms its own cluster ( i.e. a singleton cluster ) .
+the algorithm starts from the end of the document and goes backwards , while each noun phrase cluster is compared with all preceding clusters .
+if the distance ( 1 ) between two noun phrases of the two compared clusters is less than a distance value ( a threshold set by experiments ) , their clusters merged , provided all entities are compatible ( i.e. dont have a pairwise distance of oc ) .
+we pick for each cluster a representative member ( medoid ) , chosen as the first person name in the text , if it exists , otherwise as the first entity in the text that appears in the cluster .
+the algorithm is very simple and fast , however it has also some weak points .
+the highly greedy character of this algorithm ( as it considers the first match and not the best match ) introduces errors which are further propagated as the algorithm advances .
+in the example robert smith lives with his wife ...
+smith loves her . , when clustering the entities robert smith , wife , smith and her , the gender of smith cannot be determined as it can be both male or female .
+smith may come in the same cluster with her , if allowed by the distance threshold , but then robert smith will never be correctly resolved with the entity smith because of the incompatibility between robert smith and her .
+the algorithm is very dependent on the threshold distance value for cluster membership .
+the value of this distance is determined experimentally and may be tuned for each document , which makes the algorithm corpus-dependent .
+fuzzy clustering .
+another promising approach found in the literature [ 2 ] considers noun phrase coreference resolution as a fuzzy clustering task because of the ambiguity typically found in natural language and the difficulty of solving the coreferents with absolute certainty .
+in this algorithm each entity initially forms its own cluster ( whose medoid it is ) .
+each other entity is assigned to all of the initial clusters by computing the distance ( conform eq . 1 normalized ) between it and the medoid of the cluster . [ 2 ] uses additional wordnet [ 7 ] dependent heuristics for computing the distance metric , which we did not include in our implementation .
+as a result each entity has a fuzzy membership with each cluster , forming a fuzzy coreference chain ( a fuzzy set ) .
+each fuzziness number is in [ 0,1 ] .
+our implementation of fuzziness is based on the distance function and so it indicates how far we are from coreference .
+the medoid entity that originally formed the singleton cluster has a complete membership with itself or a distance of zero with itself .
+then the chains are iteratively merged when their fuzzy set intersection is no larger than an a priori defined distance , in other words when there is at least one noun phrase in the fuzzy set of both clusters that has a distance smaller than a threshold with the respective medoids of the clusters .
+in the merged chain , the medoids of both original chains get complete membership and the membership of the other entities is updated by taking the minimum distance to the medoids .
+the merging continues until no chains can be merged anymore .
+the merging assumes that coreference resolution is symmetric and transitive .
+the algorithm has the effect of a single link hierarchical clustering .
+once no more merging can be done , one can form hard clusters by defuzzification .
+we do that by assigning each entity to the cluster with whom it has the lowest fuzziness .
+beside the fuzzy representation , there are two main differences with [ 3 ] : 1 ) the chaining effect is larger because two clusters can be merged even without checking any pairwise incompatibilities of cluster objects ; 2 ) in contrast with [ 3 ] , the algorithm is independent of the order in which the clusters are merged .
+progressive fuzzy clustering ( fc-p ) .
+it seemed to us that the previous algorithms exhibit some good points and that a fuzzy clustering is appropriate for the noun phrase coreference task , but the fuzziness could be exploited in such a way that - in contrast with [ 2 ] - uncertainty of cluster membership of all fuzzy members plays a role in cluster merging .
+in addition , an algorithm that does not rely on a corpus-dependent distance threshold appears more practical .
+our clustering algorithm is neither pure hard nor pure fuzzy .
+initially , all the entities with semantic class 0 or 1 ( e s0 , e s1 ) form medoids of singleton clusters .
+thus the number of clusters is equal to the number of entities e ( s0 u s1 ) .
+for each of the other entities ( e s2 , pronouns ) , a fuzzy membership value is calculated using the distance between the entity and the cluster .
+the fuzzy set of each cluster is used for merging two clusters .
+the idea behind the merging is that two clusters that corefer should have quite similar fuzzy sets .
+the possible noise from two or three entities in the fuzzy set must be smoothed by the rest of them .
+to improve the performance two special cases are included in the algorithm .
+appositive merging : appositives have much higher preferences than the other features .
+thus all the appositives are merged immediately after the formation of the initial clusters .
+restriction on pronoun coreferencing : according to this restriction , no pronoun can corefer to an element of a cluster whose central medoid is occurring after it .
+this restriction however prohibits cataphoric references ( e.g.
+after he saw the danger , quayle got scared ) , but they appear quite rarely in texts .
+the main resemblances and differences with the foregoing algorithms are : progressive nature : as in [ 2 ] , our fuzzy algorithm progressively updates the fuzzy membership after each merging of clusters .
+however it updates it differently , i.e. , not by taking the minimum fuzziness of an entity in the merged clusters , but by recomputing the fuzzy membership of an entity in the new cluster ( see eq . 2 ) .
+this is necessary as it is not always possible to correctly resolve some features ( e.g. the gender ) of a name .
+initially the pronouns ( he and she ) are assigned a fuzzy membership to the clusters .
+as clusters are merged the feature of the entity may be resolved and thus the fuzzy set membership may change completely .
+merging of clusters : in contrast to [ 2 ] and [ 3 ] , our criteria for merging clusters are different by restricting the merging of chains that have a non-pronoun phrase as medoid and by considering the similarity of the current fuzzy sets of the clusters .
+conform to [ 3 ] but unlike [ 2 ] , our algorithm does not merge clusters when members of the new cluster would be incompatible ( except when their central medoids have a distance of 0 or ^ oc ) .
+search for the best match : conform to [ 2 ] , but unlike [ 3 ] , the algorithm iteratively searches for the best match instead of the nearest match for merging clusters .
+thus for the first example given in section 3.1 : robert smith would be resolved to smith and her would never be integrated with smith .
+corpus-independent : unlike [ 3 ] and [ 2 ] , the algorithm is corpus-independent as no threshold distance is used .
+the hard variant ( hc- v ) .
+we also implemented the hard variant of the above progressive fuzzy clustering algorithm .
+the algorithm is summarized in figure 2 .
+we assign the entities of semantic class 2 ( i.e. the pronouns ) to their closest cluster at the completion of the merging process and not at its start , because we hope to be able to assign them more correctly in case of missing features ( e.g. , gender ) of some of the entities .
+the difference of this hard algorithm with the foregoing fuzzy algorithm lies in the computation of the similarity between clusters when merging the most similar clusters .
+in our fuzzy algorithm we use the complete fuzzy set of the clusters in the computation of the similarity ( eq . 2 ) ; in the hard algorithm we merge clusters with a group average hierarchical clustering scheme until no more clusters can be merged based on incompatibility of members .
+the difference with the fuzzy clustering of [ 2 ] lies in the merging of entities that only belong to s2 and the use of a group average hierarchical clustering scheme instead of a single linkage hierarchical clustering scheme in [ 2 ] .
+preliminary tests showed that pronouns like it , i , me , our are very difficult to be resolved and they harm the performance .
+so in all the above clustering algorithms we considered them alone in singleton clusters , which is not a correct solution , but the results will be affected equally for all the algorithms .
+corpora and evaluation .
+we used two corpora : one from the document understanding conference 2002 [ 5 ] , the other from the message understanding conference 6 [ 8 ] .
+the duc documents were selected from the category biographies and they are small texts ( on average 3kb each ) which contain many entities to be resolved ( pronominal and non pronominal entities ) .
+we chose randomly ten documents from this set , parsed them in order to extract the entities ( as the smallest noun phrases which do not contain embedded noun phrases ) and annotated them manually for coreference .
+the muc-6 proposed a training set of 30 documents ( the so-called dryrun set ) and a test set of 30 documents ( the formaltest set ) .
+they are all annotated with coreference information .
+in this corpus , both the smallest noun phrases and the ones which contain them are considered as entities .
+the features are extracted slightly differently for the two corpora , because of the different nature of the entities ( e.g. the proper name feature is reduced to the capitalization of the head noun in the muc corpora , while in the duc subcorpus we look at two consecutive capitalized words ) .
+the muc-6 corpora contains few pronouns , which are the entities that are the most interesting for our algorithm .
+thats why the duc subcorpus is useful for the evaluation , especially for the pronoun resolution .
+the duc documents have an average of 18 pronouns comprised in the set he , she , him , her , they , them , while the two muc-6 corpora have only a mean of 2.97 and 4.86 respectively .
+we computed automatically the precision and recall and combined them into the f- measure .
+two algorithms were initially implemented to perform the evaluation : the one of vilain et al. ( referred in [ 1 ] , employed in muc ) and the b-cubed algorithm , described in [ 1 ] .
+as observed by [ 1 ] , the algorithm of vilain yields unintuitive results for some cases , because it does not give any credit for separating out singletons and it considers all types of errors as equal .
+the algorithm favors big clusters , which is confirmed by the results of our second baseline , which clusters all entities in one cluster ( see below ) ( vilain f-measure is 86 % for the dryrun set , 87 % for the formaltest set and 60 % for the duc subcorpus ) .
+because of this , we decided not to use the results obtained with the vilains algorithm and we considered only the bcubed algorithm .
+we separately evaluated pronoun coreference , by selecting as entities only pronouns and their immediate antecedents in the manual files .
+for certain text processing tasks , the correct resolution of pronouns is important .
+with the vilain and bcubed evaluation it is still possible to obtain reasonably good results when a set of pronouns are clustered together , while their antecedent is missing or is wrongly assigned in the cluster .
+so we computed also the accuracy of the antecedent resolution .
+a pronoun is considered correctly resolved when its main coreferent in the automatic cluster ( the medoid of the cluster ) is in the same manual cluster as the pronoun itself and when this coreferent is not another pronoun ( case appearing in hc-c and fc-b ) .
+results and discussion we tested the algorithms with the two corpora .
+we tried two baselines : every entity in a singleton cluster ( bl1 ) and all entities in one cluster ( bl2 ) .
+for the hard clustering we used four different threshold values , determined experimentally : 8 , 11.5 , 16 and 20 ( a small threshold corresponds to a conservative behavior : small clusters ) .
+for the fuzzy clustering , we used a threshold value of 0.2 and 0.5 ( again , a small threshold is conservative ) .
+all entities .
+the results using all the entities are summarized in table 2 .
+the difficulty to set an appropriate threshold can be observed in the muc-6 corpora , since in the training corpus ( dryrun ) , the best results were not obtained with the same threshold as in the test corpus ( formaltest ) .
+in contrast with precision , which is generally good , the recall values are quite low .
+we identified three types of errors responsible for the values and we analyzed more deeply the first one ( see subsection experiment ) .
+wrong assignment of the semantic class .
+pronouns ( e.g. he ) come in the same clusters with entities like bentonville or institute , which are wrongly considered as person names .
+this type of errors might be resolved using a name entity recognition tool , able to semantically classify the entities .
+acronym resolution .
+the algorithms are not able to relate acronyms with their corresponding long form ( e.g.
+international business machines corp. and ibm ) .
+this problem is more frequent in muc corpora ( 1.8 % of the entities in the formaltest subcorpus are acronyms which can not be detected with word-substring feature or appositive - like in the case the congressional black caucus ( cbc ) ) .
+we need to integrate an acronym resolution tool in order to correct this type of errors .
+discourse structure .
+the texts contain a lot of direct speech , where the pronouns are very difficult to be resolved .
+for example , in the following phrase he spends most of his time talking to associates and customers , shinkle said , and he always comes back with many ideas from them ( duc subcorpus ) , the pronouns he and his are wrongly resolved as coreferring with shinkle .
+this problem is more frequent in the duc subcorpus ( 6.52 % of the sentences are similar to the above example ) .
+a number of discourse specific heuristics could be added to the algorithm .
+other errors .
+a number of other errors are due to different causes : lack of synonyms / hypernyms detection ( coca-cola , coke , million , cents ) , lack of knowledge of the world ( the u.s. , the country ) .
+these errors are more difficult to resolve .
+experiment .
+in order to quantify errors caused by the wrong assignment of the semantic class , we manually corrected this field and rerun the experiments .
+the new results are in table 3 .
+the recall increases in all cases .
+the precision usually decreases for hc-c , which favors big clusters of entities with semantic class 0 ( the number of such entities increases by correcting the semantic class ) , decreasing also the f-measure .
+for the other algorithms , f-measure usually increases .
+the influence on the results is larger for the muc corpora than for the duc subcorpus , because the number of entities with semantic class wrongly assigned was higher ( 20.98 % for the dryrun and 19.29 % for the formaltest comparing with 8.42 % for the duc subcorpus ) .
+pronouns .
+evaluating just the pronouns , the results are summarized in table 4 .
+here follow a few remarks about the pronoun resolution : the results obtained for the duc subcorpus are more representative than the ones obtained for the muc-6 corpora , since the former contains more pronouns .
+hc-c and fc-b work now better for higher values of the threshold .
+this can be explained by the fact that in all corpora most of the pronouns referred to the same person and so they should come out in the same cluster , which rewards big clusters .
+since in fc-p we give special attention to the pronouns ( by iteratively recomputing the fuzzy vectors ) , we assume that this algorithm should outperform its hard variant on pronoun resolution .
+this assumption seems to be verified considering the f-measure , especially in the duc subcorpus , which is the most representative for this evaluation , but is somehow contradicted by the accuracy results .
+we need additional tests to sustain our claim .
+in the duc subcorpus : although the f-measure is higher for hc-c with threshold 20 than for fc-p , the accuracy measure is lower .
+we believe that accuracy is a more fair measure for pronoun resolution , since correctly resolving the antecedent of the pronoun is more important than correctly grouping pronouns in the same cluster .
+conclusion and future work .
+in this paper we compared four clustering methods for coreference resolution : one progressive fuzzy , its hard variant and another two algorithms , taken from the literature .
+we evaluated them on two kinds of corpora , a standard one used in the coreference resolution task and another one containing more pronominal entities .
+our algorithms are on top when all the entities are considered .
+for the pronoun resolution , our fuzzy algorithm obtains competitive or better f-measure results compared with the two algorithms from the literature and outperforms both of them in term of accuracy .
+these results are obtained despite the fact that our algorithms do not rely on a threshold distance value for cluster membership , which makes them corpus-independent .
+in the future we plan to perform more experiments with different types of texts and to enlarge the feature set based on current linguistic theories .
+we also plan to integrate the noun phrase coreference tool in our text summarization system .

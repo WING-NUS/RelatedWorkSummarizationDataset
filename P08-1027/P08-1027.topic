@@ -1,0 +1,23 @@
+<topic index> 0 </topic index>
+<title> classification of semantic relationships </title>
+<keywords> semantic;relationships;classification; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> available resources </title>
+<keywords> resources;wordnet;WN;wikipedia;thesauri;MeSH;use;utilize; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> Degree of Preprocessing </title>
+<keywords> preprocessing;tagging;annotation;parsing;recognition;language; </keywords>
+
+<topic index> 0.3 </topic index>
+<title> Classification Features </title>
+<keywords> features;patterns;syntactic;bag-of-words;wordnet;heuristic;clustering; </keywords>
+
+<topic index> 0.4 </topic index>
+<title> Classification Algorithm </title>
+<keywords> algorithms;learning;classification;SVM;weka;training; </keywords>
+
+<topic index> 0.5 </topic index>
+<title> training data </title>
+<keywords> training;data;categorization;schemes;hierarchy;dataset; </keywords>

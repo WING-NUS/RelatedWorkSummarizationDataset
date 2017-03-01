@@ -1,0 +1,162 @@
+unsupervised construction of large paraphrase corpora : exploiting massively parallel news sources abstract .
+we investigate unsupervised techniques for acquiring monolingual sentence-level paraphrases from a corpus of temporally and topically clustered news articles collected from thousands of web-based news sources .
+two techniques are employed : ( 1 ) simple string edit distance , and ( 2 ) a heuristic strategy that pairs initial ( presumably summary ) sentences from different news stories in the same cluster .
+we evaluate both datasets using a word alignment algorithm and a metric borrowed from machine translation .
+results show that edit distance data is cleaner and more easily-aligned than the heuristic data , with an overall alignment error rate ( aer ) of 11.58 % on a similarly-extracted test set .
+on test data extracted by the heuristic strategy , however , performance of the two training sets is similar , with aers of 13.2 % and 14.7 % respectively .
+analysis of 100 pairs of sentences from each set reveals that the edit distance data lacks many of the complex lexical and syntactic alternations that characterize monolingual paraphrase .
+the summary sentences , while less readily alignable , retain more of the non-trivial alternations that are of greatest interest learning paraphrase relationships .
+introduction .
+the importance of learning to manipulate monolingual paraphrase relationships for applications like summarization , search , and dialog has been highlighted by a number of recent efforts ( barzilay & mckeown 2001 ; shinyama et al. 2002 ; lee & barzilay 2003 ; lin & pantel 2001 ) .
+while several different learning methods have been applied to this problem , all share a need for large amounts of data in the form of pairs or sets of strings that are likely to exhibit lexical and / or structural paraphrase alternations .
+one approach that has been successfully used is edit distance , a measure of similarity between strings .
+the assumption is that strings separated by a small edit distance will tend to be similar in meaning .
+lee & barzilay ( 2003 ) , for example , use multi- sequence alignment ( msa ) to build a corpus of paraphrases involving terrorist acts .
+their goal is to extract sentential templates that can be used in high-precision generation of paraphrase alternations within a limited domain .
+our goal here is rather different : our interest lies in constructing a monolingual broad-domain corpus of pairwise aligned sentences .
+such data would be amenable to conventional statistical machine translation ( smt ) techniques ( e.g. , those discussed in och & ney 2003 ) .2 in what follows we compare two strategies for unsupervised construction of such a corpus , one employing string similarity and the other associating sentences that may overlap very little at the string level .
+we measure the relative utility of the two derived monolingual corpora in the context of word alignment techniques developed originally for bilingual text .
+we show that although the edit distance corpus is well-suited as training data for the alignment algorithms currently used in smt , it is an incomplete source of information about paraphrase relations , which exhibit many of the characteristics of comparable bilingual corpora or free translations .
+many of the more complex alternations that characterize monolingual paraphrase , such as large-scale lexical alternations and constituent reorderings , are not readily captured by edit distance techniques , which conflate semantic similarity with formal similarity .
+we conclude that paraphrase research would benefit by identifying richer data sources and developing appropriate learning techniques. likely paraphrase pairs even when they have little superficial similarity .
+data / methodology .
+our two paraphrase datasets are distilled from a corpus of news articles gathered from thousands of news sources over an extended period .
+while the idea of exploiting multiple news reports for paraphrase acquisition is not new , previous efforts ( for example , shinyama et al. 2002 ; barzilay and lee 2003 ) have been restricted to at most two news sources .
+our work represents what we believe to be the first attempt to exploit the explosion of news coverage on the web , where a single event can generate scores or hundreds of different articles within a brief period of time .
+some of these articles represent minor rewrites of an original ap or reuters story , while others represent truly distinct descriptions of the same basic facts .
+the massive redundancy of information conveyed with widely varying surface strings is a resource begging to be exploited .
+figure 1 shows the flow of our data collection process .
+we begin with sets of pre-clustered urls which point to news articles on the web , representing thousands of different news sources .
+the clustering algorithm takes into account the full text of each news article , in addition to temporal cues , to produce a set of topically and temporally related articles .
+our method is believed to be independent of the specific clustering technology used .
+the story text is isolated from a sea of advertisements and other miscellaneous text through use of a supervised hmm .
+altogether we collected 11,162 clusters in an 8- month period , assembling 177,095 articles with an average of 15.8 articles per cluster .
+the clusters are generally coherent in topic and focus .
+discrete events like disasters , business announcements , and deaths tend to yield tightly focused clusters , while ongoing stories like the sars crisis tend to produce less focused clusters .
+while exact duplicate articles are filtered out of the clusters , many slightly-rewritten variants remain . 2.1 extracting sentential paraphrases two separate techniques were employed to extract likely pairs of sentential paraphrases from these clusters .
+the first used string edit distance , counting the number of lexical deletions and insertions needed to transform one string into another .
+the second relied on a discourse-based heuristic , specific to the news genre , to identify a simple edit distance metric ( levenshtein 1966 ) was used to identify pairs of sentences within a cluster that are similar at the string level .
+first , each sentence was normalized to lower case and paired with every other sentence in the cluster .
+pairings that were identical or differing only by punctuation were rejected , as were those where the shorter sentence in the pair was less than two thirds the length of the longer , this latter constraint in effect placing an upper bound on edit distance relative to the length of the sentence .
+pairs that had been seen before in either order were also rejected .
+filtered in this way , our dataset yields 139k nonidentical sentence pairs at a levenshtein distance of n < 12 . 3 mean levenshtein distance was 5.17 , and mean sentence length was 18.6 words .
+we will refer to this dataset as l12 .
+first sentences .
+the second extraction technique was specifically intended to capture paraphrases which might contain very different sets of content words , word order , and so on .
+such pairs are typically used to illustrate the phenomenon of paraphrase , but precisely because their surface dissimilarity renders automatic discovery difficult , they have generally not been the focus of previous computational approaches .
+in order to automatically identify sentence pairs of this type , we have attempted to take advantage of some of the unique characteristics of the dataset .
+the topical clustering is sufficiently precise to ensure that , in general , articles in the same cluster overlap significantly in overall semantic content .
+even so , any arbitrary pair of sentences from different articles within a cluster is unlikely to exhibit a paraphrase relationship : the phi-x174 genome is short and compact .
+this is a robust new step that allows us to make much larger pieces .
+to isolate just those sentence pairs that represent likely paraphrases without requiring significant string similarity , we exploited a common journalistic convention : the first sentence or two of a newspaper article typically summarize its content .
+one might reasonably expect , therefore , that initial sentences from one article in a cluster will be paraphrases of the initial sentences in other articles in that cluster .
+this heuristic turns out to be a powerful one , often correctly associating sentences that are very different at the string level : in only 14 days , us researchers have created an artificial bacteria-eating virus from synthetic genes .
+an artificial bacteria-eating virus has been made from synthetic genes in the record time of just two weeks .
+also consider the following example , in which related words are obscured by different parts of speech : chosun ilbo , one of south korea 's leading newspapers , said north korea had finished developing a new ballistic missile last year and was planning to deploy it .
+the chosun ilbo said development of the new missile , with a range of up to % % number % % kilometres ( % % number % % miles ) , had been completed and deployment was imminent .
+a corpus was produced by extracting the first two sentences of each article , then pairing these across documents within each cluster .
+we will refer to this collection as the f2 corpus .
+the combination of the first-two sentences heuristic plus topical article clusters allows us to take advantage of meta-information implicit in our corpus , since clustering exploits lexical information from the entire document , not just the few sentences that are our focus .
+the assumption that two first sentences are semantically related is thus based in part on linguistic information that is external to the sentences themselves .
+sometimes , however , the strategy of pairing sentences based on their cluster and position goes astray .
+this would lead us to posit a paraphrase relationship where there is none : terence hope should have spent most of yesterday in hospital performing brain surgery .
+a leading brain surgeon has been suspended from work following a dispute over a bowl of soup .
+to prevent too high an incidence of unrelated sentences , one string-based heuristic filter was found useful : a pair is discarded if the sentences do not share at least 3 words of 4 + characters .
+this constraint succeeds in filtering out many unrelated pairs , although it can sometimes be too restrictive , excluding completely legitimate paraphrases : there was no chance it would endanger our planet , astronomers said .
+nasa emphasized that there was never danger of a collision .
+an additional filter ensured that the word count of the shorter sentence is at least one-half that of the longer sentence .
+given the relatively long sentences in our corpus ( average length 18.6 words ) , these filters allowed us to maintain a degree of semantic relatedness between sentences .
+accordingly , the dataset encompasses many paraphrases that would have been excluded under a more stringent edit-distance threshold , for example , the following non-paraphrase pair that contain an element of paraphrase : a staggering % % number % % million americans have been victims of identity theft in the last five years , according to federal trade commission survey out this week .
+in the last year alone , % % number % % million people have had their identity purloined .
+nevertheless , even after filtering in these ways , a significant amount of unfiltered noise remains in the f2 corpus , which consisted of 214k sentence pairs .
+out of a sample of 448 held-out sentence pairs , 118 ( 26.3 % ) were rated by two independent human evaluators as sentence-level paraphrases , while 151 ( 33.7 % ) were rated as partial paraphrases .
+some of these relations captured in this data can be complex .
+the following pair , for example , would be unlikely to pass muster on edit distance grounds , but nonetheless contains an inversion of deep semantic roles , employing different lexical items .
+the hartford courant reported % % day % % that tony bryant said two friends were the killers .
+a lawyer for skakel says there is a claim that the murder was carried out by two friends of one of skakel 's school classmates , tony bryan .
+the f2 data also retains pairs like the following that involve both high-level semantic alternations and long distance dependencies : two men who robbed a jeweller 's shop to raise funds for the bali bombings were each jailed for % % number % % years by indonesian courts today .
+an indonesian court today sentenced two men to % % number % % years in prison for helping finance last year 's terrorist bombings in bali by robbing a jewelry store .
+these examples do not by any means exhaust the inventory of complex paraphrase types that are commonly encountered in the f2 data .
+we encounter , among other things , polarity alternations , including those involving long- distance dependencies , and a variety of distributed paraphrases , with alignments spanning widely separated elements .
+word error alignment rate .
+an objective scoring function was needed to compare the relative success of the two data collection strategies sketched in 2.1.1 and 2.1.2 .
+which technique produces more data ?
+are the types of data significantly different in character or utility ?
+in order to address such questions , we used word alignment error rate ( aer ) , a metric borrowed from the field of statistical machine translation ( och & ney 2003 ) .
+aer measures how accurately an automatic algorithm can align words in corpus of parallel sentence pairs , with a human4 this contrasts with 16.7 % pairs assessed as unrelated in a 10,000 pair sampling of the l12 data. tagged corpus of alignments serving as the gold standard .
+paraphrase data is of course monolingual , but otherwise the task is very similar to the mt alignment problem , posing the same issues with one-to-many , many-to-many , and one / many-tonull word mappings .
+our a priori assumption was that the lower the aer for a corpus , the more likely it would be to yield learnable information about paraphrase alternations .
+we closely followed the evaluation standards established in melamed ( 2001 ) and och & ney ( 2000 , 2003 ) .
+following och & ney � s methodology , two annotators each created an initial annotation for each dataset , subcategorizing alignments as either sure ( necessary ) or possible ( allowed , but not required ) .
+differences were then highlighted and the annotators were asked to review these cases .
+finally we combined the two annotations into a single gold standard in the following manner : if both annotators agreed that an alignment should be sure , then the alignment was marked as sure in the gold-standard ; otherwise the alignment was marked as possible .
+to compute precision , recall , and alignment error rate ( aer ) for the twin datasets , we used exactly the formulae listed in och & ney ( 2003 ) .
+let a be the set of alignments in the comparison , s be the set of sure alignments in the gold standard , and p be the union of the sure and possible alignments in the gold standard .
+we held out a set of news clusters from our training data and randomly extracted two sets of sentence pairs for blind evaluation .
+the first is a set of 250 sentence pairs extracted on the basis of an edit distance of 5 < n < 20 , arbitrarily chosen to allow a range of reasonably divergent candidate pairs .
+these sentence pairs were checked by an independent human evaluator to ensure that they contained paraphrases before they were tagged for alignments .
+the second set comprised 116 sentence pairs randomly selected from the set of first-two sentence pairs .
+these were likewise hand- vetted by independent human evaluators .
+after an initial training pass and refinement of the linking specification , interrater agreement measured in terms of aer5 was 93.1 % for the edit distance test set versus 83.7 % for the f2 test set , suggestive of the greater variability in the latter data set .
+data alignment .
+each corpus was used as input to the word alignment algorithms available in giza + + ( och & ney 2000 ) .
+giza + + is a freely available implementation of ibm models 1-5 ( brown et al. 1993 ) and the hmm alignment ( vogel et al. 1996 ) , along with various improvements and modifications motivated by experimentation by och & ney ( 2000 ) .
+giza + + accepts as input a corpus of sentence pairs and produces as output a viterbi alignment of that corpus as well as the parameters for the model that produced those alignments .
+while these models have proven effective at the word alignment task ( mihalcea & pedersen 2003 ) , there are significant practical limitations in their output .
+most fundamentally , all alignments have either zero or one connection to each target word .
+hence they are unable to produce the many-tomany alignments required to identify correspondences with idioms and other phrasal chunks .
+to mitigate this limitation on final mappings , we follow the approach of och ( 2000 ) : we align once in the forward direction and again in the backward direction .
+these alignments can subsequently be recombined in a variety of ways , such as union to maximize recall or intersection to maximize precision .
+och also documents a method for heuristically recombining the unidirectional alignments intended to balance precision and recall .
+in our experience , many alignment errors are present in one side but not the other , hence this recombination also serves to filter noise from the process .
+evaluation .
+table 1 shows the results of training translation models on data extracted by both methods and then tested on the blind data .
+the best overall performance , irrespective of test data type , is achieved by the l12 training set , with an 11.58 % overall aer on the 250 sentence pair edit distance test set ( 20.88 % aer for non-identical words ) .
+the f2 training data is probably too sparse and , with 40 % unrelated sentence pairs , too noisy to achieve equally good results ; nevertheless the gap between the results for the two training data types is dramatically narrower on the f2 test data .
+the nearly comparable numbers for the two training data sets , at 13.2 % and 14.7 % respectively , suggest that the l12 training corpus provides no substantive advantage over the f2 data when tested on the more complex test data .
+this is particularly striking given the noise inherent in the f2 training data .
+analysis / discussion .
+to explore some of the differences between the training sets , we hand-examined a random sample of sentence pairs from each corpus type .
+the most common paraphrase alternations that we observed fell into the following broad categories : elaboration : sentence pairs can differ in total information content , with an added word , phrase or clause in one sentence that has no counterpart in the other ( e.g. the nasdaq / the tech-heavy nasdaq ) .
+phrasal : an entire group of words in one sentence alternates with one word or a phrase in the other .
+some are non-compositional idioms ( has pulled the plug on / is dropping plans for ) ; others involve different phrasing ( electronically / in electronic form , more than a million people / a massive crowd ) .
+spelling : british / american sources systematically differ in spellings of common words ( colour / color ) ; other variants also appear ( email / e-mail ) .
+synonymy : sentence pairs differ only in one or two words ( e.g. charges / accusations ) , suggesting an editor � s hand in modifying a single source sentence .
+anaphora : a full np in one sentence corresponds to an anaphor in the other ( prime minister blair / he ) .
+cases of np anaphora ( iss / the atlanta-based security company ) are also common in the data , but in quantifying paraphrase types we restricted our attention to the simpler case of pronominal anaphora .
+reordering : words , phrases , or entire constituents occur in different order in two related sentences , either because of major syntactic differences ( e.g. topicalization , voice alternations ) or more local pragmatic choices ( e.g. adverb or prepositional phrase placement ) .
+these categories do not cover all possible alternations between pairs of paraphrased sentences ; moreover , categories often overlap in the same sequence of words .
+it is common , for example , to find instances of clausal reordering combined with synonymy .
+figure 2 shows a hand-aligned paraphrase pair taken from the f2 data .
+this pair displays one spelling alternation ( defence / defense ) , one reordering ( position of the � since � phrase ) , and one example of elaboration ( terror attacks occurs in only one sentence ) .
+to quantify the differences between l12 and f2 , we randomly chose 100 sentence pairs from each dataset and counted the number of times each phenomenon was encountered .
+a given sentence pair might exhibit multiple instances of a single phenomenon , such as two phrasal paraphrase changes or two synonym replacements .
+in this case all instances were counted .
+lower-frequency changes that fell outside of the above categories were not tallied : for example , the presence or absence of a definite article ( had authority / had the authority ) in figure 2 was ignored .
+after summing all alternations in each sentence pair , we calculated the average number of occurrences of each paraphrase type in each data set .
+the results are shown in table 2 .
+several major differences stand out between the two data sets .
+first , the f2 data is less parallel , as evidenced by the higher percentage of elaborations found in those sentence pairs .
+loss of parallelism , however , is offset by greater diversity of paraphrase types encountered in the f2 data .
+phrasal alternations are more than 4x more common , and reorderings occur over 20x more frequently .
+thus while string difference methods may produce relatively clean training data , this is achieved at the cost of filtering out common ( and interesting ) paraphrase relationships .
+conclusions and future work .
+edit distance identifies sentence pairs that exhibit lexical and short phrasal alternations that can be aligned with considerable success .
+given a large dataset and a well-motivated clustering of documents , useful datasets can be gleaned even without resorting to more sophisticated techniques ( such as multiple sequence alignment , as employed by barzilay & lee 2003 ) .
+however , there is a disparity between the kinds of paraphrase alternations that we need to be able to align and those that we can already align well using current smt techniques .
+based solely on the criterion of word aer , the l12 data would seem to be superior to the f2 data as a source of paraphrase knowledge .
+hand evaluation , though , indicates that many of the phenomena that we are interested in learning may be absent from this l12 data .
+string edit distance extraction techniques involve assumptions about the data that are inadequate , but achieve high precision .
+techniques like our f2 extraction strategies appear to extract a more diverse variety of data , but yield more noise .
+we believe that an approach with the strengths of both methods would lead to significant improvement in paraphrase identification and generation .
+in the near term , however , the relatively similar performances of f2 and l12-trained models on the f2 test data suggest that with further refinements , this more complex type of data can achieve good results .
+more data will surely help .
+one focus of future work is to build a classifier to predict whether two sentences are related through paraphrase .
+features might include edit distance , temporal / topical clustering information , information about cross-document discourse structure , relative sentence length , and synonymy information .
+we believe that this work has potential impact on the fields of summarization , information retrieval , and question answering .
+our ultimate goal is to apply current smt techniques to the problems of paraphrase recognition and generation .
+we feel that this is a natural extension of the body of recent developments in smt ; perhaps explorations in monolingual data may have a reciprocal impact .
+the field of smt , long focused on closely aligned data , is only now beginning to address the kinds of problems immediately encountered in monolingual paraphrase ( including phrasal translations and large scale reorderings ) .
+algorithms to address these phenomena will be equally applicable to both fields .
+of course a broad-domain smt-influenced paraphrase solution will require very large corpora of sentential paraphrases .
+in this paper we have described just one example of a class of data extraction techniques that we hope will scale to this task .

@@ -1,0 +1,178 @@
+a unified local and global model for discourse coherence .
+abstract .
+note to readers : we have recently detected a software bug which affects the results of our standalone entity grid experiments . ( the bug was in our syntactic analysis code , which incorrectly failed to label the second object of a conjoint vp ; in the phrase wash the dishes and clean the sink , dishes would be correctly labeled as o but sink mislabeled as x. )
+this bug happened to have an unfortunate interaction with the this is preliminary information preamble mentioned in section 5 .
+the results in table 2 above the line are incorrect ; our relaxed entity grid does not outperform the naive grid on the discriminative test .
+this implies that our argument motivating the relaxed model at the end of section 2 is misguided .
+the design and performance of the joint model is unaffected .
+we present a model for discourse coherence which combines the local entity- based approach of ( barzilay and lapata , 2005 ) and the hmm-based content model of ( barzilay and lee , 2004 ) .
+unlike the mixture model of ( soricut and marcu , 2006 ) , we learn local and global features jointly , providing a better theoretical explanation of how they are useful .
+as the local component of our model we adapt ( barzilay and lapata , 2005 ) by relaxing independence assumptions so that it is effective when estimated generatively .
+our model performs the ordering task competitively with ( soricut and marcu , 2006 ) , and significantly better than either of the models it is based on .
+introduction .
+models of coherent discourse are central to several tasks in natural language processing : such models have been used in text generation ( kibble and power , 2004 ) and evaluation of human-produced text in educational applications ( miltsakaki and kukich , 2004 ; higgins et al. , 2004 ) .
+moreover , an accurate model can reveal information about document structure , aiding in such tasks as supervised summarization ( barzilay and lapata , 2005 ) .
+models of coherence tend to fall into two classes .
+local models ( lapata , 2003 ; barzilay and lapata , 2005 ; foltz et al. , 1998 ) attempt to capture the generalization that adjacent sentences often have similar content , and therefore tend to contain related words .
+models of this type are good at finding sentences that belong near one another in the document .
+however , they have trouble finding the beginning or end of the document , or recovering from sudden shifts in topic ( such as occur at paragraph boundaries ) .
+some local models also have trouble deciding which of a pair of related sentences ought to come first .
+in contrast , the global hmm model of barzilay and lee ( 2004 ) tries to track the predictable changes in topic between sentences .
+this gives it a pronounced advantage in ordering sentences , since it can learn to represent beginnings , ends and boundaries as separate states .
+however , it has no local features ; the particular words in each sentence are generated based only on the current state of the document .
+since information can pass from sentence to sentence only in this restricted manner , the model sometimes fails to place sentences next to the correct neighbors .
+we attempt here to unify the two approaches by constructing a model with both sentence-to-sentence dependencies providing local cues , and a hidden topic variable for global structure .
+our local features are based on the entity grid model of ( barzilay and lapata , 2005 ; lapata and barzilay , 2005 ) .
+this model has previously been most successful in a conditional setting ; to integrate it into our model , we first relax its independence assumptions to improve its performance when used generatively .
+our global model is an hmm like that of barzilay and lee ( 2004 ) , but with emission probabilities drawn from the entity grid .
+we present results for two tasks , the ordering task , on which global models usually do well , and the discrimination task , on which local models tend to outperform them .
+our model improves on purely global or local approaches on both tasks .
+previous work by soricut and marcu ( 2006 ) has also attempted to integrate local and global features using a mixture model , with promising results .
+however , mixture models lack explanatory power ; since each of the individual component models is known to be flawed , it is difficult to say that the combination is theoretically more sound than the parts , even if it usually works better .
+moreover , since the model we describe uses a strict subset of the features used in the component models of ( soricut and marcu , 2006 ) , we suspect that adding it to the mixture would lead to still further improved results .
+naive entity grids .
+entity grids , first described in ( lapata and barzilay , 2005 ) , are designed to capture some ideas of centering theory ( grosz et al. , 1995 ) , namely that adjacent utterances in a locally coherent discourses are likely to contain the same nouns , and that important nouns often appear in syntactically important roles such as subject or object .
+an entity grid represents a document as a matrix with a column for each entity , and a row for each sentence .
+the entry ri j describes the syntactic role of entity j in sentence i : these roles are subject ( s ) , object ( o ) , or some other role ( x ) 1 .
+in addition there is a special marker ( - ) for nouns which do not appear at all in a given sentence .
+each noun appears only once in a given row of the grid ; if a noun appears multiple times , its grid symbol describes the most important of its syntactic roles : subject if possible , then object , or finally other .
+an example text is figure 1 , whose grid is figure 2 .
+nouns are also treated as salient or non-salient , another important concern of centering theory .
+we condition events involving a noun on the frequency of that noun .
+unfortunately , this way of representing salience makes our model slightly deficient , since the model conditions on a particular noun occurring e.g. 2 times , but assigns nonzero probabilities to documents where it occurs 3 times .
+this is theoretically quite unpleasant but in comparing different orderings of the same document , it seems not to do too much damage .
+properly speaking entities may be referents of many different nouns and pronouns throughout the discourse , and both ( lapata and barzilay , 2005 ) and 1roles are determined heuristically using trees produced by the parser of ( charniak and johnson , 2005 ) .
+following previous work , we slightly conflate thematic and syntactic roles , marking the subject of a passive verb as o. ( barzilay and lapata , 2005 ) present models which use coreference resolution systems to group nouns .
+we follow ( soricut and marcu , 2006 ) in dropping this component of the system , and treat each head noun as having an individual single referent .
+to model transitions in this entity grid model , lapata and barzilay ( 2005 ) takes a generative approach .
+first , the probability of a document is defined as p ( d ) = p ( sz .. s , ,, ) , the joint probability of all the sentences .
+sentences are generated in order conditioned on all previous sentences : we make a markov assumption of order h ( in our experiments h = 2 ) to shorten the history .
+we represent the truncated history as ~ shz- 1 = s ( z-h ) .. s ( z-1 ) .
+each sentence sz can be split up into a set of nouns representing entities , ez , and their corresponding syntactic roles rz , plus a set of words which are not entities , wz .
+the model treats wz as independent of the previous sentences .
+for any fixed set of sentences sz , nz p ( wz ) is always constant , and so cannot help in finding a coherent ordering .
+the probability of a sentence is therefore dependent only on the entities : next , the model assumes that each entity ej appears in sentences and takes on syntactic roles independent of all the other entities .
+as we show in section 3 , this assumption can be problematic .
+once we assume this , however , we can simplify p ( ez , rzi ~ sh ( z-1 ) ) by calculating for each entity whether it occurs in sentence i and if so , which role it takes .
+this is equivalent to predicting rz , j .
+although this generative approach outperforms several models in correlation with coherence ratings assigned by human judges , it suffers in comparison with later systems .
+barzilay and lapata ( 2005 ) uses the same grid representation , but treats the transition probabilities p ( rz , j i ~ rz , j ) for each document as features for input to an svm classifier .
+soricut and marcu ( 2006 ) s implementation of the entity-based model also uses discriminative training .
+the generative models main weakness in comparison to these conditional models is its assumption of independence between entities .
+in real documents , each sentence tends to contain only a few nouns , and even fewer of them can fill roles like subject and object .
+in other words , nouns compete with each other for the available syntactic positions in sentences ; once one noun is chosen as the subject , the probability that any other will also become a subject ( of a different subclause of the same sentence ) is drastically lowered .
+since the generative entity grid does not take this into account , it learns that in general , the probability of any given entity appearing in a specific sentence is low .
+thus it generates blank sentences ( those without any nouns at all ) with overwhelmingly high probability .
+it may not be obvious that this misallocation of probability mass also reduces the effectiveness of the generative entity grid in ordering fixed sets of sentences .
+however , consider the case where an entity has a history r ~ h , and then does not appear in the next sentence .
+the model treats this as evidence that entities generally do not occur immediately after r ~ h but it may also happen that the entity was outcompeted by some other word with even more significance .
+relaxed entity grid .
+in this section , we relax the troublesome assumption of independence between entities , thus moving the probability distribution over documents away from blank sentences .
+we similarly separate the words into entities and non-entities , treat the non-entities as independent of the history s ~ and omit them .
+we also distinguish two types of entities .
+let the known set kz = ej : ej e ~ s ( z-1 ) , the set of all entities which have appeared before sentence i .
+of the entities appearing in sz , those in kz are known entities , and those which are not are new entities .
+since each entity in the document is new precisely once , we treat these as independent and omit them from our calculations as we did the non-entities .
+we return to both groups of omitted words in section 4 below when discussing our topic-based models .
+to model a sentence , then , we generate the set of known entities it contains along with their syntactic roles , given the history and the known set ki .
+we truncate the history , as above , with horizon h ; note that this does not make the model markovian , since the known set has no horizon .
+finally , we consider only the portion of the history which relates to known nouns ( since all non-known nouns have the same history - - ) .
+in all the equations below , we restrict ei to known entities which actually appear in sentence i , and ri to roles filled by known entities .
+the probability of a sentence is now : we make one further simplification before beginning to approximate : we first generate the set of syntactic slots ri which we intend to fill with known entities , and then decide which entities from the known set to select .
+again , we assume independence from the history , so that the contribution of p ( ri ) for any ordering of a fixed set of sentences is constant and we omit it : estimating p ( ei i ri , ~ rh ( i _ 1 ) , j ) proves to be difficult , since the contexts are very sparse .
+to continue , we make a series of approximations .
+first let each role be filled individually ( where r + e is the boolean indicator function noun e fills role r ) : notice that this process can select the same noun ej to fill multiple roles r , while the entity grid cannot represent such an occurrence .
+the resulting distribution is therefore slightly deficient .
+unfortunately , we are still faced with the sparse context ~ rh ( i _ 1 ) , j, the set of histories of all currently known nouns .
+it is much easier to estimate p ( r + ej i r , rh ( i _ 1 ) , j ) , where we condition only on the history of the particular noun which is chosen to fill slot r .
+however , in this case we do not have a proper probability distribution : i.e. the probabilities do not sum to 1 .
+to overcome this difficulty we simply normalize by force3 : the individual probabilities p ( r + ej i r , rh ( i _ 1 ) , j ) are calculated by counting situations in the training documents in which a known noun has history i h ( i _ 1 ) , j and fills slot r in the next sentence , versus situations where the slot r exists but is filled by some other noun .
+some rare contexts are still sparse , and so we smooth by adding a pseudocount of 1 for all events .
+our model is expressed by equations ( 1 ) , ( 4 ) , ( 5 ) , ( 6 ) and ( 7 ) .
+in figure 2 , the probability of s3 with horizon 1 is now calculated as follows : the known set contains plan , airplane , condition , flight , pilot , owner and occupant .
+there is one syntactic role filled by a known noun , s. the probability is then calculated as p ( + is , x ) ( the probability of selecting a noun with history x to fill the role of s ) normalized by p ( + is , o ) + p ( + is , s ) + p ( + is , x ) + 4 x p ( + is , ) .
+like lapata and barzilay ( 2005 ) , our relaxed model assigns low probability to sentences where nouns with important-seeming histories do not appear .
+however , in our model , the penalty is less severe if there are many competitor nouns .
+on the other hand , if the sentence contains many slots , giving the noun more opportunity to fill one of them , the penalty is proportionally greater if it does not appear .
+topic-based model .
+the model we describe above is a purely local one , and moreover it relies on a particular set of local features which capture the way adjacent sentences tend to share lexical choices .
+its lack of any global structure makes it impossible for the model to recover at a paragraph boundary , or to accurately guess which sentence should begin a document .
+its lack of lexicalization , meanwhile , renders it incapable of learning dependences between pairs of words : for instance , that a sentence discussing a crash is often followed by a casualty report .
+we remedy both these problems by extending our model of document generation .
+like barzilay and lee ( 2004 ) , we learn an hmm in which each sentence has a hidden topic qi , which is chosen conditioned on the previous state qi-1 .
+the emission model of each state is an instance of the relaxed entity grid model as described above , but in addition to conditioning on the role and history , we condition also on the state and on the particular set of lexical items lex ( ki ) which may be selected to fill the role : p ( r + _ ej i r , ~ rh ( i-1 ) , j, qi , lex ( ki ) ) .
+this distribution is approximated as above by the normalized value of p ( r + _ ej i r , ~ r h ( i-1 ) j , qi , lex ( ej ) ) .
+however , due to our use of lexical information , even this may be too sparse for accurate estimation , so we back off by interpolating with the previous model .
+in each context , we introduce ^ eg pseudo-observations , split fractionally according to the backoff distribution : if we abbreviate the context in the relaxed entity grid as c and the event as e , this smoothing corresponds to : in the equations above , only the manually set interpolation hyperparameters are indicated. model learned using em , chosen mostly for convenience .
+our variant of it , unlike ( beal et al. , 2001 ) , has no parameter ^ to control self-transitions ; our emission model is complex enough to make it unnecessary .
+the actual number of states found by the model depends mostly on the backoff constants , the ^ s ( and , for pitman-yor processes , discounts ) chosen for the emission models ( the entity grid , non-entity word model and new noun model ) , and is relatively insensitive to particular choices of prior for the other hyperparameters .
+as the backoff constants decrease , the emission models become more dependent on the state variable q , which leads to more states ( and eventually to memorization of the training data ) .
+if instead the backoff rate increases , the emission models all become close to the general distribution and the model prefers relatively few states .
+we train with interpolations which generally result in around 40 states .
+once the interpolation constants are set , the model can be trained by gibbs sampling .
+we also do inference over the remaining hyperparameters of the model by metropolis sampling from uninformative priors .
+convergence is generally very rapid ; we obtain good results after about 10 iterations .
+this is equivalent to defining the topic-based entity grid as a dirichlet process with parameter ^ eg sampling from the relaxed entity grid .
+in addition , we are now in a position to generate the non-entity words wi and new entities ni in an informative way , by conditioning on the sentence topic qi .
+since they are interrupted by the known entities , they do not form contiguous sequences of words , so we make a bag-of-words assumption .
+to model these sets of words , we use unigram versions of the hierarchical pitman-yor processes of ( teh , 2006 ) , which implement a bayesian version of kneser-ney smoothing .
+to represent the hmm itself , we adapt the non- parametric hmm of ( beal et al. , 2001 ) .
+this is a bayesian alternative to the conventional hmm an informative starting distribution .
+when finding the probability of a test document , we do not do inference over the full bayesian model , because the number of states , and the probability of different transitions , can change with every new observation , making dynamic programming impossible .
+beal et al. ( 2001 ) proposes an inference algorithm based on particle filters , but we feel that in this case , the effects are relatively minor , so we approximate by treating the model as a standard hmm , using a fixed transition function based only on the training data .
+this allows us to use the conventional viterbi algorithm .
+the backoff rates we choose at training time are typically too small for optimal inference in the ordering task .
+before doing tests , we set them to higher values ( determined to optimize ordering performance on held-out data ) so that our emission distributions are properly smoothed .
+experiments .
+our experiments use the popular airplane corpus , a collection of documents describing airplane crashes taken from the database of the national transportation safety board , used in ( barzilay and lee , 2004 ; barzilay and lapata , 2005 ; soricut and marcu , 2006 ) .
+we use the standard division of the corpus into 100 training and 100 test documents ; for development purposes we did 10-fold cross-validation on the training data .
+the airplane documents have some advantages for coherence research : they are short ( 11.5 sentences on average ) and quite formulaic , which makes it easy to find lexical and structural patterns .
+on the other hand , they do have some oddities . 46 of the training documents begin with a standard preamble : this is preliminary information , subject to change , and may contain errors .
+any errors in this report will be corrected when the final report has been completed , which essentially gives coherence models the first two sentences for free .
+others , however , begin abruptly with no introductory material whatsoever , and sometimes without even providing references for their definite noun phrases ; one document begins : at v1 , the dc-10-30s number 1 engine , a general electric cf6-50c2 , experienced a casing breach when the 2nd-stage low pressure turbine ( lpt ) anti-rotation nozzle locks failed .
+even humans might have trouble identifying this sentence as the beginning of a document .
+sentence ordering .
+in the sentence ordering task , ( lapata , 2003 ; barzilay and lee , 2004 ; barzilay and lapata , 2005 ; soricut and marcu , 2006 ) , we view a document as an unordered bag of sentences and try to find the ordering of the sentences which maximizes coherence according to our model .
+this type of ordering process has applications in natural language generation and multi-document summarization .
+unfortunately , finding the optimal ordering according to a probabilistic model with local features is np-complete and non-approximable ( althaus et al. , 2004 ) .
+moreover , since our model is not markovian , the relaxation used as a heuristic for a * search by soricut and marcu ( 2006 ) is ineffective .
+we therefore use simulated annealing to find a high-probability ordering , starting from a random permutation of the sentences .
+our search system has few estimated search errors as defined by soricut and marcu ( 2006 ) ; it rarely proposes an ordering which has lower probability than the original ordering4 .
+to evaluate the quality of the orderings we predict as optimal , we use kendalls ^ , a measurement of the number of pairwise swaps needed to transform our proposed ordering into the original document , normalized to lie between 1 ( reverse order ) and 1 ( original order ) .
+lapata ( 2006 ) shows that it corresponds well with human judgements of coherence and reading times .
+a slight problem with ^ is that it does not always distinguish between proposed orderings of a document which disrupt local relationships at random , and orderings in which paragraph- like units move as a whole .
+in longer documents , it may be worth taking this problem into account when selecting a metric ; however , the documents in the airplane corpus are mostly short and have little paragraph structure , so ^ is an effective metric .
+discrimination .
+our second task is the discriminative test used by ( barzilay and lapata , 2005 ) .
+in this task we generate random permutations of a test document , and measure how often the probability of a permutation 40 times on test data , 3 times in cross-validation .
+this task bears some resemblance to the task of discriminating coherent from incoherent essays in ( miltsakaki and kukich , 2004 ) , and is also equivalent in the limit to the ranking metric of ( barzilay and lee , 2004 ) , which we cannot calculate because our model does not produce k-best output .
+as opposed to the ordering task , which tries to measure how close the models preferred orderings are to the original , this measurement assesses how many orderings the model prefers .
+we use 20 random permutations per document , for 2000 total tests .
+results .
+since the ordering task requires a model to propose the complete structure for a set of sentences , it is very dependent on global features .
+to perform adequately , a model must be able to locate the beginning and end of the document , and place intermediate sentences relative to these two points .
+without any way of doing this , our relaxed entity grid model has ^ of approximately 0 , meaning its optimal orderings are essentially uncorrelated with the correct orderings .
+the hmm content model of ( barzilay and lee , 2004 ) , which does have global structure , performs much better on ordering , at ^ of .44 .
+however , local features can help substantially for this task , since models which use them are better at placing related sentences next to one another .
+using both sets of features , our topic-based model achieves state of the art performance ( ^ = .5 ) on the ordering task , comparable with the mixture model of ( soricut and marcu , 2006 ) .
+the need for good local coherence features is especially clear from the results on the discrimination task ( table 1 ) .
+permuting a document may leave obvious signposts like the introduction and conclusion in place , but it almost always splits up many pairs of neighboring sentences , reducing local coherence . ( barzilay and lee , 2004 ) , which lacks local features , does quite poorly on this task ( 74 % ) , while our model performs extremely well ( 94 % ) .
+it is also clear from the results that our relaxed entity grid model ( 87 % ) improves substantially on the generative naive entity grid ( 81 % ) .
+when used on its own , it performs much better on the discrimination task , which is the one for which it was designed . ( the naive entity grid has a higher ^ score , .17 , essentially by accident .
+it slightly prefers to generate infrequent nouns from the start context rather than the context , which happens to produce the correct placement for the preliminary information preamble . )
+when used as the emission model for known entities in our topic-based system , the relaxed entity grid shows its improved performance even more strongly ( table 2 ) ; its results are about 10 % higher than the naive version under both metrics .
+our combined model uses only entity-grid features and unigram language models , a strict subset of the feature set of ( soricut and marcu , 2006 ) .
+their mixture includes an entity grid model and a version of the hmm of ( barzilay and lee , 2004 ) , which uses n-gram language modeling .
+it also uses a model of lexical generation based on the ibm-1 model for machine translation , which produces all words in the document conditioned on words from previous sentences .
+in contrast , we generate only entities conditioned on words from previous sentences ; other words are conditionally independent given the topic variable .
+it seems likely therefore that using our model as a component of a mixture might improve on the state of the art result .
+future work .
+ordering in the airplane corpus and similar constrained sets of short documents is by no means a solved problem , but the results so far show a good deal of promise .
+unfortunately , in longer and less formulaic corpora , the models , inference algorithms and even evaluation metrics used thus far may prove extremely difficult to scale up .
+domains with more natural writing styles will make lexical prediction a much more difficult problem .
+on the other hand , the wider variety of grammatical constructions used may motivate more complex syntactic features , for instance as proposed by ( siddharthan et al. , 2004 ) in sentence clustering .
+finding optimal orderings is a difficult task even for short documents , and will become exponentially more challenging in longer ones .
+for multi- paragraph documents , it is probably impractical to use full-scale coherence models to find optimal orderings directly .
+a better approach may be a coarseto-fine or hierarchical system which cuts up longer documents into more manageable chunks that can be ordered as a unit .
+multi-paragraph documents also pose a problem for the t metric itself .
+in documents with clear thematic divisions between their different sections , a good ordering metric should treat transposed paragraphs differently than transposed sentences .

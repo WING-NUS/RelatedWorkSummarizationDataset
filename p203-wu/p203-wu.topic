@@ -1,0 +1,29 @@
+<topic index> 0 </topic index>
+<title> text classification </title>
+<keywords> text;classification; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> monolingual text classification </title>
+<keywords> monolingual;language; </keywords>
+
+<topic index> 0.1.1 </topic index>
+<title> feature selection </title>
+<keywords> features;selection; </keywords>
+
+<topic index> 0.1.2 </topic index>
+<title> classifiers </title>
+<keywords> learning;probabilistic; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> multi-lingual text classification </title>
+<keywords> multi-language;multi-lingual;language; </keywords>
+
+<topic index> 0.2.1 </topic index>
+<title> bilingual text classification </title>
+<keywords> bilingual; </keywords>
+
+<topic index> 0.2.2 </topic index>
+<title> cross-lingual text classification </title>
+<keywords> cross-lingual; </keywords>
+
+

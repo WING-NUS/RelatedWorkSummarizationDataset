@@ -1,0 +1,177 @@
+bleu : a method for automatic evaluation of machine translation abstract .
+human evaluations of machine translation are extensive but expensive .
+human evaluations can take months to finish and involve human labor that can not be reused .
+we propose a method of automatic machine translation evaluation that is quick , inexpensive , and language-independent , that correlates highly with human evaluation , and that has little marginal cost per run .
+we present this method as an automated understudy to skilled human judges which substitutes for them when there is need for quick or frequent evaluations.1 introduction .
+rationale .
+human evaluations of machine translation ( mt ) weigh many aspects of translation , including adequacy , fidelity , and fluency of the translation ( hovy , 1999 ; white and oconnell , 1994 ) .
+a comprehensive catalog of mt evaluation techniques and their rich literature is given by reeder ( 2001 ) .
+for the most part , these various human evaluation approaches are quite expensive ( hovy , 1999 ) .
+moreover , they can take weeks or months to finish .
+this is a big problem because developers of machine translation systems need to monitor the effect of daily changes to their systems in order to weed out bad ideas from good ideas .
+we believe that mt progress stems from evaluation and that there is a logjam of fruitful research ideas waiting to be released from the evaluation bottleneck .
+developers would benefit from an inexpensive automatic evaluation that is quick , language-independent , and correlates highly with human evaluation .
+we propose such an evaluation method in this paper .
+viewpoint .
+how does one measure translation performance ?
+the closer a machine translation is to a professional human translation , the better it is .
+this is the central idea behind our proposal .
+to judge the quality of a machine translation , one measures its closeness to one or more reference human translations according to a numerical metric .
+thus , our mt evaluation system requires two ingredients : a numerical translation closeness metric , a corpus of good quality human reference translations .
+we fashion our closeness metric after the highly successful word error rate metric used by the speech recognition community , appropriately modified for multiple reference translations and allowing for legitimate differences in word choice and word order .
+the main idea is to use a weighted average of variable length phrase matches against the reference translations .
+this view gives rise to a family of metrics using various weighting schemes .
+we have selected a promising baseline metric from this family .
+in section 2 , we describe the baseline metric in detail .
+in section 3 , we evaluate the performance of bleu .
+in section 4 , we describe a human evaluation experiment .
+in section 5 , we compare our baseline metric performance with human evaluations .
+typically , there are many perfect translations of a given source sentence .
+these translations may vary in word choice or in word order even when they use the same words .
+and yet humans can clearly distinguish a good translation from a bad one .
+although they appear to be on the same subject , they differ markedly in quality .
+for comparison , we provide three reference human translations of the same sentence below .
+reference 1 : it is a guide to action that ensures that the military will forever heed party commands .
+reference 2 : it is the guiding principle which guarantees the military forces always being under the command of the party .
+reference 3 : it is the practical guide for the army always to heed the directions of the party .
+it is clear that the good translation , candidate 1 , shares many words and phrases with these three reference translations , while candidate 2 does not .
+we will shortly quantify this notion of sharing in section 2.1 .
+but first observe that candidate 1 shares " it is a guide to action " with reference 1 , " which " with reference 2 , " ensures that the military " with reference 1 , " always " with references 2 and 3 , " commands " with reference 1 , and finally " of the party " with reference 2 ( all ignoring capitalization ) .
+in contrast , candidate 2 exhibits far fewer matches , and their extent is less .
+it is clear that a program can rank candidate 1 higher than candidate 2 simply by comparing n- gram matches between each candidate translation and the reference translations .
+experiments over large collections of translations presented in section 5 show that this ranking ability is a general phenomenon , and not an artifact of a few toy examples .
+the primary programming task for a bleu implementor is to compare n-grams of the candidate with the n-grams of the reference translation and count the number of matches .
+these matches are position- independent .
+the more the matches , the better the candidate translation is .
+for simplicity , we first focus on computing unigram matches .
+modified n-gram precision .
+the cornerstone of our metric is the familiar precision measure .
+to compute precision , one simply counts up the number of candidate translation words ( unigrams ) which occur in any reference translation and then divides by the total number of words in the candidate translation .
+unfortunately , mt systems can overgenerate reasonable words , resulting in improbable , but high-precision , translations like that of example 2 below .
+intuitively the problem is clear : a reference word should be considered exhausted after a matching candidate word is identified .
+we formalize this intuition as the modified unigram precision .
+to compute this , one first counts the maximum number of times a word occurs in any single reference translation .
+next , one clips the total count of each candidate word by its maximum reference count , 2adds these clipped counts up , and divides by the total ( unclipped ) number of candidate words .
+modified n-gram precision is computed similarly for any n : all candidate n-gram counts and their corresponding maximum reference counts are collected .
+the candidate counts are clipped by their corresponding reference maximum value , summed , and divided by the total number of candidate n- grams .
+in example 1 , candidate 1 achieves a modified bigram precision of 10 / 17 , whereas the lower quality candidate 2 achieves a modified bigram precision of 1 / 13 .
+in example 2 , the ( implausible ) candidate achieves a modified bigram precision of 0 .
+this sort of modified n-gram precision scoring captures two aspects of translation : adequacy and fluency .
+a translation using the same words ( 1-grams ) as in the references tends to satisfy adequacy .
+the longer n-gram matches account for fluency .
+modified n-gram precision on blocks of text .
+how do we compute modified n-gram precision on a multi-sentence test set ?
+although one typically evaluates mt systems on a corpus of entire documents , our basic unit of evaluation is the sentence .
+a source sentence may translate to many target sentences , in which case we abuse terminology and refer to the corresponding target sentences as a sentence .
+we first compute the n-gram matches sentence by sentence .
+next , we add the clipped n-gram counts for all the candidate sentences and divide by the number of candidate n-grams in the test corpus to compute a modified precision score , pn , for the entire test corpus .
+bleu only needs to match human judgment when averaged over a test corpus ; scores on individual sentences will often vary from human judgments .
+for example , a system which produces the fluent phrase east asian economy is penalized heavily on the longer n-gram precisions if all the references happen to read economy of east asia .
+the key to bleus success is that all systems are treated similarly and multiple human translators with different styles are used , so this effect cancels out in comparisons between systems .
+ranking systems using only modified n-gram precision .
+to verify that modified n-gram precision distinguishes between very good translations and bad translations , we computed the modified precision numbers on the output of a ( good ) human translator and a standard ( poor ) machine translation system using 4 reference translations for each of 127 source sentences .
+the strong signal differentiating human ( high precision ) from machine ( low precision ) is striking .
+the difference becomes stronger as we go from unigram precision to 4-gram precision .
+it appears that any single n-gram precision score can distinguish between a good translation and a bad translation .
+to be useful , however , the metric must also reliably distinguish between translations that do not differ so greatly in quality .
+furthermore , it must distinguish between two human translations of differing quality .
+this latter requirement ensures the continued validity of the metric as mt approaches human translation quality .
+to this end , we obtained a human translation by someone lacking native proficiency in both the source ( chinese ) and the target language ( english ) .
+for comparison , we acquired human translations of the same documents by a native english speaker .
+we also obtained machine translations by three commercial systems .
+these five systems two humans and three machines are scored against two reference professional human translations .
+the average modified n-gram precision results are shown in figure 2 .
+each of these n-gram statistics implies the same ranking : h2 ( human-2 ) is better than h1 ( human- 1 ) , and there is a big drop in quality between h 1 and s3 ( machine / system-3 ) .
+s3 appears better than s2 which in turn appears better than s1 .
+remarkably , this is the same rank order assigned to these systems by human judges , as we discuss later .
+while there seems to be ample signal in any single n-gram precision , it is more robust to combine all these signals into a single number metric .
+combining the modified n-gram precisions .
+how should we combine the modified precisions for the various n-gram sizes ?
+a weighted linear average of the modified precisions resulted in encouraging results for the 5 systems .
+however , as can be seen in figure 2 , the modified n-gram precision decays roughly exponentially with n : the modified unigram precision is much larger than the modified bigram precision which in turn is much bigger than the modified trigram precision .
+a reasonable averaging scheme must take this exponential decay into account ; a weighted average of the logarithm of modified precisions satisifies this requirement .
+bleu uses the average logarithm with uniform weights , which is equivalent to using the geometric mean of the modified n-gram precisions.5,6 experimentally , we obtain the best correlation with monolingual human judgments using a maximum n-gram order of 4 , although 3-grams and 5-grams give comparable results .
+sentence length .
+a candidate translation should be neither too long nor too short , and an evaluation metric should enforce this .
+to some extent , the n-gram precision already accomplishes this .
+n-gram precision penalizes spurious words in the candidate that do not appear in any of the reference translations .
+additionally , modified precision is penalized if a word occurs more frequently in a candidate translation than its maximum reference count .
+this rewards using a word as many times as warranted and penalizes using a word more times than it occurs in any of the references .
+however , modified n-gram precision alone fails to enforce the proper translation length , as is illustrated in the short , absurd example below .
+traditionally , precision has been paired with recall to overcome such length-related problems .
+however , bleu considers multiple reference translations , each of which may use a different word choice to translate the same source word .
+furthermore , a good candidate translation will only use ( recall ) one of these possible choices , but not all .
+indeed , recalling all choices leads to a bad translation .
+sentence brevity penalty .
+candidate translations longer than their references are already penalized by the modified n-gram precision measure : there is no need to penalize them again .
+consequently , we introduce a multiplicative brevity penalty factor .
+with this brevity penalty in place , a high-scoring candidate translation must now match the reference translations in length , in word choice , and in word order .
+note that neither this brevity penalty nor the modified n-gram precision length effect directly considers the source length ; instead , they consider the range of reference translation lengths in the target language .
+one consideration remains : if we computed the brevity penalty sentence by sentence and averaged the penalties , then length deviations on short sentences would be punished harshly .
+instead , we compute the brevity penalty over the entire corpus to allow some freedom at the sentence level .
+we first compute the test corpus effective reference length , r , by summing the best match lengths for each candidate sentence in the corpus .
+we choose the brevity penalty to be a decaying exponential in r / c , where c is the total length of the candidate translation corpus .
+bleu details .
+we take the geometric mean of the test corpus modified precision scores and then multiply the result by an exponential brevity penalty factor .
+currently , case folding is the only text normalization performed before computing the precision .
+we first compute the geometric average of the modified n-gram precisions , pn , using n-grams up to length n and positive weights wn summing to one .
+the bleu evaluation .
+the bleu metric ranges from 0 to 1 .
+few translations will attain a score of 1 unless they are identical to a reference translation .
+for this reason , even a human translator will not necessarily score 1 .
+it is important to note that the more reference translations per sentence there are , the higher the score is .
+thus , one must be cautious making even rough comparisons on evaluations with different numbers of reference translations : on a test corpus of about 500 sentences ( 40 general news stories ) , a human translator scored 0.3468 against four references and scored 0.2571 against two references .
+table 1 shows the bleu scores of the 5 systems against two references on this test corpus .
+the mt systems s2 and s3 are very close in this metric .
+to answer these questions , we divided the test corpus into 20 blocks of 25 sentences each , and computed the bleu metric on these blocks individually .
+we thus have 20 samples of the bleu metric for each system .
+we computed the means , variances , and paired t-statistics which are displayed in table 2 .
+the t-statistic compares each system with its left neighbor in the table .
+for example , t = 6 for the pair s1 and s2 .
+note that the numbers in table 1 are the bleu metric on an aggregate of 500 sentences , but the means in table 2 are averages of the bleu metric on aggregates of 25 sentences .
+as expected , these two sets of results are close for each system and differ only by small finite block size effects .
+since a paired t-statistic of 1.7 or above is 95 % significant , the differences between the systems scores are statistically very significant .
+the reported variance on 25-sentence blocks serves as an upper bound to the variance of sizeable test sets like the 500 sentence corpus .
+how many reference translations do we need ?
+we simulated a single-reference test corpus by randomly selecting one of the 4 reference translations as the single reference for each of the 40 stories .
+in this way , we ensured a degree of stylistic variation .
+the systems maintain the same rank order as with multiple references .
+this outcome suggests that we may use a big test corpus with a single reference translation , provided that the translations are not all from the same translator .
+the human evaluation .
+we had two groups of human judges .
+the first group , called the monolingual group , consisted of 10 native speakers of english .
+the second group , called the bilingual group , consisted of 10 native speakers of chinese who had lived in the united states for the past several years .
+none of the human judges was a professional translator .
+the humans judged our 5 standard systems on a chinese sentence subset extracted at random from our 500 sentence test corpus .
+we paired each source sentence with each of its 5 translations , for a total of 250 pairs of chinese source and english translations .
+we prepared a web page with these translation pairs randomly ordered to disperse the five translations of each source sentence .
+all judges used this same webpage and saw the sentence pairs in the same order .
+they rated each translation from 1 ( very bad ) to 5 ( very good ) .
+the monolingual group made their judgments based only on the translations readability and fluency .
+as must be expected , some judges were more liberal than others .
+and some sentences were easier to translate than others .
+to account for the intrinsic difference between judges and the sentences , we compared each judges rating for a sentence across systems .
+we performed four pairwise t-test comparisons between adjacent systems as ordered by their aggregate average score .
+monolingual group pairwise judgments .
+figure 3 shows the mean difference between the scores of two consecutive systems and the 95 % confidence interval about the mean .
+we see that s2 is quite a bit better than s 1 ( by a mean opinion score difference of 0.326 on the 5-point scale ) , while s3 is judged a little better ( by 0.114 ) .
+both differences are significant at the 95 % level.7 the human h1 is much better than the best system , though a bit worse than human h2 .
+this is not surprising given that h1 is not a native speaker of either chinese or english , whereas h2 is a native english speaker .
+again , the difference between the human translators is significant beyond the 95 % level .
+bilingual group pairwise judgments .
+figure 4 shows the same results for the bilingual group .
+they also find that s3 is slightly better than s2 ( at 95 % confidence ) though they judge that the human translations are much closer ( indistinguishable at 95 % confidence ) , suggesting that the bilinguals tended to focus more on adequacy than on fluency .
+bleu vs the human evaluation .
+figure 5 shows a linear regression of the monolingual group scores as a function of the bleu score over two reference translations for the 5 systems .
+the high correlation coefficient of 0.99 indicates that bleu tracks human judgment well .
+particularly interesting is how well bleu distinguishes between s2 and s3 which we now take the worst system as a reference point and compare the bleu scores with the human judgment scores of the remaining systems relative to the worst system .
+we took the bleu , monolingual group , and bilingual group scores for the 5 systems and linearly normalized them by their corresponding range ( the maximum and minimum score across the 5 systems ) .
+the normalized scores are shown in figure 7 .
+this figure illustrates the high correlation between the bleu score and the monolingual group .
+of particular interest is the accuracy of bleus estimate of the small difference between s2 and s3 and the larger difference between s3 and h1 .
+the figure also highlights the relatively large gap between mt systems and human translators.8 in addition , we surmise that the bilingual group was very forgiving in judging h1 relative to h2 because the monolingual group found a rather large difference in the fluency of their translations .
+conclusion .
+we believe that bleu will accelerate the mt r & d cycle by allowing researchers to rapidly home in on effective modeling ideas .
+our belief is reinforced by a recent statistical analysis of bleus correlation with human judgment for translation into english from four quite different languages ( arabic , chinese , french , spanish ) representing 3 different language families ( papineni et al. , 2002 ) !
+bleus strength is that it correlates highly with human judgments by averaging out individual sentence judgment errors over a test corpus rather than attempting to divine the exact human judgment for every sentence : quantity leads to quality .
+finally , since mt and summarization can both be viewed as natural language generation from a textual context , we believe bleu could be adapted to evaluating summarization or similar nlg tasks .

@@ -1,0 +1,213 @@
+learning extraction patterns for subjective expressions abstract .
+this paper presents a bootstrapping process that learns linguistically rich extraction patterns for subjective ( opinionated ) expressions .
+high-precision classifiers label unannotated data to automatically create a large training set , which is then given to an extraction pattern learning algorithm .
+the learned patterns are then used to identify more subjective sentences .
+the bootstrapping process learns many subjective patterns and increases recall while maintaining high precision .
+introduction .
+many natural language processing applications could benefit from being able to distinguish between factual and subjective information .
+subjective remarks come in a variety of forms , including opinions , rants , allegations , accusations , suspicions , and speculations .
+ideally , information extraction systems should be able to distinguish between factual information ( which should be extracted ) and non-factual information ( which should be discarded or labeled as uncertain ) .
+question answering systems should distinguish between factual and speculative answers .
+multi-perspective question answering aims to present multiple answers to the user based upon speculation or opinions derived from different sources .
+multi-document summarization systems need to summarize different opinions and perspectives .
+spam filtering systems must recognize rants and emotional tirades , among other things .
+in general , nearly any system that seeks to identify information could benefit from being able to separate factual and subjective information .
+some existing resources contain lists of subjective words ( e.g. , levins desire verbs ( 1993 ) ) , and some empirical methods in nlp have automatically identified adjectives , verbs , and n-grams that are statistically associated with subjective language ( e.g. , ( turney , 2002 ; hatzivassiloglou and mckeown , 1997 ; wiebe , 2000 ; wiebe et al. , 2001 ) ) .
+however , subjective language can be exhibited by a staggering variety of words and phrases .
+in addition , many subjective terms occur infrequently , such as strongly subjective adjectives ( e.g. , preposterous , unseemly ) and metaphorical or idiomatic phrases ( e.g. , dealt a blow , swept off ones feet ) .
+consequently , we believe that subjectivity learning systems must be trained on extremely large text collections before they will acquire a subjective vocabulary that is truly broad and comprehensive in scope .
+to address this issue , we have been exploring the use of bootstrapping methods to allow subjectivity classifiers to learn from a collection of unannotated texts .
+our research uses high-precision subjectivity classifiers to automatically identify subjective and objective sentences in unannotated texts .
+this process allows us to generate a large set of labeled sentences automatically .
+the second emphasis of our research is using extraction patterns to represent subjective expressions .
+these patterns are linguistically richer and more flexible than single words or n-grams .
+using the ( automatically ) labeled sentences as training data , we apply an extraction pattern learning algorithm to automatically generate patterns representing subjective expressions .
+the learned patterns can be used to automatically identify more subjective sentences , which grows the training set , and the entire process can then be bootstrapped .
+our experimental results show that this bootstrapping process increases the recall of the high precision subjective sentence classifier with little loss in precision .
+we also find that the learned extraction patterns capture subtle connotations that are more expressive than the individual words by themselves .
+this paper is organized as follows .
+section 2 discusses previous work on subjectivity analysis and extraction pattern learning .
+section 3 overviews our general approach , describes the high-precision subjectivity classifiers , and explains the algorithm for learning extraction patterns associated with subjectivity .
+section 4 describes the data that we use , presents our experimental results , and shows examples of patterns that are learned .
+finally , section 5 summarizes our findings and conclusions .
+background .
+subjectivity analysis .
+much previous work on subjectivity recognition has focused on document-level classification .
+for example , ( spertus , 1997 ) developed a system to identify inflammatory texts and ( turney , 2002 ; pang et al. , 2002 ) developed methods for classifying reviews as positive or negative .
+some research in genre classification has included the recognition of subjective genres such as editorials ( e.g. , ( karlgren and cutting , 1994 ; kessler et al. , 1997 ; wiebe et al. , 2001 ) ) .
+in contrast , the goal of our work is to classify individual sentences as subjective or objective .
+document-level classification can distinguish between subjective texts , such as editorials and reviews , and objective texts , such as newspaper articles .
+but in reality , most documents contain a mix of both subjective and objective sentences .
+subjective texts often include some factual information .
+for example , editorial articles frequently contain factual information to back up the arguments being made , and movie reviews often mention the actors and plot of a movie as well as the theatres where its currently playing .
+even if one is willing to discard subjective texts in their entirety , the objective texts usually contain a great deal of subjective information in addition to facts .
+for example , newspaper articles are generally considered to be relatively objective documents , but in a recent study ( wiebe et al. , 2001 ) 44 % of sentences in a news collection were found to be subjective ( after editorial and review articles were removed ) .
+one of the main obstacles to producing a sentence- level subjectivity classifier is a lack of training data .
+to train a document-level classifier , one can easily find collections of subjective texts , such as editorials and reviews .
+for example , ( pang et al. , 2002 ) collected reviews from a movie database and rated them as positive , negative , or neutral based on the rating ( e.g. , number of stars ) given by the reviewer .
+it is much harder to obtain collections of individual sentences that can be easily identified as sub jective or objective .
+previous work on sentence-level subjectivity classification ( wiebe et al. , 1999 ) used training corpora that had been manually annotated for subjectivity .
+manually producing annotations is time consuming , so the amount of available annotated sentence data is relatively small .
+the goal of our research is to use high-precision subjectivity classifiers to automatically identify subjective and objective sentences in unannotated text corpora .
+the high-precision classifiers label a sentence as subjective or objective when they are confident about the classification , and they leave a sentence unlabeled otherwise .
+unannotated texts are easy to come by , so even if the classifiers can label only 30 % of the sentences as subjective or objective , they will still produce a large collection of labeled sentences .
+most importantly , the high-precision classifiers can generate a much larger set of labeled sentences than are currently available in manually created data sets .
+extraction patterns .
+information extraction ( ie ) systems typically use lexicosyntactic patterns to identify relevant information .
+the specific representation of these patterns varies across systems , but most patterns represent role relationships surrounding noun and verb phrases .
+for example , an ie system designed to extract information about hijackings might use the pattern hijacking of < x > , which looks for the noun hijacking and extracts the object of the preposition of as the hijacked vehicle .
+the pattern < x > was hijacked would extract the hijacked vehicle when it finds the verb hijacked in the passive voice , and the pattern < x > hijacked would extract the hijacker when it finds the verb hijacked in the active voice .
+one of our hypotheses was that extraction patterns would be able to represent subjective expressions that have noncompositional meanings .
+for example , consider the common expression drives ( someone ) up the wall , which expresses the feeling of being annoyed with something .
+the meaning of this expression is quite different from the meanings of its individual words ( drives , up , wall ) .
+furthermore , this expression is not a fixed word sequence that could easily be captured by n-grams .
+it is a relatively flexible construction that may be more generally represented as < x > drives < y > up the wall , where x and y may be arbitrary noun phrases .
+this pattern would match many different sentences , such as george drives me up the wall , she drives the mayor up the wall , or the nosy old man drives his quiet neighbors up the wall .
+we also wondered whether the extraction pattern representation might reveal slight variations of the same verb or noun phrase that have different connotations .
+for example , you can say that a comedian bombed last night , which is a subjective statement , but you cant express this sentiment with the passive voice of bombed .
+in section 3.2 , we will show examples of extraction patterns representing subjective expressions which do in fact exhibit both of these phenomena .
+a variety of algorithms have been developed to automatically learn extraction patterns .
+most of these algorithms require special training resources , such as texts annotated with domain-specific tags ( e.g. , autoslog ( riloff , 1993 ) , crystal ( soderland et al. , 1995 ) , rapier ( califf , 1998 ) , srv ( freitag , 1998 ) , whisk ( soderland , 1999 ) ) or manually defined keywords , frames , or object recognizers ( e.g. , palka ( kim and moldovan , 1993 ) and liep ( huffman , 1996 ) ) .
+autoslog-ts ( riloff , 1996 ) takes a different approach , requiring only a corpus of unannotated texts that have been separated into those that are related to the target domain ( the relevant texts ) and those that are not ( the irrelevant texts ) .
+most recently , two bootstrapping algorithms have been used to learn extraction patterns .
+meta- bootstrapping ( riloff and jones , 1999 ) learns both extraction patterns and a semantic lexicon using unannotated texts and seed words as input .
+exdisco ( yangarber et al. , 2000 ) uses a bootstrapping mechanism to find new extraction patterns using unannotated texts and some seed patterns as the initial input .
+for our research , we adopted a learning process very similar to that used by autoslog-ts , which requires only relevant texts and irrelevant texts as its input .
+we describe this learning process in more detail in the next section .
+learning and bootstrapping extraction patterns for subjectivity .
+we have developed a bootstrapping process for subjectivity classification that explores three ideas : ( 1 ) high- precision classifiers can be used to automatically identify subjective and objective sentences from unannotated texts , ( 2 ) this data can be used as a training set to automatically learn extraction patterns associated with subjectivity , and ( 3 ) the learned patterns can be used to grow the training set , allowing this entire process to be bootstrapped .
+figure 1 shows the components and layout of the bootstrapping process .
+the process begins with a large collection of unannotated text and two high precision subjectivity classifiers .
+one classifier searches the unannotated corpus for sentences that can be labeled as subjective with high confidence , and the other classifier searches for sentences that can be labeled as objective with high confidence .
+all other sentences in the corpus are left unlabeled .
+the labeled sentences are then fed to an extraction pattern learner , which produces a set of extraction patterns that are statistically correlated with the subjective sentences ( we will call these the subjective pat terns ) .
+these patterns are then used to identify more sentences within the unannotated texts that can be classified as subjective .
+the extraction pattern learner can then retrain using the larger training set and the process repeats .
+the subjective patterns can also be added to the high- precision subjective sentence classifier as new features to improve its performance .
+the dashed lines in figure 1 represent the parts of the process that are bootstrapped .
+in this section , we will describe the high-precision sentence classifiers , the extraction pattern learning process , and the details of the bootstrapping process .
+high-precision subjectivity classifiers .
+the high-precision classifiers ( hp-subj and hp-obj ) use lists of lexical items that have been shown in previous work to be good subjectivity clues .
+most of the items are single words , some are n-grams , but none involve syntactic generalizations as in the extraction patterns .
+any data used to develop this vocabulary does not overlap with the test sets or the unannotated data used in this paper .
+many of the subjective clues are from manually developed resources , including entries from ( levin , 1993 ; ballmer and brennenstuhl , 198 1 ) , framenet lemmas with frame element experiencer ( baker et al. , 1998 ) , adjectives manually annotated for polarity ( hatzivassiloglou and mckeown , 1997 ) , and subjectivity clues listed in ( wiebe , 1990 ) .
+others were derived from corpora , including subjective nouns learned from unannotated data using bootstrapping ( riloff et al. , 2003 ) .
+the subjectivity clues are divided into those that are strongly subjective and those that are weakly subjective , using a combination of manual review and empirical results on a small training set of manually annotated data .
+as the terms are used here , a strongly subjective clue is one that is seldom used without a subjective meaning , whereas a weakly subjective clue is one that commonly has both subjective and objective uses .
+the high-precision subjective classifier classifies a sentence as subjective if it contains two or more of the strongly subjective clues .
+on a manually annotated test set , this classifier achieves 91.5 % precision and 31.9 % recall ( that is , 91.5 % of the sentences that it selected are subjective , and it found 31.9 % of the subjective sentences in the test set ) .
+this test set consists of 2197 sentences , 59 % of which are subjective .
+the high-precision objective classifier takes a different approach .
+rather than looking for the presence of lexical items , it looks for their absence .
+it classifies a sentence as objective if there are no strongly subjective clues and at most one weakly subjective clue in the current , previous , and next sentence combined .
+why doesnt the objective classifier mirror the subjective classifier , and consult its own list of strongly objective clues ?
+there are certainly lexical items that are statistically correlated with the objective class ( examples are cardinal numbers ( wiebe et al. , 1999 ) , and words such as per , case , market , and total ) , but the presence of such clues does not readily lead to high precision objective classification .
+add sarcasm or a negative evaluation to a sentence about a dry topic such as stock prices , and the sentence becomes subjective .
+conversely , add objective topics to a sentence containing two strongly subjective words such as odious and scumbag , and the sentence remains subjective .
+the performance of the high-precision objective classifier is a bit lower than the subjective classifier : 82.6 % precision and 16.4 % recall on the test set mentioned above ( that is , 82.6 % of the sentences selected by the objective classifier are objective , and the objective classifier found 16.4 % of the objective sentences in the test set ) .
+although there is room for improvement , the performance proved to be good enough for our purposes .
+learning subjective extraction patterns .
+to automatically learn extraction patterns that are associated with subjectivity , we use a learning algorithm similar to autoslog-ts ( riloff , 1996 ) .
+for training , autoslogts uses a text corpus consisting of two distinct sets of texts : relevant texts ( in our case , subjective sentences ) and irrelevant texts ( in our case , objective sentences ) .
+a set of syntactic templates represents the space of possible extraction patterns .
+the learning process has two steps .
+first , the syntactic templates are applied to the training corpus in an exhaustive fashion , so that extraction patterns are generated for ( literally ) every possible instantiation of the templates that appears in the corpus .
+the left column of figure 2 shows the syntactic templates used by autoslog-ts .
+the right column shows a specific extraction pattern that was learned during our subjectivity experiments as an instantiation of the syntactic form on the left .
+for example , the pattern < subj > was satisfied ' will match any sentence where the verb satisfied appears in the passive voice .
+the pattern < subj > dealt blow represents a more complex expression that will match any sentence that contains a verb phrase with head = dealt followed by a direct object with head = blow .
+this would match sentences such as the experience dealt a stiff blow to his pride .
+it is important to recognize that these patterns look for specific syntactic constructions produced by a ( shallow ) parser , rather than exact word sequences .
+the second step of autoslog-tss learning process applies all of the learned extraction patterns to the training corpus and gathers statistics for how often each pattern occurs in subjective versus objective sentences .
+autoslog-ts then ranks the extraction patterns using a metric called rlogf ( riloff , 1996 ) and asks a human to review the ranked list and make the final decision about which patterns to keep .
+in contrast , for this work we wanted a fully automatic process that does not depend on a human reviewer , and we were most interested in finding patterns that can identify subjective expressions with high precision .
+so we ranked the extraction patterns using a conditional probability measure : the probability that a sentence is subjective given that a specific extraction pattern appears in it .
+the exact formula is : figure 3 shows some patterns learned by our system , the frequency with which they occur in the training data ( freq ) and the percentage of times they occur in subjective sentences ( % subj ) .
+for example , the first two rows show the behavior of two similar expressions using the verb asked . 100 % of the sentences that contain asked in the passive voice are subjective , but only 63 % of the sentences that contain asked in the active voice are subjective .
+a human would probably not expect the active and passive voices to behave so differently .
+to understand why this is so , we looked in the training data and found that the passive voice is often used to query someone about a specific opinion .
+for example , here is one such sentence from our training set : ernest bai koroma of ritcorp was asked to address his supporters on his views relating to full blooded temne to head apc .
+in contrast , many of the sentences containing asked in the active voice are more general in nature , such as the mayor asked a newly formed jr about his petition .
+figure 3 also shows that expressions using talk as a noun ( e.g. , fred is the talk of the town ) are highly correlated with subjective sentences , while talk as a verb ( e.g. , the mayor will talk about ... ) are found in a mix of subjective and objective sentences .
+not surprisingly , longer expressions tend to be more idiomatic ( and subjective ) than shorter expressions ( e.g. , put an end ( to ) vs. put ; is going to be vs. is going ; was expectedfrom vs. was expected ) .
+finally , the last two rows of figure 3 show that expressions involving the noun fact are highly correlated with subjective expressions !
+these patterns match sentences such as the fact is ... and ... is a fact , which apparently are often used in subjective contexts .
+this example illustrates that the corpus-based learning method can find phrases that might not seem subjective to a person intuitively , but that are reliable indicators of subjectivity .
+experimental results .
+subjectivity data .
+the text collection that we used consists of english- language versions of foreign news documents from fbis , the u.s. foreign broadcast information service .
+the data is from a variety of countries .
+our system takes unannotated data as input , but we needed annotated data to evaluate its performance .
+we briefly describe the manual annotation scheme used to create the gold-standard , and give interannotator agreement results .
+in 2002 , a detailed annotation scheme ( wilson and wiebe , 2003 ) was developed for a government-sponsored project .
+we only mention aspects of the annotation scheme relevant to this paper .
+the scheme was inspired by work in linguistics and literary theory on subjectivity , which focuses on how opinions , emotions , etc. are expressed linguistically in context ( banfield , 1982 ) .
+the goal is to identify and characterize expressions ofprivate states in a sentence .
+private state is a general covering term for opinions , evaluations , emotions , and speculations ( quirk et al. , 1985 ) .
+for example , in sentence ( 1 ) the writer is expressing a negative evaluation .
+( 1 ) the time has come , gentlemen , for sharon , the assassin , to realize that injustice cannot last long .
+sentence ( 2 ) reflects the private state of western countries .
+mugabes use of overwhelmingly also reflects a private state , his positive reaction to and characterization of his victory .
+( 2 ) western countries were left frustrated and impotent after robert mugabe formally declared that he had overwhelmingly won zimbabwes presidential election .
+annotators are also asked to judge the strength of each private state .
+a private state may have low , medium , high or extreme strength .
+to allow us to measure interannotator agreement , three annotators ( who are not authors of this paper ) independently annotated the same 13 documents with a total of 210 sentences .
+we begin with a strict measure of agreement at the sentence level by first considering whether the annotator marked any private-state expression , of any strength , anywhere in the sentence .
+if so , the sentence is subjective .
+otherwise , it is objective .
+the average pair- wise percentage agreement is 90 % and the average pair- wise rc value is 0.77 .
+one would expect that there are clear cases of objective sentences , clear cases of subjective sentences , and borderline sentences in between .
+the agreement study supports this .
+in terms of our annotations , we define a sentence as borderline if it has at least one private-state expression identified by at least one annotator , and all strength ratings of private-state expressions are low .
+on average , 11 % of the corpus is borderline under this definition .
+when those sentences are removed , the average pairwise percentage agreement increases to 95 % and the average pairwise r. value increases to 0.89 .
+as expected , the majority of disagreement cases involve low-strength subjectivity .
+the annotators consistently agree about which are the clear cases of subjective sentences .
+this leads us to define the gold-standard that we use when evaluating our results .
+a sentence is subjective if it contains at least one private-state expression of medium or higher strength .
+the second class , which we call objective , consists of everything else .
+evaluation of the learned patterns .
+our pool of unannotated texts consists of 302,163 individual sentences .
+the hp-subj classifier initially labeled roughly 44,300 of these sentences as subjective , and the hp-obj classifier initially labeled roughly 17,000 sentences as objective .
+in order to keep the training set relatively balanced , we used all 17,000 objective sentences and 17,000 of the subjective sentences as training data for the extraction pattern learner .
+figure 4 shows sentence recall and pattern ( instance- level ) precision for the learned extraction patterns on the test set .
+in this figure , precision is the proportion of pattern instances found in the test set that are in subjective sentences , and recall is the proportion of subjective sentences that contain at least one pattern instance .
+we evaluated 18 different subsets of the patterns , by selecting the patterns that pass certain thresholds in the training data .
+we tried all combinations of 01 = { 2,10 } and 02 = { .60 , .65 , .70 , .75 , .80 , .85 , .90 , .95,1.0 } .
+the data points corresponding to 01 = 2 are shown on the upper line in figure 4 , and those corresponding to 01 = 10 are shown on the lower line .
+for example , the data point corresponding to 01 = 10 and 02 = .90 evaluates only the extraction patterns that occur at least 10 times in the training data and with a probability > .90 ( i.e. , at least 90 % of its occurrences are in subjective training sentences ) .
+overall , the extraction patterns perform quite well .
+the precision ranges from 71 % to 85 % , with the expected tradeoff between precision and recall .
+this experiment confirms that the extraction patterns are effective at recognizing subjective expressions .
+evaluation of the bootstrapping process .
+in our second experiment , we used the learned extraction patterns to classify previously unlabeled sentences from the unannotated text collection .
+the new subjective sentences were then fed back into the extraction pattern learner to complete the bootstrapping cycle depicted by the rightmost dashed line in figure 1 .
+the pattern- based subjective sentence classifier classifies a sentence as subjective if it contains at least one extraction pattern with 01 > 5 and 02 > 1.0 on the training data .
+this process produced approximately 9,500 new subjective sentences that were previously unlabeled .
+since our bootstrapping process does not learn new objective sentences , we did not want to simply add the new subjective sentences to the training set , or it would become increasingly skewed toward subjective sentences .
+since hp-obj had produced roughly 17,000 objective sentences used for training , we used the 9,500 new subjective sentences along with 7,500 of the previously identified subjective sentences as our new training set .
+in other words , the training set that we used during the second bootstrapping cycle contained exactly the same objective sentences as the first cycle , half of the same subjective sentences as the first cycle , and 9,500 brand new subjective sentences .
+on this second cycle of bootstrapping , the extraction pattern learner generated many new patterns that were not discovered during the first cycle . 4,248 new patterns were found that have 01 > 2 and 02 > .60 .
+if we consider only the strongest ( most subjective ) extraction patterns , 308 new patterns were found that had 01 > 10 and 02 > 1.0 .
+this is a substantial set of new extraction patterns that seem to be very highly correlated with subjectivity .
+an open question was whether the new patterns provide additional coverage .
+to assess this , we did a simple test : we added the 4,248 new patterns to the original set of patterns learned during the first bootstrapping cycle .
+then we repeated the same analysis that we depict in figure 4 .
+in general , the recall numbers increased by about 2-4 % while the precision numbers decreased by less , from 0.5-2 % .
+in our third experiment , we evaluated whether the learned patterns can improve the coverage of the high- precision subjectivity classifier ( hp-subj ) , to complete the bootstrapping loop depicted in the top-most dashed line of figure 1 .
+our hope was that the patterns would allow more sentences from the unannotated text collection to be labeled as subjective , without a substantial drop in precision .
+for this experiment , we selected the learned extraction patterns that had 01 > 10 and 02 > 1.0 on the training set , since these seemed likely to be the most reliable ( high precision ) indicators of subjectivity .
+we modified the hp-subj classifier to use extraction patterns as follows .
+all sentences labeled as subjective by the original hp-subj classifier are also labeled as subjective by the new version .
+for previously unlabeled sentences , the new version classifies a sentence as subjective if ( 1 ) it contains two or more of the learned patterns , or ( 2 ) it contains one of the clues used by the original hpsubj classifier and at least one learned pattern .
+table 1 shows the performance results on the test set mentioned in section 3.1 ( 2197 sentences ) for both the original hpsubj classifier and the new version that uses the learned extraction patterns .
+the extraction patterns produce a 7.2 percentage point gain in coverage , and only a 1.1 percent age point drop in precision .
+this result shows that the learned extraction patterns do improve the performance ofthe high-precision subjective sentence classifier , allowing it to classify more sentences as subjective with nearly the same high reliability .
+conclusions .
+this research explored several avenues for improving the state-of-the-art in subjectivity analysis .
+first , we demonstrated that high-precision subjectivity classification can be used to generate a large amount of labeled training data for subsequent learning algorithms to exploit .
+second , we showed that an extraction pattern learning technique can learn subjective expressions that are linguistically richer than individual words or fixed phrases .
+we found that similar expressions may behave very differently , so that one expression may be strongly indicative of subjectivity but the other may not .
+third , we augmented our original high-precision subjective classifier with these newly learned extraction patterns .
+this bootstrapping process resulted in substantially higher recall with a minimal loss in precision .
+in future work , we plan to experiment with different configurations of these classifiers , add new subjective language learners in the bootstrapping process , and address the problem of how to identify new objective sentences during bootstrapping .

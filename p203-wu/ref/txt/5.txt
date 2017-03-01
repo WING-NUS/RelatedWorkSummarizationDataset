@@ -1,0 +1,161 @@
+exploiting comparable corpora and bilingual dictionaries for cross-language text categorization .
+abstract .
+cross-language text categorization is the task of assigning semantic classes to documents written in a target language ( e.g.
+english ) while the system is trained using labeled documents in a source language ( e.g.
+italian ) .
+in this work we present many solutions according to the availability of bilingual resources , and we show that it is possible to deal with the problem even when no such resources are accessible .
+the core technique relies on the automatic acquisition of multilingual domain models from comparable corpora .
+experiments show the effectiveness of our approach , providing a low cost solution for the cross language text categorization task .
+in particular , when bilingual dictionaries are available the performance of the categorization gets close to that of monolingual text categorization .
+introduction .
+in the worldwide scenario of the web age , multilinguality is a crucial issue to deal with and to investigate , leading us to reformulate most of the classical natural language processing ( nlp ) problems into a multilingual setting .
+for instance the classical monolingual text categorization ( tc ) problem can be reformulated as a cross language text categorization ( cltc ) task , in which the system is trained using labeled examples in a source language ( e.g.
+english ) , and it classifies documents in a different target language ( e.g.
+italian ) .
+the applicative interest for the cltc is immediately clear in the globalized web scenario .
+for example , in the community based trade ( e.g. ebay ) it is often necessary to archive texts in different languages by adopting common merceological categories , very often defined by collections of documents in a source language ( e.g.
+english ) .
+another application along this direction is cross lingual question answering , in which it would be very useful to filter out the candidate answers according to their topics .
+in the literature , this task has been proposed quite recently ( bel et al. , 2003 ; gliozzo and strapparava , 2005 ) .
+in those works , authors exploited comparable corpora showing promising results .
+a more recent work ( rigutini et al. , 2005 ) proposed the use of machine translation techniques to approach the same task .
+classical approaches for multilingual problems have been conceived by following two main directions : ( i ) knowledge based approaches , mostly implemented by rule based systems and ( ii ) empirical approaches , in general relying on statistical learning from parallel corpora .
+knowledge based approaches are often affected by low accuracy .
+such limitation is mainly due to the problem of tuning large scale multilingual lexical resources ( e.g.
+multiwordnet , eurowordnet ) for the specific application task ( e.g. discarding irrelevant senses , extending the lexicon with domain specific terms and their translations ) .
+on the other hand , empirical approaches are in general more accurate , because they can be trained from domain specific collections of parallel text to represent the application needs .
+there exist many interesting works about using parallel corpora for multilingual applications ( melamed , 2001 ) , such as machine translation ( callison-burch et al. , 2004 ) , cross lingual information retrieval ( littman et al. , 1998 ) , and so on .
+however it is not always easy to find or build parallel corpora .
+this is the main reason why the weaker notion of comparable corpora is a matter of recent interest in the field of computational linguistics ( gaussier et al. , 2004 ) .
+in fact , comparable corpora are easier to collect for most languages ( e.g. collections of international news agencies ) , providing a low cost knowledge source for multilingual applications .
+the main problem of adopting comparable corpora for multilingual knowledge acquisition is that only weaker statistical evidence can be captured .
+in fact , while parallel corpora provide stronger ( text-based ) statistical evidence to detect translation pairs by analyzing term co-occurrences in translated documents , comparable corpora provides weaker ( term-based ) evidence , because text alignments are not available .
+in this paper we present some solutions to deal with cltc according to the availability of bilingual resources , and we show that it is possible to deal with the problem even when no such resources are accessible .
+the core technique relies on the automatic acquisition of multilingual domain models ( mdms ) from comparable corpora .
+this allows us to define a kernel function ( i.e. a similarity function among documents in different languages ) that is then exploited inside a support vector machines classification framework .
+we also investigate this problem exploiting synsetaligned multilingual wordnets and standard bilingual dictionaries ( e.g. collins ) .
+experiments show the effectiveness of our approach , providing a simple and low cost solution for the cross-language text categorization task .
+in particular , when bilingual dictionaries / repositories are available , the performance of the categorization gets close to that of monolingual tc .
+the paper is structured as follows .
+section 2 briefly discusses the notion of comparable corpora .
+section 3 shows how to perform cross- lingual tc when no bilingual dictionaries are available and it is possible to rely on a comparability assumption .
+section 4 present a more elaborated technique to acquire mdms exploiting bilingual resources , such as multiwordnet ( i.e. a synset-aligned wordnet ) and collins bilingual dictionary .
+section 5 evaluates our methodolo gies and section 6 concludes the paper suggesting some future developments .
+comparable corpora .
+comparable corpora are collections of texts in different languages regarding similar topics ( e.g. a collection of news published by agencies in the same period ) .
+more restrictive requirements are expected for parallel corpora ( i.e. corpora composed of texts which are mutual translations ) , while the class of the multilingual corpora ( i.e. collection of texts expressed in different languages without any additional requirement ) is the more general .
+obviously parallel corpora are also comparable , while comparable corpora are also multilingual .
+for the purpose of this paper it is enough to assume that two corpora are comparable , i.e. they are composed of documents about the same topics and produced in the same period ( e.g. possibly from different news agencies ) , and it is not known if a function 0 exists , even if in principle it could exist and return 1 for a strict subset of document pairs .
+the texts inside comparable corpora , being about the same topics , should refer to the same concepts by using various expressions in different languages .
+on the other hand , most of the proper nouns , relevant entities and words that are not yet lexicalized in the language , are expressed by using their original terms .
+as a consequence the same entities will be denoted with the same words in different languages , allowing us to automatically detect couples of translation pairs just by looking at the word shape ( koehn and knight , 2002 ) .
+our hypothesis is that comparable corpora contain a large amount of such words , just because texts , referring to the same topics in different languages , will often adopt the same terms to denote the same entities1 .
+however , the simple presence of these shared words is not enough to get significant results in cltc tasks .
+as we will see , we need to exploit these common words to induce a second-order similarity for the other words in the lexicons .
+the multilingual vector space model .
+let t = { t1 , t2 , ... , tn } be a corpus , and v = { w1 , w2 , ... , wk } be its vocabulary .
+in the monolingual settings , the vector space model ( vsm ) is a k-dimensional space rk , in which the text tj e t is represented by means of the vector ~ tj such that the zth component of ~ tj is the frequency of wz in tj .
+the similarity among two texts in the vsm is then estimated by computing the cosine of their vectors in the vsm .
+unfortunately , such a model cannot be adopted in the multilingual settings , because the vsms of different languages are mainly disjoint , and the similarity between two texts in different languages would always turn out to be zero .
+this situation is represented in figure 1 , in which both the left- bottom and the rigth-upper regions of the matrix are totally filled by zeros .
+on the other hand , the assumption of corpora comparability seen in section 2 , implies the presence of a number of common words , represented by the central rows of the matrix in figure 1 .
+as we will show in section 5 , this model is rather poor because of its sparseness .
+in the next section , we will show how to use such words as seeds to induce a multilingual domain vsm , in which second order relations among terms and documents in different languages are considered to improve the similarity estimation .
+exploiting comparable corpora .
+looking at the multilingual term-by-document matrix in figure 1 , a first attempt to merge the subspaces associated to each language is to exploit the information provided by external knowledge sources , such as bilingual dictionaries , e.g. collapsing all the rows representing translation pairs .
+in this setting , the similarity among texts in different languages could be estimated by exploiting the classical vsm just described .
+however , the main disadvantage of this approach to estimate inter-lingual text similarity is that it strongly terion to decide whether two corpora are comparable is to estimate the percentage of terms in the intersection of their vocabularies .
+for languages with scarce resources a bilingual dictionary could be not easily available .
+secondly , an important requirement of such a resource is its coverage ( i.e. the amount of possible translation pairs that are actually contained in it ) .
+finally , another problem is that ambiguous terms could be translated in different ways , leading us to collapse together rows describing terms with very different meanings .
+in section 4 we will see how the availability of bilingual dictionaries influences the techniques and the performance .
+in the present section we want to explore the case in which such resources are supposed not available .
+multilingual domain model .
+a mdm is a multilingual extension of the concept of domain model .
+in the literature , domain models have been introduced to represent ambiguity and variability ( gliozzo et al. , 2004 ) and successfully exploited in many nlp applications , such as word sense disambiguation ( strapparava et al. , 2004 ) , text categorization and term categorization .
+a domain model is composed of soft clusters of terms .
+each cluster represents a semantic domain , i.e. a set of terms that often co-occur in texts having similar topics .
+such clusters identify groups of words belonging to the same semantic field , and thus highly paradigmatically related .
+mdms are domain models containing terms in more than one language .
+a mdm is represented by a matrix d , containing the degree of association among terms in all the languages and domains , as illustrated in table 1 .
+for example the term virus is associated to both domain relations are captured by placing different terms of different languages in the same semantic field ( as for example hive / ' , aidse / ' , hospitale , and clinica ' ) .
+most of the named entities , such as microsoft and hiv are expressed using the same string in both languages .
+formally , let v ' = { w ' 1 , w ' 2 , ... , w 'ki } be the vocabulary of the corpus t ' composed of document expressed in the language l ' , let v * = s ' v ' be the set of all the terms in all the languages , and let k * = | v * | be the cardinality of this set .
+let d = { d1 , d2 , ... , dd } be a set of domains .
+a dm is fully defined by a k * x d domain matrix d representing in each cell di , z the domain relevance of the ith term of v * with respect to the domain dz .
+the domain matrix d is used to define a function d : rk * * rd , that maps the document vectors ~ tj expressed into the multilingual classical vsm ( see section 2.1 ) , into the vectors ~ t 'j in the multilingual domain vsm .
+in this work we exploit latent semantic analysis ( lsa ) ( deerwester et al. , 1990 ) to automatically acquire a mdm from comparable corpora .
+lsa is an unsupervised technique for estimating the similarity among texts and terms in a large corpus .
+in the monolingual settings lsa is performed by means of a singular value decomposition ( svd ) of the term-by-document matrix t describing the corpus .
+svd decomposes the term-by-document matrix t into three matrixes. matrix containing the highest k ' k eigenvalues of t , and all the remaining elements are set to 0 .
+the parameter k ' is the dimensionality of the domain vsm and can be fixed in advance ( i.e. k ' = d ) .
+in the literature ( littman et al. , 1998 ) lsa has been used in multilingual settings to define a multilingual space in which texts in different languages can be represented and compared .
+in that work lsa strongly relied on the availability of aligned parallel corpora : documents in all the languages are represented in a term-by-document matrix ( see figure 1 ) and then the columns corresponding to sets of translated documents are collapsed ( i.e. they are substituted by their sum ) before starting the lsa process .
+the effect of this step is to merge the subspaces ( i.e. the right and the left sectors of the matrix in figure 1 ) in which the documents have been originally represented .
+in this paper we propose a variation of this strategy , performing a multilingual lsa in the case in which an aligned parallel corpus is not available .
+it exploits the presence of common words among different languages in the term-by-document matrix .
+the svd process has the effect of creating a lsa space in which documents in both languages are represented .
+of course , the higher the number of common words , the more information will be provided to the svd algorithm to find common lsa dimension for the two languages .
+the resulting lsa dimensions can be perceived as multilingual clusters of terms and document .
+lsa can then be used to define a multilingual domain matrix dlsa .
+for further details see ( gliozzo and strapparava , 2005 ) .
+as kernel methods are the state-of-the-art supervised framework for learning and they have been successfully adopted to approach the tc task ( joachims , 2002 ) , we chose this framework to perform all our experiments , in particular support vector machines3 .
+taking into account the external knowledge provided by a mdm it is possible estimate the topic similarity among two texts expressed in different languages , with the following kernel .
+note that when we want to estimate the similarity in the standard multilingual vsm , as described in section 2.1 , we can use a simple bag of words kernel .
+the bow kernel is a particular case of the domain kernel , in which d = i , and i is the identity matrix .
+in the evaluation typically we consider the bow kernel as a baseline .
+exploiting bilingual dictionaries .
+when bilingual resources are available it is possible to augment the the common portion of the matrix in figure 1 .
+in our experiments we exploit two alternative multilingual resources : multiwordnet and the collins english-italian bilingual dictionary .
+multiwordnet4 .
+it is a multilingual computational lexicon , conceived to be strictly aligned with the princeton wordnet .
+the available languages are italian , spanish , hebrew and romanian .
+in our experiment we used the english and the italian components .
+the last version of the italian wordnet contains around 58,000 italian word senses and 41,500 lemmas organized into 32,700 synsets aligned whenever possible with wordnet english synsets .
+the italian synsets are created in correspondence with the princeton wordnet synsets , whenever possible , and semantic relations are imported from the corresponding english synsets .
+this implies that the synset index structure is the same for the two languages .
+thus for the all the monosemic words , we augment each text in the dataset with the corresponding synset-id , which act as an expansion of the common terms of the matrix in figure 1 .
+adopting the methodology described in section 3.1 , we exploit these common sense-indexing to induce a second-order similarity for the other terms in the lexicons .
+we evaluate the performance of the cross-lingual text categorization , using both the bow kernel and the multilingual domain kernel , observing that also in this case the leverage of the external knowledge brought by the mdm is effective .
+it is also possible to augment each text with all the synset-ids of all the words ( i.e. monosemic and polysemic ) present in the dataset , hoping that the svm machine learning device cut off the noise due to the inevitable spurious senses introduced in the training examples .
+obviously in this case , differently from the monosemic enrichment seen above , it does not make sense to apply any dimensionality reduction supplied by the multilingual domain model ( i.e. the resulting second-order relations among terms and documents produced on a such extended corpus should not be meaningful ) 5 .
+collins .
+the collins machine-readable bilingual dictionary is a medium size dictionary including 37,727 headwords in the english section and 32,602 headwords in the italian section .
+this is a traditional dictionary , without sense indexing like the wordnet repository .
+in this case we follow the way , for each text of one language , to augment all the present words with the translation words found in the dictionary .
+for the same reason , we chose not to exploit the mdm , while experimenting along this way .
+evaluation .
+the cltc task has been rarely attempted in the literature , and standard evaluation benchmark are not available .
+for this reason , we developed an evaluation task by adopting a news corpus kindly put at our disposal by adnkronos , an important italian news provider .
+the corpus consists of 32,354 italian and 27,821 english news partitioned by adnkronos into four fixed categories : quality of life , made in italy , tourism , culture and school .
+the english and the italian corpora are comparable , in the sense stated in section 2 , i.e. they cover the same topics and the same period of time .
+some news stories are translated in the other language ( but no alignment indication is given ) , some others are present only in the english set , and some others only in the italian .
+the average length of the news stories is about 300 words .
+we randomly split both the english and italian part into 75 % training and 25 % test ( see table 2 ) .
+we processed the corpus with pos taggers , keeping only nouns , verbs , adjectives and adverbs .
+table 3 reports the vocabulary dimensions of the english and italian training partitions , the vocabulary of the merged training , and how many common lemmata are present ( about 14 % of the total ) .
+among the common lemmata , 97 % are nouns and most of them are proper nouns .
+thus the initial term-by-document matrix is a 43,384 x 45,132 matrix , while the dlsa was acquired using 400 dimensions .
+as far as the cltc task is concerned , we tried the many possible options .
+in all the cases we trained on the english part and we classified the italian part , and we trained on the italian and classified on the english part .
+when used , the mdm was acquired running the svd only on the joint ( english and italian ) training parts .
+using only comparable corpora .
+figure 2 reports the performance without any use of bilingual dictionaries .
+each graph show the learning curves respectively using a bow kernel ( that is considered here as a baseline ) and the multilingual domain kernel .
+we can observe that the latter largely outperform a standard bow approach .
+analyzing the learning curves , it is worth noting that when the quantity of training increases , the performance becomes better and better for the multilingual domain kernel , suggesting that with more available training it could be possible to improve the results .
+using bilingual dictionaries .
+figure 3 reports the learning curves exploiting the addition of the synset-ids of the monosemic words in the corpus .
+as expected the use of a multilingual repository improves the classification results .
+note that the mdm outperforms the bow kernel .
+figure 4 shows the results adding in the english and italian parts of the corpus all the synset-ids ( i.e. monosemic and polisemic ) and all the translations found in the collins dictionary respectively .
+these are the best results we get in our experiments .
+in these figures we report also the performance of the corresponding monolingual tc ( we used the svm with the bow kernel ) , which can be considered as an upper bound .
+we can observe that the cltc results are quite close to the performance obtained in the monolingual classification tasks .
+conclusion and future work .
+in this paper we have shown that the problem of cross-language text categorization on comparable corpora is a feasible task .
+in particular , it is possible to deal with it even when no bilingual resources are available .
+on the other hand when it is possible to exploit bilingual repositories , such as a synset-aligned wordnet or a bilingual dictionary , the obtained performance is close to that achieved for the monolingual task .
+in any case we think that our methodology is low-cost and simple , and it can represent a technologically viable solution for multilingual problems .
+for the future we try to explore also the use of a word sense disambiguation all-words system .
+we are confident that even with the actual state-of-the-art wsd performance , we can improve the actual results .

@@ -1,0 +1,45 @@
+Topic and Content Models.
+Our work is grounded
+in topic modeling approaches, which posit that latent
+state variables control the generation of words.
+In earlier topic modeling work such as latent Dirichlet
+allocation (LDA) (Blei et al., 2003; Griffiths and Steyvers, 2004), documents are treated as bags of
+words, where each word receives a separate topic
+assignment; the topic assignments are auxiliary variables
+to the main task of language modeling.
+More recent work has attempted to adapt the concepts
+of topic modeling to more sophisticated representations
+than a bag of words; they use these representations
+to impose stronger constraints on topic
+assignments (Griffiths et al., 2005; Wallach, 2006; Purver et al., 2006; Gruber et al., 2007). These
+approaches, however, generally model Markovian
+topic or state transitions, which only capture local
+dependencies between adjacent words or blocks
+within a document. For instance, content models
+(Barzilay and Lee, 2004; Elsner et al., 2007)
+are implemented as HMMs, where the states correspond
+to topics of domain-specific information,
+and transitions reflect pairwise ordering preferences.
+Even approaches that break text into contiguous
+chunks (Titov and McDonald, 2008) assign
+topics based on local context. While these
+locally constrained models can implicitly reflect
+some discourse-level constraints, they cannot capture
+long-range dependencies without an explosion
+of the parameter space. In contrast, our model captures
+the entire sequence of topics using a compact
+representation. As a result, we can explicitly and
+tractably model global discourse-level constraints.
+Modeling Ordering Constraints.
+Sentence ordering
+has been extensively studied in the context of
+probabilistic text modeling for summarization and
+generation (Barzilay et al., 2002; Lapata, 2003; Karamanis et al., 2004). The emphasis of that body
+of work is on learning ordering constraints from
+data, with the goal of reordering new text from the
+same domain. Our emphasis, however, is on applications
+where ordering is already observed, and
+how that ordering can improve text analysis. From
+the methodological side, that body of prior work is
+largely driven by local pairwise constraints, while
+we aim to encode global constraints.

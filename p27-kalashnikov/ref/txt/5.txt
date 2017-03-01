@@ -1,0 +1,271 @@
+disambiguating web appearances of people in a social network .
+abstract .
+say you are looking for information about a particular person .
+a search engine returns many pages for that persons name but which pages are about the person you care about , and which are about other people who happen to have the same name ?
+furthermore , if we are looking for multiple people who are related in some way , how can we best leverage this social network ?
+this paper presents two unsupervised frameworks for solving this problem : one based on link structure of the web pages , another using agglomerative / conglomerative double clustering ( a / cdc ) an application of a recently introduced multi-way distributional clustering method .
+to evaluate our methods , we collected and hand-labeled a dataset of over 1000 web pages retrieved from google queries on 12 personal names appearing together in someones in an email folder .
+on this dataset our methods outperform traditional agglomerative clustering by more than 20 % , achieving over 80 % f-measure .
+introduction .
+we face an era not only of an information explosion , but also a tremendous increase in the extent of our relations to other people .
+we are constantly presented with new people names , chances to meet and communicate with people , and opportunities to add people to our social networkin our work , from the media , and from our social and business use of the internet .
+it is now common that we do not actually meet ( or even phone ) our acquaintances ; instead we communicate through email , chatrooms and discussion forums .
+we correspond with hundreds of people simultaneously .
+our social network is tens of times larger than that of our grandparents , and will likely grow more with time .
+even when we have trouble tracking all these connections , we ( intentionally or unintentionally ) add new ones .
+we are in need of personalized tools that will help us manage our social networkboth to track people we know already , and also to tell us about new people we meet .
+for example , when we receive email messages from people whose names we do not know , it would be useful to be able to rapidly search for any public facts about them .
+this may help us know how to rate the importance of the message , or prioritize our effort in making replies .
+for example , a message from the head of an industrial research lab who works in your research area may warrant a higher priority than a corporate recruiter working for a company with little relation to you , even when the remainder of the body of the message is substantially similar .
+a useful summary of public information about a person could often be gathered from the web : news articles , corporate pages , university pages , discussion forums , etc. contain a lot of information about people .
+but how would the system identify whether certain web pages are about the person in question or a different person with the same name ?
+can we find not just a few pages , but a comprehensive set of pages ?
+for example , consider david mulford , ' the us ambassador to india .
+when the query david mulford is issued as a query to google , most of the pages retrieved are actually related to the ambassador ; however , there are also two business managers , a musician , a student , a scientist , and a few others .
+if we are looking for information about a particular person , we want to filter out information about other namesakes , while also preserving the maximum amount of relevant information .
+it is sometimes quite difficult to determine if a page is about a particular person or not .
+in case of ambassador david mulford , much of the information that can be found at first may seem to be unrelated : one site states that in the late 1950s david attended lawrence university and was a member of its athletic team ; other sites mention his work at different positions in governmental departments and commercial structures , including chairman international of credit suisse first boston ( csfb ) in london ; a few sites ( mostly in spanish ) relate his name to a financial scandal in argentina .
+it is a difficult challenge to automatically determine whether all of these sites discuss the same person .
+in previous work [ 5 ] we addressed the problem of automatically populating a database of contact information of people in a users social network .
+given a personal name extracted out of a users mailbox , we queried google in order to locate the persons homepage .
+we then applied conditional random fields [ 12 ] to extract institution , job title , address , phone , fax , email and other information from the home- page .
+the main problem of our homepage finding approach was that we used a simple heuristic for disambiguating person names , which sometimes failed .
+so , in some cases we extracted the contact information of namesakes of people from the users social network .
+in this paper , we address the problem not simply of finding homepages , but finding all search engine hits corresponding to a person , and separating them from hits about namesakes .
+we look beyond homepages because significant further information is often found elsewhere .
+moreover , the persons homepage may be old and abandoned , containing out-of- date information , and this may be discovered if we have a broader view on the persons web appearances .
+rather than using simple heuristics , we present results with two statistical frameworks for addressing this problem : one based on link structure , and another based on the recently introduced multi-way distributional clustering method [ 3 ] .
+furthermore , and crucially , rather than searching for people individually , we leverage an existing social network of people , or lists of people who are known to be somewhat connected , and use this extra information to aid the disambiguation .
+problem statement and related work .
+we state the problem of web presence identification as inferring a model that ultimately provides a function f answering whether or not web page d refers to a particular person h , given a model m and background knowledge k. obviously , the perfect background knowledge k is in most cases unavailable , so the discrimination process must be made using some limited available information .
+note that given no background knowledge at all , the problem becomes ill-defined : in order to automatically perform the task , the person h must have an electronic representation , which cannot be built without having any prior knowledge about the person .
+the background knowledge k can be of various kinds .
+for instance , k can include training datapages that are related or unrelated to the person .
+in this case , the problem is reduced to a binary classification task that is widely addressed in the machine learning literature of the past decade ( see , e.g. , [ 11 ] ) .
+however , in real-world situations , labeled examples are difficult and expensive to obtain .
+positive instances of a persons web presence could possibly be obtained by making use of the persons email messages , but obtaining negative instances could be much more difficult .
+in this paper , we employ unsupervised solutions .
+the problem of disambiguating collections of web appearances has been explored surprisingly little .
+there has been much work on homepage finding , starting from the early years of the internet .
+in 1997 shakes et al. [ 17 ] launched ahoy ! the first system for homepage finding .
+they primarily used heuristics and pattern matching for recognizing urls of homepages .
+later on , standard ir techniques have been used for this task .
+the trec homepage finding competition was held in 2002 ( see , e.g. , [ 1 ] ) .
+the problem of person name disambiguation has been approached in the domain of research paper citations ( see , e.g. , [ 10 ] ) , with various supervised methods proposed for its solution .
+there has been some research on person name disambiguation in the web domain [ 2 , 13 , 7 ] , within the general framework of entity coreference ( see , e.g. [ 16 , 9 ] ) .
+agglomerative clustering has been applied in all three .
+bagga and baldwin [ 2 ] use agglomerative clustering over traditional vector space models of text windows around a personal name mention .
+mann and yarowsky [ 13 ] propose a richer document representation involving automatically extracted features .
+their clustering technique however can be basically used only for separating two people with the same name .
+recently , fleischman and hovy [ 7 ] construct a maxent classifier to learn distances between documents that are then clustered .
+this method needs to be provided with a large training set .
+note that these all use average-link clustering methods : the distance between data points and cluster centroids is considered , not the distance between individual data instances .
+this lacks the benefits of transitivity : if page d1 is related to the same person as page d2 , while page d2 is related to the same person as page d3 , then pages d1 and d3 are probably related to the same person , although the distance between them can be relatively large .
+in this paper we propose two web appearance disambiguation methods that also involve clustering , but are better adapted to our specific task at hand .
+the first method is based on the link structure of web pages .
+this method focuses on constructing only one cluster ( of relevant pages ) , which nicely fits into our binary framework .
+the second technique employs agglomerative / conglomerative double clustering ( a / cdc ) an application of a new multi-way distributional clustering method [ 3 ] , which does not directly compute distances between clusters .
+the a / cdc objective can be also derived from the multivariate information bottleneck ( mib ) clustering principle [ 8 ] .
+in addition , we experiment with a hybrid approach combining the link structure and a / cdc methods .
+all three of these methods outperform a baseline agglomerative clustering technique by more than 20 % f-measure on a large real-world dataset .
+in our attempts to use as little background knowledge as possible , we propose the following application scenario : given a group of people h = { h1 , ... , hn } who are related to each other , we would like to identify the web presence of all of them simultaneously .
+therefore , instead of solving one problem , we solve n interrelated problems : for each person hi in the group h we find web pages that refer to hi .
+dealing with a group of people instead of dealing with an individual is not overly burdensome .
+one can imagine many situations where a personal name is given within the context of people whom the person communicates with .
+examples include coauthors of a scientific paper , participants in a newsgroup , or correspondents in a users email .
+moreover , given a separate name without any additional information about the person , it is often fundamentally ambiguous to whom it refers .
+but given a group of names of connected people , we can usually see to what group of people it refers , even if we do not know some of the names in the group .
+for example , when searching for a person on the web , one personal name is usually ambiguous .
+although google finds only one person named ron bekkerman , it finds at least a dozen of unrelated people named andrew mccallum .
+however , if both names are provided to google , pages that refer to only one of those andrew mccallums will be retrieved .
+thus , as little background knowledge about the person as his or her membership in a group of people makes the web appearance disambiguation problem feasible .
+methods .
+we will now describe our three proposed methods of solving the web appearance disambiguation problem .
+link structure model .
+an important observation is that web pages of a group of acquaintances are likely to be interconnected .
+on the other hand , it is hard to imagine that pages of their namesakes would be interconnected .
+indeed , the namesakes probably have nothing in common , while the actual people of the group often tend to maintain homepages on the same domain ( when they are colleagues ) , tend to refer to the same resources , and tend to be referred to from the same web sites .
+however , the existence of a direct hyperlink from one relevant page to another may be rare , so the term interconnectedness should be carefully defined ( see section 3.1.1 ) .
+meanwhile we define that two web pages are linked to each other if their hyperlinks share something in common .
+according to the problem statement in section 2 , we construct a function f that discriminates between relevant and irrelevant pages d for a person h with name th .
+our background knowledge k is a set of names th = { th1 , ... , thn } in a group of n people in a users social network .
+our set of web pages d is constructed by providing a search engine with queries thl , ... , thn and retrieving top k hits for each one of the query , so that n x k web pages are retrieved overall .
+note that in this way every page d is already associated with a personal name thi : the name thi was in fact the query that retrieved page d .
+however , it is yet unknown whether the page d refers to the actual person h or to his / her namesake ( or to neither ) .
+we now construct our model m given the set of web pages d. let graph gls = ( v , e ) be the link structure graph over a set of web pages d if nodes of the graph are the web pages ( v ^ d ) and there exists an edge between any pair of nodes di and dj iff di and dj are linked to each other .
+in graph gls linked web pages compose connected components .
+we naturally expect relevant pages to interconnect much more than irrelevant pages would interconnect .
+of special importance is that relevant pages that refer to different people are likely to interconnect , while irrelevant pages that refer to different people would probably not connect to each other .
+we might decide that the maximal connected component ( mcc ) of graph gls consists of only relevant pages , so the mcc would be the core of our model .
+however , there can be a case where the mcc consists only of web pages retrieved in response to a single querythis can happen when pages of one person h are heavily interconnected .
+if this person h appears to be an irrelevant namesake of a relevant person , such mcc will be totally irrelevant .
+therefore , we come up with the following definition : definition 1 .
+let us denote central cluster co as the largest connected component in gls that consists of pages retrieved by more than one query .
+figure 1 : relevant and irrelevant web pages according to the link structure model .
+relevant pages are within the s-radius from the central cluster .
+white , gray and black colors indicate that the pages are retrieved by three different queries .
+we denote other connected components in graph gls as clusters cl , ... , cm , where m < n x k. we are now ready to define our link structure model : definition 2 .
+the link structure model mls is a pair ( c , s ) , where c is the set of all connected components of the graph gls ( note that co g c ) , and s is a distance threshold .
+the intuition behind this definition is that the pages of the central cluster and of a few clusters that are close to the central cluster are considered to be relevant , while others are irrelevant .
+figure 1 illustrates this intuition .
+particular design choices .
+in the description of our link structure model we intentionally did not specify the following design choices : 1 .
+how to decide whether two pages are linked or not . 2 .
+how to choose a suitable value for s. 3 .
+how to calculate the distance between two clusters co and ci .
+these are implementation details that can vary from system to system .
+for example , two pages can be considered as linked if both contain a hyperlink to the same page , or both are hyperlinked from one page , or one page can be reached within three hyperlink hops from the other .
+different approaches can also be considered , for example , two pages are linked if both mention the same organization , e.g. , university of massachusetts at amherst .
+similarly , the distance measure between two clusters can be different .
+for example , it can be the cosine similarity or kullback-leibler divergence .
+it can be learned using max- ent classification as proposed in [ 7 , 15 ] .
+it can also be the distance not between clusters themselves , but between their closest elements .
+in our experimental setup we have made the following design choices : linked pages .
+for this work , we decided to only consider the hyperlink structure of the pages .
+since the full urls of the hyperlinks seem to be too specific , while the url domains seem to be too general , we define a function url ( d ) to output the domain of the ds url with its first directory in case this directory exists .
+we define the set pop to be a set of urls of extremely popular domains , such as www.amazon.com.
+the popularity of a domain can be determined using operator : link of the google command line .
+we define the set tr ( d ) of trusted urls as { url ( di ) } \ pop .
+we also define the function links ( d ) that given page d returns a set of urls that occur in d .
+so , the link structure of a page is its own url and its hyperlinks given that they appear as urls of other pages in the dataset .
+by this we minimize undesirable hazards that can occur if a page contains too many hyperlinks , pretending to be a hub .
+distance threshold .
+we do not explicitly set the distance threshold ^ .
+instead , we set it so that one third of the pages in the dataset are within the threshold .
+distance measure between clusters .
+we applied cosine similarity with a novel variation of the tfidf term weighting function : the problem of web appearance disambiguation can be addressed within the standard clustering framework : the set of web pages d is split into m clusters , then one of the clusters is considered as containing only relevant pages while all the other clusters are irrelevant .
+the decision about which one of the m clusters is the relevant one can be made based on either internal or external information .
+an internal resource might be the measure of interconnectedness of the clusters , in the sense of the discussion in section 3.1 .
+the most interconnected cluster is then chosen as relevant .
+an external resource can be , e.g. , email messages from all or some people in the group : the distance between the set of messages and each one of the clusters is computed , then the closest cluster is chosen .
+since we intend to minimize the background knowledge about the people , we adopt the former technique .
+so , our clustering model mcl is a pair ( c , l ( ) ) , where c is the set of clusters of documents in d , and l ( ) ) is the interconnectedness measure of a cluster .
+as our particular clustering method , we apply the a / cdc algorithman instance of the new multi-way distributional clustering ( mdc ) method we propose in [ 3 ] .
+the main idea of a / cdc is to employ the fact that similar documents have similar distributions over words , while similar words are similarly distributed over documents .
+starting with one cluster containing all words and many clusters with one document each , we iteratively split word clusters and merge document clusters , while conditioning one clustering system on the other , until meaningful clusters are obtained .
+this method has demonstrated high performance on various datasets including the benchmark 20 newsgroups .
+multi-way distributional clustering stands in close correspondence with the multivariate information bottleneck ( mib ) method .
+the a / cdc algorithm , while being the simplest mdc application , can also be derived from mib , which will be shown in this section .
+we first provide some background on related information bottleneck methods , then discuss motivation of the a / cdc approach and overview the a / cdc algorithm .
+background .
+the information bottleneck ( ib ) method [ 21 ] is a convenient information-theoretic framework for solving various real-world problems , especially clustering .
+it has been widely applied in information retrieval [ 20 , 4 , 18 ] .
+the main idea that lies behind the ib clustering is in constructing an assignment of data points x into clusters x that will maximize information about entities y that are interdependent with x. the information about y gained from x is represented in terms of mutual information : mutual information i ( ~ x ; x ) from being too large because otherwise the clustering will tend to be degenerative ( each instance will form a cluster ) .
+many applications and extensions of the original ib method have been proposed .
+some relevant results are listed below .
+slonim and tishby [ 19 ] propose a greedy agglomerative algorithm for document clustering based on the information bottleneck method , where x stands for documents and y stands for words in the documents .
+this simple algorithm achieves surprisingly good results but is computationally expensive .
+slonim et al. [ 18 ] propose a greedy sequential ib clustering algorithm based on local optimization that demonstrates incredibly high performance and is computationally efficient in practice .
+slonim and tishby [ 20 ] notice that the ib method is symmetric in x and y. they propose a double clustering technique in which words are first clustered with respect to documents and documents are then clustered with respect to clusters of words .
+el-yaniv and souroujon [ 6 ] propose an incremental version of this method that significantly improves its performance .
+friedman et al. [ 8 ] propose the multivariate information bottleneck ( mib ) framework : they consider clustering instances of a set of variables x = ( x1 , ... , x. , ) into a set of clustering systems x = ( ~ x1 , ... , ~ x. , ) .
+motivation .
+in the hard clustering variation of the ib method we set the lagrange multiplier 3 to zero ( see , e.g. , [ 19 ] ) .
+since we cannot just omit the compression constraints this way , a decent substitute would be to fix the number of ( hard ) clusters .
+since determining the good number of clusters is a hard problem , we cannot a priori be satisfied with fixed sizes nx and ny .
+our intention is to explore different possibilities while employing the hierarchical structure of the clusters .
+at least two frameworks are ready for this task : agglomerative ( bottom-up ) and conglomerative ( top-down ) clustering .
+we basically have three possibilities for performing the double clustering : we can use a top-down clustering scheme for both , we can cluster both by a bottom-up scheme , or we can apply a top-down scheme to one of the two clustering systems , while applying a bottom-up scheme to another one .
+two top-down schemes are clearly a bad choice , because in the top-down scheme we start with one cluster that contains all the instances , and if both systems start with one cluster , then conditioning one on the other will lead to a completely random split .
+two bottom-up schemes are also a bad choice , because of the computational issues : at the initial stages the two clustering systems are so large that the calculation of the mutual information i ( ~ x ; y ~ ) can be infeasible .
+we are left with top-down clustering in one system and bottom-up clustering in the other .
+in this case , iterative splits and merges ( when one clustering system is conditioned in another ) cause the effect that the two clustering systems bootstrap each other .
+thus , the a / cdc method is the simultaneous clustering of x by a top-down scheme and y by a bottom-up scheme , while applying the objective function from equation 9 .
+figure 2 visualizes the a / cdc procedure .
+overview of algorithm .
+at each iteration of our algorithm we attempt to first build the best clustering system x ~ and then build the best clustering system y ~ .
+we initiate the two clustering systems with one cluster x ~ that contains all data points x , and one data point yi per each cluster ~ yi .
+we then calculate the initial mutual information i ( ~ x ; y ~ ) .
+at each iteration of the algorithm , we perform four operations : split step .
+we split each cluster ~ xi uniformly at random to two equally sized parts .
+sequential pass .
+we utilize the sequential ib algorithm proposed by slonim et al. [ 18 ] : we pick each data point xj out of its cluster and place it sequentially into each one of the other clusters , while attempting to ~ x ; y ~ ) .we finally place the data point xj into a cluster ~ xi such that i ( ~ x ; y ~ ) is maximal .
+we perform this procedure twice in order to closer approach the local maximum of our objective .
+merge step .
+we uniformly at random select each cluster ~ yi , and find its best mate while applying a criterion for minimizing bayes classification error that was proposed in [ 19 ] .
+another sequential pass .
+we perform the same sequential pass as in step 2 over all data points yj .
+following slonim et al. [ 18 ] , in order to get closer to the global maximum of our objective function , at each iteration we perform a number of random restarts of steps 1-2 and then of steps 3-4 .
+we also efficiently cache slices of the mutual information i ( ~ x ; y ~ ) so that it should not be entirely recalculated during the sequential passes .
+the computational complexity of our algorithm is o ( nxny log ny ) , where nx and ny are sizes of x and y respectively .
+in the case of web appearance disambiguation , we use the top-down scheme for clustering words and the bottom-up scheme for clustering documents .
+we continue the process until we have three document clusters ( one of which is then chosen to be the class of relevant pages ) .
+ls + a / cdc hybrid model .
+since in both solutions of the web appearance disambiguation problem ( link structure method and the a / cdc method ) we build one group of relevant web pages , we can attempt to overlap the groups built by the two methods .
+at one of the iterations of the a / cdc clustering we choose the most interconnected cluster c * of the size that is roughly correspondent to the size of the central cluster c0 .
+then we compose a new central cluster c * 0 by uniting all the connected components that overlap with c * : after that , our discrimination function f is very similar to the discrimination function from equation ( 1 ) : dataset .
+for evaluation of our methods , we have gathered and labeled a dataset of 1085 web pages .
+in this section we describe the dataset and provide some interesting insights into its structure .
+in a collaborative effort to create publicly available email datasets , participants in calo project [ 14 ] are encouraged to collect and folder their correspondence on calo-related topics .
+from the feb 2 , 2004 snapshot of this data , we selected one folder from melinda gervasios email directory and extracted 12 person names that appeared in headers of messages found in this folder .
+the names are primarily of sri employees and professors from different universities .
+all of the individuals are likely to be present on the web .
+these 12 names ( taken in quotation marks ) were then issued as queries to google and for each query the first 100 pages were retrieved .
+we manually filtered the pages , removing pages in non-textual formats , httpd error pages and empty pages .
+we labeled the remaining pages by the occupation of the individuals whose name appeared in the query .
+in 10 out of 12 cases , the names were heavily ambiguous , thus pages representing 187 different people were retrieved given the 12 names of people in melindas social network .
+in some cases , it was difficult to decide to which of the namesakes the page refers .
+to determine this , we often performed manual web investigations .
+table 1 shows some statistics of the dataset .
+finally , all the pages were cleaned of their html markup and scripts .
+all the urls mentioned in the pages were extracted and placed at the end of each page , together with the url of the page itself .
+the dataset is publicly available at http : / / www.cs.umass.edu / ronb .
+the most ambiguous personal name among the twelve is tom mitchell .
+although the cmu professors pages are prevalent over all the others , 37 different tom mitchells can be distinguished in the 100 first google hits , including professors in different fields , musicians , executive managers , an astrologist , a hacker and a rabbi .
+two personal names out of the 12 , adam cheyer and leslie pack kaelbling , seem to be unique in the internet .
+however , for either of them , one page was retrieved that did not contain any part of their names .
+these two pages were put into respective categories other .
+two other people , david mulford and lynn voss , seem to have very little web presence .
+only one page out of the 100 was related to any of the two .
+william cohens and david mulfords namesakes are well known politicians : the former secretary of defense william s. cohen and the current us ambassador to india david c. mulford .
+naturally , the distributions of cohens and mulfords pages are heavily biased toward the politicians who are well represented on the web .
+an interesting phenomenon is observed for the names david israel and bill mark .
+many of pages that responded to these queries only accidently contain the two words adjacent to each other : bill marks pages often refer to mark-ups of certain bills , or just list peoples first names ( e.g.
+thanks bill , mark ! ) , while some of david israels pages discuss israeli history and king david .
+none of these pages were removed from the dataset , despite the fact that they are clearly unrelated to a particular living person .
+a real challenge for any web presence finding system is the pages of bill mark and fernando pereira .
+both researchers have namesakes who are also researchers in computer science : another bill mark is a utexas professor , while another fernando pereira is a professor at instituto superior tecnico in portugal .
+we term these pairs doubles .
+to separate them is an especially difficult task .
+the opposite problem occurs with steve hardt : he appears on the web not only as an sri engineer , but also as a creator of an online game .
+we ourselves are actually unsure whether this is one person or two different people , but most likely this is one person .
+results and discussion .
+given the class of relevant documents obtained by one of our models , our evaluation method computes precision and recall of the class with respect to the true labels in our dataset .
+we then compute the f-measure by averaging precision and recall .
+our goal is to maximize the f-measure ; however , we also consider separate precision and recall measures , because various real-world scenarios may prefer one over another .
+as our baseline method , we implemented greedy agglomerative clustering ( as applied in the related work [ 2 , 13 , 7 ] ) , based on the cosine similarity measure between clusters and the augmented tfidf weighting function from equation ( 3 ) .
+we did not measure interconnectedness of the clusters , we simply chose the cluster whose f-measure was the highest among all the clusters .
+the motivation for this choice was that we would like to show that our methods overcome the best possible results of the baseline method .
+the summary of the results is in table 2 .
+as it can be seen from the table , the results of the three proposed methods are quite close to each other , while the hybrid method nicely improves the recall ( and then the f-measure ) .
+the relatively high deviation in precision and recall of the a / cdc method is caused by the fact that it never ends up with clusters of the exactly same size .
+interestingly , this almost does not affect the f-measure : the precision trades off quite well against the recall .
+table 3 collates the results by person , as achieved by the hybrid model .
+for quite a few people both precision and recall are amazingly high , e.g. for david israel , leslie pack kaelbling , andrew mccallum , andrew ng .
+it is also noticeable that the only relevant page of david mulford ( the stanford student ) is found .
+as could be anticipated , the worst precision is for bill mark and and fernando pereira , because both of them have doubles .
+however , only 9 of 23 pages that refer to bill mark the utexas professor appear in the category of relevant pages .
+the worst recall is for steve hardt and adam cheyer .
+this can be easily explained for steve : most of his pages refer to an online game he createdrelevance of these pages would be too difficult to determine .
+as for adam , the low result is a bit surprising , but it still makes sense : adams name often appears in an industrial context , while the language of most correctly- found pages is purely academicmany of adams pages fall too far from the central cluster .
+unfortunately , the single relevant page about lynn voss was not found , probably for the same reason : it uses an industrial vocabulary .
+the problem of disambiguating the doublesthe two bill marks and two fernando pereiras who all work in computer sciencecan in fact be handled within the a / cdc framework .
+at some intermediate stages during the course of the a / cdc algorithm the most interconnected cluster is relatively small but extremely clean .
+figure 3 shows the precision / recall curve for one run of the a / cdc algorithm .
+it can be seen in the graph that when the recall of the relevant cluster is around 45 % ( there are five clusters overall ) , the precision is very high ( above 98 % ) .3 this cluster contains two pages of bill mark the sri manager and none of the pages of bill mark the utexas professor ; it also contains 15 pages of fernando pereira the upenn professor and only one page of fernando pereira the professor of instituto superior tecnico .
+this result shows that when our algorithm is stopped with 5 , 9 or 17 clusters , rather than with three clusters , its performance is still very reasonable , at least in terms of precision .
+constructing clustering systems with all possible granularity levels is an important feature of the a / cdc algorithm .
+another interesting result is that our methods can also be applied to the problem of homepage finding .
+among the 12 people in our dataset ten have homepages ( david mulford and lynn voss do not maintain homepages ) , and nine of the ten homepages are inside the class of relevant documents found by the ls + a / cdc hybrid method .
+the only homepage the system does not find is the homepage of steve hardt .
+conclusions and future work .
+this paper is the first attempt to approach the problem of finding web appearances of a group of people .
+we have proposed two relatively straightforward statistical methods for solving this problem .
+both methods are purely unsupervised they involve minimum of prior knowledge about the people .
+essentially , only the affiliation of a person with the group is all the information required .
+for evaluation purposes we built a large annotated dataset that is publicly available to the scientific community .
+both methods demonstrate high performance on this dataset .
+the methods are general enough to allow large variety of implementations and extensions .
+we are now working on more sophisticated probabilistic models for solving this problem that would capture the relational structure of the class of relevant pages .
+for example , pages that are retrieved by queries with pairs of names can significantly enrich the model .
+the problem of web appearance disambiguation is novel and poses a lot of exciting challenges .

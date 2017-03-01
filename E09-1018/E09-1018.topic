@@ -1,0 +1,11 @@
+<topic index> 0 </topic index>
+<title> pronominal anaphora </title>
+<keywords> pronoun;resolution;interpretation; </keywords>
+
+<topic index> 0.1 </topic index>
+<title> supervised approaches </title>
+<keywords> EM;supervised;non-anaphoric pronouns;non-reflexive pronouns;third-person pronouns;initialization;gender; </keywords>
+
+<topic index> 0.2 </topic index>
+<title> unsupervised approaches </title>
+<keywords> unsupervised;self-training;clustering;learning;generative;gender; </keywords>

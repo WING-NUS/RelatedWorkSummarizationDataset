@@ -1,0 +1,207 @@
+extracting key phrases to disambiguate personal names on the web .
+abstract .
+when you search for information regarding a particular person on the web , a search engine returns many pages .
+some of these pages may be for people with the same name .
+how can we disambiguate these different people with the same name ?
+this paper presents an unsupervised algorithm which produces key phrases for the different people with the same name .
+these key phrases could be used to further narrow down the search , leading to more person specific unambiguous information .
+the algorithm we propose does not require any biographical or social information regarding the person .
+although there are some previous work in personal name disambiguation on the web , to our knowledge , this is the first attempt to extract key phrases to disambiguate the different persons with the same name .
+to evaluate our algorithm , we collected and hand labeled a dataset of over 1000 web pages retrieved from google using personal name queries .
+our experimental results shows an improvement over the existing methods for namesake disambiguation .
+introduction .
+the internet has grown into a collection of billions of web pages .
+one of the most important interfaces to this vast information are web search engines .
+we send simple text queries to search engines and retrieve web pages .
+however , due to the ambiguities in the queries and the documents , search engines return lots of irrelevant pages .
+in the case of personal names , we may receive web pages to other people with the same name ( namesakes ) .
+however , the the different namesakes appear in quite different contexts .
+for example if we search for michael jackson in google , among the top hundred hits we get a beer expert and a gun dealer along with the famous singer .
+however , the context in which the singer appears is quite different from his namesakes .
+however , context associated with a personal name is difficult to identify .
+in cases where the entire web page is about the person under consideration , the context could be the complete page .
+on the other hand the context could be few sentences having the specified name .
+in this paper we explore a method which uses terms extracted from web pages to represent the context of namesakes .
+for example , in the case of michael jackson , terms such as music , album , trial associate with the famous singer , whereas we get beer , travel , hunter as terms for the other ( beer expert ) namesake of michael jackson .
+these term sets appear to be defining different contexts .
+we could use this difference in context to discriminate the namesakes .
+disambiguating namesakes on the web is a difficult task due to the diversity of web pages .
+we do not know in advance the exact number of namesakes for a name on the web .
+in many cases there are two or three famous namesakes which have lots of pages regarding them and all other namesakes have just one or two pages on them .
+some of the web pages are not exclusively about a person , but just mention the name on passing ( ex : book reviews on amazon mentioning an author of a book , conference programs mentioning names of the authors of papers , etc ) .
+this paper presents an unsupervised clustering framework , which uses a robust similarity metric to overcome these difficulties .
+on the other hand there are cases where an individual has various web appearances .
+for example the renowned linguist noam chomsky appears as a linguist and also as a critic of american foreign policy .
+it would be interesting to see how a namesake disambiguiation method responds to such complications .
+in chomskys example one would like to extract terms such as generative grammar , linguistic theory , transformational grammar , etc from pages which describe chomskys linguistic work whereas american foreign policy , iraq , critic , etc from pages which describe chomskys political views .
+although our main focus is on disambiguating people with one specific web appearance , we also explore the posibilities of our algorithm to identify the different web apperances of individuals .
+this paper is structured as follows .
+first we give an overview of the related work in this area .
+then we explain the different components in our system .
+namely ; term extraction , similarity calculation , clustering , determining the number of namesakes and term ranking .
+finally we show experimental results for the proposed method and conclude this paper .
+related work and problem setting .
+there is little previous work we know of that directly addresses the problem of extracting key phrases to disambiguate personal names on the web , but some related problems have been studied .
+disambiguation of namesakes is similar to tuple matching in databasesthe problem of deciding whether multiple relational tuples from heterogeneous sources refer to the same real-world entity [ 7 , 1 ] .
+from a natural language perspective , there has been a lot of work on the related problem of co-reference resolution [ 2,11 ] .
+the goal in co-reference resolution is to link occurrences of noun phrases and pronouns , typically occurring in a close proximity , within a few sentences or a paragraph , based on their appearance and local context .
+co-reference resolution is vital for many natural language tasks such as text summarization and question answering .
+various algorithms have been proposed for co-reference resolution .
+fundamentally , these algorithms map the local information around a pronoun to a set of features and use a machine learning technique to determine whether a given pronoun corresponds to a given noun phrase .
+a few works address the problem of personal name disambiguation across a collection of documents .
+mann , et al [ 10 ] considers the problem of distinguishing occurrences of a personal name in different documents .
+they proposes an unsupervised algorithm which extracts people-specific biographical information such as birth date , birth place , occupation etc using a set of regular expressions to cluster the documents to their namesakes .
+however , such person-specific information is not always available for all the namesakes on the web .
+even in cases where such information is available , a set of fixed regular expressions as used by mann et al [ 10 ] is not sufficient to extract them .
+bekkerman , et al [ 4 ] proposes a link structure model and an agglomerative-conglomerative double clustering ( a / cdc ) based algorithm to disambiguate a group of people on the web .
+the algorithm assumes our ability to obtain information regarding the social network ( associates ) of the person to be disambiguated .
+the method can be readily used when we have such information .
+however , in most of the situations we do not know well enough about the associates of the person which we want to disambiguate .
+pedersen et. al. [ 13 ] proposes a method for discriminating names by clustering the instances of a given name into groups .
+they extract the context of each instance of the ambiguous name and generate second order context vectors using significant bigrams .
+the vectors are clustered such that instances that are similar to each other are placed into same clusters .
+li , et al [ 9 ] suggests an algorithm which could be used to disambiguate not only personal names but other named entities such as organizations and locations .
+they propose a discriminative model based on agglomerative clustering and a generative model which uses a language model combined with em algorithm .
+their experimental results show that the generative model out performs the discriminative model .
+however , they do not discuss the topic of extracting key phrases to distinguish the different entities .
+in this paper we try to extract key phrases to distinguish each of the different namesakes in our document collection .
+in this paper we will assume that each document in the collection represents only one of the namesakes ( i.e. no document covers two or more namesakes ) .
+we will first cluster the set of documents and then select key phrases from these clusters to distinguish the different namesakes .
+method .
+the outline of our method is illustrated in in figure 1 .
+our method takes the name to be disambiguated as the input and outputs a list of key phrases for each of the different namesakes .
+as shown in figure 1 , the algorithm we propose for this task consists of eight steps .
+we first introduce each of the steps in our method and details are left for the sections to follow .
+first we send the name to be disambiguated to a web search engine and download a set of web pages .
+we used google 1 and download the top 100 pages for the given name .
+these pages will be processed in the next steps in our method .
+downloaded pages are not required to be exclusively on a certain person .
+however , we assume one page to be associated with only one of the namesakes .
+we extract a set of terms from each one of the pages in our document collection ( which was downloaded in the previous step ) .
+the term extraction algorithm we use for this task is explained in section 3.1 .
+we then cluster the document collection based on the terms we extracted .
+to cluster documents we define a pairwise similarity measure .
+we use snippet similarity to measure the similarity between two terms .
+section 3.2 explains snippet similarity .
+we utilize an agglomerative clustering method to cluster the document collection as described in section 3.3 .
+ideally , the clusters yielded by the clustering algorithm should represent a different namesake .
+however , in reality we do not know the exact number of namesakes for a given name in advance .
+therefore , we define a measure which we will call cluster quality in this paper based on the internal and external correlation of the clusters , and decide the number of clusters .
+finally , we select representative terms from each of the clusters and rank them according to their relevance to the name under consideration .
+term extraction .
+our method is based on the fact that different namesakes appear under different contexts on the web .
+we assume that each document in our downloaded web page collection represents some namesake of the given name .
+contextual hypothesis for senses [ 15 ] states that two occurrences of an ambiguous word belong to the same sense to the extent that their contextual representations are similar .
+according to this hypothesis , if two pages are similar in context , then we could assume that these pages are likely to be on the same namesake .
+however , a document may not totally focus on the namesake , but also contain lots of irrelevant information .
+therefore , we need to represent the documents in a model that captures the essence of the document and ignores the irrelevant facts .
+we use c-value [ 5 , 6 ] , an automatic term recognition algorithm , to extract multi-word terms from the documents and represent each document by the set of terms extracted from it .
+the c-value approach combines linguistic and statistical information , emphasis being placed on the statistical part .
+the linguistic information consists of the part-of-speech tagging of the document being processed , the linguistic filter constraining the type of terms extracted and the stop lits .
+the statistical part combines statistical features of the candidate string .
+the linguistic filter contains a predefined set of patterns of nouns , adjectives and prepositions that are likely to be terms .
+the stop list is a list of words which are not expected to occur as term words in a given domain .
+having a stop list improves the precision .
+however , in our experiments we did not use a stop list because it is not possible to determine in advance the domains which a namesakes belongs to .
+the combinations of nouns , adjectives and prepositions that are allowed by the linguistic filter and the stop list are considered as the potential candidates as terms .
+the termhood ( likeliness of a candidate to be a term ) is evaluated using c-value .
+c-value is built using statistical characteristics of the candidate string , such as , the total frequency of occurrence of the candidate string in the document , the frequency of the candidate string as part of other longer candidate strings , the number of these longer candidate terms and the length of the candidate string ( in number of words ) .
+we prefer the candidate terms with higher c-values to terms with lower c- values .
+however , there are cases where the terms extracted from frantzis [ 6 ] c-value method tend to be exceedingly longer and meaningless .
+for example , we get a term search archives contact us table talk ad from a page about the netscape founder , jim clark .
+this term is a combination of words extracted from a navigation menu and not a genuine term .
+using such terms to represent the context of a namesake cannot be acceptable .
+to avoid such terms we use two heuristics .
+first we ignore any term which is longer than four words .
+then , for the remaining terms , we check the number of hits we get for the term in a web search engine .
+our assumption here is if a term is a meaningful one it is likely to be used in many web pages .
+we ignore any terms with less than five hits .
+using these heuristics does not only allow us to extract more expressive and genuine terms but also prevents data sparseness when calculating snippet based similarity between terms as explained in the next section .
+similarity calculation .
+exact matches of terms extracted from different documents are rare .
+therefore , we would require a similarity metric which is capable of comparing the terms at a semantic level .
+for example , the two terms george bush and the president of the united states are closely related but do not have any words in common .
+word net 2 based similarity metrics have been widely used as semantic similarity measures between words in sense disambiguating tasks [ 12 , 3 ] .
+however , the major problem with such approaches is the low coverage of words .
+for example , we would not find proper nouns such as george bush in wordnet .
+however , such proper nouns ( specially human names ) are useful to disambiguate namesakes ( see section 4 ) .
+we use the world wide web as our knowledge source and define similarity between terms using web snippets .
+mehra [ 14 ] proposes a method to calculate similarity between words ( also can be used with terms ) using snippets retrieved by a web search engine .
+a snippet is a small piece of text , containing two or three sentences extracted from the document around the query term .
+most web search engines provide snippets along with the links to the source pages .
+a user can read the snippet and decide whether the linked page is relevant to the query , thereby avoiding the time to download and read the complete page .
+the snippet gives the context in which the searched term appear in the page .
+we use google as our web search engine and extract the top 100 snippets for each term we extract .
+for example , consider the first five snippets we get for george bush and the president of the united states shown in figure 2 .
+even among the first five snippets for these two terms , we find many common words such as president , white house , official , and , site , etc .
+however , some of these words ( ex : and , of ) have a purely grammatical functionality and do not carry any semantic information regarding the searched terms .
+we use a predefined list of stop words and remove such words from the snippets .
+we then merge the top hundred snippets together ( here on , we will call this merged result as the snippet text ) and compare the distribution of words to calculate the similarity between the terms .
+in order to calculate the word distribution we count the frequency of each word in the snippet text .
+we divide the frequency counts by the total number of words to convert the frequency distribution into a probability distribution .
+these normalized word distributions , calculated using snippets retrieved for different terms , are compared using kullback-liebler ( kl ) divergence .
+kl- divergence is a popular metric used in measuring the distance between two probability distributions .
+since we are concerned on word distributions , x is the vocabulary of words used in the snippets .
+however , due to the sparseness of data , some words may not appear in both distributions .
+kl-divergence becomes undefined when there are words with zero probabilities .
+however , to cluster the documents , we need a pairwise similarity measure which is defined upon the documents .
+for this we extend the similarity function defined by equation 5 to two documents .
+we take the average of similarity for all the pairs of terms extracted by the two documents .
+the similarity , docsim ( a , b ) , between two documents a and b is defined as follows , therein : a and b are the sets of terms extracted from the corresponding documents .
+iai denotes the cardinality of the set a. a x b gives the set of pairs taken from the two sets. a e a and b e b are terms in the sets .
+clustering .
+having defined a similarity metric in section 3.2 , our next task is to cluster the documents using this similarity metric .
+in this paper , we use group-average agglomerative clustering ( gaac ) as our clustering algorithm , a hybrid of single- link and complete-link clustering .
+we begin by assigning a separate cluster for each document in the collection .
+therein : | ^ | denotes the number of documents in the merged cluster ^ ; u and v are two documents in ^ and docsim ( u , v ) is given by equation 6 .
+ideally , the clustering process should terminate when there is exactly one cluster representing each of the namesakes in the collection .
+however , in practice , the exact number of different namesakes that exist in the collection is not known .
+therefore , we define a measure which we will call cluster quality in section 3.4 and terminate the above mentioned gaac process when the cluster quality falls below a predefined threshold .
+in section 4 we show empirical evidence to the fact that the cluster quality measure approximates well the disambiguation accuracy and stops the clustering when there are sufficient clusters to represent the different namesakes .
+cluster quality .
+we prefer our clusters to be well correlated internally and each of the clusters to be different among themselves .
+the quality ( goodness ) of the formed clusters can be evaluated based on how well the clusters satisfy these two conditions .
+we define internal correlation as a measure of how well the first condition is satisfied ( i.e. the degree of similarity of documents within clusters ) .
+we define external correlation as a measure of how well the second condition is satisfied ( i.e. the degree of dis-similarity between clusters ) .
+we terminate gaac when cluster quality drops below a predefined threshold and assign the remaining documents to the already formed clusters .
+term selection and ranking .
+gaac ( section 3.3 ) creates clusters for different namesakes .
+the next step is to select a set of terms from these clusters that describes each namesake .
+we select all the terms that appear in a cluster for a certain namesake but does not appear in other clusters .
+we then rank these terms by the relevancy of the term to the ambiguous name .
+we use snippets based similarity measure described in section 3.2 to calculate relevancy .
+results and discussion .
+test data .
+we evaluated our algorithm on pseudo names as well as naturally ambiguous names .
+for automated pseudo name evaluation purposes , we collected 50 documents from the web for three different people for conflation .
+our collection contains documents for maria sharapova the tennis player , bill gates chairman and chief software architect of microsoft corporation and bill clinton former president of the united sates .
+we then replace every occurrence of these names in the documents with person-x .
+to evaluate our algorithm on naturally ambiguous names we selected names that appear in previous work ( [ 10 , 4 ] ) in this field , such as jim clark , william cohen , tom mitchell , michael jackson .
+to evaluate our algorithm on people with different web appearances we tested for noam chomsky .
+disambiguation accuracy .
+to evaluate the clusters produced by the proposed algorithm , we first assign each cluster to the namesake that appears most ( we will call this namesake the holder of the cluster ) in that cluster .
+however , the distribution of documents for each of the different namesakes in the collection is not even .
+some namesakes have lots of pages representing them , where as for some namesakes they are mentioned only in one or two documents .
+to reflect this fact in our evaluation metric we define disambiguation accuracy , as the weighted sum of each clusters precision .
+figure 3 ( a ) depicts the accuracy / quality vs the number of clusters in the experiment with pseudo names .
+from figure 3 ( a ) it can be seen that when we do not impose a threshold on quality , there exists a steep drop in accuracy when ten clusters are formed .
+this is due to the outliers that get attached to the otherwise pure ( representing the dominant namesakes ) clusters .
+the value of quality when this happens is 0.6 .
+although the number of clusters when this happens is different for different names , our experiments show that the value of quality is around 0.6 in all the experiments .
+therefore , we set the threshold of quality to 0.6 .
+when the threshfold is imposed , accuracy does not drop as it can be seen from figure 3 ( b ) .
+table 1 shows results of our experiments .
+we implemented a tf-idf based similarity metric and compared our algorithm against it .
+in the tf-idf based method , we consider all the words in each document ( except stop words ) and represent documents with tf-idf weighted vectors .
+then we take the cosine similarity between the vectors as the similarity measure in the group average agglomerative clustering in section 3.3 .
+however , note that the tf-idf based method does not produce any key phrases .
+table 1 reports higher accuracy values for the proposed method compared to this tf-idf based method .
+our algorithm finds key phrases such as racing driver jim clark , formula one world championships and motor racing for the racing car driver-jim clark and silicon valley , netscape for the founder of netscape -jim clark .
+in the case of michael jackson , the top ranking terms for the singer are fan club , world network , news , micheal jackson case and pop star .
+the proposed method had the lowest accuracy for william cohen as it found only three out of the ten namesakes in the collection .
+in the person-x experiments , we find key phrases such as first set , us open , wimbledon , venus williams and grand slam title for maria sharapova , wealthiest person , microsoft for bill gates and white house , former president for bill gates .
+although , noam chomskey is not an ambiguous name , we tested on it to evaluate the algorithm on individuals with different web appearances .
+interestingly , the algorithm ranks key phrases such as preventive war , government complicity , george bush , tony blair in the chomskey the critic cluster and universal grammar , linguistic theory in the chomskey the linguist cluster .
+conclusion .
+we proposed and evaluated an algorithm to extract key phrases from the web , to disambiguate personal names .
+in future , we intend to explore the possibilities to extend the proposed method to disambiguate other types of entities such as location names and organization names .

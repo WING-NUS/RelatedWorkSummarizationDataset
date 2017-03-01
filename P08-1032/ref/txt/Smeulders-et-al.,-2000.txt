@@ -1,0 +1,1053 @@
+content-based image retrieval at the end of the early years .
+abstract .
+the paper presents a review of 200 references in content-based image retrieval .
+the paper starts with discussing the working conditions of content-based retrieval : patterns of use , types of pictures , the role of semantics , and the sensory gap .
+subsequent sections discuss computational steps for image retrieval systems .
+step one of the review is image processing for retrieval sorted by color , texture , and local geometry .
+features for retrieval are discussed next , sorted by : accumulative and global features , salient points , object and shape features , signs , and structural combinations thereof .
+similarity of pictures and objects in pictures is reviewed for each of the feature types , in close connection to the types and means of feedback the user of the systems is capable of giving by interaction .
+we briefly discuss aspects of system engineering : databases , system architecture , and evaluation .
+in the concluding section , we present our view on : the driving force of the field , the heritage from computer vision , the influence on computer vision , the role of similarity and of interaction , the need for databases , the problem of evaluation , and the role of the semantic gap .
+introduction .
+there is something about munch 's " the scream " or constable 's " wivenoe park " that no words can convey .
+it has to be seen .
+the same holds for of a picture of the kalahari desert , a dividing cell , or the facial expression of an actor playing king lear .
+it is beyond words .
+try to imagine an editor taking in pictures without seeing them or a radiologist deciding on a verbal description .
+pictures have to be seen and searched as pictures : by objects , by style , by purpose .
+research in content-based image retrieval today is a lively discipline , expanding in breadth .
+as happens during the maturation process of many a discipline , after early successes in a few applications , research is now concentrating on deeper problems , challenging the hard problems at the crossroads of the discipline from which it was born : computer vision , databases , and information retrieval .
+in february 1992 , the us national science foundation ( usnsf ) organized a workshop in redwood , california , to " identify major research areas that should be addressed by researchers for visual information management systems that would be useful in scientific , industrial , medical , environmental , educational , entertainment , and other applications " [ 81 ] .
+in hindsight , the workshop did an excellent job of identifying unsolved problems that researchers should have undertaken .
+in particular , the workshop correctly stated that " visual information management systems should not be considered as an application of the existing state of the art ( in computer vision and databases ) to manage and process images " and that " computer vision researchers should identify features required for interactive image understanding , rather than their discipline 's current emphasis on automatic techniques " ( emphasis added ) .
+as possible application fields , the workshop considered mainly grand challenge problems , such as weather forecasting , biological modeling , medical images , satellite images , and so on .
+undoubtedly , the participants saw enough to justify the use of the large computational and storage capacity necessary for visual databases .
+this in 1992 .
+the workshop was preceded by many years by the conference on database applications of pictorial applications , held in florence in 1979 , probably one of the first conferences of that kind [ 13 ] .
+in the introduction , it was said that : " this has facilitated the advancement of integrated databases [ ... ] on the one hand , of and graphical and image processing ( in brief : pictorial ) applications on the other . "
+then , the author proceeds to complain that : " developments in these two fields have traditionally been unrelated , " an observation still very much valid today .
+just after the usnsf workshop , the mosaic internet- browser was released , spawning the web revolution that very quickly changed all cards .
+in the same era , a host of new digital vision sensors became available .
+the number of images that the average user could reach increased dramatically in just a few years .
+instantly , indexing tools for the web or digital archives became urgent .
+in this paper , we present a view of what we like to call the " early years " of content-based image retrieval .
+while content based-image retrieval papers published prior to 1990 are rare , often obsolete , and of little direct impact today , the number of papers published since 1997 is just breathtaking .
+so much , in fact , that compiling a comprehensive review of the state of the art already exceeds the possibility of a paper like this one .
+a selection was necessary and with it came the need to establish some selection criteria .
+in addition to the obvious one ( completeness of a paper , importance to the field ) , we have also considered accessibility for the reader .
+that is to say , we have preferred , whenever possible , to include journal papers over conference papers .
+we also felt that the field is too young and mobile to make a precise historic account and we have made no attempt in that direction .
+we adopt patterns of use and patterns of computation as the leading principles of our review .
+we follow the data as they flow through the computational process and consider alternative processes with the same position in the flow ( fig . 2 ) .
+in the data flow diagrams , we use the conventions indicated in fig . 1 .
+we concentrate on computational methods to arrive at a tool-based overview rather than a system-based overview .
+the choice implies that references describing complete systems are split , where parts of the method will appear in several sections of the paper .
+for a system-based review , see [ 141 ] .
+we restrict ourselves to still pictures and leave video databases as a separate topic .
+video retrieval could be considered a broader topic than image retrieval as video is built from single images .
+from another perspective , video retrieval could be considered simpler than image retrieval since video reveals its objects more easily as the points corresponding to one object move together .
+in still pictures , the author 's narrative expression of intention is in frame selection , illumination , and composition .
+in addition , video has a linear timeline , as important to the narrative structure of video as it is in text .
+we leave video retrieval for another place , for example , [ 1 ] , [ 16 ] .
+the paper is organized as indicated in fig . 2 .
+first we discuss the scope of the content-based retrieval in section 2 .
+in that section , the characteristics of the domain and sources of knowledge are being discussed .
+then , description of content is analyzed in two steps .
+first , in section 3 , image processing methods by color , texture , and local shape are discussed .
+they serve as a preprocessing step to the partitioning of the data array and the computation of features , as discussed in section 4 .
+in section 5 , we discuss the interpretation of a single image and the similarity between a pair of images .
+query definition , display , and interaction are the topic of section 6 .
+the paper concludes at the level of systems : indexing , system architecture , and evaluation of performance .
+each chapter is concluded by a discussion on the state of the art .
+scope .
+in the literature , a wide variety of content-based retrieval methods and systems may be found .
+in this section , we discuss patterns in applications , the repertoire of images , the influence of the scene and the role of domain knowledge , and the semantic gap between image features and the user .
+applications of content-based retrieval .
+in [ 31 ] , we see three broad categories of user aims when using the system , see fig . 3 .
+there is a broad class of methods and systems aimed at browsing through a large set of images from unspecified sources .
+users of search by association at the start have no specific aim other than find interesting things .
+search by association often implies iterative refinement of the search , the similarity or the examples with which the search was started .
+systems in this category typically are highly interactive , where the specification may by sketch [ 30 ] or by example images .
+the oldest realistic example of such a system is probably [ 88 ] .
+the result of the search can be manipulated interactively by relevance feedback [ 68 ] , [ 51 ] .
+to support the quest for relevant results , other sources than images are also employed , see for example , [ 168 ] , [ 21 ] .
+another class of users aims the search at a specific image .
+the search may be for a precise copy of the image in mind , as in searching art catalogues , e.g. , [ 48 ] .
+target search may also be for another image of the same object of which the user has an image .
+this is target search by example .
+target search may also be applied when the user has a specific image in mind and the target is interactively specified as similar to a group of given examples , for instance [ 31 ] .
+these systems are suited to search for stamps , art , industrial components , and catalogues , in general .
+the third class of applications , category search , aims at retrieving an arbitrary image representative of a specific class .
+it may be the case that the user has an example and the search is for other elements of the same class .
+categories may be derived from labels or emerge from the database [ 170 ] , [ 186 ] .
+in category search , the user may have available a group of images and the search is for additional images of the same class [ 28 ] .
+a typical application of category search is catalogues of varieties .
+in [ 74 ] , [ 79 ] , systems are designed for classifying trademarks .
+systems in this category are usually interactive with a domain specific definition of similarity .
+these three types of use are not the whole story [ 42 ] .
+a study [ 121 ] of journalists identified five typical patterns of use : searches for one specific image , general browsing to make an interactive choice , searches for a picture to go with a broad story , searches to illustrate a document , and searches for fill-ins only on the esthetic value of the picture .
+an attempts to formulate a general categorization of user requests for still and moving images are found in [ 6 ] .
+this and similar studies reveal that the range of queries is wider than just retrieving images based on the presence or absence of objects of simple visual characteristics .
+the image domain and the sensory gap .
+in the repertoire of images under considerationthe image domain 1there is a gradual distinction between narrow and broad domains [ 160 ] .
+at one end of the spectrum , we have the narrow domain : a narrow domain has a limited and predictable variability in all relevant aspects of its appearance .
+in a narrow domain , one finds a limited variability of the content of the images .
+usually , the recording circumstances are also similar over the whole domain .
+in the narrow domain of lithographs , for instance , the recording is under white light with frontal view and no occlusion .
+also , when the object 's appearance has limited variability , the semantic description of the image is generally well-defined and , by and large , unique .
+another example of a narrow domain is a set of frontal views of faces recorded against a clear background .
+although each face is unique and has large variability in the visual details , there are obvious geometrical , physical , and color-related constraints governing the domain .
+the domain would be wider had the faces been photographed from a crowd or from an outdoor scene .
+in that case , variations in illumination , clutter in the scene , occlusion , and viewpoint will have a major impact on the analysis .
+on the other end of the spectrum , we have the broad domain : a broad domain has an unlimited and unpredictable variability in its appearance even for the same semantic meaning .
+in broad domains , images are polysemic and their semantics are described only partially .
+it might be the case that there are conspicuous objects in the scene for which the object class is unknown or even that the interpretation of the scene is not unique .
+a broad class of images can be found in large photo stocks [ 168 ] or other photo archives [ 42 ] .
+the broadest class available to date is the set of images available on the internet .
+many problems of practical interest have an image domain in between these extreme ends of the spectrum , see fig . 4 .
+the notions of broad and narrow domains are helpful in characterizing patterns of use , in selecting features , and in designing systems .
+in a broad image domain , the gap between the feature description and the semantic interpretation is generally wide .
+for narrow , specialized image domains , the gap between features and their semantic interpretation is usually smaller , so domain-specific models may help .
+for faces , many geometric models have been suggested , as well as statistical models [ 127 ] .
+these computational models are not available for broad image domains as the required number of computational variables would be enormous .
+for broad image domains in particular , one has to resort to generally valid principles .
+is the illumination of the domain white or colored ?
+does it assume defined and fully visible objects or may the scene contain clutter and occluded objects ?
+is it a 2d-recording of a 213-scene or a 213-recording of a 3d-scene ?
+the given characteristics of illumination , presence or absence of occlusion , clutter , and differences in camera viewpoint determine demands on the retrieval methods .
+the sensory gap is the gap between the object in the world and the information in a ( computational ) description derived from a recording of that scene .
+the sensory gap makes the description of objects an ill- posed problem : it yields uncertainty in what is known about the state of the object .
+the sensory gap is particularly poignant when a precise knowledge of the recording conditions is missing .
+the 2d-records of different 313-objects can be identical .
+without further knowledge , one has to decide that they might represent the same object .
+also , a 213-recording of a 313-scene contains information accidental for that scene and that sensing but one does not know what part of the information is scene related .
+the uncertainty due to the sensory gap not only holds for the viewpoint , but also for occlusion ( where essential parts telling two objects apart may be out of sight ) , clutter , and illumination .
+comparing alternative interpretations can attenuate the sensory gap .
+content-based image retrieval systems may provide support in this disambiguation through elimination among several potential explanations , much the same as in natural language processing .
+domain knowledge .
+in visual search , explicit representation of the knowledge of the domain is important to alleviate the sensory gap .
+among the sources of general knowledge , we mention : laws of syntactic ( literal ) equality and similarity define the relation between image pixels or image features regardless of its physical or perceptual causes .
+for instance , considering two images similar because they both exhibit some selected shades of blue in their upper parts is productive in separating outdoor scenes from other images .
+it is syntactic similarity because the method doesn 't make a reference to the reasons by which this similarity exists ( in this case , the scattering in the sky ) or to the perceptual reasons by which these two images will appear similar to an observer .
+by the same token , the rgb color space is effective in literal similarity ( as it is effective in art [ 65 ] ) while it does not represent the process of physical color formation or the process of color perception .
+laws describing the human perception of equality and similarity are important because they define equality on the same basis as the user experiences it .
+in color , the cie-lab and munsell-spaces were designed to conform to the human perception of color similarity .
+if the appreciation of a human observer of an object is based on the perception of certain conspicuous items in the image [ 177 ] , it is natural to direct the computation of broad domain features to these points and regions [ 157 ] , [ 138 ] .
+similarly , a biologically plausible architecture [ 76 ] of center-surround processing units is likely to select regions which humans would also focus on first .
+physical laws describing equality and difference of images under differences in sensing and object surface properties .
+the physics of illumination , surface reflection , and image formation have a general effect on images .
+the general laws of physics may be employed for large classes of objects .
+a common example is the law for uniform light reflection off matte objects .
+these laws are exploited to design color features expressing equality regardless of the pose and viewpoint .
+geometric and topological rules describe equality and differences of patterns in space .
+when two objects are geometrically equal , the physical properties of their surfaces or the physical conditions of the sensing may be different .
+as an example of geometric laws used in retrieval , for all images with depth , local details near the horizon will appear smaller .
+also , the horizon is geometrically defined as a virtual line containing the focal points .
+another example of geometric laws is the expression of spatial [ 22 ] or topological relationships [ 172 ] between objects .
+category-based rules encode the characteristics common to class z of the space of all notions z. if z is the class of all teapots , the characteristics include the presence of a spout .
+categories are almost exclusively used in a narrow domains .
+the domain knowledge may take the form of further constraints to the literal image qualities , additional physical or geometrical laws , or domain-specific man-made customs .
+when the domain is engineering drawings , detailed geometric knowledge will steer the detection of symbols .
+in medieval art , color and the relative position of objects have a symbolic meaning [ 30 ] , generating a set of constraints useful in the search .
+each application domain has a private set of constraints .
+finally , man-made customs or man-related patterns introduce rules of culture-based equality and difference .
+under culture , we also assume language .
+in the search for indoor pictures , one may check for many straight lines and perpendicular corners as a first selection criterion .
+utensils have a deterministic size to allow grip .
+fashion determines colors [ 95 ] .
+use and user , the semantic gap .
+we opine that most of the disappointments with early retrieval systems come from the lack of recognizing the existence of the semantic gap and its consequences for system set-up .
+the semantic gap is the lack of coincidence between the information that one can extract from the visual data and the interpretation that the same data have for a user in a given situation .
+a linguistic description is almost always contextual , whereas an image may live by itself .
+a linguistic description of an image is a daunting , probably impossible task [ 146 ] .
+a user looks for images containing certain objects or conveying a certain message .
+image descriptions , on the other hand , rely on data-driven features and the two may be disconnected .
+association of a complete semantic system to image data would entail at least solving the general object recognition problem from a single image .
+since this problem is yet unsolved , research is focused on different methods to associate higher level semantics to data-driven observables .
+as indicated in fig . 2 , the most immediate means of semantic characterization entail annotation by keywords or captions .
+this reduces content-based access to information retrieval [ 135 ] .
+common objections to the practice of labeling are cost and coverage .
+on the cost side , labeling thousands of images is a cumbersome and expensive job to the degree that the deployment of the economic balance behind the database is likely to decrease .
+to solve the problem , systems in [ 21 ] , [ 142 ] use a program that explores the internet , collecting images and inserting them in a predefined taxonomy on the basis of the text surrounding them .
+a similar approach for digital libraries is taken by [ 24 ] .
+on the coverage side , labeling is seldom complete , context sensitive , and , in any case , there is a significant fraction of requests whose semantics can 't be captured by labeling alone [ 6 ] , [ 64 ] .
+both methods will cover the semantic gap only in isolated cases .
+discussion on scope .
+the pivotal point in content-based retrieval is that the user seeks semantic similarity , but the database can only provide similarity by data processing .
+this is what we called the semantic gap .
+at the same time , the sensory gap between the properties in an image and the properties of the object plays a limiting role in retrieving the content of the image .
+we discussed applications of content-based retrieval in three broad types : target search , category search , and search by association .
+target search connects with the tradition of pattern matching in computer vision .
+new challenges in content-based retrieval are the huge amount of objects to search among , the incomplete query specification , the incomplete image description , and the variability of sensing conditions and object states .
+category search builds on the object recognition and statistical pattern recognition methods in computer vision .
+new challenges in content-based retrieval compared to the achievements of object recognition are the interactive manipulation of results , the usually very large number of object classes , and the absence of an explicit training phase for feature and classifier tuning .
+search by association is further removed from most of the computer vision tradition .
+it is hampered most by the semantic gap .
+as long as the gap is there , use of content- based retrieval for browsing will not be within the grasp of the general public as humans are accustomed to rely on the immediate semantic imprint the moment they see an image .
+the aim of content-based retrieval systems must be to provide maximum support in bridging the semantic gap between the simplicity of available visual features and the richness of the user semantics .
+we analyze characteristics of the image domain , the domain knowledge , and the types of use as the prime factors determining the functionality of a system .
+an important distinction is that between broad and narrow domains .
+the broader the domain , the more browsing or search by association can be the right solution .
+the narrower the domain , the more likely an application of domain knowledge will succeed .
+the challenge for image search engines on a broad domain is to tailor the engine to the narrow domain the user has in mind via specification , examples , and interaction .
+description of content : image processing .
+it is important to establish that content-based retrieval does not rely on describing the content of the image in its entirety .
+it may be sufficient that a retrieval system presents similar images , similar in some user-defined sense .
+the description of content should serve that goal primarily .
+so , the purpose of image processing in image retrieval must be to enhance aspects in the image data relevant to the query and to reduce the remaining aspects .
+one such goal can be met by using invariance as a tool to deal with accidental distortions in the information introduced by the sensory gap .
+from the above discussion on the sensory gap , it is clear that invariant features may carry more object-specific information than other features as they are insensitive to the accidental conditions of the sensing .
+the aim of invariant descriptions is to identify objects , no matter from how and where they are observed , at the loss of some of the information content .
+the degree of invariance , that is , the dimensionality of the group w , should be tailored to the recording circumstances .
+in general , a feature with a very wide class of invariance loses the power to discriminate among essential differences .
+the size of the class of images considered equivalent grows with the dimensionality of w. in the end , the invariance may be so wide that no discrimination among objects is retained .
+the aim is to select the tightest set of invariants suited for the expected set of nonconstant conditions .
+what is needed in image search is a specification of the minimal invariant conditions in the specification of the query discussed in [ 159 ] .
+the minimal set of invariant conditions can only be specified by the user as it is part of his or hers intention .
+the oldest work on invariance in computer vision has been done in object recognition , as reported , among others , in [ 117 ] .
+invariant description in image retrieval is relatively new , but quickly gaining ground for a good introduction , see [ 18 ] , [ 32 ] .
+an alternative to invariant features1 is to represent the viewing conditions separately from the objects in the scene .
+this way no information is lost in the reduction to invariant features , while the information is only rearranged .
+it should be left to the later stages to decide what is important .
+color image processing .
+color has been an active area of research in image retrieval , more than in any other branch of computer vision .
+color makes the image i ( x ) take values in a color vector space .
+the interest in color may be ascribed to the superior discriminating potentiality of a three-dimensional domain compared to the single dimensional domain of gray-level images .
+two aspects of color return in many of the contributions .
+one is that the recorded color varies considerably with the orientation of the surface , the viewpoint of the camera , the position of the illumination , the spectrum of the illuminant , and the way the light interacts with the object .
+this variability should be dealt with in one way or another .
+second , the human perception of color is an intricate topic where many attempts have been made to capture perceptual similarity .
+only when there is no variation in the recording or in the perception is the rgb color representation a good choice since that representation was designed to match the input channel of the eye .
+rgb-representations are in wide-spread use .
+they describe the image in its literal color properties .
+an image expressed as ( r ( x ) , g ( x ) , b ( x ) ) ( indices will be omitted from now on ) makes most sense when recording in the absence of variance , as is the case , e.g. , for art paintings [ 64 ] , the color composition of photographs [ 48 ] , and trademarks [ 79 ] , [ 39 ] , where two-dimensional images are recorded in frontal view under standard conditions .
+a significant improvement over the rgb-color space ( at least for retrieval applications ) comes from the use of opponent color representations [ 169 ] , which uses the opponent color axes ( r g , 2b r g , r + g + b ) .
+this representation has the advantage of isolating the brightness information on the third axis .
+with this solution , the first two chromaticity axes can be down-sampled as humans are more sensitive to brightness than they are to chroma .
+they are invariant to changes in illumination intensity and shadows .
+others approaches use the munsell or the lab-spaces because of their relative perceptual uniformity .
+the lab- representation is designed so that the euclidean distance between two colors representations models the human perception of color differences .
+care should be taken when digitizing the nonlinear conversion to lab-space [ 115 ] .
+the hsv-representation is often selected for its invariant properties .
+the hue is invariant under the orientation of the object with respect to the illumination and camera direction and hence more suited for object retrieval .
+a wide variety of tight photometric color invariants for object retrieval were derived in [ 57 ] from an analysis of the schafer model of object reflection .
+they derive for matte patches under white light the invariant color space and two more permutations .
+the color models are robust against major viewpoint distortion .
+color constancy is the capability of humans to perceive the same apparent color in the presence of variations in illumination which change the physical spectrum of the perceived light .
+in computer vision , color constancy was first considered in [ 49 ] .
+for flat , matte , and uniformly illuminated objects , the paper forms the canonical gamut defined as the convex set of physically feasible normalized rgb , i.e. , rgb-responses .
+the reference then maps all observed rgb-responses in the image into the canonical one .
+the map explaining all observations determines the color constancy .
+in [ 47 ] , this is improved to include specular reflection , shape , and varying illumination .
+by computing the blue-ratio vector ( b , n , 1 ) , only color orientation is used and intensity is ruled out .
+in this 2d-space , the color constancy map can again be selected from a canonical gamut of colors and surfaces .
+in [ 56 ] , the ratios offer more stability to surface geometry variations .
+color constancy was applied to retrieval in [ 54 ] by using an illumination invariant color representation .
+the authors index the ratio of neighboring colors .
+color constant indexing leads to some loss in discriminating power among objects , but yields illumination independent retrieval instead .
+the scheme was improved in [ 158 ] by using algebraic invariants .
+rather than invariant descriptions , another approach to cope with the inequalities in observation due to surface reflection is to search for clusters in a color histogram of the image .
+in the rgb-histogram , clusters of pixels reflected off an object form elongated streaks .
+hence , in [ 126 ] , a nonparametric cluster algorithm in rgb-space is used to identify which pixels in the image originate from one uniformly colored object .
+image processing for local shape .
+under the name " local shape , " we collect all properties that capture conspicuous geometric details in the image .
+we prefer the name local shape over differential geometrical properties to express the result rather than the method .
+the result of local shape evaluation is a dense image data field different from object shape ( discussed in section 4 ) .
+local shape characteristics derived from directional color derivativesin the paper referred to as texture propertieshave been used in [ 115 ] to derive perceptually conspicuous details in highly textured patches of diverse materials .
+a wide , rather unstructured variety of image detectors can be found in [ 165 ] .
+scale space theory was devised as the complete and unique primary step in preattentive vision , capturing all conspicuous information [ 187 ] .
+it provides the theoretical basis for the detection of conspicuous details on any scale .
+in [ 105 ] , a series of gabor filters of different directions and scale have been used to enhance image properties [ 137 ] .
+conspicuous shape geometric invariants are presented in [ 136 ] .
+a method employing local shape and intensity information for viewpoint and occlusion invariant object retrieval is given in [ 148 ] .
+the method relies on voting among a complete family of differential geometric invariants .
+also , [ 178 ] searches for differential affine-invariant descriptors .
+from surface reflection , in [ 5 ] , the local sign of the gaussian curvature is computed while making no assumptions on the albedo or the model of diffuse reflectance .
+combining shape and color both in invariant fashion is a powerful combination , as described by [ 56 ] , where the colors inside and outside affine curvature maximums in color edges are stored to identify objects .
+image texture processing .
+in computer vision , texture is defined as all what is left after color and local shape have been considered or it is defined by such terms as structure and randomness .
+many common textures are composed of small textons usually too great in number to be perceived as isolated objects .
+the elements can be placed more or less regularly or randomly .
+they can be almost identical or subject to large variations in their appearance and pose .
+in the context of image retrieval , research is mostly directed toward statistical or generative methods for the characterization of patches .
+basic texture properties include the markovian analysis , dating back to haralick in 1973 , and generalized versions thereof [ 91 ] , [ 58 ] .
+in retrieval , the property is computed in a sliding mask for localization [ 99 ] , [ 59 ] .
+another important texture analysis technique uses multiscale autoregressive mrsar-models , which consider texture as the outcome of a deterministic dynamic system subject to state and observation noise [ 174 ] , [ 106 ] .
+other models exploit statistical regularities in the texture field [ 9 ] .
+wavelets [ 34 ] have received wide attention .
+they have often been considered for their locality and their compression efficiency .
+many wavelet transforms are generated by groups of dilations or dilations and rotations that have been said to have some semantic correspondent .
+the lowest levels of the wavelet transforms [ 34 ] , [ 26 ] have been applied to texture representation [ 92 ] , [ 162 ] sometimes in conjunction with markovian analysis [ 25 ] .
+other transforms have also been explored , most notably fractals [ 44 ] .
+a solid comparative study on texture classification from mostly transform-based properties can be found in [ 133 ] .
+texture search proved useful in satellite images [ 98 ] and images of documents [ 33 ] .
+textures also served as a support feature for segmentation-based recognition [ 102 ] , but the texture properties discussed so far offer little semantic referent .
+they are therefore ill-suited for retrieval applications in which the user wants to use verbal descriptions of the image .
+therefore , in retrieval research , in [ 101 ] , the wold features of periodicity , directionality , and randomness are used , which agree reasonably well with linguistic descriptions of textures as implemented in [ 128 ] .
+discussion on image processing .
+image processing in content-based retrieval should primarily be engaged in enhancing the image information the query poses , not in describing the content of the image in its entirety .
+to enhance the image information , retrieval has set the spotlights on color , as color has a high discriminating power among objects in a scene , much higher than gray levels .
+the purpose of most image color processing is to reduce the influence of the accidental conditions of the scene and sensing ( i.e. , the sensory gap ) .
+progress has been made in tailored color space representation for well- described classes of variant conditions .
+also , the application of geometric description derived from scale space theory will reveal viewpoint and scene independent salient point sets , thus opening the way to similarity of images on a few most informative regions or points .
+in this section , we have made a separation between color , local geometry , and texture .
+at this point , it is safe to conclude that the division is artificial .
+wavelets say something about the local shape as well as the texture and so do many scale space and local filter strategies .
+for the purposes of content-based retrieval , an integrated view on color , texture , and local geometry is urgently needed as only an integrated view on local properties can provide the means to distinguish among hundreds of thousands different images .
+a recent advancement in that direction is the fusion of illumination and scale invariant color and texture information into a consistent set of localized properties [ 66 ] .
+also , in [ 20 ] , homogeneous regions are represented as collections of ellipsoids of uniform color or texture , but invariant texture properties deserve more attention , [ 173 ] and [ 185 ] .
+further research is needed in the design of complete sets of image properties with well-described variant conditions which they are capable of handling .
+invariance is just one side of the coin , where discriminating power is the other .
+in content-based image retrieval , the first steps are taken to establish the discriminating power of invariant properties [ 55 ] .
+this is essential as the balance between stability against variations and retained discriminatory power determines the effectiveness of a property .
+in the first section , we discuss the ultimate form of spatial data by grouping the data into object silhouettes , clusters of points or point-sets .
+in subsequent sections , we leave the spatial domain to condense the pictorial information into feature values .
+grouping data .
+in content-based image retrieval , the image is often divided in parts before features are computed from each part , see fig . 7 .
+partitionings of the image aim at obtaining more selective features by selecting pixels in a trade-off against having more information in features when no subdivision of the image is used at all .
+we distinguish the following partitionings : the difficulty of achieving strong segmentation may be circumvented by weak segmentation where grouping is based on data-driven properties : " weak segmentation is a grouping of the image data in conspicuous regions t internally homogenous according to some criterion , hopefully with t c o. "
+the criterion is satisfied if region t is within the bounds of object o , but there is no guarantee that the region covers all of the object 's area .
+when the image contains two nearly identical objects close to each other , the weak segmentation algorithm may falsely observe just one patch .
+fortunately , in content-based retrieval , this type of error is rarely obstructive for the goal .
+in [ 125 ] , the homogeneity criterion is implemented by requesting that colors be spatially coherent vectors in a region .
+color is the criterion in [ 50 ] , [ 126 ] .
+in [ 20 ] , [ 112 ] , the homogeneity criterion is based on color and texture .
+the limit case of weak segmentation is a set of isolated points [ 148 ] , [ 57 ] .
+no homogeneity criterion is needed then , but the effectiveness of the isolated points rest on the quality of their selection .
+when occlusion is present in the image , weak segmentation is the best one can hope for .
+weak segmentation is used in many retrieval systems , either as a purpose of its own or as a preprocessing stage for data-driven model-based object segmentation .
+when the object has a ( nearly ) fixed shape , like a traffic light or an eye , we call it a sign : " localizing signs is finding an object with a fixed shape and semantic meaning , with t = xcenter . "
+signs are helpful in content-based retrieval as they deliver an immediate and unique semantic interpretation .
+the weakest form of grouping is partitioning : " a partitioning is a division of the data array regardless of the data , symbolized by : t = ~ o. "
+the area t may be the entire image or a conventional partitioning as the central part of the image against the upper , right , left , and lower parts [ 67 ] .
+the feasibility of fixed partitioning comes from the fact that images are created in accordance with certain canons or normative rules , such as placing the horizon about 2 / 3 up in the picture or keeping the main subject in the central area .
+this rule is often violated , but this violation in itself has semantic significance .
+another possibility of partitioning is to divide the image in tiles of equal size and summarize the dominant feature values in each tile [ 130 ] .
+each of these four approaches to partitioning leads to a preferred type of features , as summarized in fig . 8 and illustrated in fig . 9 , where feature hierarchies are used to make a combination on all types .
+global and accumulating features .
+in the computational process , features are calculated next .
+the general class of accumulating features aggregate the spatial information of a partitioning irrespective of the image data .
+a special type of accumulative features are the global features which are calculated from the entire image .
+a simple but very effective approach to accumulating features is to use the histogram , that is , the set of features f ( m ) ordered by histogram index m .
+the original idea to use histograms for retrieval comes from swain and ballard [ 169 ] , who realized that the power to identify an object using color is much larger than that of a gray-valued image .
+as a histogram loses all information about the location of an object in the image , [ 169 ] , [ 41 ] project the histogram back into the image to locate it by searching for best matches .
+a histogram may be effective for retrieval as long as there is a uniqueness in the color pattern held against the pattern in the rest of the entire data set .
+in addition , the histogram shows an obvious robustness to translation of the object and rotation about the viewing axis .
+swain and ballard also argue that color histograms change slowly with change in viewpoint and scale and with occlusion .
+all of this is in favor of the use of histograms .
+when very large data sets are at stake , plain histogram comparison will saturate the discrimination .
+for a 64-bin histogram , experiments show that , for reasonable conditions , the discriminating power among images is limited to 25,000 images [ 167 ] .
+to keep up performance , in [ 125 ] , a joint histogram is used , providing discrimination among 250,000 images in their database , rendering 80 percent recall among the best 10 for two shots from the same scene using simple features .
+other joint histograms add local texture or local shape [ 61 ] , directed edges [ 78 ] , and local higher order structures [ 48 ] .
+another alternative is to add a dimension representing the local distance .
+this is the correlogram [ 73 ] , defined as a three- dimensional histogram where the colors of any pair are along the first and second dimension and the spatial distance between them along the third .
+the autocorrelogram defining the distances between pixels of identical colors is found on the diagonal of the correlogram .
+a more general version is the geometric histogram [ 134 ] , with the normal histogram , the correlogram , and several alternatives as special cases .
+this also includes the histogram of the triangular pixel values , reported to outperform all of the above as it contains more information .
+to avoid an explosion of dimensions of the histogram , one could also prefer to reconsider the quality of the information along each of the dimensions .
+in section 3 , we have considered invariant representations suited to enrich the information on the axes of the histogram as it rules out the accidental influence of sensing and scene conditions .
+a different view on accumulative features is to demand that all information ( or all relevant information ) in the image is preserved in the feature values .
+when the bit- content of the features is less than the original image , this boils down to compression transforms .
+many compression transforms are known , but the quest is for transforms simultaneously suited as retrieval features .
+as proper querying for similarity is based on a suitable distance function between images , the transform has to be applied on a metric space .
+the components of the transform have to correspond to semantically meaningful characteristics of the image .
+finally , the transform should admit indexing in compressed form yielding a big computational advantage over having the image be untransformed first .
+schneier and abdel-mottaleb [ 149 ] is just one of many where the cosine- based jpeg-coding scheme is used for image retrieval .
+the jpeg-transform fulfills the first and third requirement , but fails on a lack of semantics .
+in the mpeg-standard , the possibility of including semantic descriptors in the compression transform is introduced [ 29 ] .
+for an overview of feature indexes in the compressed domain , see [ 103 ] .
+in [ 92 ] , a wavelet packet was applied to texture images and , for each packet , entropy and energy measures were determined and collected in a feature vector .
+in [ 75 ] , vector quantization was applied in the space of coefficients to reduce its dimensionality .
+this approach was extended to incorporate the metric of the color space in [ 146 ] .
+in [ 77 ] , a wavelet transform was applied independently to the three channels of a color image and only the sign of the most significant coefficients is retained .
+in a recent paper [ 3 ] , a scheme is offered for a broad spectrum of invariant descriptors suitable for application on fourier , wavelets , and splines and for geometry and color alike .
+another type of complete feature sets capturing all information in the image is to use moments .
+their invariant combinations of moments [ 72 ] and [ 89 ] have been successfully employed in retrieval of objects in [ 48 ] , especially when the image contains just the object .
+salient features .
+another way to avoid the brittleness of strong segmentation is to opt for weak segmentation .
+this leads to a grouping of the data into homogeneous regions .
+from the merged regions , a selection is made on their salience .
+the most conspicuous regions are stored .
+the limit case of a weak segmentation is the detection of conspicuous points , see fig . 9 .
+as the information of the image is condensed into just a limited number of feature values , the information should be selected with precision for greatest saliency and proven robustness .
+that is why saliency in [ 100 ] is defined as the special points which survive longest when gradually blurring the image in scale space .
+also , in [ 138 ] , lifetime is an important selection criterion for salient points in addition to wiggliness , spatial width , and phase congruency .
+to enhance the quality of salient descriptions , in [ 178 ] , invariant and salient features of local patches have been considered .
+in each case , the image is summarized in a list of conspicuous points .
+in [ 148 ] , salient and invariant transitions in gray value images are recorded .
+similarly , in [ 57 ] , [ 55 ] , photometric invariance is the leading principle in summarizing the image in salient transitions in the image .
+salient feature calculations lead to sets of regions or points with known location and feature values capturing their salience .
+in [ 20 ] , first , the most conspicuous homogeneous regions in the image are derived and mapped into feature space .
+then , expectation-maximization [ 37 ] is used to determine the parameters of a mixture of gaussians to model the distribution of points into the feature space .
+the means and covariance matrices of these gaussians , projected on the image plane , are represented as ellipsoids characterized by their center x , their area , eccentricity , and direction .
+the average values of the color and texture descriptions inside the ellipse are also stored .
+signs .
+when one of the possible interpretations of an image is so preponderant that it can be considered the meaning of the image , the image holds a sign , characterized by the probability p on interpretation z : the analysis leads to a localization of a sign with its probability .
+typical signs are an icon , a character , a traffic light , or a trademark .
+in the case of maps , the interpretation of map symbols and their spatial relationships provides access to the content of the map [ 144 ] .
+other systems based on signs are designed with specific application domains in mind , like ocr from an image [ 200 ] , faces to detect from the image [ 197 ] , medical images [ 90 ] , [ 17 ] , textile [ 95 ] , art [ 65 ] , or detecting the constituent components of silhouettes of plants based on a visual lexicon in [ 180 ] .
+for signs , a strong semantic interpretation is within grasp and the undisputed semantic interpretation brings clarity in interpreting the image .
+that is the attractiveness of using signs , in spite of the fact that the analysis tends to become application-oriented .
+shape and object features .
+the theoretically best way to enhance object-specific information contained in images is by segmenting the object in the image .
+but , as discussed above , the brittleness of segmentation algorithms prevents the use of automatic segmentation in broad domains .
+in fact , in many cases , it is not necessary to know exactly where an object is in the image as long as one can identify the presence of the object by its unique characteristics .
+when the domain is narrow , a tailored segmentation algorithm may be needed more and , fortunately , also be better feasible .
+an abundant comparison of shape for retrieval can be found in [ 109 ] , evaluating many features on a 500-element trademark data set .
+straightforward features of general applicability include fourier features and moment invariants of the object this time , sets of consecutive boundary segments , or encoding of contour shapes [ 43 ] .
+for retrieval , we need a shape representation that allows a robust measurement of distances in the presence of considerable deformations .
+many sophisticated models widely used in computer vision often prove too brittle for image retrieval .
+on the other hand , the ( interactive ) use of retrieval makes some mismatch acceptable and , therefore , precision can be traded for robustness and computational efficiency .
+more sophisticated methods include elastic matching and multiresolution representation of shapes .
+in elastic deformation of image portions [ 36 ] , [ 122 ] or modal matching techniques [ 150 ] , image patches are deformed to minimize a cost functional that depends on a weighed sum of the mismatch of the two patches and on the deformation energy .
+the complexity of the optimization problem depends on the number of points on the contour .
+hence , the optimization is computationally expensive and this , in spite of the greater precision of these methods , has limited their diffusion in image databases .
+multiscale models of contours have been studied as a representation for image databases in [ 116 ] .
+contours were extracted from images and progressively smoothed by dividing them into regions of constant sign of the second derivative and progressively reducing the number of such regions .
+at the final step , every contour is reduced to an ellipsoid which could be characterized by some of the features in [ 48 ] .
+a different view on multiresolution shape is offered in [ 94 ] , where the contour is sampled by a polygon and then simplified by removing points from the contour until a polygon survives selecting them on perceptual grounds .
+when computational efficiency is at stake , an approach for the description of the object boundaries is found in [ 201 ] , where an ordered set of critical points on the boundary are found from curvature extremes .
+such sets of selected and ordered contour points are stored in [ 108 ] relative to the basis spanned by an arbitrary pair of the points .
+all point pairs are used as a basis to make the redundant representation geometrically invariant , a technique similar to [ 192 ] for unordered point sets .
+for retrieval of objects in 213-images of the 3d-worlds , a viewpoint invariant description of the contour is important .
+a good review of global shape invariants is given in [ 140 ] .
+description of structure and lay-out .
+when feature calculations are available for different entities in the image , they may be stored with a relationship between them , see fig . 9 for an illustration .
+such a structural feature set may contain feature values plus spatial relationships , a hierarchically ordered set of feature values , or relationships between point sets or object sets .
+the process is symbolized by : to that end , in [ 107 ] , [ 50 ] , lay-out descriptions of an object are discussed in the form of a graph of relations between blobs .
+a similar lay-out description of an image in terms of a graph representing the spatial relations between the objects of interest was used in [ 129 ] for the description of medical images .
+in [ 53 ] , a graph is formed of topological relationships of homogenous rgb-regions .
+when selected features and the topological relationships are viewpoint invariant , the description is viewpoint invariant , but the selection of the rgb-representation as used in the paper will only suit that purpose to a limited degree .
+the systems in [ 70 ] , [ 163 ] study spatial relationships between regions , each characterized by locations , size , and features .
+in the later system , matching is based on the 213-string representation founded by chang and hau [ 22 ] .
+for a narrow domain , in [ 129 ] , [ 132 ] , the relevant elements of a medical x-ray image are characterized separately and joined together in a graph that encodes their spatial relations .
+starting from a shape description , the authors in [ 94 ] decompose an object into its main components , making the matching between images of the same object easier .
+automatic identification of salient regions in the image , based on nonparametric clustering followed by decomposition of the shapes found into limbs , is explored in [ 52 ] .
+discussion on features .
+also in the description of the image by features , it should be kept in mind that for retrieval a total understanding of the image is rarely needed .
+strong segmentation of the scene and complete feature descriptions may not be necessary at all to achieve a similarity ranking .
+of course , the deeper one goes into the semantics of the pictures , the deeper the understanding of the picture will also have to be , but the critical point in the advancement of content-based retrieval is the semantic meaning of the image that is rarely self-evident .
+the theoretically best approach to a semantic interpretation of an image remains the use of a strong segmentation of the scene .
+automatic strong segmentation is , however , hard to achieve , if not impossible for general domains .
+the brittleness of strong segmentation is a mostly unsurpassable obstacle when describing the content of images by describing the content of its objects .
+especially for broad domains and for sensory conditions where clutter and occlusion are to be expected , automatic strong segmentation is hard , if not impossible .
+in that case , segmentation is to be done by hand when retrieval relies on it .
+narrow domains such as trademark validation , the identification of textiles , and the recognition of fish depend on the shape of the object , assessing similarity on the basis of the silhouettes .
+the fine-to-coarse decompositions are attractive in their discriminating power and computational efficiency .
+again , a major bottleneck is the highly accurate segmentation of the object ( as well as a frontal viewpoint of the object ) .
+in selected narrow domains , this may be achieved by recording the object against a clear background .
+general content-based retrieval systems have dealt with segmentation brittleness in a few ways .
+first , a weaker version of segmentation has been introduced in content- based retrieval .
+in weak segmentation , the result is a homogeneous region by some criterion , but not necessarily covering the complete object silhouette .
+it results in a fuzzy , blobby description of objects , rather than a precise segmentation .
+salient features of the weak segments capture the essential information of the object in a nutshell .
+the extreme form of the weak segmentation is the selection of a salient point set as the ultimately efficient data reduction in the representation of an object , very much like the focus-ofattention algorithms for an earlier age .
+only points on the interior of the object can be used for identifying the object and conspicuous points at the borders of objects have to be ignored .
+little work has been done on how to make the selection .
+weak segmentation and salient features are a typical innovation of content-based retrieval .
+it is expected that salience will receive much attention in the further expansion of the field , especially when computational considerations gain in importance .
+the alternative is to do no segmentation at all .
+content- based retrieval has gained from the use of accumulative features , computed on the global image or partitionings thereof , disregarding the content , the most notable being the histogram .
+where most attention has gone to color histograms , histograms of local geometric properties and texture are following .
+to compensate for the complete loss of spatial information , the geometric histogram was recently defined with an additional dimension for the spatial layout of pixel properties .
+as it is a superset of the histogram , an improved discriminability for large data sets is anticipated .
+when accumulative features are calculated from the central part of a photograph may be very effective in telling them apart by topic , but the center does not always reveals the purpose .
+likewise , features calculated from the top part of a picture may be effective in telling indoor scenes from outdoor scenes , but again this holds to a limited degree .
+a danger of accumulative features is their inability to discriminate among different entities and semantic meanings in the image .
+more work on semantic- driven groupings will increase the power of accumulative descriptors to capture the content of the image .
+structural descriptions match well with weak segmentation , salient regions , and weak semantics .
+one has to be certain that the structure is within one object and not an accidental combination of patches which have no meaning in the object world .
+the same brittleness of strong segmentation lurks here .
+we expect a sharp increase in the research of local , partial , or fuzzy structural descriptors for the purpose of content-based retrieval , especially of broad domains . 5 interpretation and similarity when the information from images is captured in a feature set , there are two possibilities for endowing them with meaning : one derives an unilateral interpretation from the feature set , while the other one compares the feature set with the elements in a given data set on the basis of a similarity function , see fig . 10 .
+semantic interpretation .
+in content-based retrieval , it is useful to push the semantic interpretation of features derived from the image as far as one can .
+semantic features aim at encoding interpretations of the image which may be relevant to the application .
+of course , such interpretations are a subset of the possible interpretations of an image .
+to that end , consider a feature vector f derived from an image i .
+for given semantic interpretations z from the set of all interpretations z , a learning phase leads to conditional probabilities : a strong semantic feature with interpretation zj would generate a p ( zlf ) = b ( z zj ) .
+if the feature carries no semantics , it would generate a distribution p ( zlf ) = p ( z ) independent of the value of the feature .
+in practice , many feature types will generate a probability distribution that is neither a pulse nor independent of the feature value .
+this means that the feature value " skews " the interpretation of the image , but does not determine it completely .
+under the umbrella weak semantics , we collect the approaches that try to combine features in some semantically meaningful interpretation .
+weak semantics aims at encoding , in a simple and approximate way , a subset of the possible interpretations of an image that are of interest in a given application .
+as an example , the system in [ 30 ] uses color features derived from itten 's color theory to encode the semantics associated to color contrast and harmony in art application .
+in the mavis2-system [ 84 ] , data are considered at four semantic levels , embodied in four layers called the raw media , the selection , the selection expression , and conceptual layers .
+each layer encodes information at an increasingly symbolic level .
+agents are trained to create links between features , feature signatures at the selection layer , interrelated signatures at the selection expression layer , and concept ( expressed as textual labels ) at the conceptual layer .
+in addition to the vertical connections , the two top layers have intralayer connections that measure the similarity between concepts at that semantic level and contribute to the determination of the similarity between elements at the lower semantic level .
+similarity between features .
+a different road to assigning a meaning to an observed feature set , is to compare a pair of observations by a similarity function .
+while searching for a query image iq ( x ) among the elements of the data set of images , id ( x ) , knowledge of the domain will be expressed by formulating a similarity measure sq , d between the images q and d on the basis of some feature set .
+the similarity measure depends on the type of features , see fig . 10 .
+at its best use , the similarity measure can be manipulated to represent different semantic contents ; images are then grouped by similarity in such a way that close images are similar with respect to use and purpose .
+there is surprisingly little work dedicated to characterizing similarity measures .
+a few ideas , however , have emerged .
+in content-based retrieval , histograms have mostly been used in conjunction with color features , but there is nothing against being used in texture or local geometric properties .
+swain and ballard [ 169 ] proposed the use of the intersection distance dn ( fq , fd ) = ~ n j = 1 min ( fqj , fdj ) , where fq and fd are two histograms containing n bins each .
+they also proved that if all images have the same number of pixels , i.e. , ej fj is the same for all images , then this distance has the same ordinal properties as the l1 distance .
+in [ 62 ] , a different approach is followed .
+the distance between two histograms is defined in vector form as where the matrix e expresses the similarity between the jth and the kth bins .
+this has the advantage of considering the similarity between values in the feature space , i.e. , of incorporating the metric of the feature space into the similarity measure .
+these measures do not take into account the similarity between different , but related bins of a histogram .
+in [ 166 ] , it is observed that this may lead to false negatives .
+the paper proposes the use of cumulative histograms of the form ~ fq ( m ) = ~ mk = 0 fqk after ordering the bins by parameter j .
+comparisons between cumulative rather than plain histograms show that the former tend to be more forgiving for changes in the bin assignment due to noise .
+an alternative , also explored in the paper , is to describe the histogram by the first three statistical moments , where 3 is an empirical finding .
+in [ 166 ] , the histogram was applied to color images by representing colors in the hsv-system and computing the moments of the channel separately , resulting in nine parameters , three moments for each of the three color channels .
+a recent distance measure for color histograms is found in [ 4 ] , where a hue histogram and a saturation histogram are formed separately with the advantages of saving on memory and the possibility of excluding colors from a query .
+the reference compares colors on the basis of the angular distance in rgb-space .
+the natural measure to compare ordered sets of accumulative features is nonparametric test statistics .
+they can be applied to the distributions of the coefficients of transforms to determine the likelihood that two samples derive from the same distribution [ 35 ] , [ 131 ] .
+they can also be applied to compare the equality of two histograms and all variations thereof .
+similarity of object silhouettes .
+for shape comparison , the authors make a distinction between transforms , moments , deformation matching , scale space matching , and dissimilarity measurement .
+difficulties for shape matching based on global transforms are the inexplicability of the result and the brittleness for small deviations .
+moments , specifically their invariant combinations , have been frequently used in retrieval [ 89 ] .
+matching a query and an object in the data file can be done along the ordered set of eigen shapes [ 150 ] or with elastic matching [ 36 ] , [ 11 ] .
+scale space matching is based on progressively simplifying the contour by smoothing [ 116 ] .
+by comparing the signature of annihilated zero crossings of the curvature , two shapes are matched in a scale and rotation invariant fashion .
+a discrete analogue can be found in [ 94 ] , where points are removed from the digitized contour on the basis of perceptually motivated rules .
+results on a 2,000-element database are reported to perform better than most of the methods listed above .
+when based on a metric , dissimilarity measures will render an ordered range of deviations suited for a predictable interpretation .
+in [ 183 ] , an analysis is given for the hausdorff and related metrics between two shapes on robustness and computational complexity .
+the directed hausdorff metric is defined as the maximum distance between a point on query object q and its closest counterpart on d .
+the partial hausdorff metric , defined as the kth maximum rather than the absolute maximum , is used in [ 63 ] for affine invariant retrieval .
+similarity of structural features .
+many different techniques have been reported for the similarity of feature structures .
+in [ 191 ] , [ 74 ] , a bayesian framework is developed for the matching of relational attributed graphs by discrete relaxation .
+this is applied to line patterns from aerial photographs .
+a metric for the comparison of two topological arrangements of named parts , applied to medical images , is defined in [ 172 ] .
+the distance is derived from the number of edit- steps needed to nullify the difference in the voronoidiagrams of two images .
+in [ 23 ] , 2d-strings describing spatial relationships between objects are discussed and , much later , reviewed in [ 198 ] .
+from such topological relationships of image regions , in [ 71 ] , a 2d-indexing is built in trees of symbol strings , each representing the projection of a region on the coordinate axis .
+the distance between hq and hd is the weighed number of editing operations required to transform the one tree to the other .
+in [ 153 ] , a graph is formed from the image on the basis of symmetry as it appears from the medial axis .
+similarity is assessed in two stages via graph-based matching followed by energy-deformation matching .
+in [ 53 ] , hierarchically ordered trees are compared for the purpose of retrieval by rewriting them into strings .
+a distance-based similarity measure establishes the similarity scores between corresponding leaves in the trees .
+at the level of trees , the total similarity score of corresponding branches is taken as the measure for ( sub ) tree-similarity .
+from a small size experiment , it is concluded that hierarchically ordered feature sets are more efficient than plain feature sets , with projected computational shortcuts for larger data sets .
+in [ 163 ] , images are transformed into homogeneous regions for retrieval based on color layout .
+the regions are scanned , typically five equally spaced vertical scans , and converted into a string of symbols taken from a visual dictionary .
+the strings are summarized into region-relative histograms , f ( i , j ) , indicating how many times a symbol precedes another symbol in one of the scans .
+during querying , the similarity of q to d is given by ez ( fqfd ) 1 ej fqfd , that is , the element-by-element correspondence of the region ordered histograms .
+similarity of salient features .
+salient features are used to capture the information in the image in a limited number of salient points .
+similarity between images can then be checked in several different ways .
+in the first place , the color , texture , or local shape characteristics may be used to identify the salient points of the data as identical to the salient points of the query .
+in the second place , one can store all salient points from one image in a histogram on the basis of a few characteristics , such as color on the inside versus color on the outside .
+the similarity is then based on the group-wise presence of enough similar points [ 57 ] .
+the metric d ( fg , fd ) is now aiming at measuring the presence of the same set of salient points .
+comparing sparsely occupied histograms has long been used in text retrieval , where vector space modeling [ 143 ] implies the registration in a n-dimensional histogram f with as many dimensions as there are different words in the dictionary , typically 10,000 .
+in a binary vector space , each dimension is expressing whether that word is present or absent in the text .
+a text is a point in this high dimensional space .
+the same strategy is used when comparing salient point features derived from different images .
+the intersection is appropriate when both q and d may be partially occluded in the image or cluttered with the background .
+when q is neither cluttered or occluded but d may still be , the intersection should be replaced by the < -operation .
+the model has been used in image retrieval in [ 158 ] , while keeping access to their location in the image by back-projection [ 169 ] .
+following the development of the vector space model in text retrieval , a weight per dimension may favor the appearance of some salient features over an other .
+see also [ 69 ] for a comparison with correlograms .
+in point-by-point-based methods for shape comparison , shape similarity is studied in [ 83 ] , where maximum curvature points on the contour and the length between them are used to characterize the object .
+to avoid the extensive computations , one can compute the algebraic invariants of point sets , known as the crossratio .
+due to their invariant character , these measures tend to have only a limited discriminating power among different objects .
+a more recent version for the similarity of nameless point-sets is found in geometric hashing [ 192 ] , where each triplet spans a base for the remaining points of the object .
+an unknown object is compared on each triplet to see whether enough similarly located points are found .
+geometric hashing , though attractive in its concept , is too computationally expensive to be used on the very large data sets of image retrieval due to the anonymity of the points .
+similarity of two points sets p9 and pd given in a row- wise matrix is discussed in [ 188 ] .
+similarity at the semantic level .
+in [ 70 ] , knowledge-based type abstraction hierarchies are used to access image data based on context and a user profile , generated automatically from cluster analysis of the database .
+also in [ 24 ] , the aim is to create a very large concept-space inspired by the thesaurus-based search from the information retrieval community .
+in [ 115 ] , a linguistic description of texture patch visual qualities is given and ordered in a hierarchy of perceptual importance on the basis of extensive psychological experimentation .
+a more general concept of similarity is needed for relevance feedback , in which similarity with respect to an ensemble of images is required .
+the purpose of the bireferential measure is to find all regions that are similar to two specified query points , an idea that generalizes to similarity queries given multiple examples .
+the approach can be extended with the definition of a complete algebra of similarity measures with suitable composition operators [ 45 ] , [ 38 ] .
+it is then possible to define operators corresponding to the disjunction , conjunction , and negation of similarity measures , much like traditional databases .
+the algebra is useful for the user to manipulate the similarity directly as a means to express characteristics in specific feature values .
+learning an interpretation .
+as data sets grow large and the available processing power matches that growth , the opportunity arises to learn from experience .
+rather than designing , implementing , and testing an algorithm to detect the visual characteristics for each different semantic term , it becomes possible to learn the semantics of objects from their appearance .
+for a review on statistical pattern recognition , see [ 80 ] .
+in [ 182 ] , a variety of techniques is discussed treating retrieval as a classification problem .
+one approach is principal component analysis over a stack of images taken from the same class z of objects .
+this can be done in feature space [ 118 ] or at the level of the entire image , for example , faces in [ 113 ] .
+the analysis yields a set of " eigenface " images , capturing the common characteristics of a face without the need of a geometric model .
+effective ways to learn from partially labeled data have recently been introduced in [ 194 ] , [ 139 ] , both using the principle of transduction [ 181 ] .
+this saves the effort of labeling the entire data set , unfeasible and unreliable as it grows big .
+in [ 186 ] , preliminary work is reported towards automatic detection of categories on totally unlabeled data sets .
+they represent objects as probabilistic constellations of features .
+recurring salient rigid parts are selected automatically by maximization of the expectation .
+in [ 176 ] , a very large number of precomputed features is considered , of which a small subset is selected by boosting [ 80 ] to learn the image class .
+an interesting technique to bridge the gap between textual and pictorial descriptions to exploit information at the level of documents is borrowed from information retrieval , called latent semantic indexing [ 151 ] , [ 199 ] .
+first , a corpus is formed of documents ( in this case , images with a caption ) from which features are computed .
+then , by singular value decomposition , the dictionary covering the captions is correlated with the features derived from the pictures .
+the search is for hidden correlations of features and captions .
+discussion on interpretation and similarity whenever the image itself permits an obvious interpretation , the ideal content-based system should employ that information .
+a strong semantic interpretation occurs when a sign can be positively identified in the image .
+this is rarely the case due to the large variety of signs in a broad class of images and the enormity of the task to define a reliable detection algorithm for each of them .
+weak semantics rely on inexact categorization induced by similarity measures , preferably online by interaction .
+the categorization may agree with semantic concepts of the user , but the agreement is , in general , imperfect .
+therefore , the use of weak semantics is usually paired with the ability to gear the semantics of the user to his or her needs by interpretation .
+tunable semantics is likely to receive more attention in the future , especially when data sets grow big .
+similarity is an interpretation of the image based on the difference with another image .
+for each of the feature types , a different similarity measure is needed .
+for similarity between feature sets , special attention has gone to establishing similarity among histograms due to their computational efficiency and retrieval effectiveness .
+similarity of shape has received considerable attention in the context of object-based retrieval .
+generally , global shape matching schemes break down when there is occlusion or clutter in the scene .
+most global shape comparison methods implicitly require a frontal viewpoint against a clear enough background to achieve a sufficiently precise segmentation .
+with the recent inclusion of perceptually robust points in the shape of objects , an important step forward has been made .
+similarity of hierarchically ordered descriptions deserves considerable attention as it is one mechanism to circumvent the problems with segmentation while maintaining some of the semantically meaningful relationships in the image .
+part of the difficulty here is to provide matching of partial disturbances in the hierarchical order and the influence of sensor-related variances in the description .
+learning computational models for semantics is an interesting and relatively new approach .
+it gains attention quickly as the data sets and the machine power grow big .
+learning opens up the possibility to an interpretation of the image without designing and testing a detector for each new notion .
+one such approach is appearance-based learning of the common characteristics of stacks of images from the same class .
+appearance-based learning is suited for narrow domains .
+for success of the learning approach , there is a trade-off between standardizing the objects in the data set and the size of the data set .
+the more standardized the data are the less data will be needed , but , on the other hand , the less broadly applicable the result will be .
+interesting approaches to derive semantic classes from captions or a partially labeled or unlabeled data set have been presented recently , see above .
+interaction .
+we turn our attention to the interacting user .
+interaction of users with a data set has been studied most thoroughly in categorical information retrieval [ 123 ] .
+the techniques reported there need rethinking when used for image retrieval as the meaning of an image , due to the semantic gap , can only be defined in context .
+image retrieval requires active participation of the user to a much higher degree than required by categorized querying .
+in content-based image retrieval , interaction is a complex interplay between the user , the images , and their semantic interpretations .
+query space : definition and initialization .
+to structure the description of methods , we first define query space .
+the first component of query space is the selection of images zg from the large image archive z. typically , the choice is based on factual descriptions like the name of the archive , the owner , date of creation , or web site address .
+any standard retrieval technique can be used for the selection .
+the second component is a selection of the features .1'g c .1 ' derived from the images in zg .
+in practice , the user is not always capable of selecting the features most fit to reach the goal .
+for example , how should a general user decide between shape description using moments or fourier coefficients ?
+under all circumstances , however , the user should be capable of indicating the class of features relevant for the task , like shape , texture , or both .
+in addition to feature class , [ 57 ] has the user indicate the requested invariance .
+the user can , for example , specify an interest in features robust against varying viewpoint , while the expected illumination is specified as white light in all cases .
+the appropriate features can then be automatically selected by the system .
+as concerns the third component of query space , the user should also select a similarity function , sg .
+to adapt to different data sets and goals , sg should be a parameterized function .
+to start a query session , an instantiation q = { iq , fq , sq , zq } of the abstract query space is created .
+when no knowledge about past or anticipated use of the system is available , the initial query space q should not be biased toward specific images or make some image pairs a priori more similar than others .
+the active set of images iq is therefore equal to all of ~ q.
+furthermore , the features of fq are normalized based on the distribution of the feature values over iq e.g. , [ 48 ] , [ 142 ] .
+to make sq unbiased over fq , the parameters should be tuned , arriving at a natural distance measure .
+such a measure can be obtained by normalization of the similarity between individual features to a fixed range [ 184 ] , [ 142 ] .
+for the instantiation of a semantic label , the semantic gap prevents attachment to an image with full certainty .
+therefore , in the ideal case , the instantiation zq of zq assigns , for each i c iq and each z c zq , a probability pi ( z ) , rather than a strict label .
+the query space forms the basis for specifying queries , display of query results , and for interaction .
+query specification .
+for specifying a query q in q , many different interaction methodologies have been proposed .
+a query falls in one of two major categories : exact query , where the query answer set a ( q ) equals the images in iq , satisfying a set of given criteria , and an approximate query , where a ( q ) is a ranking of the images in iq with respect to the query , based on sq .
+within each of the two categories , three subclasses can be defined depending on whether the query relates to the spatial content of the image , to the global image information , or to groups of images .
+an overview of the initialization and specification of queries is shown in fig . 11 .
+for exact queries , the three subclasses are based on different predicates the result should satisfy : exact query by spatial predicate is based on the location of silhouettes , homogeneous regions , or signs .
+query on silhouette location is applicable in narrow domains only .
+typically , the user queries using an interpretation z c zq .
+to answer the query , the system then selects an appropriate algorithm for segmenting the image and extracting the domain- dependent features .
+in [ 156 ] , the user interactively indicates semantically salient regions to provide a starting point .
+the user also provides sufficient context to derive a measure for the probability of z .
+implicit spatial relations between regions sketched by the user in [ 163 ] yield a pictorial predicate .
+other systems let the user explicitly define the predicate on relations between homogeneous regions [ 20 ] .
+in both cases , to be added to the query result , the homogenous regions as extracted from the image must comply with the predicate .
+a web search system in which the user places icons representing categories like human , sky , and water in the requested spatial order is presented in [ 97 ] .
+in [ 144 ] , users pose spatial-predicate queries on geographical signs located in maps based on their absolute or relative positions .
+exact query by image predicate is a specification of predicates on global image descriptions , often in the form of range predicates .
+due to the semantic gap , range predicates on features are seldom used in a direct way .
+in [ 120 ] , ranges on color values are predefined in predicates like " mostlyblue " and " some- yellow . "
+learning from user annotations of a partitioning of the image allows for feature range queries like : " amount of sky > 50 percent and amount of sand > 30 percent " [ 130 ] . sexact query by group predicate is a query using an element z c zq , where zq is a set of categories that partitions ~ q.
+both in [ 21 ] and [ 179 ] , the user queries on a hierarchical taxonomy of categories .
+the difference is that the categories are based on contextual information in [ 21 ] while they are interpretations of the content in [ 179 ] .
+in the approximate types of query specifications , the user specifies a single feature vector or one particular spatial configuration in fg , where it is anticipated that no image will satisfy the query exactly .
+approximate query by spatial example results in an image or spatial structure corresponding to literal image values and their spatial relationships .
+pictorial specification of a spatial example requires a feature space such that feature values can be selected or sketched by the user .
+low-level feature selectors use color pickers or selections from shape and texture examples [ 48 ] , [ 61 ] .
+kato et al. [ 88 ] were the first to let users create a sketch of the global image composition which was then matched to the edges in zg .
+sketched outlines of objects in [ 93 ] are first normalized to remove irrelevant detail from the query object before matching it to objects segmented from the image .
+when specification is by parameterized template [ 36 ] , [ 150 ] , each image in zg is processed to find the best match with edges of the images .
+the segmentation result is improved if the user may annotate the template with salient details like color corners and specific textures .
+preidentification of all salient details in images in zg can then be employed to speed up the search process [ 161 ] .
+when weak segmentation of the query image and all images in zg is performed , the user can specify the query by indicating example regions [ 20 ] , [ 163 ] .
+approximate query by image example feeds the system a complete array of pixels and queries for the most similar images , in effect asking for the k-nearestneighbors in feature space .
+most of the current systems have relied upon this form of querying [ 48 ] , [ 61 ] .
+the general approach is to use an sq based on global image features .
+query by example queries are subclassified [ 184 ] into query by external image example , if the query image is not in the database , versus query by internal image example .
+the difference in external and internal example is minor for the user , but affects the computational support as , for internal examples , all relations between images can be precomputed .
+query by image example is suited for applications where the target is an image of the same object or set of objects under different viewing conditions [ 57 ] .
+in other cases , the use of one image cannot provide sufficient context for the query to select one of its many interpretations [ 146 ] .
+approximate image query by group example is specification through a selection of images which ensemble defines the goal .
+the rationale is to put the image in its proper semantic context to make one of the possible interpretations z c zg preponderant .
+one option is that the user selects m > 1 images from a palette of images presented to find images best matching the common characteristics of the m images [ 31 ] .
+an m-query set is capable of defining the target more precisely .
+at the same time , the m-query set defines relevant feature value variations and nullifies irrelevant variations in the query .
+group properties are amplified further by adding negative examples .
+this is achieved in [ 10 ] by constructing a query q best describing positive and negative examples indicated by the user .
+when , for each group in the database , a small set of representative images can be found , they are stored in a visual dictionary from which the user creates the query [ 146 ] .
+of course , the above queries can always be combined into more complex queries .
+for example , both [ 20 ] , [ 163 ] compare the similarity of regions using features .
+in addition , they encode spatial relations between the regions in predicates .
+even with such complex queries , a single query q is rarely sufficient to make a ( q ) the user desired answer set .
+for most image queries , the user must engage in active interaction with the system on the basis of the query results as displayed .
+query space display .
+there are several ways to display the query result to the user .
+in addition , system feedback can be given to help the user in understanding the result .
+we define : the visualization operator v maps the query space q into the display space d having perceived dimension d .
+note that d is the intrinsic dimensionality of the query result or d is induced by the projection function in v if the query result is of too high a dimension to visualize directly .
+in both cases , d is not necessarily equal to the two dimensions of the screen , so an additional projection operator might be required to map d onto the screen .
+when the query is exact , the result of the query is a set of images fulfilling the predicate .
+as an image either fulfills the predicate or not , there is no intrinsic order in the query result and d = 0 is sufficient .
+for approximate queries , the images in iq are given a similarity ranking based on sq with respect to the query .
+in many systems , the role of v is limited to bounding the number of images displayed , which are then displayed in a 2d rectangular grid [ 48 ] , [ 21 ] .
+note , however , that we should have d = 1 .
+if the user refines its query using query by example , the images displayed do not have to be the images closest to the query .
+in [ 184 ] , images are selected that together provide a representative overview of the whole active database .
+an alternative display model displays the image set minimizing the expected number of total iterations [ 31 ] .
+the space spanned by the features in fq is a high- dimensional space .
+when images are described by feature vectors , every image has an associated position in this space .
+in [ 146 ] , [ 175 ] , [ 68 ] , the operator v maps the high-dimensional feature space onto a display space with d = 3 .
+images are placed in such a way that distances between images in d reflect sq .
+a simulated fisheye lens is used to induce perception of depth in [ 175 ] .
+in the reference , the set of images to display depends on how well the user selections conform to selections made in the community of users .
+to improve the user 's comprehension of the information space , [ 68 ] provides the user with a dynamic view on fq through continuous variation of the active feature set .
+the display in [ 86 ] combines exact and approximate query results .
+first , the images in iq are organized in 2d-layers according to labels in zq .
+then , in each layer , images are positioned based on sq .
+in exact queries based on accumulative features , back- projection [ 169 ] , [ 41 ] can be used to give system feedback , indicating which parts of the image fulfill the criteria .
+for example , in [ 130 ] , each tile in the partition of the image shows the semantic label , like sky , building , or grass , the tile received .
+for approximate queries , in addition to mere rank ordering , in [ 20 ] , system feedback is given by highlighting the subparts of the images contributing most to the ranking result .
+interacting with query space .
+in early systems , the process of query specification and display is iterated , where , in each step , the user revises the query .
+updating the query often is still appropriate for exact queries .
+for approximate queries , however , the interactive session should be considered in its entirety .
+in a truly successful session , an ( q ) is the user 's search goal .
+the interaction process is schematically indicated in fig . 12 .
+the interaction of the user yields a relevance feedback rfi in every iteration i of the session .
+the transition from qi to qi + 1 materializes the feedback of the user .
+for target search , category search , or associative search , various ways of user feedback have been considered .
+all are balancing between obtaining as much information from the user as possible and keeping the burden on the user minimal .
+the simplest form of feedback is to indicate which images are relevant [ 31 ] .
+in [ 28 ] , [ 110 ] , the user in addition explicitly indicates nonrelevant images .
+the system in [ 142 ] considers five levels of significance , which gives more information to the system , but makes the process more difficult for the user .
+when d > 2 , the user can manipulate the projected distances between images , putting away nonrelevant images and bringing relevant images closer to each other [ 146 ] .
+the user can also explicitly bring in semantic information by annotating individual images , groups of images , or regions inside images [ 111 ] with a semantic label .
+different ways of updating q are open .
+in [ 184 ] , the images displayed correspond to a partitioning of iq .
+by selecting an image , one of the sets in the partition is selected and the set iq is reduced .
+thus , the user zooms in on a target or a category .
+in current systems , the feature vectors in fq corresponding to images in iq are assumed fixed .
+this has great advantages in terms of efficiency. parameterized , however , feedback from the user could lead to optimization of the parameters .
+for example , in parameterized detection of objects based on salient contour details , the user can manipulate the segmentation result to have the system select a more appropriate salient detail based on the image evidence [ 161 ] .
+in [ 28 ] , [ 142 ] , sq is parameterized by a weight vector on the distances between individual features .
+the weights in [ 28 ] are updated by comparing the variance of a feature in the set of positive examples to the variance in the union of positive and negative examples .
+if the variance for the positive examples is significantly smaller , it is likely that the feature is important to the user .
+the system in [ 142 ] first updates the weight of different feature classes .
+the ranking of images according to the overall similarity function is compared to the rankings corresponding to each individual feature class .
+both positive and negative examples are used to compute the weight of the feature , computed as the inverse of the variance over the positive examples .
+the feedback rfi in [ 146 ] leads to an update of the user-desired distances between pairs of images in iq .
+the parameters of the continuous similarity function should be updated to match the new distances .
+a regularization term is introduced , limiting the deviation from the initial natural distance function .
+the system in [ 111 ] precomputes a hierarchical grouping of partitionings ( or images for that matter ) based on the similarity for each individual feature .
+the feedback from the user is employed to create compound groupings corresponding to a user given z c zq .
+the compound groupings are such that they include all of the positive and none of the negative examples .
+unlabeled images in the compound group receive label z .
+the update of probabilities p is based on different partitionings of iq .
+for category and target search , a system may refine the likelihood of a particular interpretation , updating the label based on feature values or on similarity values .
+the method in [ 110 ] falls in this class .
+it considers category search , where zq is { relevant , nonrelevantl .
+in the limit case for only one relevant image , the method boils down to target search .
+all images indicated by the user as relevant or nonrelevant in current or previous iterations are collected and a parzen estimator is constructed incrementally to find optimal separation between the two classes .
+the generic pattern , which uses similarity in updating probabilities , is the form used in [ 31 ] for target search with zq = ftarget ] .
+in the reference , an elaborate bayesian framework is derived to compute the likelihood of any image in the database being the target , given the history of actions rfi .
+in each iteration , the user selects examples from the set of images displayed .
+image pairs are formed by taking one selected and one displayed , but nonselected , image .
+the probability of being the target for an image in iq is increased or decreased depending on the similarity to the selected and the nonselected example in the pair .
+discussion on interaction .
+any information the user can provide in the search process should be employed to provide the rich context required in establishing the meaning of a picture .
+the interaction should form an integral component in any modern image retrieval system , rather than a last resort when the automatic methods fail .
+already , at the start , interaction can play an important role .
+most of the current systems perform query space initialization irrespective of whether a target search , a category search , or an associative search is requested .
+but , the fact of the matter is that the set of appropriate features and the similarity function depend on the user goal .
+asking the user for the required invariance yields a solution for a specific form of target search .
+for category search and associative search , the user-driven initialization of query space is still an open issue .
+for image retrieval , we have identified six query classes , formed by the cartesian product of the result type ( exact , approximate } and the level of granularity of the descriptions ( spatial content , image , image groupsl .
+the queries based on spatial content require segmentation of the image .
+for large data sets , such queries are only feasible when some form of weak segmentation can be applied to all images or when signs are selected from a predefined legend .
+a balance has to be found between flexibility on the user side and scalability on the system side .
+query by image example has been researched most thoroughly , but a single image is only suited when another image of the same object ( s ) is the aim of the search .
+in other cases , there is simply not sufficient context .
+queries based on groups , as well as techniques for prior identification of groups in data sets , are promising lines of research .
+such group-based approaches have the potential to partially bridge the semantic gap while leaving room for efficient solutions .
+the query result has an inherent display dimension which is often ignored .
+most methods simply display images in a 2d grid .
+enhancing the visualization of the query result is , however , a valuable tool in helping the user- navigating query space .
+as apparent from the query space framework , there is an abundance of information available for display .
+new visualization tools are urged to allow for user- and goal-dependent choices on what to display .
+through manipulation of the visualized result , the user gives feedback to the system .
+the interaction patterns as enumerated here reveal that , in current methods , feedback leads to an update of just one of the components of query space .
+there is no inherent reason why this should be the case .
+in fact , joint updates could indeed be effective and well worth researching .
+for example , the pattern which updates category membership based on a dynamic similarity function would combine the advantages of browsing with category and target search .
+one final word about the impact of interactivity on the architecture of the system .
+the interacting user brings about many new challenges for the response time of the system .
+content-based image retrieval is only scalable to large data sets when the database is able to anticipate what interactive queries will be made .
+a frequent assumption is that the image set , the features , and the similarity function are known in advance .
+in a truly interactive session , the assumptions are no longer valid .
+a change from static to dynamic indexing is required .
+system aspects .
+storage and indexing .
+we have been concerned with the content of the image eventually leading to a feature vector f or a hierarchically ordered set h containing the information of the image .
+repetition over all images in the data set yields a file of feature vectors , the data file .
+in the previous section , we discussed the request as translated into the query image vector , f9 , to be compared with the elements fd of data file on the basis of the similarity function .
+scientifically and practically , the most interesting applications of retrieval are on large data sets , where there is statistically sound coverage of the image spectrum and learning general laws from the data sets makes sense .
+for large image sets , computational performance cannot be ignored as an issue .
+when storing the feature vectors in a standard , linear file with one record to each feature vector , we are bound to scan through all feature vectors .
+in that case , we have to perform n fetches of a record plus subsequent calculations to find the data vector most similar to the query feature vector .
+the response time of the system is o ( n ) and , so , it is the number of operations when inserting a new element in the database and updating the mutual distance matrix among the elements .
+linear scanning the feature vector file puts interactive response times out of reach , most certainly for data sets of 10,000 images and more .
+in addition to the number of images , the dimension of the image vector can also be considerable .
+in [ 176 ] , over 10,000 features are computed from the image each describing a local pattern .
+in the example of a wavelet histogram for texture-based retrieval [ 162 ] , an image has a nine-dimensional vector for each pixel compressed to a 512-bin histogram to a total of 5122 histograms of 512 bins per image .
+the shape indexing technique [ 153 ] represents an image vector by a hierarchically ordered set of six types of nodes and three types of links , each encoding a number of image descriptors .
+indexing in high dimensional spaces is difficult by the curse of dimensionality , a phenomenon by which indexing techniques become inefficient as the dimensionality of the feature space grows .
+the performance of r * -trees degrades by a factor of 12 as the number of dimensions increases from 5 to 10 [ 190 ] .
+we focus on three classes of indexing methods that are in use on large image databases , substantiated by performance figures : space partitioning , data partitioning , and distance-based techniques .
+in space-partitioning index techniques , the feature space is organized like a tree as discussed in [ 15 ] .
+a node in this tree stands for a region in this space .
+when the number of points in a region exceeds a prescribed amount , the region is split into subregions which become the children of the node containing the original region .
+the best known index in this class is the k d tree .
+a k d tree is a data structure that generalizes binary trees in k dimensions , hence the name .
+it splits an overfilled node of the tree along its k dimensions , an splits the data points in the node along the median of the data values [ 7 ] .
+in the implementation of the reference , there is an approximation bound f. in [ 152 ] , a 15-fold decrease in response time is reported using the k d tree for a 20-nearest neighbors query over n = 500,000 images with m = 78 dimensions in feature space and e = 0.1 .
+a further improvement is the k d b-tree as a multidimensional generalization of standard b-tree with splitting capacity of the k d tree .
+it is a balanced data structure with equal depth from the root , with o ( logn ) performance [ 196 ] .
+data partitioning index techniques associate , with each point in feature space , a region that represents the neighborhood of that vector .
+an r-tree is such a data partitioning structure to index hyperrectangular regions in m-dimensional space .
+the leaf nodes of an r-tree represent the minimum bounding rectangles of sets of feature vectors .
+an internal node is a rectangle encompassing the rectangles of all its children .
+an r + -tree is a variant which does not allow the minimum bounding rectangles in a node to overlap .
+in r * -tree , the minimum bounding rectangles may overlap .
+the ordinary r-tree , family has not been very successful for vectors with dimension somewhere over 10 .
+the vam-split r-tree splits along the dimension of maximum variance [ 190 ] , hence the name , and was shown to have a better performance than standard r * -tree .
+since the splitting criterion is dependent on the spread of the data rather than the number of data in a bucket , it proves to be very effective , even for clustered data and for correlated dimensions .
+a vam-split r-tree can be constructed two orders of magnitude faster than an r * -tree , taking less than a second for a 20-nearest-neighbors query for m = 11 on an n = 100,000 image database .
+the ss-tree [ 189 ] and its further improvement , the sr-tree [ 87 ] , use the intersection of the minimum bounding hypersphere and minimum bounding hyperrectangle as the bounding region of a data element .
+as the dimension grows , it combines , for one bounding region , the advantage of the small volume of the hyperrectangle with the small diameter of the hypersphere .
+it has been shown that the sr-tree is efficient in low and high feature vector sizes .
+distance-based index structures are example-based space-partitioning techniques , and , hence , very suited for query by example when feature space is metric .
+the primary idea is to pick an example point and divide the rest of the feature space into m ' groups in concentric rings around the example .
+this results in a distance-based index , the vantage point tree first proposed in [ 195 ] .
+in [ 14 ] , the vp-tree was generalized for high dimensional feature vectors .
+the mvp-tree is a static data structure that uses multiple example ( vantage ) points at each node .
+the first advantage point is used to create m ' partitions .
+and in each partition , a second vantage point creates m ' more divisions .
+mvp-trees , with m ' = 3 , mnznxpernode = 13 , using the l2 metric found to perform fewer distance calculations during vector comparison for a nearest-neighbor search than competing techniques .
+the m-tree proposed in [ 27 ] is a more robust and scalable indexing strategy that uses the triangle-inequality of metric spaces , but , at the same time , retains the data partitioning properties of spatial access methods such as the r-tree and the ss-tree .
+m-trees are similar to mvp-trees in the sense that they both split the space based on spherical volumes around some reference vectors .
+however , m-trees are locally adapting , balanced indexes .
+hence , they are less affected by the distribution of vectors in feature space .
+although the m-tree cannot guarantee worst case performance , it has been shown to work well in practice , with distance computation costs of o ( log m ) in most cases .
+it also has the advantage of dealing directly with features that can be represented in a metric space but not in a vector space , unlike techniques like fastmap [ 46 ] or multidimensional scaling which approximate the feature space with a vector space that maintains approximately the same metric .
+it is regrettable that not too much work across the division between the disciplines of vision and databases has been done yet , with a few exceptions in commercial systems [ 48 ] , [ 61 ] and research [ 46 ] , [ 85 ] , [ 171 ] .
+recent work from the vision side is found in [ 170 ] , where the database organizes itself for narrow domains in clustering hierarchies of the most expressive features , and in [ 2 ] , where clusters of feature values are sought in a graph-theoretical representation .
+system architectures .
+many systems like photobook [ 128 ] , pictoseek [ 57 ] , and [ 116 ] are rooted in computer vision .
+in such systems , the data and features are typically stored in files addressed by name .
+from an architectural point of view , this approach is likely to run into data integrity and performance problems when trying to scale up to a large database and a large number of users .
+the large number of elements is clearly an issue in [ 21 ] , [ 40 ] , [ 168 ] and any other of the numerous web search engines , where the emphasis is on filling the database using the world wide web as a logical repository .
+architectural issues focus on modules for searching the web .
+in such architectures , a clear distinction can be made between off- line indexing and online readout for retrieval .
+the separation simplifies database integrity greatly .
+hence , with simple , static index structures one can obtain a good performance during retrieval .
+one step beyond the read-only databases is the use of a standard database management system extended for image retrieval .
+groundbreaking examples are qbic [ 48 ] and virage [ 61 ] .
+in [ 120 ] , an extended relational database system was used .
+reducing image retrieval as a plug-in module in an existing database solves the integrity problem for image content and allows dynamic updates .
+it also provides natural integration with features derived from other sources .
+standard databases maintain a narrow data- exchange channel between the search engine and the data and , hence , performance is rather poor .
+in the references , visualization and knowledge management is not being addressed as part of the integrated system .
+for more complete systems , detailed architectures are to be considered .
+one of the early contributions to do so can be found in the core-system [ 193 ] , which has been the basis for many different applications .
+the architecture is centered around a general data base management system on top of which modules for analysis , indexing , training , and retrieval have been resolved in the database parlance .
+in such an approach , the database structure dominates knowledge management , feature calculation , and visualization tools , which severely hampers ease of expression in these areas .
+the generic architecture described in [ 60 ] is based on a detailed model of the various information types .
+each information type holds its data in a separate repository rather than the unified database , specifically separating data-driven and semantic , information bearing features .
+the advantage is that processing units , one for each new data type , can be put together quickly .
+the drawback is that the distinction between information-bearing features and data-driven features varies with the level of knowledge in the system and , hence , will be obstructing knowledge-based analysis .
+the infoscopes architecture [ 82 ] follows a similar distinction of features .
+it adds a new dimension to the architecture of content-based systems by making explicit the knowledge for the various parts of the system .
+the piction system [ 155 ] proposes an architecture for collaborative use of image information and related textual information , while making knowledge explicit .
+the systems discussed so far put their main emphasis on data and , later , on knowledge processing .
+in contrast , systems reviewed in [ 141 ] and , particularly , the mars- system [ 142 ] , are based on the information retrieval paradigm .
+the interaction with the user is considered crucial for a successful system .
+they propose an architecture for future systems which has a sequential processing structure from features to user interaction .
+this architecture ignores the role of data organization and explicit domain knowledge .
+integration of database research and visualization [ 96 ] has brought about techniques for visualizing the structure and content of an image database .
+content-based similarity between images is not exploited here .
+the systems in [ 68 ] , [ 184 ] have pursued integration furthest by using content- based similarity , interaction , and visualization , as well as database techniques for retrieving relevant images .
+hence , they use techniques from three of the research fields identified earlier .
+the el nino database system [ 146 ] proposes an architecture for the integration of several , possibly remote , engines through a mediator .
+the interaction is viewed as an outside source of knowledge infusion ; semantics are expected to emerge in the course of the interaction .
+the addition of a knowledge component would lead to truly integrated content-based image retrieval systems .
+system evaluation .
+the evaluation of image retrieval is a difficult yet essential topic for the successful deployment of systems and their usefulness in practical applications .
+the initial impetus for the evaluation of image databases comes from the neighboring discipline of information retrieval , in which user- based evaluation techniques have reached a considerable degree of sophistication [ 143 ] .
+the main tool that image retrieval research borrowed from information retrieval are the precision and recall measures .
+suppose a data set d and a query q are given .
+through the use of human subjects , the data set can be divided into two sets : the set of images relevant for the query q , r ( q ) and its complement , the set of irrelevant images r ( q ) .
+suppose that the query q is given to a data set and that it returns a set of images a ( q ) as the answer .
+the precision of the answer is the fraction of the returned images that is indeed relevant for the query : while precision and recall are a useful tool in information retrieval , in the context of image databases , they are not sufficient for two reasons .
+first , the selection of a relevant set in an image database is much more problematic than in a text database because of the more problematic definition of the meaning of an image .
+in the case of a document , the human judgment of whether a certain document is relevant to a certain query is relatively stable and there is a strong connection between this judgment and the statistical characteristics of the presence of certain elementary units ( words ) .
+in the case of an image , relevance is much less stable because of the larger number of interpretation , of a image separated from a linguistic context .
+moreover , no analysis in terms of semiotically stable constitutive elements can be done therefore , the correlation between image relevance and low-level feature is much more vague .
+the second reason is that image databases usually do not return an undifferentiated set of " relevant " results , but a ranked list of results or some more complex configuration that shows the relation between the results of the query .
+although a query result is , in principle , an ordering of the whole database , the size of the answer set a ( q ) is usually reduced to k most relevant images .
+when the number of relevant images is greater than k , recall is meaningless as a measure of the quality of the database .
+in spite of these drawbacks , precision and recall ( or other measures derived from them ) are useful measurements in special circumstances .
+in particular , when the image database relies on the strong semantics provided by label or other textual description , precision and recall can be usefully employed [ 164 ] .
+with respect to experimental practices that use human subjects , a distinction can be made between the evaluation of a complete system and that of parts of a system [ 145 ] .
+in the first case , the system can be evaluated in the context of a well-defined activity by measuring the increased effectiveness resulting from the introduction of the database .
+well- known techniques from social sciences can be used for the experimental design [ 19 ] and for the statistical analysis of the data [ 104 ] .
+in the second case , human subjects should be used to obtain the ground truth .
+such an approach is followed , for instance , in [ 12 ] , [ 124 ] .
+discussion on system aspects .
+as concerns system architecture , we maintain that a full- grown content-based retrieval system will result from the integration of a sensory and feature calculating part , a domain knowledge and interpretation module , an interaction and user interface module , and a storage and indexing module .
+for the system architectures discussed above , we conclude that most systems have an innovative emphasis understandably limited to one or two of these components .
+we feel there is a need for a framework for content-based image retrieval providing a more balanced view of the four constituent components .
+the framework would be based on explicit communication protocols to permit a discipline specific parlance within each of the modules , see fig . 13 .
+such a framework follows the lines of object-oriented modular design , task differentiation , class abstractions , data hiding , and a communication protocol as corba .
+concluding remarks .
+at the end of this review , we would like to present our view on a few trends : the driving force .
+content-based image retrieval came around quickly .
+suddenly it was there , like the new economy .
+and it moves fast .
+in our review , most of the journal contributions are from the last five years .
+we are aware of the fact that much of what we have said here will be outdated soon , and hopefully so , but we hope we laid down patterns in computation and interaction which may last a little longer .
+the impetus behind content-based image retrieval is given by the wide availability of digital sensors , the internet , and the falling price of storage devices .
+given the magnitude of these driving forces , it is to us that content-based retrieval will continue to grow in every direction : new audiences , new purposes , new styles of use , new modes of interaction , larger data sets , and new methods to solve the problems .
+what is needed most to bring the early years of content-based retrieval to an end is more precise foundations .
+for some of the reviewed papers , it was not clear what problem they were trying to solve or whether the proposed method would perform better than an alternative .
+a classification of usage-types , aims , and purposes would be very helpful here , including hard criteria for distinguishing among domain types .
+in spite of the difficulties intrinsic to the early years , it is now clear that content-based retrieval is not just old wine in new sacks .
+it will demand its own view of things as it is our belief that content-based retrieval in the end will not be part of the field of computer vision alone .
+the man-machine interface , domain knowledge , and database technology each will have their impact on the product .
+the heritage of computer vision .
+an important obstacle to overcome before content-based image retrieval could take off was to realize that image retrieval does not entail solving the general image understanding problem .
+it may be sufficient that a retrieval system present similar images , similar in some user-defined sense .
+strong segmentation of the scene and complete feature descriptions may not be necessary at all to achieve the similarity ranking .
+of course , the deeper one goes into the semantics of the pictures , the deeper the understanding of the picture will have to be , but that could very well be based on categorizing pictures rather than on a precise understanding .
+we discussed applications of content-based retrieval in three broad types : target search , category search , and search by association .
+these user aims are rooted in the research tradition of the field .
+target search builds on pattern matching and object-recognition .
+new challenges in content-based retrieval are the huge amount of objects among which to search , the incompleteness of the query specification and of the image descriptions , and the variability of sensing conditions and object states .
+category search builds on object recognition and statistical pattern recognition problems .
+new challenges in content-based retrieval compared to the achievements of object recognition are the interactive manipulation of results , the usually very large number of classes , and the absence of an explicit training phase for feature selection and classification tuning .
+in the search by association , the goal is unspecified at the start of the session .
+here , the heritage of computer vision is limited to feature sets and similarity functions .
+the association process is essentially iterative , interactive , and explicative .
+therefore , association search is hampered most by the semantic gap .
+all display and relevance feedback has to be understood by the user , so the emphasis must be on developing features transparent to the user .
+the influence on computer vision .
+in reverse , content- based image retrieval offers a different look at traditional computer vision problems .
+in the first place , content-based retrieval has brought large data sets .
+where the number of test images in a typical journal paper was well under a hundred until very recently , a state-of-the-art paper in content-based retrieval reports experiments on thousands of images .
+of course , the purpose is different for computer vision and content-based retrieval .
+it is much easier to compose a general data set of arbitrary images rather than the specific ones needed in a computer vision application , but the stage has been set for more robustness .
+for one thing , to process a thousand images at least demands software and computational method be robust .
+in the second place , content-based retrieval has run into the absence of a general method for strong segmentation .
+especially for broad domains and for sensory conditions where clutter and occlusion are to be expected , strong segmentation into objects is hard , if not impossible .
+content-based retrieval systems have dealt with the segmentation bottleneck in a few creative ways .
+first , a weaker version of segmentation has been introduced in content-based retrieval .
+in weak segmentation , the result is a homogeneous region by some criterion , but not necessarily covering the complete object silhouette .
+weak segmentation leads to the calculation of salient features capturing the essential information of the object in a nutshell .
+the extreme form of the weak segmentation is the selection of a salient point set as the ultimately efficient data reduction in the representation of an object , very much like the focus-ofattention algorithms for an earlier age .
+weak segmentation and salient features are a typical innovation of content-based retrieval .
+it is expected that salience will receive much attention in the further expansion of the field , especially when computational considerations will gain in importance .
+the alternative to work around strong segmentation is to do no segmentation at all .
+global features , such as wavelets and histograms , have been very effective .
+when the image is recorded with a photographic purpose , it is likely that the center of the image means something different than the surrounding parts of the image , so using that division of the picture could be of help too .
+using no segmentation at all is likely to run dry on semantics at the point where characteristics of the target are not specific enough in large databases to discriminate against the features of all other images .
+in the third place , content-based retrieval has revitalized interest in color image processing .
+this is due to superior identification of trivalued intensities in identifying an object , as well as to the importance of color in the perception of images .
+as content- based is user-oriented , color cannot be left out .
+the purpose of most image color processing here is to reduce the influence of accidental conditions of the scene and the sensing ( i.e. , the sensory gap ) by computing sensing and scene invariant representations .
+progress has been made in tailored color space representation for well-described classes of variant conditions .
+also , the application of local geometrical descriptions derived from scale space theory will reveal viewpoint and scene independent salient point sets , thus opening the way to similarity of images on a small number of most informative regions or points .
+finally , attention for invariance has been revitalized as well with many new features and similarity measures .
+for content-based retrieval , invariance is just one side of the coin , where discriminating power is the other .
+little work has been reported so far to establish the remaining discriminating power of properties .
+this is essential as the balance between stability against variations and retained discriminating power determines the effectiveness of a property .
+similarity and learning .
+similarity is an interpretation of the image based on the difference between two elements or groups of elements .
+for each of the feature types , a different similarity measure is needed .
+for similarity between feature sets , special attention has gone to establishing similarity between histograms due to their computational efficiency and retrieval effectiveness .
+where most attention has gone to color histograms , it is expected that histograms of local geometric properties and texture will follow .
+being such a unique computational concept , the histogram is receiving considerable attention from the database community for upgrading the performance on very large data sets .
+this is advantageous in the applicability of applying retrieval on very broad domains .
+to compensate for the complete loss of spatial information , new ways were recently explored as described above .
+similarity of hierarchically ordered descriptions deserves considerable attention as it is one mechanism to circumvent the problems with segmentation while maintaining some of the semantically meaningful relationships in the image .
+part of the difficulty here is to provide matching of partial disturbances in the hierarchical order and the influence of sensor-related variances in the description .
+we make a pledge for the importance of human- based similarity rather than general similarity .
+also , the connection between image semantics , image data , and query context will have to be made clearer in the future .
+similarity-induced semantics and the associated techniques for similarity adaptation ( e.g. , relevance feedback ) are a first important step , but more sophisticated techniques , possibly drawing from machine learning , are necessary .
+learning is quickly gaining attention as a means to build explicit models for each semantic term .
+learning is made possible today by the availability of large data sets and powerful machines and allows one to form categories from captions , from partially labeled sets , or even from unlabeled sets .
+learning is likely to be successful for large , labeled data sets on narrow domains first , which may be relaxed to broader domains and less standardized conditions as the available data sets will grow even more .
+obviously , learning from labeled data sets is likely to be more successful than unsupervised learning first .
+new computational techniques , however , where only part of the data is labeled or the data is labeled by a caption rather than categories , open new possibilities .
+it is our view that , in order to bring semantics to the user , learning is inevitable .
+interaction .
+we consider the emphasis on interaction in image retrieval as one of the major departures from the computer vision tradition , as was already cited in the 1992 workshop [ 81 ] .
+interaction was first picked up by frontrunners , such as nec laboratories in japan and the mit media lab , to name a few .
+now , interaction and feedback have moved into the focus of attention .
+putting the user in control and visualization of the content has always been a leading principle in information retrieval research .
+it is expected that more and more techniques from traditional information retrieval will be employed or reinvented in content-based image retrieval .
+text retrieval and image retrieval share the need for visualizing the information content in a meaningful way as well as the need to accept a semantic response of the user rather than just providing access to the raw data .
+user interaction in image retrieval has , however , some different characteristics from text retrieval .
+there is no sensory gap and the semantic gap from keywords to full text in text retrieval is of a different nature .
+no translation is needed from keywords to pictorial elements .
+in addition to the standard query types , six essentially different image based types have been identified in this paper .
+each require their own user interface tools and interaction patterns .
+due to the semantic gap , visualization of the query space in image retrieval is of great importance for the user to navigate the complex query space .
+while , currently , two- or three-dimensional display spaces are mostly employed in query by association , target search and category search are likely to follow .
+in all cases , an influx of computer graphics and virtual reality is foreseen in the near future .
+as there is no interactivity if the response time is frequently over a second , the interacting user poses high demands on the computational support .
+indexing a data set for interactive use is a major challenge as the system cannot completely anticipate the user 's actions .
+still , in the course of the interaction , the whole query space , i.e. , the active image set , the features , the similarity , and the interpretations , can all change dynamically .
+the need for databases .
+when data sets grow in size and when larger data sets define more interesting problems , both scientifically as well as for the public , the computational aspects can no longer be ignored .
+the connection between content-based image retrieval and database research is likely to increase in the future .
+already , the most promising efforts are interdisciplinary , but , so far , problems like the definition of suitable query languages , efficient search in high dimensional feature space , search in the presence of changing similarity measures are largely unsolved .
+it is regrettable that little work cutting across the computer vision and database disciplines has been done so far , with a few notable exceptions .
+when truly large data sets come into view , with hundreds of thousands of images , databases can no longer be ignored as an essential component of a content- based retrieval system .
+in addition , when interactive performance is essential , storage and indexing must be organized in advance .
+such large data sets will have an effect on the choice of features as the expressive power , computational cost , and hierarchical accessibility determine their effectiveness .
+for very large data sets , a view on content integrated with computation and indexing cannot be ignored .
+when speaking about " indexing " in computer vision , the emphasis is still on what to index , whereas the emphasis from the database side is on how to index .
+the difference has become smaller recently , but we believe most work is still to be done .
+furthermore , in dealing with large feature vector sizes , the expansion of query definitions and query expansions in a useful manner for a variety of user aims is still mostly unanswered .
+for efficiency , more work on complete sets of feature calculations from compressed images is needed .
+the problem of evaluation .
+it is clear that the evaluation of system performance is essential to sort out the good and the not-so-good methods .
+up to this point in time , a fair comparison of methods under similar circumstances has been virtually absent .
+this is due to the infancy of content-based retrieval , but also to objective difficulties .
+where interaction is a necessary component in most systems , it is difficult to separate out the influence of the data set in the performance .
+also , it may be the case that some queries may match the expressive power of the system , whereas others , similar at first glance , may be much harder .
+searching for a sunset may boil down to searching for a large orange disc at about the center of the image .
+searching for a lamp , which may seem similar to the general audience , is a much harder problem as there is a whole variety of designs behind a lamp .
+the success of the system heavily depends on the toolset of the system relative to the query .
+in addition , it is logical that a large data set is composed of several smaller data sets to get a sufficiently big size .
+then , the difficulty is the internal coherence of the large data set with respect to the coherence of its constituents .
+when a data set is composed of smaller data sets holding interior decorations , prairie landscapes , ships , and pigeons , it is clear that the essential difficulty of retrieval is within each set rather than among them and the essential size of the data set is still one quarter .
+there is no easy answer here other than the composition of generally agreed upon data sets or the use of very very large data sets .
+in all cases , the vitality of the content-based approach calls for a significant growth of the attention to evaluation in the future .
+a reference standard against which new algorithms could be evaluated has helped the field of text recognition enormously , see http : / / trec.nist.gov.
+a comprehensive and publicly available collection of images , sorted by class and retrieval purposes , together with a protocol to standardize experimental practices , will be instrumental in the next phase of content-based retrieval .
+we hope that a program for such a repository will be initiated under the auspices of a funding agency .
+at any rate , evaluation will likely play an increasingly significant role .
+image databases , with their strong interactional component , present very different problems from the present ones which will require borrowing concepts from the psychological and social sciences .
+the semantic gap and other sources .
+a critical point in the advancement of content-based retrieval is the semantic gap , where the meaning of an image is rarely self-evident .
+use of content-based retrieval for browsing will not be within the grasp of the general public as humans are accustomed to relying on the immediate semantic imprint the moment they see an image and they expect a computer to do the same .
+the aim of content-based retrieval systems must be to provide maximum support in bridging the semantic gap between the simplicity of available visual features and the richness of the user semantics .
+one way to resolve the semantic gap comes from sources outside the image by integrating other sources of information about the image in the query .
+information about an image can come from a number of different sources : the image content , labels attached to the image , images embedded in a text , and so on .
+we still have very primitive ways of integrating this information in order to optimize access to images .
+among these , the integration of natural language processing and computer vision deserves attention .
